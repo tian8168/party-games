@@ -1,63 +1,4 @@
-// ==========================================================================
-// 💀 恶魔轮盘赌 (Buckshot Roulette) · 独立游戏逻辑 (Isolated Game Engine)
-// ==========================================================================
-
-window.GAME_KEY = 'ROULETTE';
-window.GAME_RULES = {
-  'ROULETTE': {"title":"恶魔轮盘赌 规则","body":"<p><strong>枪膛与子弹：</strong>每轮装入已知数量的 🔴 实弹 与 ⚪ 空包弹，轮流开枪。</p><br><p><strong>核心机制：</strong>开枪打对手若是实弹扣除对方生命值；若是空包弹则换对手回合。打自己若是空包弹，<b>你将获得额外一次行动回合！</b></p><br><p><strong>道具功效：</strong>🔍 放大镜看下一发；🔒 手铐锁住对手；🪚 手锯双倍伤害；🍺 啤酒退弹；🚬 香烟回血。</p>"}
-};
-
-const STATE = {
-  currentView: 'GAME',
-
-      currentGame: 'ROULETTE',
-      gameMode: 'AI',
-      turn: 1,
-      winner: null,
-      animating: false,
-      online: { roomId: null, myRole: null, connected: false, mqttClient: null, opponentJoined: false },
-      roulette: { p1Hp: 4, p2Hp: 4, maxHp: 4, shells: [], sawed: false, p1Cuffed: false, p2Cuffed: false, p1Items: [], p2Items: [], knownNext: null }
-    
-};
-window.STATE = STATE;
-
-function checkIsMyTurn() {
-  if (STATE.gameMode === 'LOCAL') return true;
-  if (STATE.gameMode === 'AI') return STATE.turn === 1;
-  if (STATE.gameMode === 'ONLINE') {
-    if (!STATE.online.opponentJoined) return false;
-    if (STATE.online.myRole === 'host' && STATE.turn === 1) return true;
-    if (STATE.online.myRole === 'guest' && STATE.turn === 2) return true;
-    return false;
-  }
-  return false;
-}
-
-function switchGameMode(mode, doReset = true) {
-  if (typeof AUDIO !== 'undefined' && AUDIO.play) AUDIO.play('click');
-  STATE.gameMode = mode;
-  const tabOnline = document.getElementById('tab-online');
-  const tabAi = document.getElementById('tab-ai');
-  const tabLocal = document.getElementById('tab-local');
-  const onlinePanel = document.getElementById('online-panel');
-  if (tabOnline) tabOnline.classList.toggle('active', mode === 'ONLINE');
-  if (tabAi) tabAi.classList.toggle('active', mode === 'AI');
-  if (tabLocal) tabLocal.classList.toggle('active', mode === 'LOCAL');
-  if (onlinePanel) onlinePanel.classList.toggle('hidden', mode !== 'ONLINE');
-
-  if (doReset) {
-    resetCurrentGame();
-  }
-}
-
-function resetCurrentGame() {
-  
-      initRouletteGame();
-    
-}
-
-// --- 游戏专属引擎核心逻辑 ---
-// 5. 恶魔轮盘赌 (BUCKSHOT ROULETTE)
+    // 5. 恶魔轮盘赌 (BUCKSHOT ROULETTE)
     // ==========================================================================
     const ROULETTE_ITEM_DEFS = {
       'MAGNIFIER': { name: '🔍 放大镜', desc: '偷看下一发真假' },
@@ -340,16 +281,3 @@ function resetCurrentGame() {
     }
 
     // ==========================================================================
-    
-
-// --- 页面装载自动初始化 ---
-window.addEventListener('DOMContentLoaded', () => {
-  recordRecentGame('ROULETTE');
-  resetCurrentGame();
-  const params = new URLSearchParams(window.location.search);
-  const roomParam = params.get('room');
-  if (roomParam && typeof joinExistingRoom === 'function') {
-    switchGameMode('ONLINE', false);
-    joinExistingRoom(roomParam);
-  }
-});

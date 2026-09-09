@@ -1,134 +1,4 @@
-// ==========================================================================
-// 🧊 3D 立体五子棋 (3D Gomoku) · 独立 3D 游戏引擎
-// ==========================================================================
-
-window.GAME_KEY = 'GRAVITY3D';
-window.GAME_RULES = {
-  'GRAVITY3D': {"title":"3D 立体五子棋 规则","body":"<p><strong>三维空间结构：</strong>底座立有 5x5 共 25 根立柱，每根柱子最多串 5 颗珠子（共 125 个空间节点）。</p><br><p><strong>视角操作：</strong>鼠标按住/单指滑动可 <b>360° 旋转视角</b>，滚轮/双指可缩放，点击立柱即可投子。</p><br><p><strong>13 维空间获胜：</strong>率先在任意方向连成 <b>5 颗珠子直线</b>（含 4 条空间大对角线）者获胜！</p>"}
-};
-
-const STATE = {
-  currentView: 'GAME',
-  currentGame: 'GRAVITY3D',
-  gameMode: 'AI',
-  turn: 1,
-  winner: null,
-  animating: false,
-  online: {
-    roomId: null,
-    myRole: null,
-    connected: false,
-    mqttClient: null,
-    opponentJoined: false
-  },
-  gravity3d: {
-    
-    board: Array.from({ length: 5 }, () => Array.from({ length: 5 }, () => new Array(5).fill(0))),
-    hoverRod: null,
-    winningLine: null,
-    lastMove: null
-  
-  }
-};
-window.STATE = STATE;
-
-function switchGameMode(mode, doReset = true) {
-  if (typeof AUDIO !== 'undefined' && AUDIO.play) AUDIO.play('click');
-  STATE.gameMode = mode;
-  document.getElementById('tab-online').classList.toggle('active', mode === 'ONLINE');
-  document.getElementById('tab-ai').classList.toggle('active', mode === 'AI');
-  document.getElementById('tab-local').classList.toggle('active', mode === 'LOCAL');
-  document.getElementById('online-panel').classList.toggle('hidden', mode !== 'ONLINE');
-
-  if (doReset) {
-    resetCurrentGame();
-  }
-}
-
-function checkIsMyTurn() {
-  if (STATE.gameMode === 'LOCAL') return true;
-  if (STATE.gameMode === 'AI') return STATE.turn === 1;
-  if (STATE.gameMode === 'ONLINE') {
-    if (!STATE.online.opponentJoined) return false;
-    if (STATE.online.myRole === 'host' && STATE.turn === 1) return true;
-    if (STATE.online.myRole === 'guest' && STATE.turn === 2) return true;
-    return false;
-  }
-  return false;
-}
-
-function endTurn() {
-  STATE.turn = STATE.turn === 1 ? 2 : 1;
-  updateScoreboard();
-
-  if (!STATE.winner && STATE.gameMode === 'AI' && STATE.turn !== 1) {
-    STATE.animating = true;
-    const status = document.getElementById('status-text');
-    if (status) status.textContent = '🤖 黄方电脑 正在深思熟虑...';
-    setTimeout(() => {
-      runGravity3DAI();
-    }, 500);
-  }
-}
-
-function resetCurrentGame() {
-  STATE.winner = null;
-  STATE.turn = 1;
-  STATE.animating = false;
-  STATE.gravity3d.board = Array.from({ length: 5 }, () => Array.from({ length: 5 }, () => new Array(5).fill(0)));
-  STATE.gravity3d.hoverRod = null;
-  STATE.gravity3d.winningLine = null;
-  STATE.gravity3d.lastMove = null;
-  if (typeof resetSocketHighlights === 'function') resetSocketHighlights();
-  if (typeof set3DHover === 'function') set3DHover(null, null);
-  updateScoreboard();
-  update3DScene();
-}
-
-function updateScoreboard() {
-  const genericScoreboard = document.getElementById('generic-scoreboard');
-  if (genericScoreboard) genericScoreboard.classList.remove('scoreboard-4p');
-
-  const card3 = document.getElementById('card-p3');
-  const card4 = document.getElementById('card-p4');
-  if (card3) card3.style.display = 'none';
-  if (card4) card4.style.display = 'none';
-
-  const card1 = document.getElementById('card-p1');
-  const card2 = document.getElementById('card-p2');
-  if (card1) card1.classList.toggle('active', STATE.turn === 1);
-  if (card2) card2.classList.toggle('active', STATE.turn === 2);
-
-  const nameP1 = document.getElementById('name-p1');
-  const nameP2 = document.getElementById('name-p2');
-  if (nameP1) nameP1.textContent = '🔴 红方 (先手)';
-  if (nameP2) nameP2.textContent = STATE.gameMode === 'AI' ? '🟡 黄方 (电脑)' : (STATE.gameMode === 'ONLINE' ? '🟡 黄方 (客方)' : '🟡 黄方 (后手)');
-
-  const status = document.getElementById('status-text');
-  if (status) {
-    if (STATE.winner) {
-      status.textContent = STATE.winner === 1 ? '🏆 🔴 红方胜利！' : '🏆 🟡 黄方胜利！';
-    } else {
-      if (STATE.gameMode === 'ONLINE') {
-        status.textContent = !STATE.online.opponentJoined ? '⏳ 等待好友加入房间...' : (checkIsMyTurn() ? '👉 轮到你的回合！' : '⏳ 对手思考中...');
-      } else if (STATE.gameMode === 'AI') {
-        status.textContent = STATE.turn === 1 ? '👉 轮到你行动' : '🤖 🟡 黄方电脑思考中...';
-      } else {
-        status.textContent = STATE.turn === 1 ? '👉 轮到 🔴 红方行动' : '👉 轮到 🟡 黄方行动';
-      }
-    }
-  }
-}
-
-// Online action handler
-window.handleGameOnlineAction = function(msg) {
-  if (msg.type === 'GRAVITY3D_DROP') {
-    const ty = get3DLandingHeight(msg.x, msg.z);
-    if (ty !== -1) execute3DDrop(msg.x, msg.z, ty, STATE.turn, false);
-  }
-};
-
-// 4. 3D 立体五子棋逻辑与场景 (GRAVITY 3D)
+    // 4. 3D 立体五子棋逻辑与场景 (GRAVITY 3D)
     // ==========================================================================
     const DIRS_3D = [
       { dx: 1, dy: 0, dz: 0 }, { dx: 0, dy: 1, dz: 0 }, { dx: 0, dy: 0, dz: 1 },
@@ -441,7 +311,7 @@ window.handleGameOnlineAction = function(msg) {
       is3DInited = true;
 
       const container = document.getElementById('board-3d-wrapper');
-      const canvas3D = document.getElementById('board-3d-canvas');
+// const canvas3D = document.getElementById('board-3d-canvas'); - moved into functions
 
       if (typeof THREE === 'undefined') return;
       if (!raycaster) raycaster = new THREE.Raycaster();
@@ -621,7 +491,7 @@ window.handleGameOnlineAction = function(msg) {
     function update3DHover() {
       const is3D = STATE.currentGame === 'GRAVITY3D' || STATE.currentGame === 'GRAVITY3D4';
       if (!is3DInited || !camera || !is3D || STATE.currentView !== 'GAME') return;
-      const canvas3D = document.getElementById('board-3d-canvas');
+// const canvas3D = document.getElementById('board-3d-canvas'); - moved into functions
       if (STATE.winner || STATE.animating) {
         if (ghostBead) ghostBead.visible = false;
         resetSocketHighlights();
@@ -772,17 +642,4 @@ window.handleGameOnlineAction = function(msg) {
       }
     }
 
-    
-
-window.addEventListener('DOMContentLoaded', () => {
-  recordRecentGame('GRAVITY3D');
-  init3DSceneIfNeeded();
-  window.build3DBoard(5);
-  resetCurrentGame();
-  const params = new URLSearchParams(window.location.search);
-  const roomParam = params.get('room');
-  if (roomParam && typeof joinExistingRoom === 'function') {
-    switchGameMode('ONLINE', false);
-    joinExistingRoom(roomParam);
-  }
-});
+    // ==========================================================================

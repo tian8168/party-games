@@ -1,137 +1,11 @@
-// ==========================================================================
-// 重力五子棋 (GRAVITY 2D) · 独立游戏引擎
-// ==========================================================================
 
-window.GAME_KEY = 'GRAVITY';
-window.GAME_RULES = {
-  'GRAVITY': {"title":"重力五子棋 (2D) 规则","body":"<p><strong>重力下落：</strong>点击任意一列，棋子受重力自然滑落堆叠到底部。</p><br><p><strong>胜利目标：</strong>在横向、纵向或对角线连成 <b>5 颗连续同色棋子</b> 者获胜！</p><br><p><strong>核心博弈：</strong>棋子无法悬空停留，小心别给对手送出\"垫脚石\"！</p>"}
-};
-
-const STATE = {
-  currentView: 'GAME',
-  currentGame: 'GRAVITY',
-  gameMode: 'AI',
-  turn: 1,
-  winner: null,
-  animating: false,
-  online: {
-    roomId: null,
-    myRole: null,
-    connected: false,
-    mqttClient: null,
-    opponentJoined: false
-  },
-  gravity: {
-    board: Array.from({ length: 9 }, () => new Array(9).fill(0)),
-    hoverCol: null,
-    winningLine: null,
-    animatingPiece: null,
-    lastMove: null
-  }
-};
-window.STATE = STATE;
-
-function switchGameMode(mode, doReset = true) {
-  if (typeof AUDIO !== 'undefined' && AUDIO.play) AUDIO.play('click');
-  STATE.gameMode = mode;
-  document.getElementById('tab-online').classList.toggle('active', mode === 'ONLINE');
-  document.getElementById('tab-ai').classList.toggle('active', mode === 'AI');
-  document.getElementById('tab-local').classList.toggle('active', mode === 'LOCAL');
-  document.getElementById('online-panel').classList.toggle('hidden', mode !== 'ONLINE');
-
-  if (doReset) {
-    resetCurrentGame();
-  }
+let canvas2D, ctx2D;
+function getCanvas2DCtx() {
+  canvas2D = document.getElementById('board-canvas');
+  if (canvas2D) ctx2D = canvas2D.getContext('2d');
+  return canvas2D && ctx2D;
 }
-
-function checkIsMyTurn() {
-  if (STATE.gameMode === 'LOCAL') return true;
-  if (STATE.gameMode === 'AI') return STATE.turn === 1;
-  if (STATE.gameMode === 'ONLINE') {
-    if (!STATE.online.opponentJoined) return false;
-    if (STATE.online.myRole === 'host' && STATE.turn === 1) return true;
-    if (STATE.online.myRole === 'guest' && STATE.turn === 2) return true;
-    return false;
-  }
-  return false;
-}
-
-function endTurn() {
-  STATE.turn = STATE.turn === 1 ? 2 : 1;
-  updateScoreboard();
-
-  if (!STATE.winner && STATE.gameMode === 'AI' && STATE.turn !== 1) {
-    STATE.animating = true;
-    const status = document.getElementById('status-text');
-    if (status) status.textContent = '🤖 黄方电脑 正在深思熟虑...';
-    setTimeout(() => {
-      runGravity2DAI();
-    }, 500);
-  }
-}
-
-function resetCurrentGame() {
-  STATE.winner = null;
-  STATE.turn = 1;
-  STATE.animating = false;
-  STATE.gravity.board = Array.from({ length: 9 }, () => new Array(9).fill(0));
-  STATE.gravity.hoverCol = null;
-  STATE.gravity.winningLine = null;
-  STATE.gravity.animatingPiece = null;
-  STATE.gravity.lastMove = null;
-  updateScoreboard();
-  resizeCanvas2D();
-  render2D();
-}
-
-function updateScoreboard() {
-  const genericScoreboard = document.getElementById('generic-scoreboard');
-  if (genericScoreboard) genericScoreboard.classList.remove('scoreboard-4p');
-
-  const card3 = document.getElementById('card-p3');
-  const card4 = document.getElementById('card-p4');
-  if (card3) card3.style.display = 'none';
-  if (card4) card4.style.display = 'none';
-
-  const card1 = document.getElementById('card-p1');
-  const card2 = document.getElementById('card-p2');
-  if (card1) card1.classList.toggle('active', STATE.turn === 1);
-  if (card2) card2.classList.toggle('active', STATE.turn === 2);
-
-  const nameP1 = document.getElementById('name-p1');
-  const nameP2 = document.getElementById('name-p2');
-  if (nameP1) nameP1.textContent = '🔴 红方 (先手)';
-  if (nameP2) nameP2.textContent = STATE.gameMode === 'AI' ? '🟡 黄方 (电脑)' : (STATE.gameMode === 'ONLINE' ? '🟡 黄方 (客方)' : '🟡 黄方 (后手)');
-
-  const status = document.getElementById('status-text');
-  if (status) {
-    if (STATE.winner) {
-      status.textContent = STATE.winner === 1 ? '🏆 🔴 红方胜利！' : '🏆 🟡 黄方胜利！';
-    } else {
-      if (STATE.gameMode === 'ONLINE') {
-        status.textContent = !STATE.online.opponentJoined ? '⏳ 等待好友加入房间...' : (checkIsMyTurn() ? '👉 轮到你的回合！' : '⏳ 对手思考中...');
-      } else if (STATE.gameMode === 'AI') {
-        status.textContent = STATE.turn === 1 ? '👉 轮到你行动' : '🤖 🟡 黄方电脑思考中...';
-      } else {
-        status.textContent = STATE.turn === 1 ? '👉 轮到 🔴 红方行动' : '👉 轮到 🟡 黄方行动';
-      }
-    }
-  }
-}
-
-// Online action handler
-window.handleGameOnlineAction = function(msg) {
-  if (msg.type === 'GRAVITY_DROP') {
-    const tr = getGravityLandingRow(msg.col);
-    if (tr !== -1) executeGravityDrop(msg.col, tr, STATE.turn, false);
-  }
-};
-
-const canvas2D = document.getElementById('board-canvas');
-const ctx2D = canvas2D ? canvas2D.getContext('2d') : null;
-let cellSize = 0, grooveSize = 0, offset = 0;
-
-// 3. 2D 重力五子棋逻辑 (GRAVITY 2D)
+    // 3. 2D 重力五子棋逻辑 (GRAVITY 2D)
     // ==========================================================================
     function getGravityLandingRow(col) {
       const board = STATE.gravity.board;
@@ -270,10 +144,9 @@ let cellSize = 0, grooveSize = 0, offset = 0;
       }
     }
 
-    
-
-// --- 2D 画布基础与绘制 ---
+    // --- 2D 画布基础与绘制 ---
     function resizeCanvas2D() {
+  if (!getCanvas2DCtx()) return;
       const rect = canvas2D.getBoundingClientRect();
       const dpr = window.devicePixelRatio || 1;
       canvas2D.width = rect.width * dpr;
@@ -297,6 +170,8 @@ let cellSize = 0, grooveSize = 0, offset = 0;
     }
 
     function render2D() {
+      if (!getCanvas2DCtx()) return;
+      if (typeof initCanvas2DListeners === 'function') initCanvas2DListeners();
       const isG = ['QUORIDOR', 'GRAVITY', 'GRAVITY4'].includes(STATE.currentGame);
       if (STATE.currentView !== 'GAME' || !isG) return;
       const w = canvas2D.getBoundingClientRect().width;
@@ -387,12 +262,7 @@ let cellSize = 0, grooveSize = 0, offset = 0;
       }
     }
 
-    
-function render2D() {
-  renderGravity2D();
-}
-
-function renderGravity2D() {
+    function renderGravity2D() {
       for (let r = 0; r < 9; r++) {
         for (let c = 0; c < 9; c++) {
           const { x, y } = getCellPos(r, c);
@@ -441,69 +311,4 @@ function renderGravity2D() {
       }
     }
 
-    
-
-function drawLastMoveMarker2D(cx, cy, radius) {
-      ctx2D.beginPath(); ctx2D.arc(cx, cy, radius * 0.46, 0, Math.PI * 2);
-      ctx2D.strokeStyle = '#ffffff'; ctx2D.lineWidth = 2.5; ctx2D.stroke();
-      ctx2D.beginPath(); ctx2D.arc(cx, cy, radius * 0.16, 0, Math.PI * 2);
-      ctx2D.fillStyle = '#ffffff'; ctx2D.fill();
-    }
-
-    function drawGravityPiece2D(cx, cy, radius, player) {
-      const grad = ctx2D.createRadialGradient(cx - radius * 0.3, cy - radius * 0.35, radius * 0.1, cx, cy, radius);
-      if (player === 1) {
-        grad.addColorStop(0, '#ff9fa8'); grad.addColorStop(0.3, '#ff4757'); grad.addColorStop(1, '#8b0015');
-      } else {
-        grad.addColorStop(0, '#fef08a'); grad.addColorStop(0.3, '#eab308'); grad.addColorStop(1, '#713f12');
-      }
-      ctx2D.beginPath(); ctx2D.arc(cx, cy, radius, 0, Math.PI * 2); ctx2D.fillStyle = grad; ctx2D.fill();
-      ctx2D.beginPath(); ctx2D.arc(cx - radius * 0.28, cy - radius * 0.32, radius * 0.22, 0, Math.PI * 2);
-      ctx2D.fillStyle = 'rgba(255, 255, 255, 0.45)'; ctx2D.fill();
-    }
-
-    
-
-function getPointerCoord2D(e) {
-  const rect = canvas2D.getBoundingClientRect();
-  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-  return { px: clientX - rect.left, py: clientY - rect.top };
-}
-
-canvas2D.addEventListener('pointermove', (e) => {
-  if (STATE.winner || STATE.animating) return;
-  const { px } = getPointerCoord2D(e);
-  let col = Math.floor(px / (cellSize + grooveSize));
-  STATE.gravity.hoverCol = (col >= 0 && col < 9) ? col : null;
-  render2D();
-});
-
-canvas2D.addEventListener('pointerleave', () => {
-  STATE.gravity.hoverCol = null;
-  render2D();
-});
-
-canvas2D.addEventListener('click', (e) => {
-  if (STATE.winner || STATE.animating) return;
-  const { px } = getPointerCoord2D(e);
-  let col = Math.floor(px / (cellSize + grooveSize));
-  if (col >= 0 && col < 9) dropGravityCol(col);
-});
-
-window.addEventListener('resize', () => {
-  resizeCanvas2D();
-  render2D();
-});
-
-window.addEventListener('DOMContentLoaded', () => {
-  recordRecentGame('GRAVITY');
-  const params = new URLSearchParams(window.location.search);
-  const roomParam = params.get('room');
-  if (roomParam && typeof joinExistingRoom === 'function') {
-    switchGameMode('ONLINE', false);
-    joinExistingRoom(roomParam);
-  } else {
-    resetCurrentGame();
-  }
-});
+    // ==========================================================================

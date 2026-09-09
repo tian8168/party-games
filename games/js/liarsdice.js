@@ -1,61 +1,4 @@
-// ==========================================================================
-// 🎲 皇家大话骰 (Liar's Dice) · 独立游戏逻辑 (Isolated Game Engine)
-// ==========================================================================
-
-window.GAME_KEY = 'LIARSDICE';
-window.GAME_RULES = {
-  'LIARSDICE': {"title":"皇家大话骰 规则","body":"<p><strong>叫牌规则：</strong>双方暗摇5颗骰子，轮流报点。下一个人的叫牌必须【个数更多】或【点数更大】！觉得对方吹牛直接喊「开」！</p>"}
-};
-
-const STATE = {
-  currentView: 'GAME',
-
-      currentGame: 'LIARSDICE',
-      gameMode: 'AI',
-      turn: 1,
-      liarsdice: { p1Hp: 3, p2Hp: 3, p1Dice: [1, 2, 3, 4, 5], p2Dice: [1, 2, 3, 4, 5], currentBid: null, selectedQty: 3, selectedVal: 3, onesCalled: false, revealed: false }
-    
-};
-window.STATE = STATE;
-
-function checkIsMyTurn() {
-  if (STATE.gameMode === 'LOCAL') return true;
-  if (STATE.gameMode === 'AI') return STATE.turn === 1;
-  if (STATE.gameMode === 'ONLINE') {
-    if (!STATE.online.opponentJoined) return false;
-    if (STATE.online.myRole === 'host' && STATE.turn === 1) return true;
-    if (STATE.online.myRole === 'guest' && STATE.turn === 2) return true;
-    return false;
-  }
-  return false;
-}
-
-function switchGameMode(mode, doReset = true) {
-  if (typeof AUDIO !== 'undefined' && AUDIO.play) AUDIO.play('click');
-  STATE.gameMode = mode;
-  const tabOnline = document.getElementById('tab-online');
-  const tabAi = document.getElementById('tab-ai');
-  const tabLocal = document.getElementById('tab-local');
-  const onlinePanel = document.getElementById('online-panel');
-  if (tabOnline) tabOnline.classList.toggle('active', mode === 'ONLINE');
-  if (tabAi) tabAi.classList.toggle('active', mode === 'AI');
-  if (tabLocal) tabLocal.classList.toggle('active', mode === 'LOCAL');
-  if (onlinePanel) onlinePanel.classList.toggle('hidden', mode !== 'ONLINE');
-
-  if (doReset) {
-    resetCurrentGame();
-  }
-}
-
-function resetCurrentGame() {
-  
-      if (typeof initLiarsDiceGame === 'function') initLiarsDiceGame();
-      resetLiarsDiceMatch();
-    
-}
-
-// --- 游戏专属引擎核心逻辑 ---
-// 8. 皇家大话骰核心逻辑 (LIARSDICE)
+    // 8. 皇家大话骰核心逻辑 (LIARSDICE)
     // ==========================================================================
     function initLiarsDiceGame() {
       STATE.liarsdice.p1Hp = 3;
@@ -243,16 +186,3 @@ function resetCurrentGame() {
     }
 
     // ==========================================================================
-    
-
-// --- 页面装载自动初始化 ---
-window.addEventListener('DOMContentLoaded', () => {
-  recordRecentGame('LIARSDICE');
-  resetCurrentGame();
-  const params = new URLSearchParams(window.location.search);
-  const roomParam = params.get('room');
-  if (roomParam && typeof joinExistingRoom === 'function') {
-    switchGameMode('ONLINE', false);
-    joinExistingRoom(roomParam);
-  }
-});

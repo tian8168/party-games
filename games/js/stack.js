@@ -1,63 +1,4 @@
-// ==========================================================================
-// 🧱 极光叠叠高 (Stacker Towers) · 独立游戏逻辑 (Isolated Game Engine)
-// ==========================================================================
-
-window.GAME_KEY = 'STACK';
-window.GAME_RULES = {
-  'STACK': {"title":"极光叠叠高 规则","body":"<p><strong>节奏切割：</strong>轻触屏幕让横飞的方块落下。对齐严丝合缝触发 PERFECT 连击！多余边缘会被一刀切掉！</p>"}
-};
-
-const STATE = {
-  currentView: 'GAME',
-
-      currentGame: 'STACK',
-      gameMode: 'LOCAL',
-      stack: { score: 0, combo: 0, layers: [], current: null, falling: [], animId: null, over: false }
-    
-};
-window.STATE = STATE;
-
-function checkIsMyTurn() {
-  if (STATE.gameMode === 'LOCAL') return true;
-  if (STATE.gameMode === 'AI') return STATE.turn === 1;
-  if (STATE.gameMode === 'ONLINE') {
-    if (!STATE.online.opponentJoined) return false;
-    if (STATE.online.myRole === 'host' && STATE.turn === 1) return true;
-    if (STATE.online.myRole === 'guest' && STATE.turn === 2) return true;
-    return false;
-  }
-  return false;
-}
-
-function switchGameMode(mode, doReset = true) {
-  if (typeof AUDIO !== 'undefined' && AUDIO.play) AUDIO.play('click');
-  STATE.gameMode = mode;
-  const tabOnline = document.getElementById('tab-online');
-  const tabAi = document.getElementById('tab-ai');
-  const tabLocal = document.getElementById('tab-local');
-  const onlinePanel = document.getElementById('online-panel');
-  if (tabOnline) tabOnline.classList.toggle('active', mode === 'ONLINE');
-  if (tabAi) tabAi.classList.toggle('active', mode === 'AI');
-  if (tabLocal) tabLocal.classList.toggle('active', mode === 'LOCAL');
-  if (onlinePanel) onlinePanel.classList.toggle('hidden', mode !== 'ONLINE');
-
-  if (doReset) {
-    resetCurrentGame();
-  }
-}
-
-function resetCurrentGame() {
-  
-      if (typeof initStackGame === 'function') initStackGame();
-      resetStackMatch();
-      requestAnimationFrame(() => {
-        resizeStackCanvas();
-      });
-    
-}
-
-// --- 游戏专属引擎核心逻辑 ---
-// 11. 极光叠叠高核心逻辑 (STACK)
+    // 11. 极光叠叠高核心逻辑 (STACK)
     // ==========================================================================
     function initStackGame() {
       STATE.stack.score = 0;
@@ -309,17 +250,3 @@ function resetCurrentGame() {
 
     
     // ==========================================================================
-    // ==========================================================================
-    
-
-// --- 页面装载自动初始化 ---
-window.addEventListener('DOMContentLoaded', () => {
-  recordRecentGame('STACK');
-  resetCurrentGame();
-  const params = new URLSearchParams(window.location.search);
-  const roomParam = params.get('room');
-  if (roomParam && typeof joinExistingRoom === 'function') {
-    switchGameMode('ONLINE', false);
-    joinExistingRoom(roomParam);
-  }
-});

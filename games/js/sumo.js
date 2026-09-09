@@ -1,64 +1,4 @@
-// ==========================================================================
-// 🚗 物理飞车相扑 (Sumo Cars) · 独立游戏逻辑 (Isolated Game Engine)
-// ==========================================================================
-
-window.GAME_KEY = 'SUMO';
-window.GAME_RULES = {
-  'SUMO': {"title":"🚗 物理飞车相扑 规则","body":"<p><strong>极限推土机：</strong>按住【冲刺】推撞对手，松开自动转弯瞄准！将对手顶出悬浮擂台边缘得分，抢先 <b>3 分</b> 夺冠！</p>"}
-};
-
-const STATE = {
-  currentView: 'GAME',
-
-      currentGame: 'SUMO',
-      gameMode: 'AI',
-      sumo: { p1Score: 0, p2Score: 0, targetScore: 3, car1: { x: 130, y: 180, vx: 0, vy: 0, angle: 0, r: 17, boosting: false, falling: false, fallScale: 1, fallAlpha: 1, fallSpin: 0 }, car2: { x: 230, y: 180, vx: 0, vy: 0, angle: Math.PI, r: 17, boosting: false, falling: false, fallScale: 1, fallAlpha: 1, fallSpin: 0 }, arenaRadius: 130, particles: [], animId: null, roundOver: false, matchOver: false, aiReactionDelay: 0 }
-    
-};
-window.STATE = STATE;
-
-function checkIsMyTurn() {
-  if (STATE.gameMode === 'LOCAL') return true;
-  if (STATE.gameMode === 'AI') return STATE.turn === 1;
-  if (STATE.gameMode === 'ONLINE') {
-    if (!STATE.online.opponentJoined) return false;
-    if (STATE.online.myRole === 'host' && STATE.turn === 1) return true;
-    if (STATE.online.myRole === 'guest' && STATE.turn === 2) return true;
-    return false;
-  }
-  return false;
-}
-
-function switchGameMode(mode, doReset = true) {
-  if (typeof AUDIO !== 'undefined' && AUDIO.play) AUDIO.play('click');
-  STATE.gameMode = mode;
-  const tabOnline = document.getElementById('tab-online');
-  const tabAi = document.getElementById('tab-ai');
-  const tabLocal = document.getElementById('tab-local');
-  const onlinePanel = document.getElementById('online-panel');
-  if (tabOnline) tabOnline.classList.toggle('active', mode === 'ONLINE');
-  if (tabAi) tabAi.classList.toggle('active', mode === 'AI');
-  if (tabLocal) tabLocal.classList.toggle('active', mode === 'LOCAL');
-  if (onlinePanel) onlinePanel.classList.toggle('hidden', mode !== 'ONLINE');
-
-  if (doReset) {
-    resetCurrentGame();
-  }
-}
-
-function resetCurrentGame() {
-  
-      if (typeof initSumoGame === 'function') initSumoGame();
-      resetSumoMatch();
-      requestAnimationFrame(() => {
-        resizeSumoCanvas();
-        renderSumo();
-      });
-    
-}
-
-// --- 游戏专属引擎核心逻辑 ---
-// 9. 物理飞车相扑核心逻辑 (SUMO)
+    // 9. 物理飞车相扑核心逻辑 (SUMO)
     // ==========================================================================
     let sumoInputBound = false;
 
@@ -115,7 +55,7 @@ function resetCurrentGame() {
     function bindSumoInputEvents() {
       const btnP1 = document.getElementById('btn-sumo-boost');
       const btnP2 = document.getElementById('btn-sumo-boost-p2');
-      const canvas = document.getElementById('sumo-canvas');
+// const canvas = document.getElementById('sumo-canvas'); - moved into functions
 
       const bindBtn = (el, setFn) => {
         if (!el) return;
@@ -635,16 +575,3 @@ function resetCurrentGame() {
     }
 
     // ==========================================================================
-    
-
-// --- 页面装载自动初始化 ---
-window.addEventListener('DOMContentLoaded', () => {
-  recordRecentGame('SUMO');
-  resetCurrentGame();
-  const params = new URLSearchParams(window.location.search);
-  const roomParam = params.get('room');
-  if (roomParam && typeof joinExistingRoom === 'function') {
-    switchGameMode('ONLINE', false);
-    joinExistingRoom(roomParam);
-  }
-});

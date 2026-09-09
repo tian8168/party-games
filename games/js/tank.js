@@ -1,63 +1,4 @@
-// ==========================================================================
-// 🎯 极限抛物线 (Worms Artillery) · 独立游戏逻辑 (Isolated Game Engine)
-// ==========================================================================
-
-window.GAME_KEY = 'TANK';
-window.GAME_RULES = {
-  'TANK': {"title":"极限抛物线 规则","body":"<p><strong>弹道对轰：</strong>观察实时风向与风速，调节角度与力度发射炮弹！击毁敌方坦克夺取胜利！</p>"}
-};
-
-const STATE = {
-  currentView: 'GAME',
-
-      currentGame: 'TANK',
-      gameMode: 'AI',
-      tank: { p1Hp: 100, p2Hp: 100, wind: 0, tank1: { x: 60, y: 200, angle: 45, power: 60 }, tank2: { x: 420, y: 200, angle: 45, power: 60 }, terrain: [], bullet: null, animId: null }
-    
-};
-window.STATE = STATE;
-
-function checkIsMyTurn() {
-  if (STATE.gameMode === 'LOCAL') return true;
-  if (STATE.gameMode === 'AI') return STATE.turn === 1;
-  if (STATE.gameMode === 'ONLINE') {
-    if (!STATE.online.opponentJoined) return false;
-    if (STATE.online.myRole === 'host' && STATE.turn === 1) return true;
-    if (STATE.online.myRole === 'guest' && STATE.turn === 2) return true;
-    return false;
-  }
-  return false;
-}
-
-function switchGameMode(mode, doReset = true) {
-  if (typeof AUDIO !== 'undefined' && AUDIO.play) AUDIO.play('click');
-  STATE.gameMode = mode;
-  const tabOnline = document.getElementById('tab-online');
-  const tabAi = document.getElementById('tab-ai');
-  const tabLocal = document.getElementById('tab-local');
-  const onlinePanel = document.getElementById('online-panel');
-  if (tabOnline) tabOnline.classList.toggle('active', mode === 'ONLINE');
-  if (tabAi) tabAi.classList.toggle('active', mode === 'AI');
-  if (tabLocal) tabLocal.classList.toggle('active', mode === 'LOCAL');
-  if (onlinePanel) onlinePanel.classList.toggle('hidden', mode !== 'ONLINE');
-
-  if (doReset) {
-    resetCurrentGame();
-  }
-}
-
-function resetCurrentGame() {
-  
-      if (typeof initTankGame === 'function') initTankGame();
-      resetTankMatch();
-      requestAnimationFrame(() => {
-        resizeTankCanvas();
-      });
-    
-}
-
-// --- 游戏专属引擎核心逻辑 ---
-// 10. 极限抛物线弹道核心逻辑 (TANK)
+    // 10. 极限抛物线弹道核心逻辑 (TANK)
     // ==========================================================================
     function initTankGame() {
       STATE.tank.p1Hp = 100;
@@ -325,16 +266,3 @@ function resetCurrentGame() {
     }
 
     // ==========================================================================
-    
-
-// --- 页面装载自动初始化 ---
-window.addEventListener('DOMContentLoaded', () => {
-  recordRecentGame('TANK');
-  resetCurrentGame();
-  const params = new URLSearchParams(window.location.search);
-  const roomParam = params.get('room');
-  if (roomParam && typeof joinExistingRoom === 'function') {
-    switchGameMode('ONLINE', false);
-    joinExistingRoom(roomParam);
-  }
-});

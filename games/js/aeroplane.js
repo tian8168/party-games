@@ -1,77 +1,4 @@
-// ==========================================================================
-// ✈️ 四人飞行棋 (Aeroplane Chess 4P) · 独立游戏逻辑 (Isolated Game Engine)
-// ==========================================================================
-
-window.GAME_KEY = 'AEROPLANE';
-window.GAME_RULES = {
-  'AEROPLANE': {"title":"✈️ 四人飞行棋 (Aeroplane Chess 4P) 规则","body":"<p><strong>胜利目标：</strong>率先将己方全部 4 架战机巡航抵达中央大本营终点者夺得冠军！</p><br><p><strong>起飞规则：</strong>战机在停机坪待命，必须掷出 <b>6 点</b> 方可起飞至起始跑道出战。</p><br><p><strong>连掷奖励：</strong>掷出 6 点可获得再掷一次机会！但若<b>连续 3 次掷出 6 点</b>，将触发发动机过热警报坠机返航！</p><br><p><strong>同色跳跃：</strong>战机在外圈公用航线停留在与自身颜色相同的格子上，可直接向前<b>超速跳跃 4 格</b>！</p><br><p><strong>超速飞越：</strong>停在己方飞越跑道（相对第16格），可沿中央虚线<b>径直横跨整个棋盘</b>（直飞12格），击落中心敌机，着陆后再跳跃4格！</p><br><p><strong>空中撞机：</strong>停留在敌方战机所在格，直接将敌机<b>击落遣返停机坪</b>！同色战机在同格则触发<b>叠机编队</b>！</p><br><p><strong>精准冲线：</strong>进入终点直道后必须<b>刚好掷出对应点数</b>到达中央大本营。超出点数将折返倒退！</p>"}
-};
-
-const STATE = {
-  currentView: 'GAME',
-
-      currentGame: 'AEROPLANE',
-      gameMode: 'AI',
-      turn: 0,
-      winner: null,
-      animating: false,
-      online: { roomId: null, myRole: null, connected: false, mqttClient: null, opponentJoined: false },
-      aeroplane: {
-        playerCount: 4, humanPlayers: [0], turn: 0, diceVal: 0, diceRolling: false, consecutiveSixes: 0, animating: false, selectedPlane: null, validPlanes: [], fastAI: false, waitingForPlayerChoice: false,
-        players: [
-          { id: 0, color: '#ef4444', name: '红方', finishedCount: 0, planes: [{ id: 0, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 1, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 2, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 3, state: 'HANGAR', step: 0, homeStep: -1 }] },
-          { id: 1, color: '#f59e0b', name: '黄方', finishedCount: 0, planes: [{ id: 0, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 1, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 2, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 3, state: 'HANGAR', step: 0, homeStep: -1 }] },
-          { id: 2, color: '#38bdf8', name: '蓝方', finishedCount: 0, planes: [{ id: 0, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 1, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 2, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 3, state: 'HANGAR', step: 0, homeStep: -1 }] },
-          { id: 3, color: '#22c55e', name: '绿方', finishedCount: 0, planes: [{ id: 0, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 1, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 2, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 3, state: 'HANGAR', step: 0, homeStep: -1 }] }
-        ],
-        particles: [], animId: null, aiTimer: null
-      }
-    
-};
-window.STATE = STATE;
-
-function checkIsMyTurn() {
-  if (STATE.gameMode === 'LOCAL') return true;
-  if (STATE.gameMode === 'AI') return STATE.turn === 1;
-  if (STATE.gameMode === 'ONLINE') {
-    if (!STATE.online.opponentJoined) return false;
-    if (STATE.online.myRole === 'host' && STATE.turn === 1) return true;
-    if (STATE.online.myRole === 'guest' && STATE.turn === 2) return true;
-    return false;
-  }
-  return false;
-}
-
-function switchGameMode(mode, doReset = true) {
-  if (typeof AUDIO !== 'undefined' && AUDIO.play) AUDIO.play('click');
-  STATE.gameMode = mode;
-  const tabOnline = document.getElementById('tab-online');
-  const tabAi = document.getElementById('tab-ai');
-  const tabLocal = document.getElementById('tab-local');
-  const onlinePanel = document.getElementById('online-panel');
-  if (tabOnline) tabOnline.classList.toggle('active', mode === 'ONLINE');
-  if (tabAi) tabAi.classList.toggle('active', mode === 'AI');
-  if (tabLocal) tabLocal.classList.toggle('active', mode === 'LOCAL');
-  if (onlinePanel) onlinePanel.classList.toggle('hidden', mode !== 'ONLINE');
-
-  if (doReset) {
-    resetCurrentGame();
-  }
-}
-
-function resetCurrentGame() {
-  
-      if (typeof initAeroplaneGame === 'function') initAeroplaneGame();
-      if (typeof resetAeroplaneGame === 'function') resetAeroplaneGame();
-      requestAnimationFrame(() => {
-        resizeAeroplaneCanvas();
-        renderAeroplane();
-      });
-    
-}
-
-// --- 游戏专属引擎核心逻辑 ---
-// 13. 四人飞行棋游戏引擎 (AEROPLANE CHESS 4P)
+    // 13. 四人飞行棋游戏引擎 (AEROPLANE CHESS 4P)
     // ==========================================================================
     const AERO_CELL_SIZE = 32;
     const AERO_BOARD_SIZE = 15;
@@ -132,7 +59,7 @@ function resetCurrentGame() {
 
     function initAeroplaneGame() {
       AUDIO.init();
-      const canvas = document.getElementById('aeroplane-canvas');
+// const canvas = document.getElementById('aeroplane-canvas'); - moved into functions
       if (canvas && !aeroCanvasListenerBound) {
         canvas.addEventListener('click', handleAeroplaneCanvasClick);
         aeroCanvasListenerBound = true;
@@ -291,7 +218,7 @@ function resetCurrentGame() {
       const isHuman = STATE.aeroplane.humanPlayers.includes(curPlayer);
       if (!isHuman) return;
 
-      const canvas = document.getElementById('aeroplane-canvas');
+// const canvas = document.getElementById('aeroplane-canvas'); - moved into functions
       if (!canvas) return;
       const rect = canvas.getBoundingClientRect();
       const scaleX = 480 / rect.width;
@@ -895,7 +822,7 @@ function resetCurrentGame() {
       if (STATE.currentGame !== 'AEROPLANE' || STATE.currentView !== 'GAME') return;
       STATE.aeroplane.animId = requestAnimationFrame(renderAeroplane);
 
-      const canvas = document.getElementById('aeroplane-canvas');
+// const canvas = document.getElementById('aeroplane-canvas'); - moved into functions
       if (!canvas) return;
       const ctx = canvas.getContext('2d');
 
@@ -1299,16 +1226,32 @@ function resetCurrentGame() {
       ctx.restore();
     }
 
-    
+    document.getElementById('modal-confirm-btn').addEventListener('click', () => {
+      AUDIO.play('click');
+      document.getElementById('game-modal').classList.remove('show');
+      if (STATE.winner) resetCurrentGame();
+    });
 
-// --- 页面装载自动初始化 ---
-window.addEventListener('DOMContentLoaded', () => {
-  recordRecentGame('AEROPLANE');
-  resetCurrentGame();
-  const params = new URLSearchParams(window.location.search);
-  const roomParam = params.get('room');
-  if (roomParam && typeof joinExistingRoom === 'function') {
-    switchGameMode('ONLINE', false);
-    joinExistingRoom(roomParam);
-  }
-});
+    document.getElementById('restart-btn').addEventListener('click', () => {
+      AUDIO.play('click');
+      resetCurrentGame();
+      if (STATE.gameMode === 'ONLINE' && STATE.online.roomId) {
+        sendOnlineAction({ type: 'RESTART' });
+      }
+    });
+
+    window.addEventListener('resize', () => {
+      if (STATE.currentView === 'GAME') {
+        if (STATE.currentGame === 'GRAVITY3D') resize3D();
+        else if (STATE.currentGame === 'QUORIDOR' || STATE.currentGame === 'GRAVITY') resizeCanvas2D();
+        else if (STATE.currentGame === 'HOCKEY') resizeHockeyCanvas();
+        else if (STATE.currentGame === 'SUMO') resizeSumoCanvas();
+        else if (STATE.currentGame === 'TANK') resizeTankCanvas();
+        else if (STATE.currentGame === 'STACK') resizeStackCanvas();
+        else if (STATE.currentGame === 'CONTRA') resizeContraCanvas();
+        else if (STATE.currentGame === 'TANKTROUBLE') resizeTankTroubleCanvas();
+        else if (STATE.currentGame === 'AEROPLANE') resizeAeroplaneCanvas();
+      }
+    });
+
+    // ==========================================================================
