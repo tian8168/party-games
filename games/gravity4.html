@@ -64,20 +64,12 @@
             <span class="player-name" id="name-p2">🟢 玩家 2 (客)</span>
             <span class="turn-badge">行动中</span>
           </div>
-          <div id="walls-wrapper-p2" style="display:none; font-size:0.75rem; margin-top:2px;">
-            余墙: <span id="walls-count-p2">10</span>
-            <div id="wall-bars-p2" style="display:flex; gap:2px; height:4px; margin-top:2px;"></div>
-          </div>
         </div>
 
         <div class="player-card p1 active-turn" id="card-p1">
           <div class="player-meta">
             <span class="player-name" id="name-p1">🔴 玩家 1 (主)</span>
             <span class="turn-badge">行动中</span>
-          </div>
-          <div id="walls-wrapper-p1" style="display:none; font-size:0.75rem; margin-top:2px;">
-            余墙: <span id="walls-count-p1">10</span>
-            <div id="wall-bars-p1" style="display:flex; gap:2px; height:4px; margin-top:2px;"></div>
           </div>
         </div>
 
@@ -86,20 +78,12 @@
             <span class="player-name" id="name-p3">🔵 玩家 3 (西)</span>
             <span class="turn-badge">行动中</span>
           </div>
-          <div id="walls-wrapper-p3" style="display:none; font-size:0.75rem; margin-top:2px;">
-            余墙: <span id="walls-count-p3">5</span>
-            <div id="wall-bars-p3" style="display:flex; gap:2px; height:4px; margin-top:2px;"></div>
-          </div>
         </div>
 
         <div class="player-card p4" id="card-p4" style="display:none;">
           <div class="player-meta">
             <span class="player-name" id="name-p4">🟡 玩家 4 (东)</span>
             <span class="turn-badge">行动中</span>
-          </div>
-          <div id="walls-wrapper-p4" style="display:none; font-size:0.75rem; margin-top:2px;">
-            余墙: <span id="walls-count-p4">5</span>
-            <div id="wall-bars-p4" style="display:flex; gap:2px; height:4px; margin-top:2px;"></div>
           </div>
         </div>
       </div>
@@ -157,13 +141,14 @@
     function resizeCanvas2D() {
       if (!canvas2D || !ctx2D) return;
       const rect = canvas2D.getBoundingClientRect();
+      const sz = Math.min(rect.width, rect.height > 50 ? rect.height : rect.width);
       const dpr = window.devicePixelRatio || 1;
-      canvas2D.width = rect.width * dpr;
-      canvas2D.height = rect.height * dpr;
+      canvas2D.width = sz * dpr;
+      canvas2D.height = sz * dpr;
       ctx2D.resetTransform();
       ctx2D.scale(dpr, dpr);
       const cols = 7;
-      grooveSize = rect.width / (cols * 4.5 + (cols - 1));
+      grooveSize = sz / (cols * 4.5 + (cols - 1));
       cellSize = grooveSize * 4.5;
       offset = grooveSize / 2;
       render2D();
@@ -500,24 +485,6 @@
       ctx2D.fillStyle = 'rgba(255, 255, 255, 0.45)'; ctx2D.fill();
     }
 
-    function drawSphere2D(r, c, player) {
-      const { x, y } = getCellPos(r, c);
-      const cx = x + cellSize / 2, cy = y + cellSize / 2, radius = cellSize * 0.38;
-      const grad = ctx2D.createRadialGradient(cx - radius * 0.3, cy - radius * 0.35, radius * 0.1, cx, cy, radius);
-      if (player === 1) {
-        grad.addColorStop(0, '#ff9fa8'); grad.addColorStop(0.3, '#ff4757'); grad.addColorStop(1, '#8b0015');
-      } else if (player === 2) {
-        grad.addColorStop(0, '#a8ffca'); grad.addColorStop(0.3, '#2ed573'); grad.addColorStop(1, '#0e6231');
-      } else if (player === 3) {
-        grad.addColorStop(0, '#bae6fd'); grad.addColorStop(0.3, '#38bdf8'); grad.addColorStop(1, '#0369a1');
-      } else if (player === 4) {
-        grad.addColorStop(0, '#fef08a'); grad.addColorStop(0.3, '#eab308'); grad.addColorStop(1, '#854d0e');
-      }
-      ctx2D.beginPath(); ctx2D.arc(cx, cy, radius, 0, Math.PI * 2); ctx2D.fillStyle = grad; ctx2D.fill();
-      ctx2D.beginPath(); ctx2D.arc(cx - radius * 0.25, cy - radius * 0.3, radius * 0.18, 0, Math.PI * 2);
-      ctx2D.fillStyle = 'rgba(255, 255, 255, 0.4)'; ctx2D.fill();
-    }
-
     // 2D 画布事件监听
     function getPointerCoord2D(e) {
       const rect = canvas2D.getBoundingClientRect();
@@ -528,96 +495,22 @@
 
     canvas2D.addEventListener('pointermove', (e) => {
       if (STATE.winner || STATE.animating) return;
-      const { px, py } = getPointerCoord2D(e);
-
-      if (STATE.currentGame === 'QUORIDOR') {
-        if (!checkIsMyTurn()) return;
-        if (STATE.quoridor.tool === 'MOVE') {
-          STATE.quoridor.hoverPos = null;
-        } else {
-          let best = null, minDist = Infinity;
-          for (let r = 0; r < 8; r++) {
-            for (let c = 0; c < 8; c++) {
-              const { x, y } = getIntersectionPos(r, c);
-              const dist = Math.hypot(px - (x + grooveSize / 2), py - (y + grooveSize / 2));
-              if (dist < minDist) { minDist = dist; best = { r, c }; }
-            }
-          }
-          if (best && minDist < cellSize * 1.2) {
-            const type = STATE.quoridor.tool === 'WALL_H' ? 'wallH' : 'wallV';
-            const valid = canPlaceWall(STATE.quoridor.tool === 'WALL_H' ? 'H' : 'V', best.r, best.c);
-            STATE.quoridor.hoverPos = { type, r: best.r, c: best.c, valid };
-          } else {
-            STATE.quoridor.hoverPos = null;
-          }
-        }
-      } else if (STATE.currentGame === 'GRAVITY') {
-        let col = Math.floor(px / (cellSize + grooveSize));
-        STATE.gravity.hoverCol = (col >= 0 && col < 9) ? col : null;
-      } else if (STATE.currentGame === 'GRAVITY4') {
-        let col = Math.floor(px / (cellSize + grooveSize));
-        STATE.gravity4.hoverCol = (col >= 0 && col < 7) ? col : null;
-      }
+      const { px } = getPointerCoord2D(e);
+      const col = Math.floor((px - offset) / (cellSize + grooveSize));
+      STATE.gravity4.hoverCol = (col >= 0 && col < 7) ? col : null;
       render2D();
     });
 
     canvas2D.addEventListener('pointerleave', () => {
-      STATE.quoridor.hoverPos = null;
-      STATE.gravity.hoverCol = null;
       if (STATE.gravity4) STATE.gravity4.hoverCol = null;
       render2D();
     });
 
     canvas2D.addEventListener('click', (e) => {
       if (STATE.winner || STATE.animating) return;
-      const { px, py } = getPointerCoord2D(e);
-
-      if (STATE.currentGame === 'QUORIDOR') {
-        if (!checkIsMyTurn()) {
-          if (STATE.gameMode === 'ONLINE' && !STATE.online.opponentJoined) {
-            showToast('💡 当前为好友联机模式：请点击【➕ 创建新房间】并将链接发给好友，或切换为【🤖 人机对战】！', 4000);
-          } else {
-            showToast('⏳ 对手思考中...');
-          }
-          return;
-        }
-
-        if (STATE.quoridor.tool === 'MOVE') {
-          for (let r = 0; r < 9; r++) {
-            for (let c = 0; c < 9; c++) {
-              const { x, y } = getCellPos(r, c);
-              if (px >= x && px <= x + cellSize && py >= y && py <= y + cellSize) {
-                const moves = getValidPawnMoves(STATE.turn);
-                if (moves.some(m => m.r === r && m.c === c)) {
-                  executeQuoridorMove(r, c);
-                  if (STATE.gameMode === 'ONLINE') sendOnlineAction({ type: 'QUORIDOR_MOVE', r, c });
-                }
-                return;
-              }
-            }
-          }
-        } else if (STATE.quoridor.hoverPos && STATE.quoridor.hoverPos.valid) {
-          const hp = STATE.quoridor.hoverPos;
-          const players = {
-            1: STATE.quoridor.p1,
-            2: STATE.quoridor.p2,
-            3: STATE.quoridor.p3,
-            4: STATE.quoridor.p4
-          };
-          const cur = players[STATE.turn];
-          if (cur && cur.walls > 0) {
-            const wallType = STATE.quoridor.tool === 'WALL_H' ? 'H' : 'V';
-            executeQuoridorWall(wallType, hp.r, hp.c);
-            if (STATE.gameMode === 'ONLINE') sendOnlineAction({ type: 'QUORIDOR_WALL', wallType, r: hp.r, c: hp.c });
-          }
-        }
-      } else if (STATE.currentGame === 'GRAVITY') {
-        let col = Math.floor(px / (cellSize + grooveSize));
-        if (col >= 0 && col < 9) dropGravityCol(col);
-      } else if (STATE.currentGame === 'GRAVITY4') {
-        let col = Math.floor(px / (cellSize + grooveSize));
-        if (col >= 0 && col < 7) dropGravity4Col(col);
-      }
+      const { px } = getPointerCoord2D(e);
+      const col = Math.floor((px - offset) / (cellSize + grooveSize));
+      if (col >= 0 && col < 7) dropGravity4Col(col);
     });
 
     // ==========================================================================

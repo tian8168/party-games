@@ -49,7 +49,23 @@ function showToast(text, duration = 3000) {
 }
 
 // 规则与通用弹窗
-function showModal(title, bodyHtml) {
+function handleModalRestart() {
+  closeModal();
+  if (typeof window.currentRestartFn === 'function') {
+    window.currentRestartFn();
+  } else if (typeof resetCurrentGame === 'function') {
+    resetCurrentGame();
+  } else {
+    window.location.reload();
+  }
+}
+
+function handleModalReturnLobby() {
+  closeModal();
+  window.location.href = '../index.html';
+}
+
+function showModal(title, bodyHtml, options = {}) {
   let modal = document.getElementById('rules-modal');
   if (!modal) {
     modal = document.createElement('div');
@@ -62,6 +78,7 @@ function showModal(title, bodyHtml) {
           <button class="modal-close" onclick="closeModal()">×</button>
         </div>
         <div class="modal-body" id="modal-body"></div>
+        <div class="modal-footer" id="modal-footer"></div>
       </div>
     `;
     modal.addEventListener('click', (e) => {
@@ -71,6 +88,23 @@ function showModal(title, bodyHtml) {
   }
   document.getElementById('modal-title').textContent = title;
   document.getElementById('modal-body').innerHTML = bodyHtml;
+
+  const isGameOver = options.isGameOver || ['获胜', '胜利', '胜出', '结束', '结算', '战报', '落幕', '终局', '终结', '冠军', '大捷', 'GAME OVER', '平局', '势均力敌', '阵亡'].some(k => (title || '').toUpperCase().includes(k.toUpperCase()));
+
+  const footer = document.getElementById('modal-footer');
+  if (footer) {
+    if (isGameOver) {
+      footer.innerHTML = `
+        <button class="modal-btn-restart" onclick="handleModalRestart()">🔄 再来一局</button>
+        <button class="modal-btn-confirm" onclick="handleModalReturnLobby()">🏠 确定 (返回大厅)</button>
+      `;
+    } else {
+      footer.innerHTML = `
+        <button class="modal-btn-confirm" onclick="closeModal()">我知道了</button>
+      `;
+    }
+  }
+
   modal.classList.add('open');
 }
 
@@ -81,6 +115,7 @@ function closeModal() {
 
 // 通用顶栏与按键初始化
 function initCommonHeader(rulesTitle, rulesHtml, onRestart) {
+  window.currentRestartFn = onRestart;
   // 音效按钮
   const soundBtn = document.getElementById('btn-sound-toggle');
   if (soundBtn) {
@@ -120,4 +155,6 @@ function initCommonHeader(rulesTitle, rulesHtml, onRestart) {
 window.showToast = showToast;
 window.showModal = showModal;
 window.closeModal = closeModal;
+window.handleModalRestart = handleModalRestart;
+window.handleModalReturnLobby = handleModalReturnLobby;
 window.initCommonHeader = initCommonHeader;

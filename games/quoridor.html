@@ -312,13 +312,14 @@
       if (!canvas2D || !ctx2D) return;
       const rect = canvas2D.getBoundingClientRect();
       const dpr = window.devicePixelRatio || 1;
-      canvas2D.width = rect.width * dpr;
-      canvas2D.height = rect.height * dpr;
+      const sz = Math.min(rect.width, rect.height > 50 ? rect.height : rect.width);
+      canvas2D.width = sz * dpr;
+      canvas2D.height = sz * dpr;
       ctx2D.resetTransform();
       ctx2D.scale(dpr, dpr);
 
       const cols = 9;
-      grooveSize = rect.width / (cols * 4.5 + (cols - 1));
+      grooveSize = sz / (cols * 4.5 + (cols - 1));
       cellSize = grooveSize * 4.5;
       offset = grooveSize / 2;
       render2D();
@@ -632,6 +633,14 @@
     }
 
     function executeQuoridorMove(r, c) {
+      // 强约束合法性检查：坚决拦截任何越界瞬移
+      const validMoves = getValidPawnMoves(STATE.turn);
+      if (!validMoves.some(m => m.r === r && m.c === c)) {
+        console.warn(`[Quoridor] 拦截非法瞬移: 玩家 ${STATE.turn} 试图移动至 (${r},${c})`);
+        showToast('⚠️ 只能向高亮的相邻合法格子移动，不可跨格瞬移！', 2000);
+        return false;
+      }
+
       AUDIO.play('drop');
       const players = {
         1: STATE.quoridor.p1,
@@ -664,6 +673,96 @@
         endTurn();
       }
       render2D();
+    }
+
+    // 2D 画布事件监听与精确坐标投射
+    function getPointerCoord2D(e) {
+      if (!canvas2D) return { px: 0, py: 0 };
+      const rect = canvas2D.getBoundingClientRect();
+      const clientX = (e.touches && e.touches.length > 0) ? e.touches[0].clientX : e.clientX;
+      const clientY = (e.touches && e.touches.length > 0) ? e.touches[0].clientY : e.clientY;
+      return { px: clientX - rect.left, py: clientY - rect.top };
+    }
+
+    if (canvas2D) {
+      canvas2D.addEventListener('pointermove', (e) => {
+        if (STATE.winner || STATE.animating) return;
+        if (!checkIsMyTurn()) return;
+        const { px, py } = getPointerCoord2D(e);
+
+        if (STATE.quoridor.tool === 'MOVE') {
+          STATE.quoridor.hoverPos = null;
+        } else {
+          let best = null, minDist = Infinity;
+          for (let r = 0; r < 8; r++) {
+            for (let c = 0; c < 8; c++) {
+              const { x, y } = getIntersectionPos(r, c);
+              const d = Math.hypot(px - x, py - y);
+              if (d < minDist && d < cellSize * 0.9) {
+                minDist = d;
+                best = { r, c };
+              }
+            }
+          }
+          if (best) {
+            const wallType = STATE.quoridor.tool === 'WALL_H' ? 'H' : 'V';
+            const valid = canPlaceWall(wallType, best.r, best.c);
+            STATE.quoridor.hoverPos = { r: best.r, c: best.c, type: wallType === 'H' ? 'wallH' : 'wallV', valid };
+          } else {
+            STATE.quoridor.hoverPos = null;
+          }
+        }
+        render2D();
+      });
+
+      canvas2D.addEventListener('pointerleave', () => {
+        STATE.quoridor.hoverPos = null;
+        render2D();
+      });
+
+      canvas2D.addEventListener('click', (e) => {
+        if (STATE.winner || STATE.animating) return;
+        if (!checkIsMyTurn()) {
+          showToast('⏳ 对手正在思考中...');
+          return;
+        }
+
+        const { px, py } = getPointerCoord2D(e);
+
+        if (STATE.quoridor.tool === 'MOVE') {
+          for (let r = 0; r < 9; r++) {
+            for (let c = 0; c < 9; c++) {
+              const { x, y } = getCellPos(r, c);
+              if (px >= x && px <= x + cellSize && py >= y && py <= y + cellSize) {
+                const moves = getValidPawnMoves(STATE.turn);
+                if (moves.some(m => m.r === r && m.c === c)) {
+                  executeQuoridorMove(r, c);
+                  if (STATE.gameMode === 'ONLINE') sendOnlineAction({ type: 'QUORIDOR_MOVE', r, c });
+                } else {
+                  showToast('⚠️ 只能移动到高亮的相邻合法格子！', 1500);
+                }
+                return;
+              }
+            }
+          }
+        } else if (STATE.quoridor.hoverPos && STATE.quoridor.hoverPos.valid) {
+          const hp = STATE.quoridor.hoverPos;
+          const players = {
+            1: STATE.quoridor.p1,
+            2: STATE.quoridor.p2,
+            3: STATE.quoridor.p3,
+            4: STATE.quoridor.p4
+          };
+          const cur = players[STATE.turn];
+          if (cur && cur.walls > 0) {
+            const wallType = STATE.quoridor.tool === 'WALL_H' ? 'H' : 'V';
+            executeQuoridorWall(wallType, hp.r, hp.c);
+            if (STATE.gameMode === 'ONLINE') sendOnlineAction({ type: 'QUORIDOR_WALL', wallType, r: hp.r, c: hp.c });
+          } else {
+            showToast('⚠️ 挡板已耗尽，请切换为移动棋子！', 2000);
+          }
+        }
+      });
     }
 
     function executeQuoridorWall(type, r, c) {

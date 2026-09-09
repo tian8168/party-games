@@ -384,16 +384,17 @@
 
     // --- 2D 画布基础与绘制 ---
     function resizeCanvas2D() {
+      if (!canvas2D || !ctx2D) return;
       const rect = canvas2D.getBoundingClientRect();
       const dpr = window.devicePixelRatio || 1;
-      canvas2D.width = rect.width * dpr;
-      canvas2D.height = rect.height * dpr;
+      const sz = Math.min(rect.width, rect.height > 50 ? rect.height : rect.width);
+      canvas2D.width = sz * dpr;
+      canvas2D.height = sz * dpr;
       ctx2D.resetTransform();
       ctx2D.scale(dpr, dpr);
 
-      // GRAVITY4 用 7列 4行比例; 其余(QUORIDOR/GRAVITY) 用 9x9
-      const cols = STATE.currentGame === 'GRAVITY4' ? 7 : 9;
-      grooveSize = rect.width / (cols * 4.5 + (cols - 1));
+      const cols = 9;
+      grooveSize = sz / (cols * 4.5 + (cols - 1));
       cellSize = grooveSize * 4.5;
       offset = grooveSize / 2;
       render2D();
