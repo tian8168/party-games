@@ -1747,6 +1747,8 @@
       'SUMO': 'sumo.html',
       'TANK': 'tank.html',
       'STACK': 'stack.html'
+    };
+
     const prefetchedLinks = new Set();
     function prefetchGame(gameKey) {
       const file = fileMap[gameKey] || (gameKey.toLowerCase() + '.html');
