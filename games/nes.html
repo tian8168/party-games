@@ -102,22 +102,51 @@
     }
     .engine-chips {
       display: flex;
-      gap: 4px;
+      gap: 5px;
       align-items: center;
     }
     .platform-pill {
       background: #1e293b;
       border: 1px solid #334155;
       color: #94a3b8;
-      font-size: 0.7rem;
+      font-size: 0.72rem;
       font-weight: 800;
-      padding: 2px 7px;
-      border-radius: 4px;
+      padding: 3px 9px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      outline: none;
+    }
+    .platform-pill:hover {
+      border-color: #38bdf8;
+      color: #e2e8f0;
+      background: #334155;
     }
     .platform-pill.active {
-      background: #0284c7;
+      background: linear-gradient(135deg, #0284c7, #0369a1);
       border-color: #38bdf8;
       color: #fff;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+    }
+    .engine-select-dropdown {
+      background: #0f172a;
+      border: 1px solid #38bdf8;
+      color: #38bdf8;
+      font-size: 0.76rem;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      outline: none;
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.2);
+      transition: border-color 0.2s;
+    }
+    .engine-select-dropdown:hover {
+      border-color: #7dd3fc;
+    }
+    .engine-select-dropdown option {
+      background: #1e293b;
+      color: #f8fafc;
     }
 
     /* Screen Wrapper & CRT Shader */
@@ -630,14 +659,17 @@
       <div class="engine-bar">
         <div class="engine-status-tag">
           <span>⚙️ 核心架构：</span>
-          <span id="active-engine-badge" style="color:#38bdf8; font-weight:800;">🚀 WASM 增强版 (FCEUmm / 100%全兼容)</span>
+          <select id="engine-select" class="engine-select-dropdown" onchange="switchEngineArchitecture(this.value)" title="手动切换底层仿真内核架构">
+            <option value="WASM" selected>🚀 WASM 增强版 (RetroArch / 100%全兼容)</option>
+            <option value="JSNES">⚡ JSNES 纯JS版 (免WASM/低开销/秒开)</option>
+          </select>
         </div>
-        <div class="engine-chips">
-          <span class="platform-pill active" id="pill-fc">FC/NES</span>
-          <span class="platform-pill" id="pill-gba">GBA</span>
-          <span class="platform-pill" id="pill-sfc">SFC</span>
-          <span class="platform-pill" id="pill-md">MD</span>
-          <span class="platform-pill" id="pill-gb">GB</span>
+        <div class="engine-chips" title="点击切换主机硬件平台架构">
+          <button type="button" class="platform-pill active" id="pill-fc" onclick="switchPlatformArchitecture('FC')">FC/NES</button>
+          <button type="button" class="platform-pill" id="pill-gba" onclick="switchPlatformArchitecture('GBA')">GBA</button>
+          <button type="button" class="platform-pill" id="pill-sfc" onclick="switchPlatformArchitecture('SFC')">SFC</button>
+          <button type="button" class="platform-pill" id="pill-md" onclick="switchPlatformArchitecture('MD')">MD</button>
+          <button type="button" class="platform-pill" id="pill-gb" onclick="switchPlatformArchitecture('GB')">GB</button>
         </div>
       </div>
 
@@ -745,14 +777,18 @@
   <script src="../mqtt.min.js"></script>
   <script src="../common/audio.js"></script>
   <script src="../common/common.js"></script>
-  <script src="https://unpkg.com/jsnes@2/dist/jsnes.min.js"></script>
+  <script src="js/jsnes.min.js"></script>
   <script src="js/nostalgist.umd.js"></script>
   <script src="js/nes_netplay.js"></script>
   <script>
     let emuBrowser = null;        // JSNES instance
     let currentNostalgist = null; // WASM Nostalgist instance
     let activeEngineType = 'WASM';// 'WASM' or 'JSNES'
+    let forcedEngine = 'WASM';    // Selected engine architecture: 'WASM' or 'JSNES'
     let currentPlatform = 'FC';   // 'FC', 'GBA', 'SFC', 'MD', 'GB'
+    let currentRomBuffer = null;
+    let currentRomFilename = '';
+    let currentRomTitle = '';
     let isFastForward = false;
     let isCrtEnabled = false;
     let allGames = [];
@@ -761,6 +797,14 @@
     let netplay = null;
 
     const coopKeywords = ['魂斗罗', '坦克', '雪人', '松鼠', '双截龙', '赤色要塞', '沙罗曼蛇', '热血', '敲冰块', '泡泡龙', '兵蜂', '影子传说', '恐龙', '赤影战士'];
+
+    const PLATFORM_CONFIG = {
+      'FC': { name: 'fceumm', label: 'FC/NES 任天堂红白机', ext: '.nes', accepts: '.nes' },
+      'GBA': { name: 'mgba', label: 'GBA Game Boy Advance', ext: '.gba', accepts: '.gba' },
+      'SFC': { name: 'snes9x', label: 'SFC/SNES 超级任天堂', ext: '.sfc,.smc', accepts: '.sfc,.smc' },
+      'MD': { name: 'genesis_plus_gx', label: 'MD 世嘉五代', ext: '.md,.gen,.bin', accepts: '.md,.gen,.bin' },
+      'GB': { name: 'gambatte', label: 'GB/GBC 经典掌机', ext: '.gb,.gbc', accepts: '.gb,.gbc' }
+    };
 
     function setStatus(msg, isErr = false) {
       const el = document.getElementById('nes-status');
@@ -776,6 +820,78 @@
       const idMap = { 'FC': 'pill-fc', 'GBA': 'pill-gba', 'SFC': 'pill-sfc', 'MD': 'pill-md', 'GB': 'pill-gb' };
       const el = document.getElementById(idMap[platform]);
       if (el) el.classList.add('active');
+    }
+
+    // --- ⚙️ 核心架构热切换 (WASM vs JSNES) ---
+    function switchEngineArchitecture(type) {
+      forcedEngine = type;
+      const sel = document.getElementById('engine-select');
+      if (sel) sel.value = type;
+      if (type === 'JSNES') {
+        if (currentPlatform !== 'FC') {
+          showToast('⚠️ JSNES 仅支持 FC/NES 8位机，已自动切回 FC 模式', 2500);
+          switchPlatformArchitecture('FC', false);
+        } else {
+          showToast('⚡ 已切换至【JSNES 纯JS轻量核心】！秒级启动/低内存', 2500);
+        }
+      } else {
+        showToast('🚀 已切换至【WASM 硬件增强核心】！100%芯片兼容/多槽存档', 2500);
+      }
+
+      if (currentRomBuffer) {
+        runRomBuffer(currentRomBuffer, currentRomTitle, currentRomFilename);
+      } else if (currentSelectedGame) {
+        launchCurrentSelection();
+      }
+    }
+
+    // --- 🕹️ 五大主机平台架构切换 (FC / GBA / SFC / MD / GB) ---
+    function switchPlatformArchitecture(platform, promptImport = true) {
+      currentPlatform = platform;
+      updatePlatformPills(platform);
+
+      const cfg = PLATFORM_CONFIG[platform] || PLATFORM_CONFIG['FC'];
+      const fileInput = document.getElementById('custom-rom-file');
+      if (fileInput) fileInput.accept = cfg.accepts;
+
+      const engineSelect = document.getElementById('engine-select');
+      if (engineSelect) {
+        const jsnesOption = engineSelect.querySelector('option[value="JSNES"]');
+        if (platform !== 'FC') {
+          engineSelect.value = 'WASM';
+          forcedEngine = 'WASM';
+          if (jsnesOption) {
+            jsnesOption.disabled = true;
+            jsnesOption.text = '⚡ JSNES (仅限 FC/NES 8位机)';
+          }
+        } else {
+          if (jsnesOption) {
+            jsnesOption.disabled = false;
+            jsnesOption.text = '⚡ JSNES 纯JS版 (免WASM/低开销/秒开)';
+          }
+        }
+      }
+
+      if (platform === 'FC') {
+        showToast('🎮 已切回【FC/NES】平台架构，876 款经典游戏库已就绪', 2000);
+      } else {
+        showToast(`🕹️ 已切至【${cfg.label}】平台架构（内核: ${cfg.name.toUpperCase()}）`, 2500);
+        if (promptImport) {
+          showModal(`🕹️ 已就绪【${cfg.label}】仿真架构`, `
+            <div style="line-height:1.7;">
+              <p style="color:#38bdf8; font-weight:700;">✅ 底层 WebAssembly [${cfg.name.toUpperCase()}] Libretro 核心已挂载！</p>
+              <br>
+              <p>由于各机种版权与游戏库体积限制，已为您开启免安装本地 ROM 运行通道：</p>
+              <p>支持直接选择或拖拽您本地的 <b>${cfg.ext}</b> 游戏镜像，在浏览器内以 60FPS 极速全速运行！</p>
+              <br>
+              <div style="display:flex; justify-content:center; gap:12px; margin-top:12px;">
+                <button class="modal-btn-confirm" onclick="closeModal(); document.getElementById('custom-rom-file').click();" style="cursor:pointer; padding:10px 18px; font-weight:800;">📥 选择本地 ${platform} ROM 文件</button>
+                <button class="modal-btn-confirm" onclick="closeModal();" style="background:#334155; border-color:#64748b; cursor:pointer; padding:10px 18px;">取消</button>
+              </div>
+            </div>
+          `);
+        }
+      }
     }
 
     // --- CRT Shader Toggle ---
@@ -1083,14 +1199,18 @@
       reader.readAsArrayBuffer(file);
     }
 
-    // --- 🚀 Multi-Platform WebAssembly Core Dispatcher ---
+    // --- 🚀 Multi-Platform WebAssembly & JSNES Architecture Dispatcher ---
     async function runRomBuffer(buffer, title, filename = '') {
+      currentRomBuffer = buffer;
+      currentRomTitle = title;
+      currentRomFilename = filename;
+
       if (currentNostalgist) {
         try { await currentNostalgist.exit(); } catch(e) {}
         currentNostalgist = null;
       }
       if (emuBrowser) {
-        try { emuBrowser.destroy(); } catch(e) {}
+        try { if (emuBrowser.stop) emuBrowser.stop(); } catch(e) {}
         emuBrowser = null;
       }
 
@@ -1100,7 +1220,7 @@
       // Detect Platform and Core from file extension
       const lower = (filename || title).toLowerCase();
       let coreToUse = 'fceumm';
-      let platformTag = 'FC';
+      let platformTag = currentPlatform || 'FC';
 
       if (lower.endsWith('.gba')) {
         coreToUse = 'mgba';
@@ -1121,9 +1241,18 @@
 
       updatePlatformPills(platformTag);
 
-      const badge = document.getElementById('active-engine-badge');
+      const engineSelect = document.getElementById('engine-select');
+      const selectedEngine = engineSelect ? engineSelect.value : forcedEngine;
+
+      // 架构分流 1: 用户指定使用 JSNES 解释引擎（仅限 FC/NES 平台）
+      if (selectedEngine === 'JSNES' && platformTag === 'FC') {
+        runWithJsnes(buffer, container, title);
+        return;
+      }
+
+      // 架构分流 2: 默认与增强模式运行 WebAssembly Libretro 硬件仿真核心
       activeEngineType = 'WASM';
-      if (badge) badge.innerHTML = `🚀 WASM 硬件核心 [${coreToUse.toUpperCase()}] · ${platformTag} 机种`;
+      if (engineSelect) engineSelect.value = 'WASM';
       setStatus(`⏳ 正在初始化 WebAssembly [${coreToUse}] 仿真核心...`);
 
       try {
@@ -1145,10 +1274,12 @@
         document.getElementById('nes-overlay').style.display = 'none';
         setupCustomControls();
         setupTouchControls();
-        showToast(`🎮 【${platformTag}】机种内核启动成功！支持多槽存档与P2P联机`, 2500);
+        showToast(`🎮 【${platformTag}】WASM 内核启动成功！支持多槽存档与P2P联机`, 2500);
       } catch(wasmErr) {
         console.warn('WASM launch failed, trying fallback:', wasmErr);
         if (platformTag === 'FC') {
+          if (engineSelect) engineSelect.value = 'JSNES';
+          showToast('⚠️ WASM 核心初始化受限，自动切换至 JSNES 极速轻量架构', 2500);
           runWithJsnes(buffer, container, title);
         } else {
           setStatus('❌ 核心启动异常: ' + wasmErr.message, true);
@@ -1159,8 +1290,8 @@
     function runWithJsnes(buffer, container, title) {
       activeEngineType = 'JSNES';
       updatePlatformPills('FC');
-      const badge = document.getElementById('active-engine-badge');
-      if (badge) badge.innerHTML = '⚡ JSNES 极速轻量核心';
+      const engineSelect = document.getElementById('engine-select');
+      if (engineSelect) engineSelect.value = 'JSNES';
 
       try {
         const bytes = new Uint8Array(buffer);
@@ -1182,6 +1313,7 @@
         document.getElementById('nes-overlay').style.display = 'none';
         setupCustomControls();
         setupTouchControls();
+        showToast('⚡ JSNES 纯 JS 轻量引擎已就绪！', 2000);
       } catch(err) {
         console.error(err);
         setStatus('❌ 启动失败: ' + err.message, true);

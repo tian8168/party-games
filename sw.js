@@ -6,7 +6,7 @@
  * 3. 动态信令 (WebSocket/MQTT)：直连放行
  */
 
-const CACHE_NAME = 'party-arcade-v1.2';
+const CACHE_NAME = 'party-arcade-v1.3';
 
 const APP_SHELL = [
   './',
@@ -35,13 +35,17 @@ const APP_SHELL = [
   './games/stack.html',
   './games/contra.html',
   './games/nes.html',
+  './games/js/jsnes.min.js',
   './games/js/nostalgist.umd.js',
   './games/js/nes_netplay.js',
   './games/roms/roms_index.json',
   './games/roms/contra.nes',
   './games/roms/contra_30lives.nes',
   './games/cores/fceumm_libretro.zip',
-  './games/cores/mgba_libretro.zip'
+  './games/cores/mgba_libretro.zip',
+  './games/cores/snes9x_libretro.zip',
+  './games/cores/genesis_plus_gx_libretro.zip',
+  './games/cores/gambatte_libretro.zip'
 ];
 
 // --- 1. 安装阶段 (Pre-caching App Shell) ---
