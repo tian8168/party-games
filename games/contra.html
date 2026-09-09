@@ -13,18 +13,23 @@
 
     #contra-emu-container {
       width: 100%;
+      aspect-ratio: 256 / 240;
+      min-height: 380px;
+      max-height: 520px;
       position: relative;
       background: #000;
       border-radius: 14px;
       overflow: hidden;
       border: 2px solid #1e293b;
-      aspect-ratio: 256 / 240;
-      min-height: 380px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     #contra-emu-container canvas {
       width: 100% !important;
-      height: auto !important;
+      height: 100% !important;
+      object-fit: contain;
       display: block;
       image-rendering: pixelated;
       image-rendering: crisp-edges;
@@ -38,61 +43,76 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      background: rgba(3, 7, 18, 0.95);
-      backdrop-filter: blur(6px);
+      background: rgba(3, 7, 18, 0.94);
+      backdrop-filter: blur(8px);
+      padding: 24px;
       gap: 16px;
     }
     .emu-loading-overlay h3 {
       color: #f1f5f9;
-      font-size: 1.4rem;
+      font-size: 1.5rem;
       margin: 0;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.6);
     }
     .emu-loading-overlay .sub {
       color: #94a3b8;
-      font-size: 0.82rem;
+      font-size: 0.84rem;
       text-align: center;
       line-height: 1.6;
-      max-width: 420px;
+      max-width: 440px;
     }
-    .emu-loading-overlay .status {
-      color: #38bdf8;
-      font-size: 0.9rem;
-      font-weight: 700;
+    .emu-btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+      max-width: 320px;
     }
-    .emu-loading-overlay .spinner {
-      width: 40px;
-      height: 40px;
-      border: 4px solid rgba(56, 189, 248, 0.2);
-      border-top-color: #38bdf8;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .emu-error {
-      color: #ef4444;
-      font-size: 0.85rem;
-      text-align: center;
-      max-width: 400px;
-    }
-
-    .btn-emu-start {
-      padding: 14px 48px;
-      font-size: 1.1rem;
-      font-weight: 900;
+    .btn-emu-play {
+      padding: 13px 20px;
+      font-size: 1rem;
+      font-weight: 800;
       color: #fff;
-      background: linear-gradient(135deg, #dc2626, #f97316);
-      border: 2px solid #fb923c;
-      border-radius: 14px;
+      border-radius: 12px;
       cursor: pointer;
-      box-shadow: 0 6px 24px rgba(239, 68, 68, 0.5);
+      border: 1px solid transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
       transition: transform 0.1s, box-shadow 0.1s;
     }
-    .btn-emu-start:hover {
-      transform: scale(1.04);
-      box-shadow: 0 8px 32px rgba(239, 68, 68, 0.7);
+    .btn-emu-30lives {
+      background: linear-gradient(135deg, #ef4444, #f97316);
+      border-color: #fb923c;
+      box-shadow: 0 4px 18px rgba(239, 68, 68, 0.45);
     }
-    .btn-emu-start:active { transform: scale(0.97); }
+    .btn-emu-classic {
+      background: linear-gradient(135deg, #2563eb, #3b82f6);
+      border-color: #60a5fa;
+      box-shadow: 0 4px 18px rgba(37, 99, 235, 0.35);
+    }
+    .btn-emu-upload {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.2);
+      color: #cbd5e1;
+      font-size: 0.88rem;
+    }
+    .btn-emu-play:hover {
+      transform: scale(1.03);
+      filter: brightness(1.15);
+    }
+    .btn-emu-play:active { transform: scale(0.97); }
+
+    .status-msg {
+      color: #38bdf8;
+      font-size: 0.85rem;
+      font-weight: 700;
+      min-height: 20px;
+    }
+    .status-err {
+      color: #ef4444;
+    }
 
     .controls-guide {
       width: 100%;
@@ -126,11 +146,13 @@
     .touch-controls {
       display: none;
       width: 100%;
-      padding: 8px;
+      padding: 12px 6px;
+      justify-content: space-between;
+      align-items: center;
       gap: 8px;
     }
     @media (max-width: 768px) {
-      .touch-controls { display: flex; justify-content: space-between; }
+      .touch-controls { display: flex; }
     }
     .dpad {
       width: 120px; height: 120px;
@@ -176,12 +198,13 @@
       touch-action: none;
     }
     .action-btn:active { filter: brightness(1.5); }
-    .btn-b { background: rgba(239, 68, 68, 0.6); }
-    .btn-a { background: rgba(59, 130, 246, 0.6); }
+    .btn-b { background: rgba(239, 68, 68, 0.65); }
+    .btn-a { background: rgba(59, 130, 246, 0.65); }
     .meta-btns {
       display: flex;
-      gap: 6px;
-      align-items: flex-end;
+      flex-direction: column;
+      gap: 8px;
+      align-items: center;
     }
     .meta-btn {
       padding: 6px 14px;
@@ -189,11 +212,12 @@
       background: rgba(255,255,255,0.1);
       border: 1px solid rgba(255,255,255,0.2);
       color: #94a3b8;
-      font-size: 0.65rem;
+      font-size: 0.68rem;
       font-weight: 700;
       cursor: pointer;
       touch-action: none;
     }
+    .meta-btn:active { background: rgba(255,255,255,0.25); color: #fff; }
   </style>
 </head>
 <body>
@@ -204,21 +228,33 @@
       <div class="header-actions">
         <button class="btn-icon" id="btn-sound-toggle">🔊</button>
         <button class="btn-icon" id="btn-rules-header">📖 操作</button>
-        <button class="btn-icon" id="restart-btn">🔄 重置</button>
+        <button class="btn-icon" id="restart-btn" onclick="resetCurrentGame()">🔄 重置</button>
       </div>
     </div>
 
     <div class="stage-wrapper">
       <div id="contra-emu-container">
-        <!-- JSNES will inject canvas here -->
+        <!-- Overlay -->
         <div class="emu-loading-overlay" id="emu-overlay">
           <h3>🔫 魂斗罗 · 经典红白机</h3>
           <div class="sub">
-            经典 FC/NES 原版魂斗罗，通过浏览器内置模拟器运行。<br>
-            点击下方按钮加载游戏 ROM 并启动。
+            童年 FC 原版硬件模拟，支持键盘双套键位与手机触屏。<br>请选择你要启动的版本：
           </div>
-          <button class="btn-emu-start" id="btn-emu-start" onclick="loadAndStartEmulator()">⚡ 加载游戏</button>
-          <div class="status" id="emu-status"></div>
+
+          <div class="emu-btn-group" id="emu-btn-group">
+            <button class="btn-emu-play btn-emu-30lives" onclick="startBundledGame('contra_30lives.nes')">
+              🔥 启动 30命S弹经典版 (推荐)
+            </button>
+            <button class="btn-emu-play btn-emu-classic" onclick="startBundledGame('contra.nes')">
+              🛡️ 启动 原版3条命模式
+            </button>
+            <label class="btn-emu-play btn-emu-upload" style="margin:0;">
+              📁 加载本地 .nes 文件
+              <input type="file" id="rom-file-input" accept=".nes" style="display:none;" onchange="handleFileSelect(event)">
+            </label>
+          </div>
+
+          <div class="status-msg" id="emu-status"></div>
         </div>
       </div>
 
@@ -235,21 +271,23 @@
           <div class="meta-btn" data-btn="start">START</div>
         </div>
         <div class="action-btns">
-          <div class="action-btn btn-b" data-btn="b">B</div>
-          <div class="action-btn btn-a" data-btn="a">A</div>
+          <div class="action-btn btn-b" data-btn="b">B(射)</div>
+          <div class="action-btn btn-a" data-btn="a">A(跳)</div>
         </div>
       </div>
 
       <div class="controls-guide">
         <div class="control-card">
-          <b>🎮 方向控制</b><br>
-          <span class="key">↑</span> <span class="key">↓</span> <span class="key">←</span> <span class="key">→</span> 方向键移动<br>
-          <span class="key">↑</span> 瞄准上方 / 跳跃中控制
+          <b>🎮 键位方案一 (经典小键盘)</b><br>
+          <span class="key">↑</span> <span class="key">↓</span> <span class="key">←</span> <span class="key">→</span> 方向移动<br>
+          <span class="key">Z</span> 射击(B) &nbsp; <span class="key">X</span> 跳跃(A)<br>
+          <span class="key">Enter</span> 开始(START) &nbsp; <span class="key">Shift</span> 选人(SELECT)
         </div>
         <div class="control-card">
-          <b>🔫 动作按键</b><br>
-          <span class="key">Z</span> / <span class="key">X</span> = B键(射击) / A键(跳跃)<br>
-          <span class="key">Enter</span> = START &nbsp; <span class="key">Shift</span> = SELECT
+          <b>⚡ 键位方案二 (WASD双手流)</b><br>
+          <span class="key">W</span> <span class="key">A</span> <span class="key">S</span> <span class="key">D</span> 方向移动<br>
+          <span class="key">J</span> 射击(B) &nbsp; <span class="key">K</span> 跳跃(A)<br>
+          <span class="key">U</span> 连射(Turbo B) &nbsp; <span class="key">I</span> 连跳(Turbo A)
         </div>
       </div>
     </div>
@@ -269,70 +307,142 @@
     };
 
     let emuBrowser = null;
-    const ROM_URL = 'https://raw.githubusercontent.com/mengfei523060/nesrom/master/%E9%AD%82%E6%96%97%E7%BD%971%E4%B8%AD%E6%96%87%E6%97%A0%E9%99%90%E5%91%BD.nes';
 
-    function setStatus(msg) {
+    function setStatus(msg, isErr = false) {
       const el = document.getElementById('emu-status');
-      if (el) el.textContent = msg;
+      if (el) {
+        el.textContent = msg;
+        el.className = 'status-msg' + (isErr ? ' status-err' : '');
+      }
     }
 
-    function loadAndStartEmulator() {
-      const btn = document.getElementById('btn-emu-start');
-      if (btn) btn.style.display = 'none';
-      setStatus('⏳ 正在加载模拟器引擎与游戏 ROM...');
+    function startBundledGame(filename) {
+      const btns = document.getElementById('emu-btn-group');
+      if (btns) btns.style.opacity = '0.4';
+      setStatus('⏳ 正在加载 ROM 与初始化 NES 硬件...');
 
-      // Check JSNES loaded
       if (typeof jsnes === 'undefined') {
-        setStatus('❌ 模拟器引擎加载失败，请刷新页面重试');
-        if (btn) btn.style.display = 'block';
+        setStatus('❌ JSNES 模拟器脚本加载中，请稍候再试...', true);
+        if (btns) btns.style.opacity = '1';
         return;
       }
 
-      // Fetch ROM
-      fetch(ROM_URL)
+      fetch('./roms/' + filename)
         .then(resp => {
-          if (!resp.ok) throw new Error('ROM download failed: ' + resp.status);
-          setStatus('⏳ ROM 下载中...');
+          if (!resp.ok) throw new Error('读取本地ROM失败 (HTTP ' + resp.status + ')');
           return resp.arrayBuffer();
         })
         .then(buffer => {
-          setStatus('⏳ 正在初始化 NES 硬件模拟...');
-
-          // Convert ArrayBuffer to binary string (JSNES expects this)
-          const bytes = new Uint8Array(buffer);
-          let romData = '';
-          for (let i = 0; i < bytes.length; i++) {
-            romData += String.fromCharCode(bytes[i]);
-          }
-
-          const container = document.getElementById('contra-emu-container');
-
-          // Create the browser emulator
-          emuBrowser = new jsnes.Browser({
-            container: container,
-            romData: romData,
-            onError: function(e) {
-              console.error('NES Error:', e);
-            }
-          });
-
-          // Hide overlay
-          const overlay = document.getElementById('emu-overlay');
-          if (overlay) overlay.style.display = 'none';
-
-          // Setup touch controls
-          setupTouchControls();
+          runRomBuffer(buffer);
         })
         .catch(err => {
-          console.error('Failed to load ROM:', err);
-          setStatus('❌ ROM 加载失败: ' + err.message);
-          if (btn) btn.style.display = 'block';
+          console.error(err);
+          setStatus('❌ ' + err.message, true);
+          if (btns) btns.style.opacity = '1';
         });
     }
 
+    function handleFileSelect(e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+
+      setStatus('⏳ 正在读取本地文件: ' + file.name);
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        runRomBuffer(evt.target.result);
+      };
+      reader.onerror = function() {
+        setStatus('❌ 读取文件失败', true);
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function runRomBuffer(buffer) {
+      try {
+        const bytes = new Uint8Array(buffer);
+        let romData = '';
+        for (let i = 0; i < bytes.length; i++) {
+          romData += String.fromCharCode(bytes[i]);
+        }
+
+        // Clean up previous instance if any
+        if (emuBrowser) {
+          try { emuBrowser.destroy(); } catch(e) {}
+          emuBrowser = null;
+        }
+
+        const container = document.getElementById('contra-emu-container');
+        // Remove any old canvas
+        const oldCanvases = container.querySelectorAll('canvas');
+        oldCanvases.forEach(c => c.remove());
+
+        emuBrowser = new jsnes.Browser({
+          container: container,
+          romData: romData,
+          onError: function(e) {
+            console.error('NES Runtime Error:', e);
+            setStatus('❌ 模拟器运行异常: ' + e.message, true);
+            const overlay = document.getElementById('emu-overlay');
+            if (overlay) overlay.style.display = 'flex';
+          }
+        });
+
+        // Hide overlay
+        const overlay = document.getElementById('emu-overlay');
+        if (overlay) overlay.style.display = 'none';
+
+        setupCustomControls();
+        setupTouchControls();
+      } catch(err) {
+        console.error(err);
+        setStatus('❌ 启动失败: ' + err.message, true);
+        const btns = document.getElementById('emu-btn-group');
+        if (btns) btns.style.opacity = '1';
+      }
+    }
+
+    let customKeysBound = false;
+    function setupCustomControls() {
+      if (customKeysBound) return;
+      customKeysBound = true;
+
+      // Add dual-keyboard support: WASD + JK + UI
+      window.addEventListener('keydown', (e) => {
+        if (!emuBrowser || !emuBrowser.nes) return;
+        const nes = emuBrowser.nes;
+
+        if (['KeyW', 'KeyS', 'KeyA', 'KeyD', 'KeyJ', 'KeyK', 'KeyU', 'KeyI'].includes(e.code)) {
+          e.preventDefault();
+        }
+        if (e.code === 'KeyW') nes.buttonDown(1, jsnes.Controller.BUTTON_UP);
+        if (e.code === 'KeyS') nes.buttonDown(1, jsnes.Controller.BUTTON_DOWN);
+        if (e.code === 'KeyA') nes.buttonDown(1, jsnes.Controller.BUTTON_LEFT);
+        if (e.code === 'KeyD') nes.buttonDown(1, jsnes.Controller.BUTTON_RIGHT);
+        if (e.code === 'KeyJ') nes.buttonDown(1, jsnes.Controller.BUTTON_B);
+        if (e.code === 'KeyK') nes.buttonDown(1, jsnes.Controller.BUTTON_A);
+        if (e.code === 'KeyU') nes.buttonDown(1, jsnes.Controller.BUTTON_TURBO_B);
+        if (e.code === 'KeyI') nes.buttonDown(1, jsnes.Controller.BUTTON_TURBO_A);
+      });
+
+      window.addEventListener('keyup', (e) => {
+        if (!emuBrowser || !emuBrowser.nes) return;
+        const nes = emuBrowser.nes;
+
+        if (e.code === 'KeyW') nes.buttonUp(1, jsnes.Controller.BUTTON_UP);
+        if (e.code === 'KeyS') nes.buttonUp(1, jsnes.Controller.BUTTON_DOWN);
+        if (e.code === 'KeyA') nes.buttonUp(1, jsnes.Controller.BUTTON_LEFT);
+        if (e.code === 'KeyD') nes.buttonUp(1, jsnes.Controller.BUTTON_RIGHT);
+        if (e.code === 'KeyJ') nes.buttonUp(1, jsnes.Controller.BUTTON_B);
+        if (e.code === 'KeyK') nes.buttonUp(1, jsnes.Controller.BUTTON_A);
+        if (e.code === 'KeyU') nes.buttonUp(1, jsnes.Controller.BUTTON_TURBO_B);
+        if (e.code === 'KeyI') nes.buttonUp(1, jsnes.Controller.BUTTON_TURBO_A);
+      });
+    }
+
+    let touchBound = false;
     function setupTouchControls() {
-      if (!emuBrowser || !emuBrowser.nes) return;
-      const nes = emuBrowser.nes;
+      if (touchBound) return;
+      touchBound = true;
 
       const btnMap = {
         'up': jsnes.Controller.BUTTON_UP,
@@ -350,22 +460,19 @@
         const nesBtn = btnMap[btnName];
         if (nesBtn === undefined) return;
 
-        el.addEventListener('pointerdown', (e) => {
+        const press = (e) => {
           e.preventDefault();
-          nes.buttonDown(1, nesBtn);
-        });
-        el.addEventListener('pointerup', (e) => {
+          if (emuBrowser && emuBrowser.nes) emuBrowser.nes.buttonDown(1, nesBtn);
+        };
+        const release = (e) => {
           e.preventDefault();
-          nes.buttonUp(1, nesBtn);
-        });
-        el.addEventListener('pointercancel', (e) => {
-          e.preventDefault();
-          nes.buttonUp(1, nesBtn);
-        });
-        el.addEventListener('pointerleave', (e) => {
-          e.preventDefault();
-          nes.buttonUp(1, nesBtn);
-        });
+          if (emuBrowser && emuBrowser.nes) emuBrowser.nes.buttonUp(1, nesBtn);
+        };
+
+        el.addEventListener('pointerdown', press);
+        el.addEventListener('pointerup', release);
+        el.addEventListener('pointercancel', release);
+        el.addEventListener('pointerleave', release);
       });
     }
 
@@ -375,24 +482,21 @@
       } else {
         const overlay = document.getElementById('emu-overlay');
         if (overlay) overlay.style.display = 'flex';
-        const btn = document.getElementById('btn-emu-start');
-        if (btn) btn.style.display = 'block';
+        const btns = document.getElementById('emu-btn-group');
+        if (btns) btns.style.opacity = '1';
         setStatus('');
       }
     }
 
     window.addEventListener('DOMContentLoaded', () => {
       initCommonHeader("🔫 魂斗罗 操作指南", `
-        <p><strong>经典红白机魂斗罗</strong>，通过浏览器 NES 模拟器运行原版 ROM。</p><br>
-        <p><b>键盘操作：</b></p>
+        <p><strong>经典红白机魂斗罗 (FC/NES)</strong>，运行原版真实芯片模拟硬件。</p><br>
+        <p><b>键盘操作支持两套方案：</b></p>
         <ul>
-          <li><b>方向键 ↑↓←→：</b>移动 / 瞄准</li>
-          <li><b>Z 键：</b>B键 = 射击</li>
-          <li><b>X 键：</b>A键 = 跳跃</li>
-          <li><b>Enter：</b>START（开始/暂停）</li>
-          <li><b>Shift：</b>SELECT</li>
+          <li><b>方案一 (单手/箭头)：</b>方向键 ↑↓←→ 移动，Z 键射击，X 键跳跃，Enter 开始，Shift 选择。</li>
+          <li><b>方案二 (双手/WASD)：</b>W/A/S/D 移动，J 键射击，K 键跳跃，U 键连射，I 键连跳。</li>
         </ul><br>
-        <p>手机端可使用屏幕下方的虚拟按键操作。</p>`, resetCurrentGame);
+        <p>手机端自动呼出底部半透明触控手柄，随时随地畅玩！</p>`, resetCurrentGame);
     });
   </script>
 </body>
