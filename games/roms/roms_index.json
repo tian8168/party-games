@@ -1,0 +1,8762 @@
+[
+  {
+    "id": 1,
+    "file": "1943.nes",
+    "title": "1943",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "飞行射击"
+  },
+  {
+    "id": 2,
+    "file": "1944.nes",
+    "title": "1944",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 3,
+    "file": "4人麻将(J).nes",
+    "title": "4人麻将(J)",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 4,
+    "file": "76合1.nes",
+    "title": "76合1",
+    "mapper": 226,
+    "supported": false,
+    "size": 2097168,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 5,
+    "file": "90坦克.nes",
+    "title": "90坦克",
+    "mapper": 0,
+    "supported": true,
+    "size": 24719,
+    "hot": true,
+    "category": "飞行射击"
+  },
+  {
+    "id": 6,
+    "file": "AV麻将.nes",
+    "title": "AV麻将",
+    "mapper": 66,
+    "supported": true,
+    "size": 98320,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 7,
+    "file": "AV麻雀俱乐部.nes",
+    "title": "AV麻雀俱乐部",
+    "mapper": 66,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 8,
+    "file": "F1公路赛车(J).nes",
+    "title": "F1公路赛车(J)",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "休闲体育"
+  },
+  {
+    "id": 9,
+    "file": "F1竞赛场.nes",
+    "title": "F1竞赛场",
+    "mapper": 4,
+    "supported": true,
+    "size": 393232,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 10,
+    "file": "F1赛车.nes",
+    "title": "F1赛车",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "休闲体育"
+  },
+  {
+    "id": 11,
+    "file": "FC原人.nes",
+    "title": "FC原人",
+    "mapper": 4,
+    "supported": true,
+    "size": 393232,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 12,
+    "file": "FC塞尔达传说汉化版.nes",
+    "title": "FC塞尔达传说汉化版",
+    "mapper": 245,
+    "supported": false,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 13,
+    "file": "J超级足球(J).nes",
+    "title": "J超级足球(J)",
+    "mapper": 16,
+    "supported": false,
+    "size": 262160,
+    "hot": false,
+    "category": "休闲体育"
+  },
+  {
+    "id": 14,
+    "file": "RAD赛车2.nes",
+    "title": "RAD赛车2",
+    "mapper": 4,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "休闲体育"
+  },
+  {
+    "id": 15,
+    "file": "Taito_篮球.nes",
+    "title": "Taito_篮球",
+    "mapper": 4,
+    "supported": true,
+    "size": 786464,
+    "hot": false,
+    "category": "休闲体育"
+  },
+  {
+    "id": 16,
+    "file": "Tecmo_NBA篮球(U).nes",
+    "title": "Tecmo_NBA篮球(U)",
+    "mapper": 4,
+    "supported": true,
+    "size": 393232,
+    "hot": false,
+    "category": "休闲体育"
+  },
+  {
+    "id": 17,
+    "file": "z___game_006.nes",
+    "title": "z___game_006",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 18,
+    "file": "z___game_007.nes",
+    "title": "z___game_007",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 19,
+    "file": "z___game_008.nes",
+    "title": "z___game_008",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 20,
+    "file": "z___game_009.nes",
+    "title": "z___game_009",
+    "mapper": 4,
+    "supported": true,
+    "size": 262288,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 21,
+    "file": "z___game_010.nes",
+    "title": "z___game_010",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 22,
+    "file": "z___game_011.nes",
+    "title": "z___game_011",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 23,
+    "file": "z___game_012.nes",
+    "title": "z___game_012",
+    "mapper": 0,
+    "supported": true,
+    "size": 40976,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 24,
+    "file": "z___game_013.nes",
+    "title": "z___game_013",
+    "mapper": 4,
+    "supported": true,
+    "size": 262288,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 25,
+    "file": "z___game_014.nes",
+    "title": "z___game_014",
+    "mapper": 4,
+    "supported": true,
+    "size": 393232,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 26,
+    "file": "z___game_015.nes",
+    "title": "z___game_015",
+    "mapper": 91,
+    "supported": false,
+    "size": 655376,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 27,
+    "file": "z___game_016.nes",
+    "title": "z___game_016",
+    "mapper": 24,
+    "supported": false,
+    "size": 917536,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 28,
+    "file": "z___game_017.nes",
+    "title": "z___game_017",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 29,
+    "file": "z___game_018.nes",
+    "title": "z___game_018",
+    "mapper": 130,
+    "supported": false,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 30,
+    "file": "z___game_019.nes",
+    "title": "z___game_019",
+    "mapper": 0,
+    "supported": true,
+    "size": 40976,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 31,
+    "file": "z___game_020.nes",
+    "title": "z___game_020",
+    "mapper": 70,
+    "supported": false,
+    "size": 196624,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 32,
+    "file": "z___game_022.nes",
+    "title": "z___game_022",
+    "mapper": 0,
+    "supported": true,
+    "size": 40976,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 33,
+    "file": "z___game_023.nes",
+    "title": "z___game_023",
+    "mapper": 69,
+    "supported": false,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 34,
+    "file": "z___game_025.nes",
+    "title": "z___game_025",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 35,
+    "file": "z___game_026.nes",
+    "title": "z___game_026",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 36,
+    "file": "z___game_027.nes",
+    "title": "z___game_027",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 37,
+    "file": "z___game_028.nes",
+    "title": "z___game_028",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 38,
+    "file": "z___game_029.nes",
+    "title": "z___game_029",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 39,
+    "file": "z___game_030.nes",
+    "title": "z___game_030",
+    "mapper": 1,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 40,
+    "file": "z___game_032.nes",
+    "title": "z___game_032",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 41,
+    "file": "z___game_033.nes",
+    "title": "z___game_033",
+    "mapper": 4,
+    "supported": true,
+    "size": 393232,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 42,
+    "file": "z___game_034.nes",
+    "title": "z___game_034",
+    "mapper": 244,
+    "supported": false,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 43,
+    "file": "z___game_035.nes",
+    "title": "z___game_035",
+    "mapper": 4,
+    "supported": true,
+    "size": 786464,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 44,
+    "file": "z___game_036.nes",
+    "title": "z___game_036",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 45,
+    "file": "z___game_037.nes",
+    "title": "z___game_037",
+    "mapper": 0,
+    "supported": true,
+    "size": 65552,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 46,
+    "file": "z___game_038.nes",
+    "title": "z___game_038",
+    "mapper": 1,
+    "supported": true,
+    "size": 786464,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 47,
+    "file": "z___game_039.nes",
+    "title": "z___game_039",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 48,
+    "file": "z___game_040.nes",
+    "title": "z___game_040",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 49,
+    "file": "z___game_041.nes",
+    "title": "z___game_041",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 50,
+    "file": "z___game_042.nes",
+    "title": "z___game_042",
+    "mapper": 23,
+    "supported": false,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 51,
+    "file": "z___game_043.nes",
+    "title": "z___game_043",
+    "mapper": 23,
+    "supported": false,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 52,
+    "file": "z___game_044.nes",
+    "title": "z___game_044",
+    "mapper": 4,
+    "supported": true,
+    "size": 253968,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 53,
+    "file": "z___game_045.nes",
+    "title": "z___game_045",
+    "mapper": 23,
+    "supported": false,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 54,
+    "file": "z___game_046.nes",
+    "title": "z___game_046",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 55,
+    "file": "z___game_047.nes",
+    "title": "z___game_047",
+    "mapper": 4,
+    "supported": true,
+    "size": 1048608,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 56,
+    "file": "z___game_048.nes",
+    "title": "z___game_048",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 57,
+    "file": "z___game_049.nes",
+    "title": "z___game_049",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 58,
+    "file": "z___game_050.nes",
+    "title": "z___game_050",
+    "mapper": 16,
+    "supported": false,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 59,
+    "file": "z___game_051.nes",
+    "title": "z___game_051",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 60,
+    "file": "z___game_052.nes",
+    "title": "z___game_052",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 61,
+    "file": "z___game_053.nes",
+    "title": "z___game_053",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 62,
+    "file": "z___game_054.nes",
+    "title": "z___game_054",
+    "mapper": 1,
+    "supported": true,
+    "size": 786464,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 63,
+    "file": "z___game_055.nes",
+    "title": "z___game_055",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 64,
+    "file": "z___game_056.nes",
+    "title": "z___game_056",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 65,
+    "file": "z___game_057.nes",
+    "title": "z___game_057",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 66,
+    "file": "z___game_058.nes",
+    "title": "z___game_058",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 67,
+    "file": "z___game_059.nes",
+    "title": "z___game_059",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 68,
+    "file": "z___game_060.nes",
+    "title": "z___game_060",
+    "mapper": 4,
+    "supported": true,
+    "size": 786464,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 69,
+    "file": "z___game_061.nes",
+    "title": "z___game_061",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 70,
+    "file": "z___game_062.nes",
+    "title": "z___game_062",
+    "mapper": 1,
+    "supported": true,
+    "size": 65552,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 71,
+    "file": "z___game_063.nes",
+    "title": "z___game_063",
+    "mapper": 1,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 72,
+    "file": "z___game_064.nes",
+    "title": "z___game_064",
+    "mapper": 17,
+    "supported": false,
+    "size": 393232,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 73,
+    "file": "z___game_065.nes",
+    "title": "z___game_065",
+    "mapper": 64,
+    "supported": false,
+    "size": 40976,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 74,
+    "file": "z___game_066.nes",
+    "title": "z___game_066",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 75,
+    "file": "z___game_067.nes",
+    "title": "z___game_067",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 76,
+    "file": "z___game_068.nes",
+    "title": "z___game_068",
+    "mapper": 10,
+    "supported": false,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 77,
+    "file": "z___game_070.nes",
+    "title": "z___game_070",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 78,
+    "file": "z___game_071.nes",
+    "title": "z___game_071",
+    "mapper": 1,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 79,
+    "file": "z___game_072.nes",
+    "title": "z___game_072",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 80,
+    "file": "z___game_073.nes",
+    "title": "z___game_073",
+    "mapper": 10,
+    "supported": false,
+    "size": 393232,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 81,
+    "file": "z___game_074.nes",
+    "title": "z___game_074",
+    "mapper": 10,
+    "supported": false,
+    "size": 393232,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 82,
+    "file": "z___game_075.nes",
+    "title": "z___game_075",
+    "mapper": 10,
+    "supported": false,
+    "size": 393232,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 83,
+    "file": "z___game_076.nes",
+    "title": "z___game_076",
+    "mapper": 80,
+    "supported": false,
+    "size": 393232,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 84,
+    "file": "z___game_077.nes",
+    "title": "z___game_077",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 85,
+    "file": "z___game_078.nes",
+    "title": "z___game_078",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 86,
+    "file": "z___game_079.nes",
+    "title": "z___game_079",
+    "mapper": 1,
+    "supported": true,
+    "size": 688160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 87,
+    "file": "z___game_080.nes",
+    "title": "z___game_080",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 88,
+    "file": "z___game_081.nes",
+    "title": "z___game_081",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 89,
+    "file": "z___game_082.nes",
+    "title": "z___game_082",
+    "mapper": 23,
+    "supported": false,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 90,
+    "file": "z___game_083.nes",
+    "title": "z___game_083",
+    "mapper": 4,
+    "supported": true,
+    "size": 393232,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 91,
+    "file": "z___game_084.nes",
+    "title": "z___game_084",
+    "mapper": 4,
+    "supported": true,
+    "size": 393232,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 92,
+    "file": "z___game_085.nes",
+    "title": "z___game_085",
+    "mapper": 87,
+    "supported": false,
+    "size": 49168,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 93,
+    "file": "z___game_086.nes",
+    "title": "z___game_086",
+    "mapper": 15,
+    "supported": false,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 94,
+    "file": "z___game_087.nes",
+    "title": "z___game_087",
+    "mapper": 241,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 95,
+    "file": "z___game_088.nes",
+    "title": "z___game_088",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 96,
+    "file": "z___game_089.nes",
+    "title": "z___game_089",
+    "mapper": 3,
+    "supported": true,
+    "size": 65552,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 97,
+    "file": "z___game_090.nes",
+    "title": "z___game_090",
+    "mapper": 3,
+    "supported": true,
+    "size": 589856,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 98,
+    "file": "z___game_091.nes",
+    "title": "z___game_091",
+    "mapper": 2,
+    "supported": true,
+    "size": 655392,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 99,
+    "file": "z___game_092.nes",
+    "title": "z___game_092",
+    "mapper": 4,
+    "supported": true,
+    "size": 786448,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 100,
+    "file": "z___game_093.nes",
+    "title": "z___game_093",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 101,
+    "file": "z___game_094.nes",
+    "title": "z___game_094",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 102,
+    "file": "z___game_095.nes",
+    "title": "z___game_095",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 103,
+    "file": "z___game_096.nes",
+    "title": "z___game_096",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 104,
+    "file": "z___game_097.nes",
+    "title": "z___game_097",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 105,
+    "file": "z___game_098.nes",
+    "title": "z___game_098",
+    "mapper": 4,
+    "supported": true,
+    "size": 786464,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 106,
+    "file": "z___game_099.nes",
+    "title": "z___game_099",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 107,
+    "file": "z___game_100.nes",
+    "title": "z___game_100",
+    "mapper": 3,
+    "supported": true,
+    "size": 65552,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 108,
+    "file": "z___game_101.nes",
+    "title": "z___game_101",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 109,
+    "file": "z___game_102.nes",
+    "title": "z___game_102",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 110,
+    "file": "z___game_103.nes",
+    "title": "z___game_103",
+    "mapper": 4,
+    "supported": true,
+    "size": 393232,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 111,
+    "file": "z___game_104.nes",
+    "title": "z___game_104",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 112,
+    "file": "z___game_105.nes",
+    "title": "z___game_105",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 113,
+    "file": "z___game_106.nes",
+    "title": "z___game_106",
+    "mapper": 4,
+    "supported": true,
+    "size": 786464,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 114,
+    "file": "z___game_107.nes",
+    "title": "z___game_107",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 115,
+    "file": "z___game_108.nes",
+    "title": "z___game_108",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 116,
+    "file": "z___game_109.nes",
+    "title": "z___game_109",
+    "mapper": 3,
+    "supported": true,
+    "size": 49168,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 117,
+    "file": "z___game_110.nes",
+    "title": "z___game_110",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 118,
+    "file": "z___game_111.nes",
+    "title": "z___game_111",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 119,
+    "file": "z___game_112.nes",
+    "title": "z___game_112",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 120,
+    "file": "z___game_113.nes",
+    "title": "z___game_113",
+    "mapper": 1,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 121,
+    "file": "z___game_114.nes",
+    "title": "z___game_114",
+    "mapper": 4,
+    "supported": true,
+    "size": 196624,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 122,
+    "file": "z___game_115.nes",
+    "title": "z___game_115",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 123,
+    "file": "z___game_116.nes",
+    "title": "z___game_116",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 124,
+    "file": "z___game_117.nes",
+    "title": "z___game_117",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 125,
+    "file": "z___game_118.nes",
+    "title": "z___game_118",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 126,
+    "file": "z___game_119.nes",
+    "title": "z___game_119",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 127,
+    "file": "z___game_120.nes",
+    "title": "z___game_120",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 128,
+    "file": "z___game_121.nes",
+    "title": "z___game_121",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 129,
+    "file": "z___game_122.nes",
+    "title": "z___game_122",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 130,
+    "file": "z___game_123.nes",
+    "title": "z___game_123",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 131,
+    "file": "z___game_124.nes",
+    "title": "z___game_124",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 132,
+    "file": "z___game_125.nes",
+    "title": "z___game_125",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 133,
+    "file": "z___game_126.nes",
+    "title": "z___game_126",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 134,
+    "file": "z___game_127.nes",
+    "title": "z___game_127",
+    "mapper": 4,
+    "supported": true,
+    "size": 786464,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 135,
+    "file": "z___game_128.nes",
+    "title": "z___game_128",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 136,
+    "file": "z___game_129.nes",
+    "title": "z___game_129",
+    "mapper": 4,
+    "supported": true,
+    "size": 786464,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 137,
+    "file": "z___game_130.nes",
+    "title": "z___game_130",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 138,
+    "file": "z___game_131.nes",
+    "title": "z___game_131",
+    "mapper": 4,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 139,
+    "file": "z___game_132.nes",
+    "title": "z___game_132",
+    "mapper": 0,
+    "supported": true,
+    "size": 40976,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 140,
+    "file": "z___game_133.nes",
+    "title": "z___game_133",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 141,
+    "file": "z___game_134.nes",
+    "title": "z___game_134",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 142,
+    "file": "z___game_135.nes",
+    "title": "z___game_135",
+    "mapper": 1,
+    "supported": true,
+    "size": 786464,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 143,
+    "file": "z___game_136.nes",
+    "title": "z___game_136",
+    "mapper": 4,
+    "supported": true,
+    "size": 786464,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 144,
+    "file": "z___game_137.nes",
+    "title": "z___game_137",
+    "mapper": 4,
+    "supported": true,
+    "size": 786464,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 145,
+    "file": "z___game_138.nes",
+    "title": "z___game_138",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 146,
+    "file": "z___game_139.nes",
+    "title": "z___game_139",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 147,
+    "file": "z___game_140.nes",
+    "title": "z___game_140",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 148,
+    "file": "z___game_142.nes",
+    "title": "z___game_142",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 149,
+    "file": "z___game_143.nes",
+    "title": "z___game_143",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 150,
+    "file": "z___game_144.nes",
+    "title": "z___game_144",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 151,
+    "file": "z___game_145.nes",
+    "title": "z___game_145",
+    "mapper": 0,
+    "supported": true,
+    "size": 65552,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 152,
+    "file": "z___game_146.nes",
+    "title": "z___game_146",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 153,
+    "file": "z___game_147.nes",
+    "title": "z___game_147",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 154,
+    "file": "z___game_148.nes",
+    "title": "z___game_148",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 155,
+    "file": "z___game_149.nes",
+    "title": "z___game_149",
+    "mapper": 4,
+    "supported": true,
+    "size": 917536,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 156,
+    "file": "z___game_150.nes",
+    "title": "z___game_150",
+    "mapper": 4,
+    "supported": true,
+    "size": 1048608,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 157,
+    "file": "z___game_151.nes",
+    "title": "z___game_151",
+    "mapper": 4,
+    "supported": true,
+    "size": 1048608,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 158,
+    "file": "z___game_152.nes",
+    "title": "z___game_152",
+    "mapper": 4,
+    "supported": true,
+    "size": 1048608,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 159,
+    "file": "z___game_153.nes",
+    "title": "z___game_153",
+    "mapper": 4,
+    "supported": true,
+    "size": 1048608,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 160,
+    "file": "z___game_154.nes",
+    "title": "z___game_154",
+    "mapper": 1,
+    "supported": true,
+    "size": 688160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 161,
+    "file": "z___game_155.nes",
+    "title": "z___game_155",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 162,
+    "file": "z___game_157.nes",
+    "title": "z___game_157",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 163,
+    "file": "z___game_158.nes",
+    "title": "z___game_158",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 164,
+    "file": "z___game_159.nes",
+    "title": "z___game_159",
+    "mapper": 73,
+    "supported": false,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 165,
+    "file": "z___game_160.nes",
+    "title": "z___game_160",
+    "mapper": 73,
+    "supported": false,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 166,
+    "file": "z___game_161.nes",
+    "title": "z___game_161",
+    "mapper": 73,
+    "supported": false,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 167,
+    "file": "z___game_162.nes",
+    "title": "z___game_162",
+    "mapper": 112,
+    "supported": false,
+    "size": 393232,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 168,
+    "file": "z___game_163.nes",
+    "title": "z___game_163",
+    "mapper": 117,
+    "supported": false,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 169,
+    "file": "z___game_164.nes",
+    "title": "z___game_164",
+    "mapper": 19,
+    "supported": false,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 170,
+    "file": "z___game_165.nes",
+    "title": "z___game_165",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 171,
+    "file": "z___game_166.nes",
+    "title": "z___game_166",
+    "mapper": 19,
+    "supported": false,
+    "size": 1048608,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 172,
+    "file": "z___game_167.nes",
+    "title": "z___game_167",
+    "mapper": 19,
+    "supported": false,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 173,
+    "file": "z___game_168.nes",
+    "title": "z___game_168",
+    "mapper": 90,
+    "supported": false,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 174,
+    "file": "z___game_169.nes",
+    "title": "z___game_169",
+    "mapper": 94,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 175,
+    "file": "z___game_170.nes",
+    "title": "z___game_170",
+    "mapper": 187,
+    "supported": false,
+    "size": 393232,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 176,
+    "file": "z___game_171.nes",
+    "title": "z___game_171",
+    "mapper": 4,
+    "supported": true,
+    "size": 163856,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 177,
+    "file": "z___game_172.nes",
+    "title": "z___game_172",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 178,
+    "file": "z___game_173.nes",
+    "title": "z___game_173",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 179,
+    "file": "z___game_174.nes",
+    "title": "z___game_174",
+    "mapper": 65,
+    "supported": false,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 180,
+    "file": "z___game_175.nes",
+    "title": "z___game_175",
+    "mapper": 17,
+    "supported": false,
+    "size": 786464,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 181,
+    "file": "z___game_177.nes",
+    "title": "z___game_177",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 182,
+    "file": "z___game_178.nes",
+    "title": "z___game_178",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 183,
+    "file": "z___game_179.nes",
+    "title": "z___game_179",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 184,
+    "file": "z___game_180.nes",
+    "title": "z___game_180",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 185,
+    "file": "z___game_181.nes",
+    "title": "z___game_181",
+    "mapper": 4,
+    "supported": true,
+    "size": 786464,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 186,
+    "file": "z___game_182.nes",
+    "title": "z___game_182",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 187,
+    "file": "z___game_183.nes",
+    "title": "z___game_183",
+    "mapper": 0,
+    "supported": true,
+    "size": 40976,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 188,
+    "file": "z___game_184.nes",
+    "title": "z___game_184",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 189,
+    "file": "z___game_185.nes",
+    "title": "z___game_185",
+    "mapper": 4,
+    "supported": true,
+    "size": 393232,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 190,
+    "file": "z___game_186.nes",
+    "title": "z___game_186",
+    "mapper": 0,
+    "supported": true,
+    "size": 40976,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 191,
+    "file": "z___game_187.nes",
+    "title": "z___game_187",
+    "mapper": 90,
+    "supported": false,
+    "size": 786448,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 192,
+    "file": "z___game_188.nes",
+    "title": "z___game_188",
+    "mapper": 0,
+    "supported": true,
+    "size": 40976,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 193,
+    "file": "z___game_189.nes",
+    "title": "z___game_189",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 194,
+    "file": "z___game_191.nes",
+    "title": "z___game_191",
+    "mapper": 4,
+    "supported": true,
+    "size": 393232,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 195,
+    "file": "z___game_192.nes",
+    "title": "z___game_192",
+    "mapper": 66,
+    "supported": true,
+    "size": 688160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 196,
+    "file": "z___game_193.nes",
+    "title": "z___game_193",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 197,
+    "file": "z___game_194.nes",
+    "title": "z___game_194",
+    "mapper": 3,
+    "supported": true,
+    "size": 65552,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 198,
+    "file": "z___game_195.nes",
+    "title": "z___game_195",
+    "mapper": 3,
+    "supported": true,
+    "size": 65552,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 199,
+    "file": "z___game_196.nes",
+    "title": "z___game_196",
+    "mapper": 85,
+    "supported": false,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 200,
+    "file": "z___game_197.nes",
+    "title": "z___game_197",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 201,
+    "file": "z___game_198.nes",
+    "title": "z___game_198",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 202,
+    "file": "z___game_199.nes",
+    "title": "z___game_199",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 203,
+    "file": "z___game_200.nes",
+    "title": "z___game_200",
+    "mapper": 3,
+    "supported": true,
+    "size": 49168,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 204,
+    "file": "z___game_201.nes",
+    "title": "z___game_201",
+    "mapper": 22,
+    "supported": false,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 205,
+    "file": "z___game_202.nes",
+    "title": "z___game_202",
+    "mapper": 22,
+    "supported": false,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 206,
+    "file": "z___game_204.nes",
+    "title": "z___game_204",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 207,
+    "file": "z___game_205.nes",
+    "title": "z___game_205",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 208,
+    "file": "z___game_206.nes",
+    "title": "z___game_206",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 209,
+    "file": "z___game_207.nes",
+    "title": "z___game_207",
+    "mapper": 245,
+    "supported": false,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 210,
+    "file": "z___game_208.nes",
+    "title": "z___game_208",
+    "mapper": 115,
+    "supported": false,
+    "size": 393232,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 211,
+    "file": "z___game_209.nes",
+    "title": "z___game_209",
+    "mapper": 115,
+    "supported": false,
+    "size": 393232,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 212,
+    "file": "七国大战.nes",
+    "title": "七国大战",
+    "mapper": 163,
+    "supported": false,
+    "size": 1048592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 213,
+    "file": "七宝奇谋(CN).nes",
+    "title": "七宝奇谋(CN)",
+    "mapper": 3,
+    "supported": true,
+    "size": 49168,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 214,
+    "file": "七宝奇谋.nes",
+    "title": "七宝奇谋",
+    "mapper": 87,
+    "supported": false,
+    "size": 49168,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 215,
+    "file": "七龙珠.nes",
+    "title": "七龙珠",
+    "mapper": 16,
+    "supported": false,
+    "size": 1048608,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 216,
+    "file": "七龙珠2.nes",
+    "title": "七龙珠2",
+    "mapper": 16,
+    "supported": false,
+    "size": 786464,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 217,
+    "file": "七龙珠3.nes",
+    "title": "七龙珠3",
+    "mapper": 16,
+    "supported": false,
+    "size": 393232,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 218,
+    "file": "七龙珠大冒险.nes",
+    "title": "七龙珠大冒险",
+    "mapper": 163,
+    "supported": false,
+    "size": 1048592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 219,
+    "file": "三个枪手.nes",
+    "title": "三个枪手",
+    "mapper": 4,
+    "supported": true,
+    "size": 196624,
+    "hot": false,
+    "category": "飞行射击"
+  },
+  {
+    "id": 220,
+    "file": "三只小猪.nes",
+    "title": "三只小猪",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 221,
+    "file": "三国大乱斗_战国.nes",
+    "title": "三国大乱斗_战国",
+    "mapper": 163,
+    "supported": false,
+    "size": 1048592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 222,
+    "file": "三国志-群雄争霸.nes",
+    "title": "三国志-群雄争霸",
+    "mapper": 112,
+    "supported": false,
+    "size": 393232,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 223,
+    "file": "三国志4赤壁风云.nes",
+    "title": "三国志4赤壁风云",
+    "mapper": 117,
+    "supported": false,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 224,
+    "file": "三国志_曹操传.nes",
+    "title": "三国志_曹操传",
+    "mapper": 163,
+    "supported": false,
+    "size": 2097168,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 225,
+    "file": "三国志超级版.nes",
+    "title": "三国志超级版",
+    "mapper": 19,
+    "supported": false,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 226,
+    "file": "三国无双_猛将传.nes",
+    "title": "三国无双_猛将传",
+    "mapper": 163,
+    "supported": false,
+    "size": 2097168,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 227,
+    "file": "三目童子(中文).nes",
+    "title": "三目童子(中文)",
+    "mapper": 4,
+    "supported": true,
+    "size": 786464,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 228,
+    "file": "三目童子.nes",
+    "title": "三目童子",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 229,
+    "file": "三目童子子弹增加版.nes",
+    "title": "三目童子子弹增加版",
+    "mapper": 4,
+    "supported": true,
+    "size": 786464,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 230,
+    "file": "三眼童子.nes",
+    "title": "三眼童子",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 231,
+    "file": "上尉命令.nes",
+    "title": "上尉命令",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 232,
+    "file": "上海2(J).nes",
+    "title": "上海2(J)",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 233,
+    "file": "上海_(J).nes",
+    "title": "上海_(J)",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 234,
+    "file": "上海大亨(大富翁2).nes",
+    "title": "上海大亨(大富翁2)",
+    "mapper": 176,
+    "supported": false,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 235,
+    "file": "世界杯足球赛.nes",
+    "title": "世界杯足球赛",
+    "mapper": 4,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "休闲体育"
+  },
+  {
+    "id": 236,
+    "file": "世界英雄2.nes",
+    "title": "世界英雄2",
+    "mapper": 83,
+    "supported": false,
+    "size": 786448,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 237,
+    "file": "东周列国志.nes",
+    "title": "东周列国志",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 238,
+    "file": "两人麻将.nes",
+    "title": "两人麻将",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 239,
+    "file": "中东战争.nes",
+    "title": "中东战争",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 240,
+    "file": "中东战争联合大作战.nes",
+    "title": "中东战争联合大作战",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 241,
+    "file": "中华大仙.nes",
+    "title": "中华大仙",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 242,
+    "file": "中国象棋.nes",
+    "title": "中国象棋",
+    "mapper": 0,
+    "supported": true,
+    "size": 40976,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 243,
+    "file": "五子棋.nes",
+    "title": "五子棋",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 244,
+    "file": "亚特兰蒂斯之迷_(J).nes",
+    "title": "亚特兰蒂斯之迷_(J)",
+    "mapper": 3,
+    "supported": true,
+    "size": 66064,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 245,
+    "file": "人间兵器.nes",
+    "title": "人间兵器",
+    "mapper": 4,
+    "supported": true,
+    "size": 294928,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 246,
+    "file": "仓鼠寻宝.nes",
+    "title": "仓鼠寻宝",
+    "mapper": 3,
+    "supported": true,
+    "size": 65552,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 247,
+    "file": "企鹅先生(J).nes",
+    "title": "企鹅先生(J)",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 248,
+    "file": "企鹅梦物语.nes",
+    "title": "企鹅梦物语",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 249,
+    "file": "俄罗斯方块.nes",
+    "title": "俄罗斯方块",
+    "mapper": 67,
+    "supported": false,
+    "size": 65552,
+    "hot": false,
+    "category": "休闲体育"
+  },
+  {
+    "id": 250,
+    "file": "保护Baby(U).nes",
+    "title": "保护Baby(U)",
+    "mapper": 11,
+    "supported": true,
+    "size": 81936,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 251,
+    "file": "假面忍者花丸.nes",
+    "title": "假面忍者花丸",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 252,
+    "file": "偷看扑克.nes",
+    "title": "偷看扑克",
+    "mapper": 3,
+    "supported": true,
+    "size": 98320,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 253,
+    "file": "充气狗.nes",
+    "title": "充气狗",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 254,
+    "file": "克纳米宣传足球.nes",
+    "title": "克纳米宣传足球",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "休闲体育"
+  },
+  {
+    "id": 255,
+    "file": "兔子超级玛丽.nes",
+    "title": "兔子超级玛丽",
+    "mapper": 0,
+    "supported": true,
+    "size": 40976,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 256,
+    "file": "兔宝宝冒险.nes",
+    "title": "兔宝宝冒险",
+    "mapper": 23,
+    "supported": false,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 257,
+    "file": "兔宝宝历险记2.nes",
+    "title": "兔宝宝历险记2",
+    "mapper": 85,
+    "supported": false,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 258,
+    "file": "兔宝宝大冒险1.nes",
+    "title": "兔宝宝大冒险1",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 259,
+    "file": "兔宝宝大冒险2.nes",
+    "title": "兔宝宝大冒险2",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 260,
+    "file": "八只眼(J).nes",
+    "title": "八只眼(J)",
+    "mapper": 4,
+    "supported": true,
+    "size": 786464,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 261,
+    "file": "公路赛车.nes",
+    "title": "公路赛车",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "休闲体育"
+  },
+  {
+    "id": 262,
+    "file": "公路追逐赛(J).nes",
+    "title": "公路追逐赛(J)",
+    "mapper": 3,
+    "supported": true,
+    "size": 65552,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 263,
+    "file": "六人街霸(中文).nes",
+    "title": "六人街霸(中文)",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "动作格斗"
+  },
+  {
+    "id": 264,
+    "file": "兵蜂(J).nes",
+    "title": "兵蜂(J)",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "飞行射击"
+  },
+  {
+    "id": 265,
+    "file": "兵蜂.nes",
+    "title": "兵蜂",
+    "mapper": 3,
+    "supported": true,
+    "size": 49168,
+    "hot": false,
+    "category": "飞行射击"
+  },
+  {
+    "id": 266,
+    "file": "兵蜂1.nes",
+    "title": "兵蜂1",
+    "mapper": 3,
+    "supported": true,
+    "size": 49168,
+    "hot": false,
+    "category": "飞行射击"
+  },
+  {
+    "id": 267,
+    "file": "兵蜂3.nes",
+    "title": "兵蜂3",
+    "mapper": 22,
+    "supported": false,
+    "size": 262160,
+    "hot": false,
+    "category": "飞行射击"
+  },
+  {
+    "id": 268,
+    "file": "冒险岛1.nes",
+    "title": "冒险岛1",
+    "mapper": 3,
+    "supported": true,
+    "size": 65552,
+    "hot": true,
+    "category": "平台跳跃"
+  },
+  {
+    "id": 269,
+    "file": "冒险岛1无敌版.nes",
+    "title": "冒险岛1无敌版",
+    "mapper": 3,
+    "supported": true,
+    "size": 65552,
+    "hot": true,
+    "category": "平台跳跃"
+  },
+  {
+    "id": 270,
+    "file": "冒险岛2.nes",
+    "title": "冒险岛2",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "平台跳跃"
+  },
+  {
+    "id": 271,
+    "file": "冒险岛2全部无限.nes",
+    "title": "冒险岛2全部无限",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "平台跳跃"
+  },
+  {
+    "id": 272,
+    "file": "冒险岛2无限人.nes",
+    "title": "冒险岛2无限人",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "平台跳跃"
+  },
+  {
+    "id": 273,
+    "file": "冒险岛3.nes",
+    "title": "冒险岛3",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "平台跳跃"
+  },
+  {
+    "id": 274,
+    "file": "冒险岛3中文版.nes",
+    "title": "冒险岛3中文版",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "平台跳跃"
+  },
+  {
+    "id": 275,
+    "file": "冒险岛3无限人出来就有恐龙可以骑.nes",
+    "title": "冒险岛3无限人出来就有恐龙可以骑",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 276,
+    "file": "冒险岛4.nes",
+    "title": "冒险岛4",
+    "mapper": 4,
+    "supported": true,
+    "size": 393232,
+    "hot": true,
+    "category": "平台跳跃"
+  },
+  {
+    "id": 277,
+    "file": "冒险岛4隐形版.nes",
+    "title": "冒险岛4隐形版",
+    "mapper": 4,
+    "supported": true,
+    "size": 393232,
+    "hot": true,
+    "category": "平台跳跃"
+  },
+  {
+    "id": 278,
+    "file": "冒险队(J).nes",
+    "title": "冒险队(J)",
+    "mapper": 2,
+    "supported": true,
+    "size": 786464,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 279,
+    "file": "列车寻宝.nes",
+    "title": "列车寻宝",
+    "mapper": 0,
+    "supported": true,
+    "size": 40976,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 280,
+    "file": "前线.nes",
+    "title": "前线",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 281,
+    "file": "功夫.nes",
+    "title": "功夫",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 282,
+    "file": "加纳战机(无限命_无限雷).nes",
+    "title": "加纳战机(无限命_无限雷)",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "飞行射击"
+  },
+  {
+    "id": 283,
+    "file": "加纳战机.nes",
+    "title": "加纳战机",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "飞行射击"
+  },
+  {
+    "id": 284,
+    "file": "加纳战机无敌版.nes",
+    "title": "加纳战机无敌版",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "飞行射击"
+  },
+  {
+    "id": 285,
+    "file": "加纳战机无限版.nes",
+    "title": "加纳战机无限版",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "飞行射击"
+  },
+  {
+    "id": 286,
+    "file": "勇士们hack.nes",
+    "title": "勇士们hack",
+    "mapper": 7,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 287,
+    "file": "勇者斗恶龙(J).nes",
+    "title": "勇者斗恶龙(J)",
+    "mapper": 3,
+    "supported": true,
+    "size": 589856,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 288,
+    "file": "勇者斗恶龙2_(J).nes",
+    "title": "勇者斗恶龙2_(J)",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 289,
+    "file": "勇者斗恶龙3_(J).nes",
+    "title": "勇者斗恶龙3_(J)",
+    "mapper": 2,
+    "supported": true,
+    "size": 786464,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 290,
+    "file": "勇者斗恶龙4_(J).nes",
+    "title": "勇者斗恶龙4_(J)",
+    "mapper": 1,
+    "supported": true,
+    "size": 1048608,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 291,
+    "file": "勇者斗恶龙5.nes",
+    "title": "勇者斗恶龙5",
+    "mapper": 245,
+    "supported": false,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 292,
+    "file": "勇者斗恶龙6.nes",
+    "title": "勇者斗恶龙6",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 293,
+    "file": "勇者斗恶龙7.nes",
+    "title": "勇者斗恶龙7",
+    "mapper": 245,
+    "supported": false,
+    "size": 1048592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 294,
+    "file": "勇者斗恶龙8.nes",
+    "title": "勇者斗恶龙8",
+    "mapper": 242,
+    "supported": false,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 295,
+    "file": "包青天.nes",
+    "title": "包青天",
+    "mapper": 4,
+    "supported": true,
+    "size": 393232,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 296,
+    "file": "北斗神拳.nes",
+    "title": "北斗神拳",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "动作格斗"
+  },
+  {
+    "id": 297,
+    "file": "匹诺槽的复苏.nes",
+    "title": "匹诺槽的复苏",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 298,
+    "file": "半熟英雄(J).nes",
+    "title": "半熟英雄(J)",
+    "mapper": 1,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 299,
+    "file": "南京企鹅.nes",
+    "title": "南京企鹅",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 300,
+    "file": "南极大冒险(J).nes",
+    "title": "南极大冒险(J)",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 301,
+    "file": "南极大冒险.nes",
+    "title": "南极大冒险",
+    "mapper": 3,
+    "supported": true,
+    "size": 32784,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 302,
+    "file": "双截龙1.nes",
+    "title": "双截龙1",
+    "mapper": 1,
+    "supported": true,
+    "size": 262288,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 303,
+    "file": "双截龙2.nes",
+    "title": "双截龙2",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 304,
+    "file": "双截龙3.nes",
+    "title": "双截龙3",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 305,
+    "file": "双截龙3中文版.nes",
+    "title": "双截龙3中文版",
+    "mapper": 4,
+    "supported": true,
+    "size": 262288,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 306,
+    "file": "双截龙3跳关版.nes",
+    "title": "双截龙3跳关版",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 307,
+    "file": "双截龙4.nes",
+    "title": "双截龙4",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 308,
+    "file": "双蛇城.nes",
+    "title": "双蛇城",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 309,
+    "file": "双鹰.nes",
+    "title": "双鹰",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 310,
+    "file": "双鹰无敌.nes",
+    "title": "双鹰无敌",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 311,
+    "file": "变形金刚.nes",
+    "title": "变形金刚",
+    "mapper": 3,
+    "supported": true,
+    "size": 65552,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 312,
+    "file": "口袋妖怪.nes",
+    "title": "口袋妖怪",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 313,
+    "file": "口袋妖怪4合1.nes",
+    "title": "口袋妖怪4合1",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 314,
+    "file": "口袋妖怪金.nes",
+    "title": "口袋妖怪金",
+    "mapper": 15,
+    "supported": false,
+    "size": 1048592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 315,
+    "file": "口袋妖怪金简体中文版.nes",
+    "title": "口袋妖怪金简体中文版",
+    "mapper": 15,
+    "supported": false,
+    "size": 1048592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 316,
+    "file": "口袋宝石银.nes",
+    "title": "口袋宝石银",
+    "mapper": 163,
+    "supported": false,
+    "size": 2097168,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 317,
+    "file": "口袋精灵水晶.nes",
+    "title": "口袋精灵水晶",
+    "mapper": 164,
+    "supported": false,
+    "size": 1048592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 318,
+    "file": "口袋精灵红(宠物红).nes",
+    "title": "口袋精灵红(宠物红)",
+    "mapper": 164,
+    "supported": false,
+    "size": 1048592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 319,
+    "file": "口袋精灵金.nes",
+    "title": "口袋精灵金",
+    "mapper": 15,
+    "supported": false,
+    "size": 1048592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 320,
+    "file": "古墓丽影.nes",
+    "title": "古墓丽影",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 321,
+    "file": "古巴战争.nes",
+    "title": "古巴战争",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 322,
+    "file": "古巴战士(完整汉化版).nes",
+    "title": "古巴战士(完整汉化版)",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 323,
+    "file": "古巴战士.nes",
+    "title": "古巴战士",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 324,
+    "file": "古巴革命.nes",
+    "title": "古巴革命",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 325,
+    "file": "台湾16张麻将(中文).nes",
+    "title": "台湾16张麻将(中文)",
+    "mapper": 113,
+    "supported": false,
+    "size": 49168,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 326,
+    "file": "吃豆.nes",
+    "title": "吃豆",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": true,
+    "category": "休闲体育"
+  },
+  {
+    "id": 327,
+    "file": "合金装备美版燃烧战车美版(U).nes",
+    "title": "合金装备美版燃烧战车美版(U)",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 328,
+    "file": "吉米克.nes",
+    "title": "吉米克",
+    "mapper": 69,
+    "supported": false,
+    "size": 393232,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 329,
+    "file": "吞食天地(j).nes",
+    "title": "吞食天地(j)",
+    "mapper": 1,
+    "supported": true,
+    "size": 786464,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 330,
+    "file": "吞食天地1.nes",
+    "title": "吞食天地1",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 331,
+    "file": "吞食天地2(j).nes",
+    "title": "吞食天地2(j)",
+    "mapper": 4,
+    "supported": true,
+    "size": 1048608,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 332,
+    "file": "吞食天地2.nes",
+    "title": "吞食天地2",
+    "mapper": 4,
+    "supported": true,
+    "size": 1048592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 333,
+    "file": "吞食天地一代.nes",
+    "title": "吞食天地一代",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 334,
+    "file": "咸蛋超人.nes",
+    "title": "咸蛋超人",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 335,
+    "file": "哈利传奇(中文).nes",
+    "title": "哈利传奇(中文)",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 336,
+    "file": "哈林篮球.nes",
+    "title": "哈林篮球",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "休闲体育"
+  },
+  {
+    "id": 337,
+    "file": "哥伦布传.nes",
+    "title": "哥伦布传",
+    "mapper": 74,
+    "supported": false,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 338,
+    "file": "哪吒传奇.nes",
+    "title": "哪吒传奇",
+    "mapper": 163,
+    "supported": false,
+    "size": 2097168,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 339,
+    "file": "唐老鸭.nes",
+    "title": "唐老鸭",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "平台跳跃"
+  },
+  {
+    "id": 340,
+    "file": "唐老鸭2.nes",
+    "title": "唐老鸭2",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "平台跳跃"
+  },
+  {
+    "id": 341,
+    "file": "唐老鸭梦冒险.nes",
+    "title": "唐老鸭梦冒险",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "平台跳跃"
+  },
+  {
+    "id": 342,
+    "file": "唐老鸭梦冒险2(J).nes",
+    "title": "唐老鸭梦冒险2(J)",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "平台跳跃"
+  },
+  {
+    "id": 343,
+    "file": "唐老鸭梦冒险2.nes",
+    "title": "唐老鸭梦冒险2",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "平台跳跃"
+  },
+  {
+    "id": 344,
+    "file": "嘉蒂外传.nes",
+    "title": "嘉蒂外传",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 345,
+    "file": "回到未来2&3.nes",
+    "title": "回到未来2&3",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 346,
+    "file": "围棋大战g.nes",
+    "title": "围棋大战g",
+    "mapper": 3,
+    "supported": true,
+    "size": 589856,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 347,
+    "file": "国王骑士(J).nes",
+    "title": "国王骑士(J)",
+    "mapper": 3,
+    "supported": true,
+    "size": 65552,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 348,
+    "file": "圣斗士星矢.nes",
+    "title": "圣斗士星矢",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 349,
+    "file": "圣斗士星矢2(中文).nes",
+    "title": "圣斗士星矢2(中文)",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 350,
+    "file": "圣斗士星矢_北欧突击篇.nes",
+    "title": "圣斗士星矢_北欧突击篇",
+    "mapper": 163,
+    "supported": false,
+    "size": 1048592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 351,
+    "file": "圣斗士星矢_天马之幻想.nes",
+    "title": "圣斗士星矢_天马之幻想",
+    "mapper": 163,
+    "supported": false,
+    "size": 2097168,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 352,
+    "file": "圣火列传(中文)(C).nes",
+    "title": "圣火列传(中文)(C)",
+    "mapper": 240,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 353,
+    "file": "圣火列传.nes",
+    "title": "圣火列传",
+    "mapper": 240,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 354,
+    "file": "圣火徽章2.nes",
+    "title": "圣火徽章2",
+    "mapper": 165,
+    "supported": false,
+    "size": 655376,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 355,
+    "file": "圣火徽章_索菲亚复苏(圣火徽章外传).nes",
+    "title": "圣火徽章_索菲亚复苏(圣火徽章外传)",
+    "mapper": 165,
+    "supported": false,
+    "size": 655376,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 356,
+    "file": "圣铃传说(美版)(U).nes",
+    "title": "圣铃传说(美版)(U)",
+    "mapper": 4,
+    "supported": true,
+    "size": 393232,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 357,
+    "file": "圣铃传说.nes",
+    "title": "圣铃传说",
+    "mapper": 4,
+    "supported": true,
+    "size": 393232,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 358,
+    "file": "地底探险.nes",
+    "title": "地底探险",
+    "mapper": 0,
+    "supported": true,
+    "size": 40976,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 359,
+    "file": "地狱极乐丸.nes",
+    "title": "地狱极乐丸",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 360,
+    "file": "地球战士.nes",
+    "title": "地球战士",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 361,
+    "file": "地道战.nes",
+    "title": "地道战",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 362,
+    "file": "坦克1990.nes",
+    "title": "坦克1990",
+    "mapper": 0,
+    "supported": true,
+    "size": 41104,
+    "hot": true,
+    "category": "飞行射击"
+  },
+  {
+    "id": 363,
+    "file": "坦克仔.nes",
+    "title": "坦克仔",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": true,
+    "category": "飞行射击"
+  },
+  {
+    "id": 364,
+    "file": "坦克大战-导弹坦克.nes",
+    "title": "坦克大战-导弹坦克",
+    "mapper": 3,
+    "supported": true,
+    "size": 49168,
+    "hot": true,
+    "category": "飞行射击"
+  },
+  {
+    "id": 365,
+    "file": "坦克大战.nes",
+    "title": "坦克大战",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": true,
+    "category": "飞行射击"
+  },
+  {
+    "id": 366,
+    "file": "坦克大战加速版.nes",
+    "title": "坦克大战加速版",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": true,
+    "category": "飞行射击"
+  },
+  {
+    "id": 367,
+    "file": "基督山恩仇记.nes",
+    "title": "基督山恩仇记",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 368,
+    "file": "塞外奇侠传.nes",
+    "title": "塞外奇侠传",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 369,
+    "file": "塞尔达传说(东方的传说).nes",
+    "title": "塞尔达传说(东方的传说)",
+    "mapper": 4,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 370,
+    "file": "外星战将(J).nes",
+    "title": "外星战将(J)",
+    "mapper": 4,
+    "supported": true,
+    "size": 786464,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 371,
+    "file": "外星战将.nes",
+    "title": "外星战将",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 372,
+    "file": "多变神童.nes",
+    "title": "多变神童",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 373,
+    "file": "大力水手.nes",
+    "title": "大力水手",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 374,
+    "file": "大嘴蛙對雙截龍.nes",
+    "title": "大嘴蛙對雙截龍",
+    "mapper": 7,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 375,
+    "file": "大坦克.nes",
+    "title": "大坦克",
+    "mapper": 65,
+    "supported": false,
+    "size": 262160,
+    "hot": false,
+    "category": "飞行射击"
+  },
+  {
+    "id": 376,
+    "file": "大拳头猫.nes",
+    "title": "大拳头猫",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "动作格斗"
+  },
+  {
+    "id": 377,
+    "file": "大拳猫.nes",
+    "title": "大拳猫",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "动作格斗"
+  },
+  {
+    "id": 378,
+    "file": "大空翼(足球小将)(J).nes",
+    "title": "大空翼(足球小将)(J)",
+    "mapper": 1,
+    "supported": true,
+    "size": 786464,
+    "hot": false,
+    "category": "休闲体育"
+  },
+  {
+    "id": 379,
+    "file": "大航海7.nes",
+    "title": "大航海7",
+    "mapper": 178,
+    "supported": false,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 380,
+    "file": "大话西游.nes",
+    "title": "大话西游",
+    "mapper": 15,
+    "supported": false,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 381,
+    "file": "大赛车.nes",
+    "title": "大赛车",
+    "mapper": 0,
+    "supported": true,
+    "size": 65552,
+    "hot": false,
+    "category": "休闲体育"
+  },
+  {
+    "id": 382,
+    "file": "大锤子2.nes",
+    "title": "大锤子2",
+    "mapper": 48,
+    "supported": false,
+    "size": 393232,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 383,
+    "file": "天使之翼(足球小将2)汉化中文.nes",
+    "title": "天使之翼(足球小将2)汉化中文",
+    "mapper": 74,
+    "supported": false,
+    "size": 786448,
+    "hot": false,
+    "category": "休闲体育"
+  },
+  {
+    "id": 384,
+    "file": "天使之翼2代.nes",
+    "title": "天使之翼2代",
+    "mapper": 4,
+    "supported": true,
+    "size": 393232,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 385,
+    "file": "天才厨师.nes",
+    "title": "天才厨师",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 386,
+    "file": "太空幻想.nes",
+    "title": "太空幻想",
+    "mapper": 163,
+    "supported": false,
+    "size": 2097168,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 387,
+    "file": "太阳系战机.nes",
+    "title": "太阳系战机",
+    "mapper": 140,
+    "supported": true,
+    "size": 180240,
+    "hot": false,
+    "category": "飞行射击"
+  },
+  {
+    "id": 388,
+    "file": "夺宝小英豪.nes",
+    "title": "夺宝小英豪",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 389,
+    "file": "奥运会(美版)(U).nes",
+    "title": "奥运会(美版)(U)",
+    "mapper": 3,
+    "supported": true,
+    "size": 65552,
+    "hot": false,
+    "category": "休闲体育"
+  },
+  {
+    "id": 390,
+    "file": "奥运会2(美版)(U).nes",
+    "title": "奥运会2(美版)(U)",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "休闲体育"
+  },
+  {
+    "id": 391,
+    "file": "妖怪道中记(J).nes",
+    "title": "妖怪道中记(J)",
+    "mapper": 19,
+    "supported": false,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 392,
+    "file": "威利熊_(U).nes",
+    "title": "威利熊_(U)",
+    "mapper": 11,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 393,
+    "file": "实战麻雀.nes",
+    "title": "实战麻雀",
+    "mapper": 4,
+    "supported": true,
+    "size": 196624,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 394,
+    "file": "宠物大家族.nes",
+    "title": "宠物大家族",
+    "mapper": 178,
+    "supported": false,
+    "size": 1048592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 395,
+    "file": "宠物翡翠.nes",
+    "title": "宠物翡翠",
+    "mapper": 176,
+    "supported": false,
+    "size": 1048592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 396,
+    "file": "宠物进化史.nes",
+    "title": "宠物进化史",
+    "mapper": 162,
+    "supported": false,
+    "size": 1048592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 397,
+    "file": "宠物高达战记.nes",
+    "title": "宠物高达战记",
+    "mapper": 163,
+    "supported": false,
+    "size": 1048592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 398,
+    "file": "富甲三国(王子复仇记).nes",
+    "title": "富甲三国(王子复仇记)",
+    "mapper": 177,
+    "supported": false,
+    "size": 1048592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 399,
+    "file": "寻秦记.nes",
+    "title": "寻秦记",
+    "mapper": 241,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 400,
+    "file": "封印岛.nes",
+    "title": "封印岛",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 401,
+    "file": "封神榜.nes",
+    "title": "封神榜",
+    "mapper": 249,
+    "supported": false,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 402,
+    "file": "封神榜_伏魔三太子.nes",
+    "title": "封神榜_伏魔三太子",
+    "mapper": 246,
+    "supported": false,
+    "size": 1048592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 403,
+    "file": "射击.nes",
+    "title": "射击",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "飞行射击"
+  },
+  {
+    "id": 404,
+    "file": "射击范围(U).nes",
+    "title": "射击范围(U)",
+    "mapper": 3,
+    "supported": true,
+    "size": 49168,
+    "hot": false,
+    "category": "飞行射击"
+  },
+  {
+    "id": 405,
+    "file": "小宠物POP_(J).nes",
+    "title": "小宠物POP_(J)",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 406,
+    "file": "小美人鱼.nes",
+    "title": "小美人鱼",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 407,
+    "file": "小美人鱼中.nes",
+    "title": "小美人鱼中",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 408,
+    "file": "小蛋大冒险(U).nes",
+    "title": "小蛋大冒险(U)",
+    "mapper": 71,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 409,
+    "file": "小蜜蜂.nes",
+    "title": "小蜜蜂",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 410,
+    "file": "小魔女皮皮.nes",
+    "title": "小魔女皮皮",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 411,
+    "file": "小鸭运蛋.nes",
+    "title": "小鸭运蛋",
+    "mapper": 3,
+    "supported": true,
+    "size": 40976,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 412,
+    "file": "少年印地安那琼斯(U).nes",
+    "title": "少年印地安那琼斯(U)",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 413,
+    "file": "少年游侠.nes",
+    "title": "少年游侠",
+    "mapper": 74,
+    "supported": false,
+    "size": 786448,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 414,
+    "file": "少年街霸'97.nes",
+    "title": "少年街霸'97",
+    "mapper": 187,
+    "supported": false,
+    "size": 786448,
+    "hot": false,
+    "category": "动作格斗"
+  },
+  {
+    "id": 415,
+    "file": "少年街霸.nes",
+    "title": "少年街霸",
+    "mapper": 91,
+    "supported": false,
+    "size": 655376,
+    "hot": false,
+    "category": "动作格斗"
+  },
+  {
+    "id": 416,
+    "file": "工人战记(咚咚)(J).nes",
+    "title": "工人战记(咚咚)(J)",
+    "mapper": 33,
+    "supported": false,
+    "size": 917536,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 417,
+    "file": "工人战记2(咚咚2)(J).nes",
+    "title": "工人战记2(咚咚2)(J)",
+    "mapper": 33,
+    "supported": false,
+    "size": 917536,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 418,
+    "file": "巴塞罗纳奥运会_'92_(J).nes",
+    "title": "巴塞罗纳奥运会_'92_(J)",
+    "mapper": 4,
+    "supported": true,
+    "size": 786464,
+    "hot": false,
+    "category": "休闲体育"
+  },
+  {
+    "id": 419,
+    "file": "巴比伦塔(J).nes",
+    "title": "巴比伦塔(J)",
+    "mapper": 4,
+    "supported": true,
+    "size": 65552,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 420,
+    "file": "帝国战机.nes",
+    "title": "帝国战机",
+    "mapper": 23,
+    "supported": false,
+    "size": 262160,
+    "hot": false,
+    "category": "飞行射击"
+  },
+  {
+    "id": 421,
+    "file": "帝国风暴.nes",
+    "title": "帝国风暴",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 422,
+    "file": "幻世录.nes",
+    "title": "幻世录",
+    "mapper": 163,
+    "supported": false,
+    "size": 2097168,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 423,
+    "file": "幻想传说(魔幻世界).nes",
+    "title": "幻想传说(魔幻世界)",
+    "mapper": 163,
+    "supported": false,
+    "size": 2097168,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 424,
+    "file": "幽灵列车(荣誉勋章).nes",
+    "title": "幽灵列车(荣誉勋章)",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 425,
+    "file": "异形之太空探险者.nes",
+    "title": "异形之太空探险者",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 426,
+    "file": "彩虹岛.nes",
+    "title": "彩虹岛",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 427,
+    "file": "彩虹岛_(J).nes",
+    "title": "彩虹岛_(J)",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 428,
+    "file": "影子传说.nes",
+    "title": "影子传说",
+    "mapper": 3,
+    "supported": true,
+    "size": 49168,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 429,
+    "file": "忍者猫.nes",
+    "title": "忍者猫",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 430,
+    "file": "忍者猫9合1.nes",
+    "title": "忍者猫9合1",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 431,
+    "file": "忍者神龟1-无敌版.nes",
+    "title": "忍者神龟1-无敌版",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 432,
+    "file": "忍者神龟1.nes",
+    "title": "忍者神龟1",
+    "mapper": 25,
+    "supported": false,
+    "size": 1048608,
+    "hot": false,
+    "category": "动作格斗"
+  },
+  {
+    "id": 433,
+    "file": "忍者神龟2(无限命).nes",
+    "title": "忍者神龟2(无限命)",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 434,
+    "file": "忍者神龟2.nes",
+    "title": "忍者神龟2",
+    "mapper": 25,
+    "supported": false,
+    "size": 1048608,
+    "hot": false,
+    "category": "动作格斗"
+  },
+  {
+    "id": 435,
+    "file": "忍者神龟3(无限人).nes",
+    "title": "忍者神龟3(无限人)",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 436,
+    "file": "忍者神龟3.nes",
+    "title": "忍者神龟3",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 437,
+    "file": "忍者神龟3必杀不费血命无限.nes",
+    "title": "忍者神龟3必杀不费血命无限",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 438,
+    "file": "忍者神龟3无限人.nes",
+    "title": "忍者神龟3无限人",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 439,
+    "file": "忍者神龟4.nes",
+    "title": "忍者神龟4",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 440,
+    "file": "忍者神龟格斗.nes",
+    "title": "忍者神龟格斗",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 441,
+    "file": "忍者神龟格斗无限弹珠版.nes",
+    "title": "忍者神龟格斗无限弹珠版",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 442,
+    "file": "忍者蛙.nes",
+    "title": "忍者蛙",
+    "mapper": 7,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 443,
+    "file": "忍者龙剑传1.nes",
+    "title": "忍者龙剑传1",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 444,
+    "file": "忍者龙剑传2.nes",
+    "title": "忍者龙剑传2",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 445,
+    "file": "忍者龙剑传3.nes",
+    "title": "忍者龙剑传3",
+    "mapper": 4,
+    "supported": true,
+    "size": 344080,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 446,
+    "file": "忍者龟格斗.nes",
+    "title": "忍者龟格斗",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 447,
+    "file": "快乐猫.nes",
+    "title": "快乐猫",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 448,
+    "file": "快打旋风.nes",
+    "title": "快打旋风",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "动作格斗"
+  },
+  {
+    "id": 449,
+    "file": "快打旋风3.nes",
+    "title": "快打旋风3",
+    "mapper": 90,
+    "supported": false,
+    "size": 786448,
+    "hot": false,
+    "category": "动作格斗"
+  },
+  {
+    "id": 450,
+    "file": "快打旋风中文无敌版.nes",
+    "title": "快打旋风中文无敌版",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "动作格斗"
+  },
+  {
+    "id": 451,
+    "file": "快打旋风中文版.nes",
+    "title": "快打旋风中文版",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "动作格斗"
+  },
+  {
+    "id": 452,
+    "file": "快打旋风修正.nes",
+    "title": "快打旋风修正",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "动作格斗"
+  },
+  {
+    "id": 453,
+    "file": "快打旋风扩展HACK版.nes",
+    "title": "快打旋风扩展HACK版",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "动作格斗"
+  },
+  {
+    "id": 454,
+    "file": "快攻篮球.nes",
+    "title": "快攻篮球",
+    "mapper": 65,
+    "supported": false,
+    "size": 262160,
+    "hot": false,
+    "category": "休闲体育"
+  },
+  {
+    "id": 455,
+    "file": "怒1.nes",
+    "title": "怒1",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 456,
+    "file": "怒2.nes",
+    "title": "怒2",
+    "mapper": 1,
+    "supported": true,
+    "size": 393232,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 457,
+    "file": "怒3.nes",
+    "title": "怒3",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 458,
+    "file": "怪物制造者1.nes",
+    "title": "怪物制造者1",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 459,
+    "file": "怪物制造者2.nes",
+    "title": "怪物制造者2",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 460,
+    "file": "怪鸭历险.nes",
+    "title": "怪鸭历险",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "平台跳跃"
+  },
+  {
+    "id": 461,
+    "file": "怪鸭历险记.nes",
+    "title": "怪鸭历险记",
+    "mapper": 1,
+    "supported": true,
+    "size": 262287,
+    "hot": false,
+    "category": "平台跳跃"
+  },
+  {
+    "id": 462,
+    "file": "恐龙战队2(金刚战士2).nes",
+    "title": "恐龙战队2(金刚战士2)",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "动作格斗"
+  },
+  {
+    "id": 463,
+    "file": "恶魔之剑.nes",
+    "title": "恶魔之剑",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "动作格斗"
+  },
+  {
+    "id": 464,
+    "file": "恶魔城.nes",
+    "title": "恶魔城",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 465,
+    "file": "恶魔城2.nes",
+    "title": "恶魔城2",
+    "mapper": 65,
+    "supported": false,
+    "size": 196752,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 466,
+    "file": "恶魔城3.nes",
+    "title": "恶魔城3",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 467,
+    "file": "恶魔城传说.nes",
+    "title": "恶魔城传说",
+    "mapper": 24,
+    "supported": false,
+    "size": 393232,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 468,
+    "file": "成龙之龙.nes",
+    "title": "成龙之龙",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "动作格斗"
+  },
+  {
+    "id": 469,
+    "file": "成龙踢馆.nes",
+    "title": "成龙踢馆",
+    "mapper": 0,
+    "supported": true,
+    "size": 40976,
+    "hot": false,
+    "category": "动作格斗"
+  },
+  {
+    "id": 470,
+    "file": "我王—火鸟.nes",
+    "title": "我王—火鸟",
+    "mapper": 2,
+    "supported": true,
+    "size": 655392,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 471,
+    "file": "战国群雄传(战国无双).nes",
+    "title": "战国群雄传(战国无双)",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 472,
+    "file": "战斗原始人（无敌版）by_nianxu.nes",
+    "title": "战斗原始人（无敌版）by_nianxu",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 473,
+    "file": "战斗坦克.nes",
+    "title": "战斗坦克",
+    "mapper": 3,
+    "supported": true,
+    "size": 65552,
+    "hot": true,
+    "category": "飞行射击"
+  },
+  {
+    "id": 474,
+    "file": "战斗蛙.nes",
+    "title": "战斗蛙",
+    "mapper": 7,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 475,
+    "file": "战斧.nes",
+    "title": "战斧",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 476,
+    "file": "扑克5合1(C).nes",
+    "title": "扑克5合1(C)",
+    "mapper": 243,
+    "supported": false,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 477,
+    "file": "打气球.nes",
+    "title": "打气球",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 478,
+    "file": "打氣球.nes",
+    "title": "打氣球",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 479,
+    "file": "打砖块.nes",
+    "title": "打砖块",
+    "mapper": 0,
+    "supported": true,
+    "size": 40976,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 480,
+    "file": "打空气2.nes",
+    "title": "打空气2",
+    "mapper": 0,
+    "supported": true,
+    "size": 40976,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 481,
+    "file": "拆屋工.nes",
+    "title": "拆屋工",
+    "mapper": 0,
+    "supported": true,
+    "size": 40976,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 482,
+    "file": "拉德赛车_2.nes",
+    "title": "拉德赛车_2",
+    "mapper": 4,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "休闲体育"
+  },
+  {
+    "id": 483,
+    "file": "拯救世纪(光明之神).nes",
+    "title": "拯救世纪(光明之神)",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 484,
+    "file": "拳皇97.nes",
+    "title": "拳皇97",
+    "mapper": 4,
+    "supported": true,
+    "size": 393232,
+    "hot": false,
+    "category": "动作格斗"
+  },
+  {
+    "id": 485,
+    "file": "挖金.nes",
+    "title": "挖金",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 486,
+    "file": "推土球(J).nes",
+    "title": "推土球(J)",
+    "mapper": 0,
+    "supported": true,
+    "size": 40976,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 487,
+    "file": "摔交.nes",
+    "title": "摔交",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 488,
+    "file": "摩托车.nes",
+    "title": "摩托车",
+    "mapper": 0,
+    "supported": true,
+    "size": 41104,
+    "hot": false,
+    "category": "休闲体育"
+  },
+  {
+    "id": 489,
+    "file": "摩托车大赛.nes",
+    "title": "摩托车大赛",
+    "mapper": 0,
+    "supported": true,
+    "size": 40976,
+    "hot": false,
+    "category": "休闲体育"
+  },
+  {
+    "id": 490,
+    "file": "摩艾君.nes",
+    "title": "摩艾君",
+    "mapper": 3,
+    "supported": true,
+    "size": 65552,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 491,
+    "file": "攻击动物学园(J).nes",
+    "title": "攻击动物学园(J)",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 492,
+    "file": "救火英雄(J).nes",
+    "title": "救火英雄(J)",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 493,
+    "file": "救难直升机.nes",
+    "title": "救难直升机",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 494,
+    "file": "数码战队2.nes",
+    "title": "数码战队2",
+    "mapper": 163,
+    "supported": false,
+    "size": 2097168,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 495,
+    "file": "敲冰块.nes",
+    "title": "敲冰块",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": true,
+    "category": "平台跳跃"
+  },
+  {
+    "id": 496,
+    "file": "敲糖块2_(J).nes",
+    "title": "敲糖块2_(J)",
+    "mapper": 3,
+    "supported": true,
+    "size": 65552,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 497,
+    "file": "斧王.nes",
+    "title": "斧王",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 498,
+    "file": "新人类.nes",
+    "title": "新人类",
+    "mapper": 3,
+    "supported": true,
+    "size": 65552,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 499,
+    "file": "新无敌炸弹超人2.nes",
+    "title": "新无敌炸弹超人2",
+    "mapper": 1,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 500,
+    "file": "无尽的任务中文版.nes",
+    "title": "无尽的任务中文版",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 501,
+    "file": "无赖战士.nes",
+    "title": "无赖战士",
+    "mapper": 4,
+    "supported": true,
+    "size": 65552,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 502,
+    "file": "时空之轮.nes",
+    "title": "时空之轮",
+    "mapper": 163,
+    "supported": false,
+    "size": 2097168,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 503,
+    "file": "时空小子(J).nes",
+    "title": "时空小子(J)",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 504,
+    "file": "星之卡比.nes",
+    "title": "星之卡比",
+    "mapper": 4,
+    "supported": true,
+    "size": 786448,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 505,
+    "file": "星球大战-帝国反击战_(J).nes",
+    "title": "星球大战-帝国反击战_(J)",
+    "mapper": 4,
+    "supported": true,
+    "size": 1048608,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 506,
+    "file": "星际坦克.nes",
+    "title": "星际坦克",
+    "mapper": 4,
+    "supported": true,
+    "size": 98320,
+    "hot": true,
+    "category": "飞行射击"
+  },
+  {
+    "id": 507,
+    "file": "星际战士.nes",
+    "title": "星际战士",
+    "mapper": 3,
+    "supported": true,
+    "size": 65552,
+    "hot": false,
+    "category": "飞行射击"
+  },
+  {
+    "id": 508,
+    "file": "星际魂斗罗.nes",
+    "title": "星际魂斗罗",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "飞行射击"
+  },
+  {
+    "id": 509,
+    "file": "暗黑破坏神.nes",
+    "title": "暗黑破坏神",
+    "mapper": 163,
+    "supported": false,
+    "size": 2097168,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 510,
+    "file": "最游记之唐三藏.nes",
+    "title": "最游记之唐三藏",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 511,
+    "file": "最终任务.nes",
+    "title": "最终任务",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 512,
+    "file": "最终幻想(银河时代).nes",
+    "title": "最终幻想(银河时代)",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 513,
+    "file": "最终幻想2(宇宙战将).nes",
+    "title": "最终幻想2(宇宙战将)",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 514,
+    "file": "最终幻想3(英雄传奇).nes",
+    "title": "最终幻想3(英雄传奇)",
+    "mapper": 74,
+    "supported": false,
+    "size": 1048592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 515,
+    "file": "最终幻想3.nes",
+    "title": "最终幻想3",
+    "mapper": 4,
+    "supported": true,
+    "size": 1048592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 516,
+    "file": "最终幻想4_光与暗_水晶纷争.nes",
+    "title": "最终幻想4_光与暗_水晶纷争",
+    "mapper": 163,
+    "supported": false,
+    "size": 1048592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 517,
+    "file": "最终幻想7.nes",
+    "title": "最终幻想7",
+    "mapper": 163,
+    "supported": false,
+    "size": 2097168,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 518,
+    "file": "未来小子(中文).nes",
+    "title": "未来小子(中文)",
+    "mapper": 3,
+    "supported": true,
+    "size": 65552,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 519,
+    "file": "未来战士(美版)(2).nes",
+    "title": "未来战士(美版)(2)",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 520,
+    "file": "未来战士.nes",
+    "title": "未来战士",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 521,
+    "file": "未来战士_(J).nes",
+    "title": "未来战士_(J)",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 522,
+    "file": "机器人格斗.nes",
+    "title": "机器人格斗",
+    "mapper": 4,
+    "supported": true,
+    "size": 1048608,
+    "hot": false,
+    "category": "动作格斗"
+  },
+  {
+    "id": 523,
+    "file": "机器战警4.nes",
+    "title": "机器战警4",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 524,
+    "file": "机器猫小叮当.nes",
+    "title": "机器猫小叮当",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 525,
+    "file": "机械战警(J).nes",
+    "title": "机械战警(J)",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 526,
+    "file": "机械战警2.nes",
+    "title": "机械战警2",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 527,
+    "file": "机械战警3(U).nes",
+    "title": "机械战警3(U)",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 528,
+    "file": "机械战警对魔鬼终结者(U).nes",
+    "title": "机械战警对魔鬼终结者(U)",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 529,
+    "file": "杀戮战场(原野战斗).nes",
+    "title": "杀戮战场(原野战斗)",
+    "mapper": 3,
+    "supported": true,
+    "size": 49168,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 530,
+    "file": "杀虫大战.nes",
+    "title": "杀虫大战",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 531,
+    "file": "李小龙(中文).nes",
+    "title": "李小龙(中文)",
+    "mapper": 0,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 532,
+    "file": "松鼠大作战1.nes",
+    "title": "松鼠大作战1",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 533,
+    "file": "松鼠大作战2.nes",
+    "title": "松鼠大作战2",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 534,
+    "file": "松鼠大作戰.nes",
+    "title": "松鼠大作戰",
+    "mapper": 1,
+    "supported": true,
+    "size": 786464,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 535,
+    "file": "松鼠大战1.nes",
+    "title": "松鼠大战1",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 536,
+    "file": "松鼠大战2(体力不减版).nes",
+    "title": "松鼠大战2(体力不减版)",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 537,
+    "file": "松鼠大战2.nes",
+    "title": "松鼠大战2",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 538,
+    "file": "松鼠大战3.nes",
+    "title": "松鼠大战3",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 539,
+    "file": "林克的冒险.nes",
+    "title": "林克的冒险",
+    "mapper": 19,
+    "supported": false,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 540,
+    "file": "柯拉米世界2.nes",
+    "title": "柯拉米世界2",
+    "mapper": 21,
+    "supported": false,
+    "size": 393232,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 541,
+    "file": "格兰蒂亚(反恐精英).nes",
+    "title": "格兰蒂亚(反恐精英)",
+    "mapper": 241,
+    "supported": true,
+    "size": 1048592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 542,
+    "file": "格斗之王_97.nes",
+    "title": "格斗之王_97",
+    "mapper": 4,
+    "supported": true,
+    "size": 393232,
+    "hot": false,
+    "category": "动作格斗"
+  },
+  {
+    "id": 543,
+    "file": "格斗美少女战士.nes",
+    "title": "格斗美少女战士",
+    "mapper": 116,
+    "supported": false,
+    "size": 655376,
+    "hot": false,
+    "category": "动作格斗"
+  },
+  {
+    "id": 544,
+    "file": "桌球.nes",
+    "title": "桌球",
+    "mapper": 4,
+    "supported": true,
+    "size": 163856,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 545,
+    "file": "梦之勇士.nes",
+    "title": "梦之勇士",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 546,
+    "file": "梦幻地带2(幻想空间2)(J).nes",
+    "title": "梦幻地带2(幻想空间2)(J)",
+    "mapper": 67,
+    "supported": false,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 547,
+    "file": "梦的探险者.nes",
+    "title": "梦的探险者",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 548,
+    "file": "棒球之星_(J).nes",
+    "title": "棒球之星_(J)",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "休闲体育"
+  },
+  {
+    "id": 549,
+    "file": "棒球锦标赛(J).nes",
+    "title": "棒球锦标赛(J)",
+    "mapper": 22,
+    "supported": false,
+    "size": 262160,
+    "hot": false,
+    "category": "休闲体育"
+  },
+  {
+    "id": 550,
+    "file": "楚汉争霸.nes",
+    "title": "楚汉争霸",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 551,
+    "file": "楚留香(梦幻).nes",
+    "title": "楚留香(梦幻)",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 552,
+    "file": "欢乐屋(U).nes",
+    "title": "欢乐屋(U)",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 553,
+    "file": "欧陆之战(争霸世纪).nes",
+    "title": "欧陆之战(争霸世纪)",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 554,
+    "file": "武装危机.nes",
+    "title": "武装危机",
+    "mapper": 23,
+    "supported": false,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 555,
+    "file": "气球大战(JU).nes",
+    "title": "气球大战(JU)",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 556,
+    "file": "气球大战_(CN).nes",
+    "title": "气球大战_(CN)",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 557,
+    "file": "水上魂斗罗无敌.nes",
+    "title": "水上魂斗罗无敌",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "飞行射击"
+  },
+  {
+    "id": 558,
+    "file": "水管工马里奥.nes",
+    "title": "水管工马里奥",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": true,
+    "category": "平台跳跃"
+  },
+  {
+    "id": 559,
+    "file": "汉刘邦.nes",
+    "title": "汉刘邦",
+    "mapper": 163,
+    "supported": false,
+    "size": 1048592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 560,
+    "file": "沙罗曼蛇.nes",
+    "title": "沙罗曼蛇",
+    "mapper": 73,
+    "supported": false,
+    "size": 131088,
+    "hot": false,
+    "category": "飞行射击"
+  },
+  {
+    "id": 561,
+    "file": "沙罗曼蛇1.nes",
+    "title": "沙罗曼蛇1",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": true,
+    "category": "飞行射击"
+  },
+  {
+    "id": 562,
+    "file": "沙罗曼蛇2.nes",
+    "title": "沙罗曼蛇2",
+    "mapper": 25,
+    "supported": false,
+    "size": 262160,
+    "hot": false,
+    "category": "飞行射击"
+  },
+  {
+    "id": 563,
+    "file": "沙罗曼蛇3.nes",
+    "title": "沙罗曼蛇3",
+    "mapper": 73,
+    "supported": false,
+    "size": 131088,
+    "hot": false,
+    "category": "飞行射击"
+  },
+  {
+    "id": 564,
+    "file": "沙罗曼蛇_(J).nes",
+    "title": "沙罗曼蛇_(J)",
+    "mapper": 73,
+    "supported": false,
+    "size": 131088,
+    "hot": false,
+    "category": "飞行射击"
+  },
+  {
+    "id": 565,
+    "file": "法拉利赛车.nes",
+    "title": "法拉利赛车",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "休闲体育"
+  },
+  {
+    "id": 566,
+    "file": "泡泡龙.nes",
+    "title": "泡泡龙",
+    "mapper": 1,
+    "supported": true,
+    "size": 163856,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 567,
+    "file": "泡泡龙2.nes",
+    "title": "泡泡龙2",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 568,
+    "file": "泰坦尼克号.nes",
+    "title": "泰坦尼克号",
+    "mapper": 34,
+    "supported": true,
+    "size": 1048592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 569,
+    "file": "洛克人.nes",
+    "title": "洛克人",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 570,
+    "file": "洛克人1.nes",
+    "title": "洛克人1",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 571,
+    "file": "洛克人2.nes",
+    "title": "洛克人2",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 572,
+    "file": "洛克人3.nes",
+    "title": "洛克人3",
+    "mapper": 4,
+    "supported": true,
+    "size": 393232,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 573,
+    "file": "洛克人4.nes",
+    "title": "洛克人4",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 574,
+    "file": "洛克人5.nes",
+    "title": "洛克人5",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 575,
+    "file": "洛克人6.nes",
+    "title": "洛克人6",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 576,
+    "file": "洛克人7(J).nes",
+    "title": "洛克人7(J)",
+    "mapper": 4,
+    "supported": true,
+    "size": 1048608,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 577,
+    "file": "流氓兔.nes",
+    "title": "流氓兔",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 578,
+    "file": "流氓兔对决.nes",
+    "title": "流氓兔对决",
+    "mapper": 1,
+    "supported": true,
+    "size": 98320,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 579,
+    "file": "海盗头(U).nes",
+    "title": "海盗头(U)",
+    "mapper": 64,
+    "supported": false,
+    "size": 196624,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 580,
+    "file": "淘金者(J).nes",
+    "title": "淘金者(J)",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 581,
+    "file": "混沌世界.nes",
+    "title": "混沌世界",
+    "mapper": 74,
+    "supported": false,
+    "size": 786448,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 582,
+    "file": "混沌博士(U).nes",
+    "title": "混沌博士(U)",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 583,
+    "file": "漂浮枪手(J).nes",
+    "title": "漂浮枪手(J)",
+    "mapper": 0,
+    "supported": true,
+    "size": 40976,
+    "hot": false,
+    "category": "飞行射击"
+  },
+  {
+    "id": 584,
+    "file": "潜艇大战.nes",
+    "title": "潜艇大战",
+    "mapper": 0,
+    "supported": true,
+    "size": 40976,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 585,
+    "file": "激龟忍者传.nes",
+    "title": "激龟忍者传",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 586,
+    "file": "激龟忍者传2.nes",
+    "title": "激龟忍者传2",
+    "mapper": 25,
+    "supported": false,
+    "size": 1048608,
+    "hot": false,
+    "category": "动作格斗"
+  },
+  {
+    "id": 587,
+    "file": "激龟快打.nes",
+    "title": "激龟快打",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "动作格斗"
+  },
+  {
+    "id": 588,
+    "file": "火之鸟.nes",
+    "title": "火之鸟",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 589,
+    "file": "火影忍者.nes",
+    "title": "火影忍者",
+    "mapper": 163,
+    "supported": false,
+    "size": 2097168,
+    "hot": false,
+    "category": "动作格斗"
+  },
+  {
+    "id": 590,
+    "file": "火炮.nes",
+    "title": "火炮",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "飞行射击"
+  },
+  {
+    "id": 591,
+    "file": "火爆篮球NBA.nes",
+    "title": "火爆篮球NBA",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "休闲体育"
+  },
+  {
+    "id": 592,
+    "file": "火箭赛车.nes",
+    "title": "火箭赛车",
+    "mapper": 0,
+    "supported": true,
+    "size": 65552,
+    "hot": false,
+    "category": "休闲体育"
+  },
+  {
+    "id": 593,
+    "file": "火箭车.nes",
+    "title": "火箭车",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 594,
+    "file": "灵界护法.nes",
+    "title": "灵界护法",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 595,
+    "file": "炸弹之王.nes",
+    "title": "炸弹之王",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 596,
+    "file": "炸弹人.nes",
+    "title": "炸弹人",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": true,
+    "category": "休闲体育"
+  },
+  {
+    "id": 597,
+    "file": "炸弹人1.nes",
+    "title": "炸弹人1",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": true,
+    "category": "休闲体育"
+  },
+  {
+    "id": 598,
+    "file": "炸弹人2.nes",
+    "title": "炸弹人2",
+    "mapper": 1,
+    "supported": true,
+    "size": 131088,
+    "hot": true,
+    "category": "休闲体育"
+  },
+  {
+    "id": 599,
+    "file": "烈火.nes",
+    "title": "烈火",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 600,
+    "file": "热血4合1.nes",
+    "title": "热血4合1",
+    "mapper": 45,
+    "supported": false,
+    "size": 1048592,
+    "hot": false,
+    "category": "动作格斗"
+  },
+  {
+    "id": 601,
+    "file": "热血战士3.nes",
+    "title": "热血战士3",
+    "mapper": 90,
+    "supported": false,
+    "size": 786448,
+    "hot": false,
+    "category": "动作格斗"
+  },
+  {
+    "id": 602,
+    "file": "热血新纪录_.nes",
+    "title": "热血新纪录_",
+    "mapper": 4,
+    "supported": true,
+    "size": 786464,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 603,
+    "file": "热血新记录.nes",
+    "title": "热血新记录",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 604,
+    "file": "热血时代剧.nes",
+    "title": "热血时代剧",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 605,
+    "file": "热血时代剧美版_(J).nes",
+    "title": "热血时代剧美版_(J)",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 606,
+    "file": "热血曲棍球(J).nes",
+    "title": "热血曲棍球(J)",
+    "mapper": 4,
+    "supported": true,
+    "size": 786464,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 607,
+    "file": "热血曲棍球.nes",
+    "title": "热血曲棍球",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 608,
+    "file": "热血曲棍球美版(J).nes",
+    "title": "热血曲棍球美版(J)",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 609,
+    "file": "热血格斗.nes",
+    "title": "热血格斗",
+    "mapper": 4,
+    "supported": true,
+    "size": 786464,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 610,
+    "file": "热血格斗中文.nes",
+    "title": "热血格斗中文",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 611,
+    "file": "热血格斗传说.nes",
+    "title": "热血格斗传说",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 612,
+    "file": "热血格斗传说美版(J).nes",
+    "title": "热血格斗传说美版(J)",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 613,
+    "file": "热血物语.nes",
+    "title": "热血物语",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 614,
+    "file": "热血物语_(J).nes",
+    "title": "热血物语_(J)",
+    "mapper": 4,
+    "supported": true,
+    "size": 786464,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 615,
+    "file": "热血物语中文版.nes",
+    "title": "热血物语中文版",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 616,
+    "file": "热血物语中文版by空气.nes",
+    "title": "热血物语中文版by空气",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 617,
+    "file": "热血硬派.nes",
+    "title": "热血硬派",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 618,
+    "file": "热血硬派美版.nes",
+    "title": "热血硬派美版",
+    "mapper": 2,
+    "supported": true,
+    "size": 131215,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 619,
+    "file": "热血篮球.nes",
+    "title": "热血篮球",
+    "mapper": 4,
+    "supported": true,
+    "size": 786464,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 620,
+    "file": "热血足球.nes",
+    "title": "热血足球",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 621,
+    "file": "热血足球2(J).nes",
+    "title": "热血足球2(J)",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 622,
+    "file": "热血躲避球.nes",
+    "title": "热血躲避球",
+    "mapper": 1,
+    "supported": true,
+    "size": 786464,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 623,
+    "file": "热血进行曲.nes",
+    "title": "热血进行曲",
+    "mapper": 4,
+    "supported": true,
+    "size": 786464,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 624,
+    "file": "热血进行曲_(J).nes",
+    "title": "热血进行曲_(J)",
+    "mapper": 4,
+    "supported": true,
+    "size": 786464,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 625,
+    "file": "热血进行曲中文版.nes",
+    "title": "热血进行曲中文版",
+    "mapper": 4,
+    "supported": true,
+    "size": 483344,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 626,
+    "file": "热血高校.nes",
+    "title": "热血高校",
+    "mapper": 1,
+    "supported": true,
+    "size": 786464,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 627,
+    "file": "热血高校足球(J).nes",
+    "title": "热血高校足球(J)",
+    "mapper": 4,
+    "supported": true,
+    "size": 786464,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 628,
+    "file": "热血高校躲避球(J).nes",
+    "title": "热血高校躲避球(J)",
+    "mapper": 1,
+    "supported": true,
+    "size": 786464,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 629,
+    "file": "爆笑三国(上古神剑).nes",
+    "title": "爆笑三国(上古神剑)",
+    "mapper": 177,
+    "supported": false,
+    "size": 1048592,
+    "hot": false,
+    "category": "动作格斗"
+  },
+  {
+    "id": 630,
+    "file": "爆笑三国.nes",
+    "title": "爆笑三国",
+    "mapper": 15,
+    "supported": false,
+    "size": 1048592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 631,
+    "file": "牛奶与花生(J).nes",
+    "title": "牛奶与花生(J)",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 632,
+    "file": "牧场物语.nes",
+    "title": "牧场物语",
+    "mapper": 163,
+    "supported": false,
+    "size": 2097168,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 633,
+    "file": "特救指令.nes",
+    "title": "特救指令",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 634,
+    "file": "特救指令汉化版0.8.nes",
+    "title": "特救指令汉化版0.8",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 635,
+    "file": "特救指令汉化版1.0.nes",
+    "title": "特救指令汉化版1.0",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 636,
+    "file": "狂热的F1赛车.nes",
+    "title": "狂热的F1赛车",
+    "mapper": 7,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "休闲体育"
+  },
+  {
+    "id": 637,
+    "file": "狼人(U).nes",
+    "title": "狼人(U)",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 638,
+    "file": "猫和老鼠3.nes",
+    "title": "猫和老鼠3",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 639,
+    "file": "猫捉老鼠(MAPPY).nes",
+    "title": "猫捉老鼠(MAPPY)",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 640,
+    "file": "猫捉老鼠.nes",
+    "title": "猫捉老鼠",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 641,
+    "file": "王子外传.nes",
+    "title": "王子外传",
+    "mapper": 23,
+    "supported": false,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 642,
+    "file": "瑪理奧2.nes",
+    "title": "瑪理奧2",
+    "mapper": 4,
+    "supported": true,
+    "size": 262288,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 643,
+    "file": "生化危机.nes",
+    "title": "生化危机",
+    "mapper": 15,
+    "supported": false,
+    "size": 1048592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 644,
+    "file": "电梯迷宫.nes",
+    "title": "电梯迷宫",
+    "mapper": 0,
+    "supported": true,
+    "size": 40976,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 645,
+    "file": "疯狂鸡蛋仔.nes",
+    "title": "疯狂鸡蛋仔",
+    "mapper": 4,
+    "supported": true,
+    "size": 393232,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 646,
+    "file": "盟军敢死队(破釜沉舟).nes",
+    "title": "盟军敢死队(破釜沉舟)",
+    "mapper": 176,
+    "supported": false,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 647,
+    "file": "眼镜蛇指挥官(J).nes",
+    "title": "眼镜蛇指挥官(J)",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 648,
+    "file": "碰碰车(CN).nes",
+    "title": "碰碰车(CN)",
+    "mapper": 3,
+    "supported": true,
+    "size": 65552,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 649,
+    "file": "神探柯南.nes",
+    "title": "神探柯南",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 650,
+    "file": "神腿.nes",
+    "title": "神腿",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 651,
+    "file": "秘密风暴(U).nes",
+    "title": "秘密风暴(U)",
+    "mapper": 11,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 652,
+    "file": "究极虎.nes",
+    "title": "究极虎",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 653,
+    "file": "空中魂斗罗.nes",
+    "title": "空中魂斗罗",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "飞行射击"
+  },
+  {
+    "id": 654,
+    "file": "空中魂斗罗6命版.nes",
+    "title": "空中魂斗罗6命版",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "飞行射击"
+  },
+  {
+    "id": 655,
+    "file": "空中魂斗罗l.nes",
+    "title": "空中魂斗罗l",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "飞行射击"
+  },
+  {
+    "id": 656,
+    "file": "空中魂斗罗无敌版.nes",
+    "title": "空中魂斗罗无敌版",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "飞行射击"
+  },
+  {
+    "id": 657,
+    "file": "空魂.nes",
+    "title": "空魂",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 658,
+    "file": "突然君.nes",
+    "title": "突然君",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 659,
+    "file": "第2次超级机器人大战.nes",
+    "title": "第2次超级机器人大战",
+    "mapper": 74,
+    "supported": false,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 660,
+    "file": "第四次机器人大战.nes",
+    "title": "第四次机器人大战",
+    "mapper": 74,
+    "supported": false,
+    "size": 786448,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 661,
+    "file": "筋肉人摔跤.nes",
+    "title": "筋肉人摔跤",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 662,
+    "file": "红巾特攻队.nes",
+    "title": "红巾特攻队",
+    "mapper": 0,
+    "supported": true,
+    "size": 65552,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 663,
+    "file": "红猪.nes",
+    "title": "红猪",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 664,
+    "file": "绝代英雄.nes",
+    "title": "绝代英雄",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 665,
+    "file": "绿色兵团.nes",
+    "title": "绿色兵团",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 666,
+    "file": "绿野仙踪.nes",
+    "title": "绿野仙踪",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 667,
+    "file": "网球.nes",
+    "title": "网球",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "休闲体育"
+  },
+  {
+    "id": 668,
+    "file": "罗罗大冒险(J).nes",
+    "title": "罗罗大冒险(J)",
+    "mapper": 4,
+    "supported": true,
+    "size": 65552,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 669,
+    "file": "美人鱼.nes",
+    "title": "美人鱼",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 670,
+    "file": "美国大兵_(J).nes",
+    "title": "美国大兵_(J)",
+    "mapper": 0,
+    "supported": true,
+    "size": 40976,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 671,
+    "file": "老虎直升机.nes",
+    "title": "老虎直升机",
+    "mapper": 3,
+    "supported": true,
+    "size": 65552,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 672,
+    "file": "老鼠偷东西.nes",
+    "title": "老鼠偷东西",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 673,
+    "file": "胜利的进球.nes",
+    "title": "胜利的进球",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 674,
+    "file": "能源战士1.nes",
+    "title": "能源战士1",
+    "mapper": 4,
+    "supported": true,
+    "size": 270352,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 675,
+    "file": "能源战士2.nes",
+    "title": "能源战士2",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 676,
+    "file": "脱狱-_战俘.nes",
+    "title": "脱狱-_战俘",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 677,
+    "file": "脱狱.nes",
+    "title": "脱狱",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 678,
+    "file": "脱狱1.nes",
+    "title": "脱狱1",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 679,
+    "file": "脱狱1换枪版.nes",
+    "title": "脱狱1换枪版",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "飞行射击"
+  },
+  {
+    "id": 680,
+    "file": "脱狱2(血火纵横)(J).nes",
+    "title": "脱狱2(血火纵横)(J)",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 681,
+    "file": "脱狱2.nes",
+    "title": "脱狱2",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 682,
+    "file": "花式撞球.nes",
+    "title": "花式撞球",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 683,
+    "file": "花式撞球u.nes",
+    "title": "花式撞球u",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 684,
+    "file": "英雄格斗3.nes",
+    "title": "英雄格斗3",
+    "mapper": 112,
+    "supported": false,
+    "size": 786448,
+    "hot": false,
+    "category": "动作格斗"
+  },
+  {
+    "id": 685,
+    "file": "荆轲新传(中文).nes",
+    "title": "荆轲新传(中文)",
+    "mapper": 240,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 686,
+    "file": "荆轲新传.nes",
+    "title": "荆轲新传",
+    "mapper": 240,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 687,
+    "file": "荒野大镖客.nes",
+    "title": "荒野大镖客",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 688,
+    "file": "荒野大镖客无敌版.nes",
+    "title": "荒野大镖客无敌版",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 689,
+    "file": "菲力克丝猫.nes",
+    "title": "菲力克丝猫",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 690,
+    "file": "菲力猫.nes",
+    "title": "菲力猫",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 691,
+    "file": "葫芦金刚.nes",
+    "title": "葫芦金刚",
+    "mapper": 163,
+    "supported": false,
+    "size": 2097168,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 692,
+    "file": "蓝色兄弟(U).nes",
+    "title": "蓝色兄弟(U)",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 693,
+    "file": "虎穴行动.nes",
+    "title": "虎穴行动",
+    "mapper": 1,
+    "supported": true,
+    "size": 786464,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 694,
+    "file": "蝙蝠侠.nes",
+    "title": "蝙蝠侠",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 695,
+    "file": "蝙蝠侠归来.nes",
+    "title": "蝙蝠侠归来",
+    "mapper": 4,
+    "supported": true,
+    "size": 393232,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 696,
+    "file": "街头篮球.nes",
+    "title": "街头篮球",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "休闲体育"
+  },
+  {
+    "id": 697,
+    "file": "街头篮球二对二挑战赛.nes",
+    "title": "街头篮球二对二挑战赛",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "休闲体育"
+  },
+  {
+    "id": 698,
+    "file": "街头霸王.nes",
+    "title": "街头霸王",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 699,
+    "file": "街头霸王II.nes",
+    "title": "街头霸王II",
+    "mapper": 189,
+    "supported": false,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 700,
+    "file": "街头霸王III.nes",
+    "title": "街头霸王III",
+    "mapper": 91,
+    "supported": false,
+    "size": 655376,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 701,
+    "file": "街霸12人.nes",
+    "title": "街霸12人",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "动作格斗"
+  },
+  {
+    "id": 702,
+    "file": "西天取经(中文).nes",
+    "title": "西天取经(中文)",
+    "mapper": 241,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 703,
+    "file": "西游记.nes",
+    "title": "西游记",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 704,
+    "file": "西游记1.nes",
+    "title": "西游记1",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 705,
+    "file": "西游记2.nes",
+    "title": "西游记2",
+    "mapper": 18,
+    "supported": false,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 706,
+    "file": "西游记世界一代.nes",
+    "title": "西游记世界一代",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 707,
+    "file": "西游记世界二代.nes",
+    "title": "西游记世界二代",
+    "mapper": 18,
+    "supported": false,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 708,
+    "file": "西游记后传.nes",
+    "title": "西游记后传",
+    "mapper": 162,
+    "supported": false,
+    "size": 1048592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 709,
+    "file": "赌神(洛克人X).nes",
+    "title": "赌神(洛克人X)",
+    "mapper": 74,
+    "supported": false,
+    "size": 524304,
+    "hot": false,
+    "category": "动作格斗"
+  },
+  {
+    "id": 710,
+    "file": "赌神.nes",
+    "title": "赌神",
+    "mapper": 74,
+    "supported": false,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 711,
+    "file": "赤影战士.nes",
+    "title": "赤影战士",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 712,
+    "file": "赤影战士龙珠版.nes",
+    "title": "赤影战士龙珠版",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 713,
+    "file": "赤色要塞.nes",
+    "title": "赤色要塞",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": true,
+    "category": "飞行射击"
+  },
+  {
+    "id": 714,
+    "file": "超惑星战记.nes",
+    "title": "超惑星战记",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 715,
+    "file": "超时空要塞.nes",
+    "title": "超时空要塞",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "飞行射击"
+  },
+  {
+    "id": 716,
+    "file": "超级2合1.nes",
+    "title": "超级2合1",
+    "mapper": 241,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 717,
+    "file": "超级厨师.nes",
+    "title": "超级厨师",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 718,
+    "file": "超级坦克.nes",
+    "title": "超级坦克",
+    "mapper": 0,
+    "supported": true,
+    "size": 40976,
+    "hot": true,
+    "category": "飞行射击"
+  },
+  {
+    "id": 719,
+    "file": "超级大富翁(百万富翁).nes",
+    "title": "超级大富翁(百万富翁)",
+    "mapper": 227,
+    "supported": false,
+    "size": 1048592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 720,
+    "file": "超级大战略.nes",
+    "title": "超级大战略",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 721,
+    "file": "超级宝宝(J).nes",
+    "title": "超级宝宝(J)",
+    "mapper": 25,
+    "supported": false,
+    "size": 786464,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 722,
+    "file": "超级战魂（魂斗罗7）.nes",
+    "title": "超级战魂（魂斗罗7）",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "飞行射击"
+  },
+  {
+    "id": 723,
+    "file": "超级机器人大战A.nes",
+    "title": "超级机器人大战A",
+    "mapper": 163,
+    "supported": false,
+    "size": 1048592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 724,
+    "file": "超级玛丽.nes",
+    "title": "超级玛丽",
+    "mapper": 0,
+    "supported": true,
+    "size": 40976,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 725,
+    "file": "超级玛丽1.nes",
+    "title": "超级玛丽1",
+    "mapper": 0,
+    "supported": true,
+    "size": 40976,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 726,
+    "file": "超级玛丽2.nes",
+    "title": "超级玛丽2",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 727,
+    "file": "超级玛丽2升级.nes",
+    "title": "超级玛丽2升级",
+    "mapper": 64,
+    "supported": false,
+    "size": 41488,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 728,
+    "file": "超级玛丽2无敌版.nes",
+    "title": "超级玛丽2无敌版",
+    "mapper": 0,
+    "supported": true,
+    "size": 40976,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 729,
+    "file": "超级玛丽2无限血版.nes",
+    "title": "超级玛丽2无限血版",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 730,
+    "file": "超级玛丽2隐身版.nes",
+    "title": "超级玛丽2隐身版",
+    "mapper": 0,
+    "supported": true,
+    "size": 40976,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 731,
+    "file": "超级玛丽3无敌狐狸尾巴.nes",
+    "title": "超级玛丽3无敌狐狸尾巴",
+    "mapper": 4,
+    "supported": true,
+    "size": 393232,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 732,
+    "file": "超级玛丽与麦当劳.nes",
+    "title": "超级玛丽与麦当劳",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 733,
+    "file": "超级玛丽变态版.nes",
+    "title": "超级玛丽变态版",
+    "mapper": 0,
+    "supported": true,
+    "size": 40976,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 734,
+    "file": "超级玛丽奥世界.nes",
+    "title": "超级玛丽奥世界",
+    "mapper": 90,
+    "supported": false,
+    "size": 786448,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 735,
+    "file": "超级玛丽的使命.nes",
+    "title": "超级玛丽的使命",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 736,
+    "file": "超级玛利水管工人.nes",
+    "title": "超级玛利水管工人",
+    "mapper": 0,
+    "supported": true,
+    "size": 40976,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 737,
+    "file": "超级赛车.nes",
+    "title": "超级赛车",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "休闲体育"
+  },
+  {
+    "id": 738,
+    "file": "超级路易寻宝记.nes",
+    "title": "超级路易寻宝记",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 739,
+    "file": "超级间谍猎人.nes",
+    "title": "超级间谍猎人",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 740,
+    "file": "超级间谍赛车.nes",
+    "title": "超级间谍赛车",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "休闲体育"
+  },
+  {
+    "id": 741,
+    "file": "超级阿拉丁.nes",
+    "title": "超级阿拉丁",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 742,
+    "file": "超级马里奥3.nes",
+    "title": "超级马里奥3",
+    "mapper": 4,
+    "supported": true,
+    "size": 393232,
+    "hot": true,
+    "category": "平台跳跃"
+  },
+  {
+    "id": 743,
+    "file": "超级马里奥3超级版.nes",
+    "title": "超级马里奥3超级版",
+    "mapper": 4,
+    "supported": true,
+    "size": 393232,
+    "hot": true,
+    "category": "平台跳跃"
+  },
+  {
+    "id": 744,
+    "file": "超级马里奥兄弟1命数不减.nes",
+    "title": "超级马里奥兄弟1命数不减",
+    "mapper": 0,
+    "supported": true,
+    "size": 40976,
+    "hot": true,
+    "category": "平台跳跃"
+  },
+  {
+    "id": 745,
+    "file": "越野摩托.nes",
+    "title": "越野摩托",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "休闲体育"
+  },
+  {
+    "id": 746,
+    "file": "越野摩托_.nes",
+    "title": "越野摩托_",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "休闲体育"
+  },
+  {
+    "id": 747,
+    "file": "越野机车.nes",
+    "title": "越野机车",
+    "mapper": 64,
+    "supported": false,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 748,
+    "file": "越野赛车2.nes",
+    "title": "越野赛车2",
+    "mapper": 7,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "休闲体育"
+  },
+  {
+    "id": 749,
+    "file": "跑跑卡丁车.nes",
+    "title": "跑跑卡丁车",
+    "mapper": 4,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 750,
+    "file": "跳跳车.nes",
+    "title": "跳跳车",
+    "mapper": 3,
+    "supported": true,
+    "size": 65679,
+    "hot": false,
+    "category": "平台跳跃"
+  },
+  {
+    "id": 751,
+    "file": "踢王.nes",
+    "title": "踢王",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 752,
+    "file": "轰天至尊中文.nes",
+    "title": "轰天至尊中文",
+    "mapper": 189,
+    "supported": false,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 753,
+    "file": "进球（goal）.nes",
+    "title": "进球（goal）",
+    "mapper": 1,
+    "supported": true,
+    "size": 393232,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 754,
+    "file": "迷宫组曲.nes",
+    "title": "迷宫组曲",
+    "mapper": 3,
+    "supported": true,
+    "size": 65552,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 755,
+    "file": "迷宫龙(U).nes",
+    "title": "迷宫龙(U)",
+    "mapper": 11,
+    "supported": true,
+    "size": 49168,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 756,
+    "file": "通道卡车.nes",
+    "title": "通道卡车",
+    "mapper": 0,
+    "supported": true,
+    "size": 40976,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 757,
+    "file": "重级作战.nes",
+    "title": "重级作战",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 758,
+    "file": "重装机兵(机甲战士).nes",
+    "title": "重装机兵(机甲战士)",
+    "mapper": 74,
+    "supported": false,
+    "size": 786448,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 759,
+    "file": "重装机兵.nes",
+    "title": "重装机兵",
+    "mapper": 74,
+    "supported": false,
+    "size": 786448,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 760,
+    "file": "重裝機兵.nes",
+    "title": "重裝機兵",
+    "mapper": 74,
+    "supported": false,
+    "size": 786448,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 761,
+    "file": "金庸群侠传.nes",
+    "title": "金庸群侠传",
+    "mapper": 163,
+    "supported": false,
+    "size": 2097168,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 762,
+    "file": "金牌掏金者.nes",
+    "title": "金牌掏金者",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 763,
+    "file": "铁坦克.nes",
+    "title": "铁坦克",
+    "mapper": 65,
+    "supported": false,
+    "size": 262160,
+    "hot": false,
+    "category": "飞行射击"
+  },
+  {
+    "id": 764,
+    "file": "铁拳3.nes",
+    "title": "铁拳3",
+    "mapper": 4,
+    "supported": true,
+    "size": 393232,
+    "hot": false,
+    "category": "动作格斗"
+  },
+  {
+    "id": 765,
+    "file": "银河号.nes",
+    "title": "银河号",
+    "mapper": 2,
+    "supported": true,
+    "size": 131216,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 766,
+    "file": "银色上尉_(J).nes",
+    "title": "银色上尉_(J)",
+    "mapper": 1,
+    "supported": true,
+    "size": 786464,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 767,
+    "file": "镜花缘.nes",
+    "title": "镜花缘",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 768,
+    "file": "闪电小组_(J).nes",
+    "title": "闪电小组_(J)",
+    "mapper": 19,
+    "supported": false,
+    "size": 393232,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 769,
+    "file": "阿拉丁.nes",
+    "title": "阿拉丁",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 770,
+    "file": "阿拉丁2.nes",
+    "title": "阿拉丁2",
+    "mapper": 4,
+    "supported": true,
+    "size": 393232,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 771,
+    "file": "阿拉丁3.nes",
+    "title": "阿拉丁3",
+    "mapper": 41,
+    "supported": false,
+    "size": 65552,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 772,
+    "file": "阿贝道X中文(J).nes",
+    "title": "阿贝道X中文(J)",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 773,
+    "file": "隋唐演义.nes",
+    "title": "隋唐演义",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 774,
+    "file": "隋唐英雄.nes",
+    "title": "隋唐英雄",
+    "mapper": 163,
+    "supported": false,
+    "size": 1048592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 775,
+    "file": "雅典娜(J).nes",
+    "title": "雅典娜(J)",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 776,
+    "file": "雪人兄弟.nes",
+    "title": "雪人兄弟",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "动作格斗"
+  },
+  {
+    "id": 777,
+    "file": "雪山兄弟.nes",
+    "title": "雪山兄弟",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 778,
+    "file": "雷电皇_比卡丘传说.nes",
+    "title": "雷电皇_比卡丘传说",
+    "mapper": 163,
+    "supported": false,
+    "size": 2097168,
+    "hot": false,
+    "category": "飞行射击"
+  },
+  {
+    "id": 779,
+    "file": "雷鸟2.nes",
+    "title": "雷鸟2",
+    "mapper": 3,
+    "supported": true,
+    "size": 49168,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 780,
+    "file": "雷鸟号.nes",
+    "title": "雷鸟号",
+    "mapper": 3,
+    "supported": true,
+    "size": 65552,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 781,
+    "file": "霹雳神兵.nes",
+    "title": "霹雳神兵",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 782,
+    "file": "青蛙大冒险.nes",
+    "title": "青蛙大冒险",
+    "mapper": 3,
+    "supported": true,
+    "size": 65552,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 783,
+    "file": "面粉袋子.nes",
+    "title": "面粉袋子",
+    "mapper": 4,
+    "supported": true,
+    "size": 172048,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 784,
+    "file": "顽皮狗(美版)(U).nes",
+    "title": "顽皮狗(美版)(U)",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 785,
+    "file": "顽皮狗.nes",
+    "title": "顽皮狗",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 786,
+    "file": "风云.nes",
+    "title": "风云",
+    "mapper": 4,
+    "supported": true,
+    "size": 786448,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 787,
+    "file": "风月魔传(J).nes",
+    "title": "风月魔传(J)",
+    "mapper": 23,
+    "supported": false,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 788,
+    "file": "飞人战士(汉化版).nes",
+    "title": "飞人战士(汉化版)",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 789,
+    "file": "飞碟大战.nes",
+    "title": "飞碟大战",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 790,
+    "file": "飞龙之拳.nes",
+    "title": "飞龙之拳",
+    "mapper": 2,
+    "supported": true,
+    "size": 655392,
+    "hot": false,
+    "category": "动作格斗"
+  },
+  {
+    "id": 791,
+    "file": "飞龙之拳2.nes",
+    "title": "飞龙之拳2",
+    "mapper": 1,
+    "supported": true,
+    "size": 786464,
+    "hot": false,
+    "category": "动作格斗"
+  },
+  {
+    "id": 792,
+    "file": "飞龙之拳3(J).nes",
+    "title": "飞龙之拳3(J)",
+    "mapper": 4,
+    "supported": true,
+    "size": 786464,
+    "hot": false,
+    "category": "动作格斗"
+  },
+  {
+    "id": 793,
+    "file": "香蕉王子.nes",
+    "title": "香蕉王子",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 794,
+    "file": "馬里奧1.nes",
+    "title": "馬里奧1",
+    "mapper": 0,
+    "supported": true,
+    "size": 40976,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 795,
+    "file": "馬里奧醫生.nes",
+    "title": "馬里奧醫生",
+    "mapper": 65,
+    "supported": false,
+    "size": 589856,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 796,
+    "file": "马戏团.nes",
+    "title": "马戏团",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": true,
+    "category": "休闲体育"
+  },
+  {
+    "id": 797,
+    "file": "马路英雄中文.nes",
+    "title": "马路英雄中文",
+    "mapper": 0,
+    "supported": true,
+    "size": 65552,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 798,
+    "file": "马里奥16代(中文).nes",
+    "title": "马里奥16代(中文)",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "平台跳跃"
+  },
+  {
+    "id": 799,
+    "file": "马里奥16代.nes",
+    "title": "马里奥16代",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "平台跳跃"
+  },
+  {
+    "id": 800,
+    "file": "马里奥医生.nes",
+    "title": "马里奥医生",
+    "mapper": 1,
+    "supported": true,
+    "size": 65552,
+    "hot": true,
+    "category": "平台跳跃"
+  },
+  {
+    "id": 801,
+    "file": "骇客.nes",
+    "title": "骇客",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 802,
+    "file": "高尔夫.nes",
+    "title": "高尔夫",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "休闲体育"
+  },
+  {
+    "id": 803,
+    "file": "高桥名人冒险岛（比卡丘版）.nes",
+    "title": "高桥名人冒险岛（比卡丘版）",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "平台跳跃"
+  },
+  {
+    "id": 804,
+    "file": "高桥名人的冒险岛2中文.nes",
+    "title": "高桥名人的冒险岛2中文",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "平台跳跃"
+  },
+  {
+    "id": 805,
+    "file": "高速公路赛车(J).nes",
+    "title": "高速公路赛车(J)",
+    "mapper": 1,
+    "supported": true,
+    "size": 655392,
+    "hot": false,
+    "category": "休闲体育"
+  },
+  {
+    "id": 806,
+    "file": "鬼屋冒险美版.nes",
+    "title": "鬼屋冒险美版",
+    "mapper": 19,
+    "supported": false,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 807,
+    "file": "魁男塾_(J).nes",
+    "title": "魁男塾_(J)",
+    "mapper": 16,
+    "supported": false,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 808,
+    "file": "魂斗罗.nes",
+    "title": "魂斗罗",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": true,
+    "category": "飞行射击"
+  },
+  {
+    "id": 809,
+    "file": "魂斗罗1.nes",
+    "title": "魂斗罗1",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": true,
+    "category": "飞行射击"
+  },
+  {
+    "id": 810,
+    "file": "魂斗罗1中文无限命.nes",
+    "title": "魂斗罗1中文无限命",
+    "mapper": 23,
+    "supported": false,
+    "size": 262160,
+    "hot": false,
+    "category": "飞行射击"
+  },
+  {
+    "id": 811,
+    "file": "魂斗罗1代无限人散弹枪.nes",
+    "title": "魂斗罗1代无限人散弹枪",
+    "mapper": 23,
+    "supported": false,
+    "size": 262160,
+    "hot": false,
+    "category": "飞行射击"
+  },
+  {
+    "id": 812,
+    "file": "魂斗罗1改版地形.nes",
+    "title": "魂斗罗1改版地形",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": true,
+    "category": "飞行射击"
+  },
+  {
+    "id": 813,
+    "file": "魂斗罗1散弹版.nes",
+    "title": "魂斗罗1散弹版",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": true,
+    "category": "飞行射击"
+  },
+  {
+    "id": 814,
+    "file": "魂斗罗2.nes",
+    "title": "魂斗罗2",
+    "mapper": 4,
+    "supported": true,
+    "size": 253968,
+    "hot": true,
+    "category": "飞行射击"
+  },
+  {
+    "id": 815,
+    "file": "魂斗罗2代_3合1(命不减)可选3种子弹和选关.nes",
+    "title": "魂斗罗2代_3合1(命不减)可选3种子弹和选关",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "飞行射击"
+  },
+  {
+    "id": 816,
+    "file": "魂斗罗2初始散弹版.nes",
+    "title": "魂斗罗2初始散弹版",
+    "mapper": 4,
+    "supported": true,
+    "size": 253968,
+    "hot": true,
+    "category": "飞行射击"
+  },
+  {
+    "id": 817,
+    "file": "魂斗罗2无敌中文版.nes",
+    "title": "魂斗罗2无敌中文版",
+    "mapper": 4,
+    "supported": true,
+    "size": 786464,
+    "hot": true,
+    "category": "飞行射击"
+  },
+  {
+    "id": 818,
+    "file": "魂斗罗2机器人版.nes",
+    "title": "魂斗罗2机器人版",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "飞行射击"
+  },
+  {
+    "id": 819,
+    "file": "魂斗罗2永远隐身版.nes",
+    "title": "魂斗罗2永远隐身版",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "飞行射击"
+  },
+  {
+    "id": 820,
+    "file": "魂斗罗2（怪鸭历险记改版）.nes",
+    "title": "魂斗罗2（怪鸭历险记改版）",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "飞行射击"
+  },
+  {
+    "id": 821,
+    "file": "魂斗罗3.nes",
+    "title": "魂斗罗3",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "飞行射击"
+  },
+  {
+    "id": 822,
+    "file": "魂斗罗3无敌.nes",
+    "title": "魂斗罗3无敌",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "飞行射击"
+  },
+  {
+    "id": 823,
+    "file": "魂斗罗5.nes",
+    "title": "魂斗罗5",
+    "mapper": 4,
+    "supported": true,
+    "size": 393232,
+    "hot": true,
+    "category": "飞行射击"
+  },
+  {
+    "id": 824,
+    "file": "魂斗罗6代高跳无限命.nes",
+    "title": "魂斗罗6代高跳无限命",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "飞行射击"
+  },
+  {
+    "id": 825,
+    "file": "魂斗罗6无限生命大跳版.nes",
+    "title": "魂斗罗6无限生命大跳版",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "飞行射击"
+  },
+  {
+    "id": 826,
+    "file": "魂斗罗7.nes",
+    "title": "魂斗罗7",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "飞行射击"
+  },
+  {
+    "id": 827,
+    "file": "魂斗罗7_超级战魂-无限生命版.nes",
+    "title": "魂斗罗7_超级战魂-无限生命版",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "飞行射击"
+  },
+  {
+    "id": 828,
+    "file": "魂斗罗S枪30条命版.nes",
+    "title": "魂斗罗S枪30条命版",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": true,
+    "category": "飞行射击"
+  },
+  {
+    "id": 829,
+    "file": "魂斗罗X.nes",
+    "title": "魂斗罗X",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": true,
+    "category": "飞行射击"
+  },
+  {
+    "id": 830,
+    "file": "魂斗罗一代30命S枪散弹版.nes",
+    "title": "魂斗罗一代30命S枪散弹版",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": true,
+    "category": "飞行射击"
+  },
+  {
+    "id": 831,
+    "file": "魂斗罗力量版_.nes",
+    "title": "魂斗罗力量版_",
+    "mapper": 4,
+    "supported": true,
+    "size": 262288,
+    "hot": true,
+    "category": "飞行射击"
+  },
+  {
+    "id": 832,
+    "file": "魂斗罗枪林弹雨版.nes",
+    "title": "魂斗罗枪林弹雨版",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "飞行射击"
+  },
+  {
+    "id": 833,
+    "file": "魂斗罗隐身散弹.nes",
+    "title": "魂斗罗隐身散弹",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": true,
+    "category": "飞行射击"
+  },
+  {
+    "id": 834,
+    "file": "魂斗罗（四种枪).nes",
+    "title": "魂斗罗（四种枪)",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": true,
+    "category": "飞行射击"
+  },
+  {
+    "id": 835,
+    "file": "魔域英雄传.nes",
+    "title": "魔域英雄传",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 836,
+    "file": "魔境铁人(J).nes",
+    "title": "魔境铁人(J)",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 837,
+    "file": "魔女小红帽(美版)(U).nes",
+    "title": "魔女小红帽(美版)(U)",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 838,
+    "file": "魔导士阴谋（修正版）.nes",
+    "title": "魔导士阴谋（修正版）",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 839,
+    "file": "魔法气泡(J).nes",
+    "title": "魔法气泡(J)",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 840,
+    "file": "魔法门.nes",
+    "title": "魔法门",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 841,
+    "file": "魔界塔士(魔界霸主).nes",
+    "title": "魔界塔士(魔界霸主)",
+    "mapper": 163,
+    "supported": false,
+    "size": 2097168,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 842,
+    "file": "魔界村(GNG).nes",
+    "title": "魔界村(GNG)",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 843,
+    "file": "魔界村(J).nes",
+    "title": "魔界村(J)",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 844,
+    "file": "魔界村.nes",
+    "title": "魔界村",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 845,
+    "file": "魔神法师.nes",
+    "title": "魔神法师",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 846,
+    "file": "魔神英雄传外传(创世纪英雄).nes",
+    "title": "魔神英雄传外传(创世纪英雄)",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 847,
+    "file": "魔神英雄外传.nes",
+    "title": "魔神英雄外传",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 848,
+    "file": "魔道士阴谋.nes",
+    "title": "魔道士阴谋",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 849,
+    "file": "魔鬼总动员.nes",
+    "title": "魔鬼总动员",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 850,
+    "file": "魔鬼终结者_(U).nes",
+    "title": "魔鬼终结者_(U)",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 851,
+    "file": "鳄鱼先生.nes",
+    "title": "鳄鱼先生",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 852,
+    "file": "鸟人战队(CN).nes",
+    "title": "鸟人战队(CN)",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 853,
+    "file": "鸟人战队.nes",
+    "title": "鸟人战队",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 854,
+    "file": "鸟的故事(J).nes",
+    "title": "鸟的故事(J)",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 855,
+    "file": "麻将.nes",
+    "title": "麻将",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 856,
+    "file": "麻将大会(J).nes",
+    "title": "麻将大会(J)",
+    "mapper": 1,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 857,
+    "file": "麻雀.nes",
+    "title": "麻雀",
+    "mapper": 0,
+    "supported": true,
+    "size": 24592,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 858,
+    "file": "黄金之太阳.nes",
+    "title": "黄金之太阳",
+    "mapper": 163,
+    "supported": false,
+    "size": 2097168,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 859,
+    "file": "黑暗之蛊.nes",
+    "title": "黑暗之蛊",
+    "mapper": 164,
+    "supported": false,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 860,
+    "file": "鼻涕超人.nes",
+    "title": "鼻涕超人",
+    "mapper": 4,
+    "supported": true,
+    "size": 524304,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 861,
+    "file": "龙之军团(龙之城堡)_(J).nes",
+    "title": "龙之军团(龙之城堡)_(J)",
+    "mapper": 2,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 862,
+    "file": "龙之忍者(J).nes",
+    "title": "龙之忍者(J)",
+    "mapper": 19,
+    "supported": false,
+    "size": 786464,
+    "hot": false,
+    "category": "动作格斗"
+  },
+  {
+    "id": 863,
+    "file": "龙战士.nes",
+    "title": "龙战士",
+    "mapper": 1,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 864,
+    "file": "龙牙.nes",
+    "title": "龙牙",
+    "mapper": 4,
+    "supported": true,
+    "size": 131088,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 865,
+    "file": "龙珠1-神龙之迷.nes",
+    "title": "龙珠1-神龙之迷",
+    "mapper": 66,
+    "supported": true,
+    "size": 688160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 866,
+    "file": "龙珠2-大魔王复活.nes",
+    "title": "龙珠2-大魔王复活",
+    "mapper": 16,
+    "supported": false,
+    "size": 786464,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 867,
+    "file": "龙珠3-悟空传.nes",
+    "title": "龙珠3-悟空传",
+    "mapper": 16,
+    "supported": false,
+    "size": 393232,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 868,
+    "file": "龙珠Z2-激斗弗利撒.nes",
+    "title": "龙珠Z2-激斗弗利撒",
+    "mapper": 16,
+    "supported": false,
+    "size": 1048608,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 869,
+    "file": "龙珠Z2_激神弗利萨.nes",
+    "title": "龙珠Z2_激神弗利萨",
+    "mapper": 253,
+    "supported": false,
+    "size": 786448,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 870,
+    "file": "龙珠Z3-烈战人造人.nes",
+    "title": "龙珠Z3-烈战人造人",
+    "mapper": 16,
+    "supported": false,
+    "size": 1048608,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 871,
+    "file": "龙珠Z3_烈战人造人间.nes",
+    "title": "龙珠Z3_烈战人造人间",
+    "mapper": 74,
+    "supported": false,
+    "size": 786448,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 872,
+    "file": "龙珠Z_强袭赛亚人.nes",
+    "title": "龙珠Z_强袭赛亚人",
+    "mapper": 253,
+    "supported": false,
+    "size": 786448,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 873,
+    "file": "龙珠Z外传-塞亚人灭绝计划.nes",
+    "title": "龙珠Z外传-塞亚人灭绝计划",
+    "mapper": 16,
+    "supported": false,
+    "size": 1048608,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 874,
+    "file": "龙珠Z外传_赛亚人绝灭计划.nes",
+    "title": "龙珠Z外传_赛亚人绝灭计划",
+    "mapper": 74,
+    "supported": false,
+    "size": 786448,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 875,
+    "file": "龙珠英雄.nes",
+    "title": "龙珠英雄",
+    "mapper": 4,
+    "supported": true,
+    "size": 262160,
+    "hot": false,
+    "category": "其他经典"
+  },
+  {
+    "id": 876,
+    "file": "龙魂2.nes",
+    "title": "龙魂2",
+    "mapper": 88,
+    "supported": false,
+    "size": 786464,
+    "hot": false,
+    "category": "其他经典"
+  }
+]
