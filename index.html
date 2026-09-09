@@ -555,14 +555,6 @@
     /* ==========================================================================
        游戏房间视图 (GAME VIEW)
        ========================================================================== */
-    #game-view {
-      width: 100%;
-      max-width: 520px;
-      margin: 0 auto;
-      display: none;
-      flex-direction: column;
-      gap: 10px;
-    }
 
     .game-nav-bar {
       width: 100%;
@@ -1862,7 +1854,7 @@
         if (category === 'ALL') {
           card.style.display = 'flex';
         } else if (category === '4PLAYER') {
-          card.style.display = card.dataset.players === '4' ? 'flex' : 'none';
+          card.style.display = (card.dataset.players === '4' || card.dataset.players === '3-4') ? 'flex' : 'none';
         } else {
           card.style.display = card.dataset.cat === category ? 'flex' : 'none';
         }
