@@ -7,7 +7,11 @@
   <link rel="stylesheet" href="../../shared/css/common.css">
   <link rel="stylesheet" href="../../shared/css/game-layout.css">
   <style>
-5. 极光叠叠高 (STACK) 样式
+/* ==========================================================================
+   🧱 极光叠叠高 (Stacker Towers) 专属样式
+   ========================================================================== */
+/* ==========================================================================
+       5. 极光叠叠高 (STACK) 样式
        ========================================================================== */
     #stack-stage {
       width: 100%;
@@ -69,8 +73,8 @@
     }
 
 
-    /* ==========================================================================
-       
+    
+#stack-stage { display: block !important; }
   </style>
 </head>
 <body>
@@ -100,8 +104,8 @@
     
     
 
-    <!-- 舞台容器 -->
-    <div class="stage-wrapper">
+    <!-- 舞台主容器 -->
+    <div class="stage-wrapper action-mode">
 <div id="stack-stage" onclick="handleStackDrop()">
           <canvas id="stack-canvas"></canvas>
           <div class="stack-hud">
@@ -114,6 +118,9 @@
         <!-- 12. 坦克震荡舞台 -->
         
     </div>
+    <div class="game-status" id="status-text"></div>
+
+    
   </div>
 
 

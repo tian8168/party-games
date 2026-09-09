@@ -4,47 +4,37 @@
 
 window.GAME_KEY = 'CONTRA';
 window.GAME_RULES = {
-  'CONTRA': {"title":"💥 魂斗罗 (Contra: 丛林突袭) 规则与秘籍","body":"<p><strong>经典操作：</strong>【W/A/S/D 或 摇杆】8向移动与瞄准；【J / 空格 / B键】开火；【K / A键】跳跃；【S / 下键】趴下躲子弹！鼠标轻触画面亦可直接开火！</p><br>\n           <p><strong>神级装备：</strong>击碎天上飞行的红白胶囊，抢夺 <b>🔴 S 弹 (5向扇形扩散弹)</b>、<b>🟡 M 机枪 (连发扫射)</b> 或 <b>🔵 L 激光 (高能贯穿)</b>！</p><br>\n           <p><strong>第一关要塞 BOSS：</strong>抵达最右侧基地防线，击破双联装转管炮台与高空狙击手，集火轰爆中央红色感应核心！</p><br>\n           <p><strong>经典秘籍：</strong>右上角常驻点击 <b>【⚡ 30 条命】</b>，一秒梦回童年红白机！</p>"}
+  'CONTRA': {"title":"💥 魂斗罗 规则与秘籍","body":"<p><strong>经典操作：</strong>WASD 移动瞄准，J/空格开火，K跳跃，S趴下。点击右上角【⚡ 30 条命】激活秘籍！</p>"}
 };
 
 const STATE = {
+  currentView: 'GAME',
 
       currentGame: 'CONTRA',
       gameMode: 'LOCAL',
       contra: {
-        lives: 3,
-        weapon: 'NORMAL',
-        score: 0,
-        cameraX: 0,
-        levelWidth: 2200,
-        bossActive: false,
-        bossDefeated: false,
-        player: {
-          x: 50, y: 220, vx: 0, vy: 0,
-          w: 20, h: 36, onGround: false,
-          facing: 1, crouch: false, aimUp: false,
-          invincibleTime: 0, animFrame: 0, jumpAngle: 0
-        },
-        bullets: [],
-        enemyBullets: [],
-        enemies: [],
-        capsules: [],
-        pickups: [],
-        particles: [],
-        platforms: [],
-        boss: {
-          x: 1950, y: 120, w: 160, h: 160,
-          coreHp: 60, maxCoreHp: 60,
-          turretLeftHp: 20, turretRightHp: 20,
-          sniperHp: 15,
-          active: false
-        },
-        keys: { left: false, right: false, up: false, down: false, fire: false, jump: false },
-        animId: null
+        lives: 3, weapon: 'NORMAL', score: 0, cameraX: 0, levelWidth: 2200,
+        bossActive: false, bossDefeated: false,
+        player: { x: 50, y: 220, vx: 0, vy: 0, w: 20, h: 36, onGround: false, facing: 1, crouch: false, aimUp: false, invincibleTime: 0, animFrame: 0, jumpAngle: 0 },
+        bullets: [], enemyBullets: [], enemies: [], capsules: [], pickups: [], particles: [], platforms: [],
+        boss: { x: 1950, y: 120, w: 160, h: 160, coreHp: 60, maxCoreHp: 60, turretLeftHp: 20, turretRightHp: 20, sniperHp: 15, active: false },
+        keys: { left: false, right: false, up: false, down: false, fire: false, jump: false }, animId: null
       }
     
 };
 window.STATE = STATE;
+
+function checkIsMyTurn() {
+  if (STATE.gameMode === 'LOCAL') return true;
+  if (STATE.gameMode === 'AI') return STATE.turn === 1;
+  if (STATE.gameMode === 'ONLINE') {
+    if (!STATE.online.opponentJoined) return false;
+    if (STATE.online.myRole === 'host' && STATE.turn === 1) return true;
+    if (STATE.online.myRole === 'guest' && STATE.turn === 2) return true;
+    return false;
+  }
+  return false;
+}
 
 function switchGameMode(mode, doReset = true) {
   if (typeof AUDIO !== 'undefined' && AUDIO.play) AUDIO.play('click');
@@ -64,7 +54,14 @@ function switchGameMode(mode, doReset = true) {
 }
 
 function resetCurrentGame() {
-  resetContraMatch();
+  
+      if (typeof initContraGame === 'function') initContraGame();
+      resetContraMatch();
+      requestAnimationFrame(() => {
+        resizeContraCanvas();
+        renderContra();
+      });
+    
 }
 
 // --- 游戏专属引擎核心逻辑 ---
@@ -971,12 +968,11 @@ function resetCurrentGame() {
 // --- 页面装载自动初始化 ---
 window.addEventListener('DOMContentLoaded', () => {
   recordRecentGame('CONTRA');
+  resetCurrentGame();
   const params = new URLSearchParams(window.location.search);
   const roomParam = params.get('room');
   if (roomParam && typeof joinExistingRoom === 'function') {
     switchGameMode('ONLINE', false);
     joinExistingRoom(roomParam);
-  } else {
-    resetCurrentGame();
   }
 });

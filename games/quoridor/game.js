@@ -4,10 +4,11 @@
 
 window.GAME_KEY = 'QUORIDOR';
 window.GAME_RULES = {
-  'QUORIDOR': {"title":"步步为营 (Quoridor 4P) 规则","body":"<p><strong>胜利目标：</strong>率先到达自己对向的胜利线（🔴南冲北、🟢北冲南、🔵西冲东、🟡东冲西）！</p><br>\n           <p><strong>挡板分配：</strong>双人局各 10 块；四人局各 5 块！放板必须为所有玩家至少留一条活路！</p><br>\n           <p><strong>跳跃规则：</strong>面对邻格棋子可直线跳过；若正向受阻或有墙，可向侧方斜跳！</p><br>\n           <p><strong>轮替顺序：</strong>顺时针依次行动（🔴P1 -> 🔵P3 -> 🟢P2 -> 🟡P4）！</p>"}
+  'QUORIDOR': {"title":"步步为营 (Quoridor 4P) 规则","body":"<p><strong>胜利目标：</strong>率先到达自己对向的胜利线（🔴南冲北、🟢北冲南、🔵西冲东、🟡东冲西）！</p><br><p><strong>挡板分配：</strong>双人局各 10 块；四人局各 5 块！放板必须为所有玩家至少留一条活路！</p><br><p><strong>跳跃规则：</strong>面对邻格棋子可直线跳过；若正向受阻或有墙，可向侧方斜跳！</p><br><p><strong>轮替顺序：</strong>顺时针依次行动（🔴P1 -> 🔵P3 -> 🟢P2 -> 🟡P4）！</p>"}
 };
 
 const STATE = {
+  currentView: 'GAME',
   currentGame: 'QUORIDOR',
   gameMode: 'AI',
   turn: 1,

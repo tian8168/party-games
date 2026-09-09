@@ -4,27 +4,31 @@
 
 window.GAME_KEY = 'HOCKEY';
 window.GAME_RULES = {
-  'HOCKEY': {"title":"极光空气冰球 规则","body":"<p><strong>碰撞竞技：</strong>滑动己方推盘，利用刚体弹力高速撞击发光的冰球！</p><br>\n           <p><strong>破门得分：</strong>先将冰球攻入对方球门达到 <b>5 分</b> 的玩家赢得总冠军！</p>"}
+  'HOCKEY': {"title":"极光空气冰球 规则","body":"<p><strong>碰撞竞技：</strong>滑动己方推盘，利用刚体弹力高速撞击发光的冰球！率先达到 <b>5 分</b> 者获胜！</p>"}
 };
 
 const STATE = {
+  currentView: 'GAME',
 
       currentGame: 'HOCKEY',
       gameMode: 'AI',
       winner: null,
-      hockey: {
-        p1Score: 0,
-        p2Score: 0,
-        maxScore: 5,
-        puck: { x: 180, y: 250, vx: 0, vy: 0, radius: 14 },
-        paddle1: { x: 180, y: 440, radius: 22 },
-        paddle2: { x: 180, y: 60, radius: 22 },
-        particles: [],
-        animId: null
-      }
+      hockey: { p1Score: 0, p2Score: 0, maxScore: 5, puck: { x: 180, y: 250, vx: 0, vy: 0, radius: 14 }, paddle1: { x: 180, y: 440, radius: 22 }, paddle2: { x: 180, y: 60, radius: 22 }, particles: [], animId: null }
     
 };
 window.STATE = STATE;
+
+function checkIsMyTurn() {
+  if (STATE.gameMode === 'LOCAL') return true;
+  if (STATE.gameMode === 'AI') return STATE.turn === 1;
+  if (STATE.gameMode === 'ONLINE') {
+    if (!STATE.online.opponentJoined) return false;
+    if (STATE.online.myRole === 'host' && STATE.turn === 1) return true;
+    if (STATE.online.myRole === 'guest' && STATE.turn === 2) return true;
+    return false;
+  }
+  return false;
+}
 
 function switchGameMode(mode, doReset = true) {
   if (typeof AUDIO !== 'undefined' && AUDIO.play) AUDIO.play('click');
@@ -44,7 +48,13 @@ function switchGameMode(mode, doReset = true) {
 }
 
 function resetCurrentGame() {
-  resetHockeyMatch();
+  
+      if (typeof initHockeyGame === 'function') initHockeyGame();
+      resetHockeyMatch();
+      requestAnimationFrame(() => {
+        resizeHockeyCanvas();
+      });
+    
 }
 
 // --- 游戏专属引擎核心逻辑 ---
@@ -692,12 +702,11 @@ function resetCurrentGame() {
 // --- 页面装载自动初始化 ---
 window.addEventListener('DOMContentLoaded', () => {
   recordRecentGame('HOCKEY');
+  resetCurrentGame();
   const params = new URLSearchParams(window.location.search);
   const roomParam = params.get('room');
   if (roomParam && typeof joinExistingRoom === 'function') {
     switchGameMode('ONLINE', false);
     joinExistingRoom(roomParam);
-  } else {
-    resetCurrentGame();
   }
 });

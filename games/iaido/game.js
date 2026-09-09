@@ -4,25 +4,30 @@
 
 window.GAME_KEY = 'IAIDO';
 window.GAME_RULES = {
-  'IAIDO': {"title":"拔刀居合斩 规则","body":"<p><strong>屏息凝神：</strong>屏幕变暗等待，切勿提前触碰，<strong>抢跑直接判负！</strong></p><br>\n           <p><strong>一击必杀：</strong>红光闪现「斬」字瞬间，以极限手速点击屏幕，快 1 毫秒者胜！率先赢下 3 胜者问鼎剑圣！</p>"}
+  'IAIDO': {"title":"拔刀居合斩 规则","body":"<p><strong>屏息凝神：</strong>切勿提前触碰，抢跑直接判负！「斬」字闪现瞬间以极限手速点击屏幕，快 1 毫秒者胜！率先 3 胜者获胜！</p>"}
 };
 
 const STATE = {
+  currentView: 'GAME',
 
       currentGame: 'IAIDO',
       gameMode: 'AI',
-      iaido: {
-        state: 'IDLE',
-        p1Wins: 0,
-        p2Wins: 0,
-        targetWins: 3,
-        timer: null,
-        signalTime: 0,
-        roundNum: 1
-      }
+      iaido: { state: 'IDLE', p1Wins: 0, p2Wins: 0, targetWins: 3, timer: null, signalTime: 0, roundNum: 1 }
     
 };
 window.STATE = STATE;
+
+function checkIsMyTurn() {
+  if (STATE.gameMode === 'LOCAL') return true;
+  if (STATE.gameMode === 'AI') return STATE.turn === 1;
+  if (STATE.gameMode === 'ONLINE') {
+    if (!STATE.online.opponentJoined) return false;
+    if (STATE.online.myRole === 'host' && STATE.turn === 1) return true;
+    if (STATE.online.myRole === 'guest' && STATE.turn === 2) return true;
+    return false;
+  }
+  return false;
+}
 
 function switchGameMode(mode, doReset = true) {
   if (typeof AUDIO !== 'undefined' && AUDIO.play) AUDIO.play('click');
@@ -42,7 +47,10 @@ function switchGameMode(mode, doReset = true) {
 }
 
 function resetCurrentGame() {
-  resetIaidoMatch();
+  
+      if (typeof initIaidoGame === 'function') initIaidoGame();
+      resetIaidoMatch();
+    
 }
 
 // --- 游戏专属引擎核心逻辑 ---
@@ -155,12 +163,11 @@ function resetCurrentGame() {
 // --- 页面装载自动初始化 ---
 window.addEventListener('DOMContentLoaded', () => {
   recordRecentGame('IAIDO');
+  resetCurrentGame();
   const params = new URLSearchParams(window.location.search);
   const roomParam = params.get('room');
   if (roomParam && typeof joinExistingRoom === 'function') {
     switchGameMode('ONLINE', false);
     joinExistingRoom(roomParam);
-  } else {
-    resetCurrentGame();
   }
 });

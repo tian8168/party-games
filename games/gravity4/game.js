@@ -4,10 +4,11 @@
 
 window.GAME_KEY = 'GRAVITY4';
 window.GAME_RULES = {
-  'GRAVITY4': {"title":"🟡 重力四子棋 (Connect Four) 规则","body":"<p><strong>经典玩法：</strong>7列×6行棋盘，点击列号按钮投子，棋子受重力滑落堆叠。</p><br>\n           <p><strong>胜利目标：</strong>率先在横向、纵向或对角线连成 <b>4 颗连续同色棋子</b> 者获胜！</p><br>\n           <p><strong>核心博弈：</strong>经典博弈名局！每一步都是攻防兼备，比五子棋更快节奏！</p>"}
+  'GRAVITY4': {"title":"🟡 重力四子棋 (Connect Four) 规则","body":"<p><strong>经典玩法：</strong>7列×6行棋盘，点击列号按钮投子，棋子受重力滑落堆叠。</p><br><p><strong>胜利目标：</strong>率先在横向、纵向或对角线连成 <b>4 颗连续同色棋子</b> 者获胜！</p>"}
 };
 
 const STATE = {
+  currentView: 'GAME',
   currentGame: 'GRAVITY4',
   gameMode: 'AI',
   turn: 1,
@@ -127,7 +128,8 @@ window.handleGameOnlineAction = function(msg) {
 };
 
 const canvas2D = document.getElementById('board-canvas');
-const ctx2D = canvas2D.getContext('2d');
+const ctx2D = canvas2D ? canvas2D.getContext('2d') : null;
+let cellSize = 0, grooveSize = 0, offset = 0;
 
 // --- 2D 画布基础与绘制 ---
     function resizeCanvas2D() {

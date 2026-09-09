@@ -7,7 +7,11 @@
   <link rel="stylesheet" href="../../shared/css/common.css">
   <link rel="stylesheet" href="../../shared/css/game-layout.css">
   <style>
-2. 皇家大话骰 (LIARSDICE) 样式
+/* ==========================================================================
+   🎲 皇家大话骰 (Liar's Dice) 专属样式
+   ========================================================================== */
+/* ==========================================================================
+       2. 皇家大话骰 (LIARSDICE) 样式
        ========================================================================== */
     #liarsdice-stage {
       width: 100%;
@@ -197,8 +201,8 @@
       font-size: 0.95rem;
     }
 
-    /* ==========================================================================
-       
+    
+#liarsdice-stage { display: flex !important; }
   </style>
 </head>
 <body>
@@ -232,8 +236,8 @@
     </div>
     
 
-    <!-- 舞台容器 -->
-    <div class="stage-wrapper">
+    <!-- 舞台主容器 -->
+    <div class="stage-wrapper action-mode">
 <div id="liarsdice-stage">
           <!-- 上方：对手骰子 -->
           <div class="dice-area">
@@ -287,6 +291,9 @@
         <!-- 7. 物理飞车相扑舞台 -->
         
     </div>
+    <div class="game-status" id="status-text"></div>
+
+    
   </div>
 
 

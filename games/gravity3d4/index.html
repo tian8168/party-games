@@ -7,51 +7,56 @@
   <link rel="stylesheet" href="../../shared/css/common.css">
   <link rel="stylesheet" href="../../shared/css/game-layout.css">
   <style>
+/* ==========================================================================
+   💜 3D 立体四子棋 (3D Connect Four) 专属样式
+   ========================================================================== */
 
-  #board-3d-wrapper {
-    position: relative;
-    width: 100%;
-    max-width: 480px;
-    aspect-ratio: 1;
-    border-radius: 12px;
-    overflow: hidden;
-    background: radial-gradient(circle at center, #1e293b, #090d16);
-    border: 1px solid #334155;
-  }
-  #board-3d-canvas {
-    width: 100% !important;
-    height: 100% !important;
-    display: block;
-  }
-  .btn-reset-cam {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: rgba(15, 23, 42, 0.75);
-    backdrop-filter: blur(4px);
-    border: 1px solid #475569;
-    color: #cbd5e1;
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    cursor: pointer;
-    z-index: 5;
-    transition: all 0.2s;
-  }
-  .btn-reset-cam:hover { background: #1e293b; color: #fff; border-color: #60a5fa; }
-  .tip-3d-overlay {
-    position: absolute;
-    bottom: 8px;
-    left: 0;
-    right: 0;
-    text-align: center;
-    font-size: 0.72rem;
-    color: #64748b;
-    pointer-events: none;
-    z-index: 5;
-  }
-
+    #board-3d-wrapper {
+      position: relative;
+      width: 100% !important;
+      height: 100% !important;
+      max-width: 480px;
+      aspect-ratio: 1;
+      border-radius: 12px;
+      overflow: hidden;
+      background: radial-gradient(circle at center, #1e293b, #090d16);
+      border: 1px solid #334155;
+      display: block !important;
+    }
+    #board-3d-canvas {
+      width: 100% !important;
+      height: 100% !important;
+      display: block !important;
+    }
+    .btn-reset-cam {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(4px);
+      border: 1px solid #475569;
+      color: #cbd5e1;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      z-index: 5;
+      transition: all 0.2s;
+    }
+    .btn-reset-cam:hover { background: #1e293b; color: #fff; border-color: #60a5fa; }
+    .tip-3d-overlay {
+      position: absolute;
+      bottom: 8px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 0.72rem;
+      color: #64748b;
+      pointer-events: none;
+      z-index: 5;
+    }
+  
   </style>
   <script src="../../three.min.js"></script>
   <script src="../../OrbitControls.js"></script>
@@ -76,6 +81,7 @@
         <span>◀ 返回大厅</span>
       </button>
       <div class="current-game-badge" id="current-game-title">💜 3D 立体四子棋 (3D Connect Four)</div>
+      
       <button class="btn-icon" id="restart-btn" onclick="resetCurrentGame()">🔄 重开</button>
     </div>
 
@@ -86,7 +92,7 @@
       <div class="mode-tab" id="tab-online" onclick="switchGameMode('ONLINE')">🌐 好友联机</div>
     </div>
     <!-- 联机房间控制面板 -->
-      <div class="online-panel" id="online-panel">
+      <div class="online-panel hidden" id="online-panel">
         <div class="room-header">
           <div>房间号: <span class="room-id-badge" id="display-room-id">未创建</span></div>
           <div id="display-role-info" style="font-size:0.8rem; color:#cbd5e1;">尚未进入房间</div>
@@ -188,19 +194,9 @@
         </div>
       </div>
 
-      <!-- 步步为营 2人/4人 模式切换栏 -->
-      <div id="quoridor-player-toggle" class="quoridor-mode-bar" style="display:none;">
-        <button class="btn-q-mode active" id="btn-q-2p" onclick="setQuoridorPlayerCount(2)">👥 经典双人 (10板)</button>
-        <button class="btn-q-mode" id="btn-q-4p" onclick="setQuoridorPlayerCount(4)">👥👥 四人大乱斗 (5板)</button>
-      </div>
+      
 
-      <!-- 游戏主舞台容器 -->
-      <div class="stage-wrapper">
-        <!-- 1. 2D Canvas (步步为营 & 2D重力五子棋) -->
-        
-  
-
-    <!-- 舞台容器 -->
+    <!-- 舞台主容器 -->
     <div class="stage-wrapper">
 
       <div id="board-3d-wrapper">
@@ -208,9 +204,10 @@
         <button class="btn-reset-cam" onclick="reset3DCamera()">🔄 重置视角</button>
         <div class="tip-3d-overlay">🖱️ 拖拽360°旋转 · 滚轮缩放 · 点击任意立柱落子</div>
       </div>
-      <div class="game-status" id="status-text">正在加载 3D 游戏引擎...</div>
   
     </div>
+
+    <div class="game-status" id="status-text">正在加载 3D 游戏引擎...</div>
   </div>
 
 

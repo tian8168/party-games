@@ -3,11 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>💣 极限抛物线弹道 (Scorched Earth Tank) · 聚会游戏大厅</title>
+  <title>🎯 极限抛物线 (Worms Artillery) · 聚会游戏大厅</title>
   <link rel="stylesheet" href="../../shared/css/common.css">
   <link rel="stylesheet" href="../../shared/css/game-layout.css">
   <style>
-4. 极限抛物线弹道 (TANK) 样式
+/* ==========================================================================
+   🎯 极限抛物线 (Worms Artillery) 专属样式
+   ========================================================================== */
+/* ==========================================================================
+       4. 极限抛物线弹道 (TANK) 样式
        ========================================================================== */
     #tank-stage {
       width: 100%;
@@ -99,8 +103,8 @@
       box-shadow: 0 2px 10px rgba(245, 158, 11, 0.4);
     }
 
-    /* ==========================================================================
-       
+    
+#tank-stage { display: flex !important; }
   </style>
 </head>
 <body>
@@ -122,7 +126,7 @@
       <button class="btn-back-lobby" onclick="window.location.href='../../'">
         <span>◀ 返回大厅</span>
       </button>
-      <div class="current-game-badge" id="current-game-title">💣 极限抛物线弹道 (Scorched Earth Tank)</div>
+      <div class="current-game-badge" id="current-game-title">🎯 极限抛物线 (Worms Artillery)</div>
       
       <button class="btn-icon" id="restart-btn" onclick="resetCurrentGame()">🔄 重开</button>
     </div>
@@ -134,8 +138,8 @@
     </div>
     
 
-    <!-- 舞台容器 -->
-    <div class="stage-wrapper">
+    <!-- 舞台主容器 -->
+    <div class="stage-wrapper action-mode">
 <div id="tank-stage">
           <canvas id="tank-canvas"></canvas>
           <div class="tank-hud-top">
@@ -164,6 +168,9 @@
         <!-- 10. 魂斗罗经典第一关舞台 -->
         
     </div>
+    <div class="game-status" id="status-text"></div>
+
+    
   </div>
 
 

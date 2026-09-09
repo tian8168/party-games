@@ -85,7 +85,7 @@
       gap: 6px;
       backdrop-filter: blur(8px);
     }
-    .online-panel.hidden { display: none; }
+    .online-panel.hidden { display: none !important; }
 
     .room-header {
       display: flex;
@@ -287,7 +287,7 @@
     #board-3d-wrapper {
       width: 100%;
       height: 100%;
-      display: none;
+      display: block;
       position: relative;
       border-radius: 10px;
       overflow: hidden;
@@ -335,3 +335,18 @@
     }
 
     
+    /* 自适应模式容器 (Action / Non-Square Games) */
+    .stage-wrapper.contra-mode,
+    .stage-wrapper.tanktrouble-mode,
+    .stage-wrapper.action-mode {
+      aspect-ratio: auto !important;
+      height: auto !important;
+      max-height: none !important;
+      max-width: 520px !important;
+      background: transparent !important;
+      border: none !important;
+      padding: 0 !important;
+      box-shadow: none !important;
+      overflow: visible !important;
+    }
+  

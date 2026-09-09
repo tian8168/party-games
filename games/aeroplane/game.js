@@ -4,10 +4,11 @@
 
 window.GAME_KEY = 'AEROPLANE';
 window.GAME_RULES = {
-  'AEROPLANE': {"title":"✈️ 四人飞行棋 (Aeroplane Chess 4P) 规则","body":"<p><strong>胜利目标：</strong>率先将己方全部 4 架战机巡航抵达中央大本营终点者夺得冠军！</p><br>\n           <p><strong>起飞规则：</strong>战机在停机坪待命，必须掷出 <b>6 点</b> 方可起飞至起始跑道出战。</p><br>\n           <p><strong>连掷奖励：</strong>掷出 6 点可获得再掷一次机会！但若<b>连续 3 次掷出 6 点</b>，将触发发动机过热警报坠机返航！</p><br>\n           <p><strong>同色跳跃：</strong>战机在外圈公用航线停留在与自身颜色相同的格子上，可直接向前<b>超速跳跃 4 格</b>！</p><br>\n           <p><strong>超速飞越：</strong>停在己方飞越跑道（相对第16格），可沿中央虚线<b>径直横跨整个棋盘</b>（直飞12格），击落中心敌机，着陆后再跳跃4格！</p><br>\n           <p><strong>空中撞机：</strong>停留在敌方战机所在格，直接将敌机<b>击落遣返停机坪</b>！同色战机在同格则触发<b>叠机编队</b>！</p><br>\n           <p><strong>精准冲线：</strong>进入终点直道后必须<b>刚好掷出对应点数</b>到达中央大本营。超出点数将折返倒退！</p><br>\n           <p><strong>多种模式：</strong>支持 1人挑战3电脑 AI、本地2-4人同屏轮流对战、以及好友联机房间！</p>"}
+  'AEROPLANE': {"title":"✈️ 四人飞行棋 (Aeroplane Chess 4P) 规则","body":"<p><strong>胜利目标：</strong>率先将己方全部 4 架战机巡航抵达中央大本营终点者夺得冠军！</p><br><p><strong>起飞规则：</strong>战机在停机坪待命，必须掷出 <b>6 点</b> 方可起飞至起始跑道出战。</p><br><p><strong>连掷奖励：</strong>掷出 6 点可获得再掷一次机会！但若<b>连续 3 次掷出 6 点</b>，将触发发动机过热警报坠机返航！</p><br><p><strong>同色跳跃：</strong>战机在外圈公用航线停留在与自身颜色相同的格子上，可直接向前<b>超速跳跃 4 格</b>！</p><br><p><strong>超速飞越：</strong>停在己方飞越跑道（相对第16格），可沿中央虚线<b>径直横跨整个棋盘</b>（直飞12格），击落中心敌机，着陆后再跳跃4格！</p><br><p><strong>空中撞机：</strong>停留在敌方战机所在格，直接将敌机<b>击落遣返停机坪</b>！同色战机在同格则触发<b>叠机编队</b>！</p><br><p><strong>精准冲线：</strong>进入终点直道后必须<b>刚好掷出对应点数</b>到达中央大本营。超出点数将折返倒退！</p>"}
 };
 
 const STATE = {
+  currentView: 'GAME',
 
       currentGame: 'AEROPLANE',
       gameMode: 'AI',
@@ -16,30 +17,30 @@ const STATE = {
       animating: false,
       online: { roomId: null, myRole: null, connected: false, mqttClient: null, opponentJoined: false },
       aeroplane: {
-        playerCount: 4,
-        humanPlayers: [0],
-        turn: 0,
-        diceVal: 0,
-        diceRolling: false,
-        consecutiveSixes: 0,
-        animating: false,
-        selectedPlane: null,
-        validPlanes: [],
-        fastAI: false,
-        waitingForPlayerChoice: false,
+        playerCount: 4, humanPlayers: [0], turn: 0, diceVal: 0, diceRolling: false, consecutiveSixes: 0, animating: false, selectedPlane: null, validPlanes: [], fastAI: false, waitingForPlayerChoice: false,
         players: [
           { id: 0, color: '#ef4444', name: '红方', finishedCount: 0, planes: [{ id: 0, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 1, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 2, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 3, state: 'HANGAR', step: 0, homeStep: -1 }] },
           { id: 1, color: '#f59e0b', name: '黄方', finishedCount: 0, planes: [{ id: 0, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 1, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 2, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 3, state: 'HANGAR', step: 0, homeStep: -1 }] },
           { id: 2, color: '#38bdf8', name: '蓝方', finishedCount: 0, planes: [{ id: 0, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 1, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 2, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 3, state: 'HANGAR', step: 0, homeStep: -1 }] },
           { id: 3, color: '#22c55e', name: '绿方', finishedCount: 0, planes: [{ id: 0, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 1, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 2, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 3, state: 'HANGAR', step: 0, homeStep: -1 }] }
         ],
-        particles: [],
-        animId: null,
-        aiTimer: null
+        particles: [], animId: null, aiTimer: null
       }
     
 };
 window.STATE = STATE;
+
+function checkIsMyTurn() {
+  if (STATE.gameMode === 'LOCAL') return true;
+  if (STATE.gameMode === 'AI') return STATE.turn === 1;
+  if (STATE.gameMode === 'ONLINE') {
+    if (!STATE.online.opponentJoined) return false;
+    if (STATE.online.myRole === 'host' && STATE.turn === 1) return true;
+    if (STATE.online.myRole === 'guest' && STATE.turn === 2) return true;
+    return false;
+  }
+  return false;
+}
 
 function switchGameMode(mode, doReset = true) {
   if (typeof AUDIO !== 'undefined' && AUDIO.play) AUDIO.play('click');
@@ -59,7 +60,14 @@ function switchGameMode(mode, doReset = true) {
 }
 
 function resetCurrentGame() {
-  resetAeroplaneGame();
+  
+      if (typeof initAeroplaneGame === 'function') initAeroplaneGame();
+      if (typeof resetAeroplaneGame === 'function') resetAeroplaneGame();
+      requestAnimationFrame(() => {
+        resizeAeroplaneCanvas();
+        renderAeroplane();
+      });
+    
 }
 
 // --- 游戏专属引擎核心逻辑 ---
@@ -1296,12 +1304,11 @@ function resetCurrentGame() {
 // --- 页面装载自动初始化 ---
 window.addEventListener('DOMContentLoaded', () => {
   recordRecentGame('AEROPLANE');
+  resetCurrentGame();
   const params = new URLSearchParams(window.location.search);
   const roomParam = params.get('room');
   if (roomParam && typeof joinExistingRoom === 'function') {
     switchGameMode('ONLINE', false);
     joinExistingRoom(roomParam);
-  } else {
-    resetCurrentGame();
   }
 });

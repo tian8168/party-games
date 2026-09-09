@@ -7,7 +7,11 @@
   <link rel="stylesheet" href="../../shared/css/common.css">
   <link rel="stylesheet" href="../../shared/css/game-layout.css">
   <style>
-飞行棋专属样式 (AEROPLANE CHESS 4P)
+/* ==========================================================================
+   ✈️ 四人飞行棋 (Aeroplane Chess 4P) 专属样式
+   ========================================================================== */
+/* ==========================================================================
+       飞行棋专属样式 (AEROPLANE CHESS 4P)
        ========================================================================== */
     .aeroplane-hud {
       width: 100%;
@@ -296,6 +300,11 @@
     }
 
 
+
+      #aeroplane-stage { display: block !important; }
+      #aeroplane-hud { display: grid !important; }
+      #aeroplane-controls { display: flex !important; }
+    
   </style>
 </head>
 <body>
@@ -329,7 +338,7 @@
       <div class="mode-tab" id="tab-online" onclick="switchGameMode('ONLINE')">🌐 好友联机</div>
     </div>
     <!-- 联机房间控制面板 -->
-      <div class="online-panel" id="online-panel">
+      <div class="online-panel hidden" id="online-panel">
         <div class="room-header">
           <div>房间号: <span class="room-id-badge" id="display-room-id">未创建</span></div>
           <div id="display-role-info" style="font-size:0.8rem; color:#cbd5e1;">尚未进入房间</div>
@@ -348,11 +357,7 @@
       </div>
 
       
-    
-
-    <!-- 舞台容器 -->
-    <div class="stage-wrapper">
-<div class="aeroplane-hud" id="aeroplane-hud" style="display:none;">
+    <div class="aeroplane-hud" id="aeroplane-hud" style="display:grid;">
         <div class="aero-card aero-p0 active" id="aero-card-0" onclick="handleAeroCardClick(0)">
           <div class="aero-avatar" style="background:rgba(239,68,68,0.2); border:1px solid #ef4444; color:#ef4444;">🔴</div>
           <div class="aero-info">
@@ -396,327 +401,17 @@
       </div>
 
       <!-- 步步为营 2人/4人 模式切换栏 -->
-      <div id="quoridor-player-toggle" class="quoridor-mode-bar" style="display:none;">
-        <button class="btn-q-mode active" id="btn-q-2p" onclick="setQuoridorPlayerCount(2)">👥 经典双人 (10板)</button>
-        <button class="btn-q-mode" id="btn-q-4p" onclick="setQuoridorPlayerCount(4)">👥👥 四人大乱斗 (5板)</button>
-      </div>
+      
 
-      <!-- 游戏主舞台容器 -->
-      <div class="stage-wrapper">
-        <!-- 1. 2D Canvas (步步为营 & 2D重力五子棋) -->
-        <canvas id="board-canvas"></canvas>
-
-        <!-- 2. 3D WebGL (3D 立体五子棋) -->
-        <div id="board-3d-wrapper">
-          <canvas id="board-3d-canvas"></canvas>
-          <button class="btn-reset-cam" onclick="reset3DCamera()">🔄 重置视角</button>
-          <div class="tip-3d-overlay">🖱️ 拖拽360°旋转 · 滚轮缩放 · 点击任意立柱落子</div>
-        </div>
-
-        <!-- 3. 恶魔轮盘赌舞台 -->
-        <div id="roulette-stage">
-          <div class="roulette-flash-overlay" id="roulette-flash"></div>
-          <!-- 对手信息栏 -->
-          <div class="roulette-status-hud">
-            <div>
-              <b id="roulette-opp-name" style="color:#f87171;">🤖 恶魔荷官</b>
-              <div class="hp-hearts-box" id="roulette-opp-hp"></div>
-            </div>
-            <div id="roulette-cuffed-opp" style="display:none; color:#f59e0b; font-size:0.75rem; font-weight:700;">🔒 被拷住</div>
-          </div>
-
-          <!-- 枪台中央区 -->
-          <div class="roulette-gun-bench">
-            <svg class="shotgun-svg aim-opponent" id="shotgun-svg" viewBox="0 0 240 80">
-              <defs>
-                <linearGradient id="gunMetal" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#64748b"/>
-                  <stop offset="50%" stop-color="#334155"/>
-                  <stop offset="100%" stop-color="#0f172a"/>
-                </linearGradient>
-                <linearGradient id="woodStock" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#b45309"/>
-                  <stop offset="100%" stop-color="#78350f"/>
-                </linearGradient>
-              </defs>
-              <!-- 枪托木柄 -->
-              <path d="M 10 50 Q 30 55 60 45 L 75 35 L 75 52 L 20 62 Z" fill="url(#woodStock)" stroke="#451a03" stroke-width="2"/>
-              <!-- 扳机与机匣 -->
-              <rect x="75" y="32" width="45" height="20" rx="3" fill="url(#gunMetal)" stroke="#1e293b" stroke-width="2"/>
-              <path d="M 90 52 Q 95 62 105 52" fill="none" stroke="#cbd5e1" stroke-width="3"/>
-              <!-- 双管猎枪枪管 -->
-              <rect x="120" y="30" width="105" height="11" rx="2" fill="url(#gunMetal)" stroke="#0f172a" stroke-width="2"/>
-              <rect x="120" y="41" width="105" height="11" rx="2" fill="url(#gunMetal)" stroke="#0f172a" stroke-width="2"/>
-              <!-- 枪口准星 -->
-              <circle cx="222" cy="28" r="2.5" fill="#f59e0b"/>
-            </svg>
-            <div class="roulette-info-badge" id="roulette-round-info">装弹中...</div>
-            <div id="roulette-saw-badge" style="display:none; color:#ef4444; font-size:0.75rem; font-weight:700; margin-top:4px;">🪚 双倍伤害已激活！</div>
-          </div>
-
-          <!-- 玩家道具与血量 -->
-          <div class="roulette-status-hud">
-            <div>
-              <b id="roulette-player-name" style="color:#60a5fa;">👤 玩家</b>
-              <div class="hp-hearts-box" id="roulette-player-hp"></div>
-            </div>
-            <div id="roulette-cuffed-player" style="display:none; color:#f59e0b; font-size:0.75rem; font-weight:700;">🔒 被拷住</div>
-          </div>
-
-          <!-- 道具架 -->
-          <div class="roulette-items-dock" id="roulette-items-container"></div>
-
-          <!-- 行动按键 -->
-          <div class="roulette-actions">
-            <button class="btn-roulette-shoot btn-shoot-opp" onclick="rouletteShoot('OPPONENT')">
-              <span>💥 射击对方</span>
-              <span class="sub">实弹扣对方血，空包弹换回合</span>
-            </button>
-            <button class="btn-roulette-shoot btn-shoot-self" onclick="rouletteShoot('SELF')">
-              <span>🎯 射击自己</span>
-              <span class="sub">若为空包弹可【再动一回合】</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- 4. 极光桌上冰球舞台 -->
-        <div id="hockey-stage">
-          <canvas id="hockey-canvas"></canvas>
-        </div>
-
-        <!-- 5. 拔刀居合斩舞台 -->
-        <div id="iaido-stage" onclick="handleIaidoTap()">
-          <div class="iaido-hud-top">
-            <div class="duelist-box">
-              <span class="duelist-name" style="color:#ef4444;" id="iaido-p1-name">🔴 剑客P1</span>
-              <div class="iaido-life-box" id="iaido-p1-life">⚔️⚔️⚔️</div>
-            </div>
-            <div style="font-size:0.8rem; color:#94a3b8;" id="iaido-round-badge">第 1 回合 (抢3胜)</div>
-            <div class="duelist-box">
-              <span class="duelist-name" style="color:#38bdf8;" id="iaido-p2-name">🔵 剑客P2</span>
-              <div class="iaido-life-box" id="iaido-p2-life">⚔️⚔️⚔️</div>
-            </div>
-          </div>
-
-          <div class="iaido-center-zone">
-            <div class="iaido-moon"></div>
-            <div class="iaido-state-text" id="iaido-prompt">心如止水... 伺机而动</div>
-            <div class="iaido-sub-text" id="iaido-sub-prompt">出现「斬」字瞬间点击屏幕</div>
-          </div>
-
-          <div class="iaido-duelists">
-            <svg class="duelist-svg" id="iaido-p1-svg" viewBox="0 0 100 120">
-              <circle cx="50" cy="30" r="14" fill="#ef4444"/>
-              <path d="M 50 44 L 50 90 L 35 115 M 50 90 L 65 115" stroke="#ef4444" stroke-width="8" stroke-linecap="round"/>
-              <path d="M 50 55 L 75 75 L 88 50" stroke="#fca5a5" stroke-width="6" stroke-linecap="round"/>
-              <!-- 太刀 -->
-              <line x1="88" y1="50" x2="105" y2="15" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
-            </svg>
-            <svg class="duelist-svg" id="iaido-p2-svg" viewBox="0 0 100 120" style="transform: scaleX(-1);">
-              <circle cx="50" cy="30" r="14" fill="#38bdf8"/>
-              <path d="M 50 44 L 50 90 L 35 115 M 50 90 L 65 115" stroke="#38bdf8" stroke-width="8" stroke-linecap="round"/>
-              <path d="M 50 55 L 75 75 L 88 50" stroke="#93c5fd" stroke-width="6" stroke-linecap="round"/>
-              <!-- 太刀 -->
-              <line x1="88" y1="50" x2="105" y2="15" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
-            </svg>
-          </div>
-
-          <div class="iaido-slash-overlay" id="iaido-slash-overlay">
-            <div class="iaido-kanji">斬</div>
-          </div>
-          <div class="iaido-slash-line" id="iaido-slash-line"></div>
-        </div>
-
-        <!-- 6. 皇家大话骰舞台 -->
-        <div id="liarsdice-stage">
-          <!-- 上方：对手骰子 -->
-          <div class="dice-area">
-            <div class="dice-area-header">
-              <span id="liars-p2-name">🔵 对手 (恶魔AI)</span>
-              <span id="liars-p2-hp">❤️❤️❤️</span>
-            </div>
-            <div class="dice-tray" id="liars-p2-tray"></div>
-          </div>
-
-          <!-- 中央：当前叫牌展示 -->
-          <div class="liars-bid-hud">
-            <div style="font-size:0.75rem; color:#94a3b8;" id="liars-turn-tip">等待摇骰...</div>
-            <div class="liars-curr-bid" id="liars-curr-bid-text">当前无人叫牌 (首叫起步)</div>
-            <div style="font-size:0.72rem; color:#a7f3d0;" id="liars-rule-note">💡 1点可代表任意点（除非有人叫过1点）</div>
-          </div>
-
-          <!-- 下方：己方骰子 -->
-          <div class="dice-area">
-            <div class="dice-area-header">
-              <span id="liars-p1-name">🔴 己方手牌</span>
-              <span id="liars-p1-hp">❤️❤️❤️</span>
-            </div>
-            <div class="dice-tray" id="liars-p1-tray"></div>
-          </div>
-
-          <!-- 叫牌操作器 -->
-          <div class="liars-controls" id="liars-controls">
-            <div class="dice-picker-row">
-              <div class="dice-qty-box">
-                <button class="btn-qty-step" onclick="stepDiceQty(-1)">-</button>
-                <span class="dice-qty-val" id="dice-qty-val">4</span>
-                <button class="btn-qty-step" onclick="stepDiceQty(1)">+</button>
-              </div>
-              <div class="dice-val-selector" id="dice-val-selector">
-                <div class="btn-val-choice" data-val="1" onclick="selectDiceVal(1)">⚀</div>
-                <div class="btn-val-choice" data-val="2" onclick="selectDiceVal(2)">⚁</div>
-                <div class="btn-val-choice active" data-val="3" onclick="selectDiceVal(3)">⚂</div>
-                <div class="btn-val-choice" data-val="4" onclick="selectDiceVal(4)">⚃</div>
-                <div class="btn-val-choice" data-val="5" onclick="selectDiceVal(5)">⚄</div>
-                <div class="btn-val-choice" data-val="6" onclick="selectDiceVal(6)">⚅</div>
-              </div>
-            </div>
-            <div class="liars-action-buttons">
-              <button class="btn-dice-bid" id="btn-dice-bid" onclick="submitDiceBid()">📢 叫牌下注</button>
-              <button class="btn-dice-challenge" id="btn-dice-challenge" onclick="challengeDiceBid()">🚨 开！(质疑)</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- 7. 物理飞车相扑舞台 -->
-        <div id="sumo-stage">
-          <canvas id="sumo-canvas"></canvas>
-          <div class="sumo-hud">
-            <div class="sumo-score-badge" style="color:#ef4444;" id="sumo-p1-score">🔴 玩家: 0</div>
-            <div class="sumo-score-badge" style="color:#cbd5e1;" id="sumo-match-target">抢 3 胜</div>
-            <div class="sumo-score-badge" style="color:#38bdf8;" id="sumo-p2-score">🔵 电脑: 0</div>
-          </div>
-          <div class="sumo-touch-hint" id="sumo-touch-hint">💡 触碰屏幕或按住按键冲刺 (松开自动转向)</div>
-          <div class="sumo-controls-bar" id="sumo-controls-bar">
-            <button class="btn-sumo-boost btn-sumo-p1" id="btn-sumo-boost">🚀 按住冲刺 (松开瞄准)</button>
-            <button class="btn-sumo-boost btn-sumo-p2" id="btn-sumo-boost-p2" style="display:none;">🚀 蓝方冲刺 (松开瞄准)</button>
-          </div>
-        </div>
-
-        <!-- 8. 极限抛物线坦克舞台 -->
-        <div id="tank-stage">
-          <canvas id="tank-canvas"></canvas>
-          <div class="tank-hud-top">
-            <div style="display:flex; flex-direction:column; gap:2px;">
-              <span style="font-size:0.75rem; color:#ef4444; font-weight:700;" id="tank-p1-label">🔴 玩家坦克</span>
-              <div class="tank-hp-bar"><div class="tank-hp-fill tank-hp-p1" id="tank-hp-p1"></div></div>
-            </div>
-            <div class="tank-wind-badge" id="tank-wind-badge">💨 0 m/s</div>
-            <div style="display:flex; flex-direction:column; gap:2px; align-items:flex-end;">
-              <span style="font-size:0.75rem; color:#22c55e; font-weight:700;" id="tank-p2-label">🟢 电脑坦克</span>
-              <div class="tank-hp-bar"><div class="tank-hp-fill tank-hp-p2" id="tank-hp-p2"></div></div>
-            </div>
-          </div>
-          <div class="tank-controls-dock" id="tank-controls-dock">
-            <div class="tank-slider-row">
-              <span>角度: <b id="tank-angle-val" style="color:#38bdf8;">45°</b></span>
-              <input type="range" id="tank-angle-slider" min="10" max="85" value="45" oninput="updateTankAimHUD()">
-              <span>力度: <b id="tank-power-val" style="color:#f59e0b;">60%</b></span>
-              <input type="range" id="tank-power-slider" min="20" max="100" value="60" oninput="updateTankAimHUD()">
-            </div>
-            <button class="btn-tank-fire" id="btn-tank-fire" onclick="fireTankPlayer()">🔥 发射炮弹！</button>
-          </div>
-        </div>
-
-        
-        <!-- 10. 魂斗罗经典第一关舞台 -->
-        <div id="contra-stage">
-          <div class="contra-hud-top">
-            <div class="contra-life-badge" id="contra-life-display">🔴 P1: 3命</div>
-            <div class="contra-weapon-badge" id="contra-weapon-display">GUN: [ 普通单发 ]</div>
-            <button class="btn-konami-secret" onclick="activateKonami30Lives()">⚡ 30条命秘籍</button>
-          </div>
-          <canvas id="contra-canvas"></canvas>
-          <div class="contra-touch-controls">
-            <!-- 8向十字方向键 -->
-            <div class="contra-dpad">
-              <div class="dpad-btn dpad-up" id="btn-dpad-up">▲</div>
-              <div class="dpad-btn dpad-down" id="btn-dpad-down">▼</div>
-              <div class="dpad-btn dpad-left" id="btn-dpad-left">◀</div>
-              <div class="dpad-btn dpad-right" id="btn-dpad-right">▶</div>
-              <div class="dpad-center"></div>
-            </div>
-            <!-- 开火与跳跃 -->
-            <div class="contra-actions-pad">
-              <div class="btn-contra-circle btn-fire-b" id="btn-contra-fire">
-                <span>B</span>
-                <span class="btn-sub-label">开火</span>
-              </div>
-              <div class="btn-contra-circle btn-jump-a" id="btn-contra-jump">
-                <span>A</span>
-                <span class="btn-sub-label">跳跃</span>
-              </div>
-            </div>
-          </div>
-          <!-- 键盘键位指引 -->
-          <div class="contra-desktop-hints">
-            <span>⌨️ <b>WASD / 方向键</b> 移动与8向瞄准</span>
-            <span><b>J / 空格</b> 开火</span>
-            <span><b>K</b> 跳跃</span>
-            <span><b>S / ▼</b> 趴下躲子弹</span>
-            <span>🖱️ <b>点击画面</b> 极速开火</span>
-          </div>
-        </div>
-
-        <div id="stack-stage" onclick="handleStackDrop()">
-          <canvas id="stack-canvas"></canvas>
-          <div class="stack-hud">
-            <div class="stack-score-box" id="stack-score">0</div>
-            <div class="stack-combo-badge" id="stack-combo">PERFECT x0</div>
-          </div>
-          <div class="stack-tap-tip" id="stack-tip">轻触屏幕任意位置落下晶体</div>
-        </div>
-
-        <!-- 12. 坦克震荡舞台 -->
-        <div id="tanktrouble-stage">
-          <div class="tanktrouble-hud">
-            <div class="tt-score-pill" style="color:#ef4444;" id="tt-p1-score">🔴 P1: 0</div>
-            <div class="tt-target-pill" id="tt-match-target">抢 5 胜</div>
-            <div class="tt-score-pill" style="color:#22c55e;" id="tt-p2-score">🟢 P2: 0</div>
-            <div class="tt-score-pill" style="color:#3b82f6; display:none;" id="tt-p3-score">🔵 P3: 0</div>
-          </div>
-          <div class="tt-canvas-wrapper">
-            <canvas id="tanktrouble-canvas" width="520" height="360"></canvas>
-          </div>
-          <!-- 移动端双人 / 单人触控面板 -->
-          <div class="tanktrouble-touch-bar" id="tt-touch-controls">
-            <!-- P1 移动端虚拟按键 (左侧) -->
-            <div class="tt-touch-player tt-touch-p1" id="tt-touch-p1">
-              <div class="tt-dpad">
-                <button class="tt-btn tt-up" id="tt-p1-up">▲</button>
-                <div class="tt-dpad-row">
-                  <button class="tt-btn tt-left" id="tt-p1-left">◀</button>
-                  <button class="tt-btn tt-down" id="tt-p1-down">▼</button>
-                  <button class="tt-btn tt-right" id="tt-p1-right">▶</button>
-                </div>
-              </div>
-              <button class="tt-btn-fire tt-fire-p1" id="tt-p1-fire">🔥 开火</button>
-            </div>
-            <!-- P2 移动端虚拟按键 (右侧，双人模式下显现) -->
-            <div class="tt-touch-player tt-touch-p2" id="tt-touch-p2" style="display:none;">
-              <button class="tt-btn-fire tt-fire-p2" id="tt-p2-fire">🔥 开火</button>
-              <div class="tt-dpad">
-                <button class="tt-btn tt-up" id="tt-p2-up">▲</button>
-                <div class="tt-dpad-row">
-                  <button class="tt-btn tt-left" id="tt-p2-left">◀</button>
-                  <button class="tt-btn tt-down" id="tt-p2-down">▼</button>
-                  <button class="tt-btn tt-right" id="tt-p2-right">▶</button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <!-- 桌面端键位指引 -->
-          <div class="tt-desktop-hints" id="tt-desktop-hints">
-            <span>🔴 <b>P1:</b> WASD 移动 (人机时亦可按方向键) · <b>空格 / Q</b> 开火</span>
-            <span>🟢 <b>P2 (双人对战):</b> 方向键 <b>↑↓←→</b> 移动 · <b>M / Enter</b> 开火</span>
-          </div>
-        </div>
-
-        <!-- 13. 飞行棋舞台 -->
-        <div id="aeroplane-stage">
+    <!-- 舞台主容器 -->
+    <div class="stage-wrapper">
+<div id="aeroplane-stage" style="display:block;">
           <canvas id="aeroplane-canvas" width="480" height="480"></canvas>
         </div>
-<div id="aeroplane-controls" class="aeroplane-controls" style="display:none;">
+    </div>
+    <div class="game-status" id="status-text"></div>
+
+    <div id="aeroplane-controls" class="aeroplane-controls" style="display:flex;">
         <div class="aero-ctrl-top">
           <!-- 3D 拟真骰子 -->
           <div class="aero-dice-wrap" id="aero-dice-wrap" onclick="triggerAeroplaneRoll()" title="点击掷骰子">
@@ -748,6 +443,9 @@
         </div>
       </div>
     </div>
+  </div>
+
+  
   </div>
 
 

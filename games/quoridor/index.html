@@ -7,69 +7,17 @@
   <link rel="stylesheet" href="../../shared/css/common.css">
   <link rel="stylesheet" href="../../shared/css/game-layout.css">
   <style>
+/* ==========================================================================
+   ♟️ 步步为营 (Quoridor 4P) 专属样式
+   ========================================================================== */
 
-  .quoridor-mode-bar {
-    width: 100%;
-    display: flex;
-    gap: 8px;
-    margin-bottom: 6px;
-  }
-  .btn-q-mode {
-    flex: 1;
-    padding: 6px 0;
-    background: #1e293b;
-    border: 1px solid #334155;
-    color: #94a3b8;
-    border-radius: 8px;
-    font-size: 0.78rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-align: center;
-  }
-  .btn-q-mode.active {
-    background: #334155;
-    border-color: #60a5fa;
-    color: #93c5fd;
-    box-shadow: 0 0 10px rgba(96, 165, 250, 0.4);
-  }
-  .toolbar-quoridor {
-    width: 100%;
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 6px;
-    margin-top: 6px;
-  }
-  .tool-btn {
-    background: #1e293b;
-    border: 1px solid #3b4c68;
-    color: var(--text-main);
-    padding: 7px 6px;
-    border-radius: 8px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .tool-btn.active {
-    background: #334155;
-    border-color: #60a5fa;
-    color: #93c5fd;
-    box-shadow: 0 0 10px rgba(96, 165, 250, 0.4);
-  }
-  #board-canvas {
-    width: 100%;
-    max-width: 480px;
-    aspect-ratio: 1;
-    background: #0f172a;
-    border-radius: 12px;
-    display: block;
-    cursor: pointer;
-  }
+  #board-canvas { display: block !important; width: 100%; height: 100%; }
+  .toolbar-quoridor { width: 100%; display: grid !important; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-top: 6px; }
+  .quoridor-mode-bar { width: 100%; display: flex !important; gap: 8px; margin-bottom: 6px; }
+  .btn-q-mode { flex: 1; padding: 6px 0; background: #1e293b; border: 1px solid #334155; color: #94a3b8; border-radius: 8px; font-size: 0.78rem; font-weight: 700; cursor: pointer; text-align: center; }
+  .btn-q-mode.active { background: #334155; border-color: #60a5fa; color: #93c5fd; box-shadow: 0 0 10px rgba(96, 165, 250, 0.4); }
+  .tool-btn { background: #1e293b; border: 1px solid #3b4c68; color: var(--text-main); padding: 7px 6px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; }
+  .tool-btn.active { background: #334155; border-color: #60a5fa; color: #93c5fd; box-shadow: 0 0 10px rgba(96, 165, 250, 0.4); }
 
   </style>
 </head>
@@ -93,6 +41,7 @@
         <span>◀ 返回大厅</span>
       </button>
       <div class="current-game-badge" id="current-game-title">♟️ 步步为营 (Quoridor 4P)</div>
+      
       <button class="btn-icon" id="restart-btn" onclick="resetCurrentGame()">🔄 重开</button>
     </div>
 
@@ -103,7 +52,7 @@
       <div class="mode-tab" id="tab-online" onclick="switchGameMode('ONLINE')">🌐 好友联机</div>
     </div>
     <!-- 联机房间控制面板 -->
-      <div class="online-panel" id="online-panel">
+      <div class="online-panel hidden" id="online-panel">
         <div class="room-header">
           <div>房间号: <span class="room-id-badge" id="display-room-id">未创建</span></div>
           <div id="display-role-info" style="font-size:0.8rem; color:#cbd5e1;">尚未进入房间</div>
@@ -122,7 +71,8 @@
       </div>
 
       
-    <div class="scoreboard" id="generic-scoreboard">
+    
+      <div class="scoreboard" id="generic-scoreboard">
         <div class="player-card p2" id="card-p2">
           <div class="player-avatar"></div>
           <div class="player-info">
@@ -205,26 +155,19 @@
         </div>
       </div>
 
-      <!-- 步步为营 2人/4人 模式切换栏 -->
-      <div id="quoridor-player-toggle" class="quoridor-mode-bar" style="display:none;">
-        <button class="btn-q-mode active" id="btn-q-2p" onclick="setQuoridorPlayerCount(2)">👥 经典双人 (10板)</button>
-        <button class="btn-q-mode" id="btn-q-4p" onclick="setQuoridorPlayerCount(4)">👥👥 四人大乱斗 (5板)</button>
-      </div>
-
-      <!-- 游戏主舞台容器 -->
-      <div class="stage-wrapper">
-        <!-- 1. 2D Canvas (步步为营 & 2D重力五子棋) -->
-        
-  
-
-    <!-- 舞台容器 -->
-    <div class="stage-wrapper">
-
+      
       <div class="quoridor-mode-bar" id="quoridor-dim-bar">
-        <button class="btn-q-mode active" id="btn-q-2p" onclick="setQuoridorPlayerCount(2)">👥 经典 2P</button>
-        <button class="btn-q-mode" id="btn-q-4p" onclick="setQuoridorPlayerCount(4)">👥👥 激斗 4P</button>
+        <button class="btn-q-mode active" id="btn-q-2p" onclick="setQuoridorPlayerCount(2)">👥 经典 2P (10板)</button>
+        <button class="btn-q-mode" id="btn-q-4p" onclick="setQuoridorPlayerCount(4)">👥👥 激斗 4P (5板)</button>
       </div>
-      <canvas id="board-canvas"></canvas>
+
+
+    <!-- 舞台主容器 -->
+    <div class="stage-wrapper">
+<canvas id="board-canvas"></canvas>
+    </div>
+
+    
       <div class="game-status" id="status-text">正在加载游戏...</div>
       <div class="toolbar-quoridor" id="toolbar-quoridor">
         <button class="tool-btn active" id="tool-move" onclick="setQuoridorTool('MOVE')">
@@ -238,7 +181,6 @@
         </button>
       </div>
 
-    </div>
   </div>
 
 

@@ -4,10 +4,11 @@
 
 window.GAME_KEY = 'GRAVITY3D4';
 window.GAME_RULES = {
-  'GRAVITY3D4': {"title":"💜 3D 立体四子棋 规则","body":"<p><strong>三维结构：</strong>4×4×4 三维魔方棋盘，共 16 根立柱，每柱最多 4 颗珠子（64 个空间节点）。</p><br>\n           <p><strong>胜利目标：</strong>率先连成 <b>4 颗空间直线</b> 者获胜！共有 <b>76 条</b> 可能的胜利线（含空间对角线）！</p><br>\n           <p><strong>视角操作：</strong>拖拽旋转视角，点击立柱落子。比 3D 五子棋更快节奏，超高烧脑指数！</p>"}
+  'GRAVITY3D4': {"title":"💜 3D 立体四子棋 规则","body":"<p><strong>三维结构：</strong>4×4×4 三维魔方棋盘，共 16 根立柱，每柱最多 4 颗珠子（64 个空间节点）。</p><br><p><strong>胜利目标：</strong>率先连成 <b>4 颗空间直线</b> 者获胜！共有 <b>76 条</b> 可能的胜利线！</p>"}
 };
 
 const STATE = {
+  currentView: 'GAME',
   currentGame: 'GRAVITY3D4',
   gameMode: 'AI',
   turn: 1,

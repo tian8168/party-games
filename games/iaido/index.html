@@ -7,7 +7,11 @@
   <link rel="stylesheet" href="../../shared/css/common.css">
   <link rel="stylesheet" href="../../shared/css/game-layout.css">
   <style>
-1. 拔刀居合斩 (IAIDO) 样式
+/* ==========================================================================
+   ⚡ 拔刀居合斩 (Iaido Slash) 专属样式
+   ========================================================================== */
+/* ==========================================================================
+       1. 拔刀居合斩 (IAIDO) 样式
        ========================================================================== */
     #iaido-stage {
       width: 100%;
@@ -148,8 +152,8 @@
       z-index: 25;
     }
 
-    /* ==========================================================================
-       
+    
+#iaido-stage { display: flex !important; }
   </style>
 </head>
 <body>
@@ -183,8 +187,8 @@
     </div>
     
 
-    <!-- 舞台容器 -->
-    <div class="stage-wrapper">
+    <!-- 舞台主容器 -->
+    <div class="stage-wrapper action-mode">
 <div id="iaido-stage" onclick="handleIaidoTap()">
           <div class="iaido-hud-top">
             <div class="duelist-box">
@@ -230,6 +234,9 @@
         <!-- 6. 皇家大话骰舞台 -->
         
     </div>
+    <div class="game-status" id="status-text"></div>
+
+    
   </div>
 
 

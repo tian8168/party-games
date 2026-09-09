@@ -1,13 +1,14 @@
 // ==========================================================================
-// 🎲 恶魔轮盘赌 (Buckshot Roulette) · 独立游戏逻辑 (Isolated Game Engine)
+// 💀 恶魔轮盘赌 (Buckshot Roulette) · 独立游戏逻辑 (Isolated Game Engine)
 // ==========================================================================
 
 window.GAME_KEY = 'ROULETTE';
 window.GAME_RULES = {
-  'ROULETTE': {"title":"恶魔轮盘赌 规则","body":"<p><strong>枪膛与子弹：</strong>每轮装入已知数量的 🔴 实弹 与 ⚪ 空包弹，轮流开枪。</p><br>\n           <p><strong>核心机制：</strong></p>\n           <ul>\n             <li><b>开枪打对手：</b>若是实弹扣除对方生命值；若是空包弹则安然无恙并换对手回合。</li>\n             <li><b>开枪打自己：</b>若是空包弹，<b>你将获得额外一次行动回合！</b> 若是实弹则扣自己血。</li>\n           </ul><br>\n           <p><strong>道具功效：</strong>🔍 放大镜看下一发真假；🔒 手铐锁住对手下回合；🪚 手锯造成2倍实弹伤害；🍺 啤酒退出一发弹；🚬 香烟回血。</p>"}
+  'ROULETTE': {"title":"恶魔轮盘赌 规则","body":"<p><strong>枪膛与子弹：</strong>每轮装入已知数量的 🔴 实弹 与 ⚪ 空包弹，轮流开枪。</p><br><p><strong>核心机制：</strong>开枪打对手若是实弹扣除对方生命值；若是空包弹则换对手回合。打自己若是空包弹，<b>你将获得额外一次行动回合！</b></p><br><p><strong>道具功效：</strong>🔍 放大镜看下一发；🔒 手铐锁住对手；🪚 手锯双倍伤害；🍺 啤酒退弹；🚬 香烟回血。</p>"}
 };
 
 const STATE = {
+  currentView: 'GAME',
 
       currentGame: 'ROULETTE',
       gameMode: 'AI',
@@ -15,21 +16,22 @@ const STATE = {
       winner: null,
       animating: false,
       online: { roomId: null, myRole: null, connected: false, mqttClient: null, opponentJoined: false },
-      roulette: {
-        p1Hp: 4,
-        p2Hp: 4,
-        maxHp: 4,
-        shells: [],
-        sawed: false,
-        p1Cuffed: false,
-        p2Cuffed: false,
-        p1Items: [],
-        p2Items: [],
-        knownNext: null
-      }
+      roulette: { p1Hp: 4, p2Hp: 4, maxHp: 4, shells: [], sawed: false, p1Cuffed: false, p2Cuffed: false, p1Items: [], p2Items: [], knownNext: null }
     
 };
 window.STATE = STATE;
+
+function checkIsMyTurn() {
+  if (STATE.gameMode === 'LOCAL') return true;
+  if (STATE.gameMode === 'AI') return STATE.turn === 1;
+  if (STATE.gameMode === 'ONLINE') {
+    if (!STATE.online.opponentJoined) return false;
+    if (STATE.online.myRole === 'host' && STATE.turn === 1) return true;
+    if (STATE.online.myRole === 'guest' && STATE.turn === 2) return true;
+    return false;
+  }
+  return false;
+}
 
 function switchGameMode(mode, doReset = true) {
   if (typeof AUDIO !== 'undefined' && AUDIO.play) AUDIO.play('click');
@@ -49,7 +51,9 @@ function switchGameMode(mode, doReset = true) {
 }
 
 function resetCurrentGame() {
-  initRouletteGame();
+  
+      initRouletteGame();
+    
 }
 
 // --- 游戏专属引擎核心逻辑 ---
@@ -341,12 +345,11 @@ function resetCurrentGame() {
 // --- 页面装载自动初始化 ---
 window.addEventListener('DOMContentLoaded', () => {
   recordRecentGame('ROULETTE');
+  resetCurrentGame();
   const params = new URLSearchParams(window.location.search);
   const roomParam = params.get('room');
   if (roomParam && typeof joinExistingRoom === 'function') {
     switchGameMode('ONLINE', false);
     joinExistingRoom(roomParam);
-  } else {
-    resetCurrentGame();
   }
 });

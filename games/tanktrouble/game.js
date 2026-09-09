@@ -4,42 +4,41 @@
 
 window.GAME_KEY = 'TANKTROUBLE';
 window.GAME_RULES = {
-  'TANKTROUBLE': {"title":"🛡️ 坦克震荡 (Tank Trouble) 规则与指南","body":"<p><strong>胜利目标：</strong>在不断随机生成的错综复杂迷宫中穿梭对轰，率先击毁敌方坦克达到 <b>5 分</b> 者获得总冠军！</p><br>\n           <p><strong>💥 物理反弹穿甲炮弹（无差别伤害）：</strong></p>\n           <ul>\n             <li>发射的炮弹可在迷宫坚硬墙壁间连续高速反弹 <b>7 次</b>，反射角精确等于入射角！</li>\n             <li><b>切记小心跳弹：</b>自己的炮弹反弹回来击中自己同样会粉身碎骨，切勿盲目乱射！</li>\n             <li>每辆坦克最多维持 <b>5 枚</b> 活跃炮弹，冷却完毕即可持续压制。</li>\n           </ul><br>\n           <p><strong>🎮 全端操作方案（完全还原经典与双人同屏）：</strong></p>\n           <ul>\n             <li><b>🔴 玩家 1 (红坦克)：</b>键盘 <b>ESDF</b> 移动（E前进、D后退、S左转、F右转），<b>Q</b> 键发射！（亦智能兼容 <b>WASD + 空格</b>）</li>\n             <li><b>🟢 玩家 2 (绿坦克)：</b>键盘方向键 <b>↑ ↓ ← →</b> 移动，<b>M</b> 键发射！（亦支持 Enter 键）</li>\n             <li><b>🔵 玩家 3 (蓝坦克)：</b>鼠标移动光标控制朝向与移动，<b>鼠标左键</b> 发射！</li>\n             <li><b>📱 移动端触屏：</b>双人同屏提供专属左右独立虚拟十字轮盘与发光开火键！</li>\n           </ul>"}
+  'TANKTROUBLE': {"title":"🛡️ 坦克震荡 规则","body":"<p><strong>跳弹穿甲：</strong>炮弹在墙壁间反弹 7 次，无差别伤害！切记小心反弹跳弹伤及自己！抢先 5 分获胜！</p>"}
 };
 
 const STATE = {
+  currentView: 'GAME',
 
       currentGame: 'TANKTROUBLE',
       gameMode: 'AI',
       tanktrouble: {
-        p1Score: 0,
-        p2Score: 0,
-        p3Score: 0,
-        targetScore: 5,
-        roundOver: false,
-        matchOver: false,
+        p1Score: 0, p2Score: 0, p3Score: 0, targetScore: 5, roundOver: false, matchOver: false,
         maze: { cols: 8, rows: 6, cw: 65, ch: 60, walls: [] },
         tanks: {
           p1: { id: 1, x: 50, y: 50, angle: 0, r: 11, color: '#ef4444', dead: false, reloadTimer: 0, weapon: 'NORMAL', ammo: 0 },
           p2: { id: 2, x: 470, y: 310, angle: Math.PI, r: 11, color: '#22c55e', dead: false, reloadTimer: 0, weapon: 'NORMAL', ammo: 0 },
           p3: { id: 3, x: 470, y: 50, angle: Math.PI * 0.5, r: 11, color: '#3b82f6', dead: true, reloadTimer: 0, weapon: 'NORMAL', ammo: 0 }
         },
-        bullets: [],
-        crates: [],
-        particles: [],
-        treads: [],
-        keys: {
-          p1: { forward: false, backward: false, left: false, right: false, fire: false },
-          p2: { forward: false, backward: false, left: false, right: false, fire: false }
-        },
-        animId: null,
-        nextRoundTimer: null,
-        crateTimer: null,
-        aiTimer: 0
+        bullets: [], crates: [], particles: [], treads: [],
+        keys: { p1: { forward: false, backward: false, left: false, right: false, fire: false }, p2: { forward: false, backward: false, left: false, right: false, fire: false } },
+        animId: null, nextRoundTimer: null, crateTimer: null, aiTimer: 0
       }
     
 };
 window.STATE = STATE;
+
+function checkIsMyTurn() {
+  if (STATE.gameMode === 'LOCAL') return true;
+  if (STATE.gameMode === 'AI') return STATE.turn === 1;
+  if (STATE.gameMode === 'ONLINE') {
+    if (!STATE.online.opponentJoined) return false;
+    if (STATE.online.myRole === 'host' && STATE.turn === 1) return true;
+    if (STATE.online.myRole === 'guest' && STATE.turn === 2) return true;
+    return false;
+  }
+  return false;
+}
 
 function switchGameMode(mode, doReset = true) {
   if (typeof AUDIO !== 'undefined' && AUDIO.play) AUDIO.play('click');
@@ -59,7 +58,14 @@ function switchGameMode(mode, doReset = true) {
 }
 
 function resetCurrentGame() {
-  resetTankTroubleMatch();
+  
+      if (typeof initTankTroubleGame === 'function') initTankTroubleGame();
+      resetTankTroubleMatch();
+      requestAnimationFrame(() => {
+        resizeTankTroubleCanvas();
+        renderTankTrouble();
+      });
+    
 }
 
 // --- 游戏专属引擎核心逻辑 ---
@@ -1010,12 +1016,11 @@ function resetCurrentGame() {
 // --- 页面装载自动初始化 ---
 window.addEventListener('DOMContentLoaded', () => {
   recordRecentGame('TANKTROUBLE');
+  resetCurrentGame();
   const params = new URLSearchParams(window.location.search);
   const roomParam = params.get('room');
   if (roomParam && typeof joinExistingRoom === 'function') {
     switchGameMode('ONLINE', false);
     joinExistingRoom(roomParam);
-  } else {
-    resetCurrentGame();
   }
 });

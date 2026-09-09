@@ -7,7 +7,11 @@
   <link rel="stylesheet" href="../../shared/css/common.css">
   <link rel="stylesheet" href="../../shared/css/game-layout.css">
   <style>
-12. 魂斗罗 (CONTRA) 专属样式与移动端触控手柄
+/* ==========================================================================
+   💥 魂斗罗 (Contra: 丛林突袭) 专属样式
+   ========================================================================== */
+/* ==========================================================================
+       12. 魂斗罗 (CONTRA) 专属样式与移动端触控手柄
        ========================================================================== */
     #contra-stage {
       width: 100%;
@@ -221,8 +225,8 @@
       margin-top: -2px;
     }
 
-    /* ==========================================================================
-       
+    
+#contra-stage { display: flex !important; }
   </style>
 </head>
 <body>
@@ -252,7 +256,7 @@
     
     
 
-    <!-- 舞台容器 -->
+    <!-- 舞台主容器 -->
     <div class="stage-wrapper contra-mode">
 <div id="contra-stage">
           <div class="contra-hud-top">
@@ -294,6 +298,9 @@
 
         
     </div>
+    <div class="game-status" id="status-text"></div>
+
+    
   </div>
 
 

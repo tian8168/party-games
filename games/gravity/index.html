@@ -7,40 +7,14 @@
   <link rel="stylesheet" href="../../shared/css/common.css">
   <link rel="stylesheet" href="../../shared/css/game-layout.css">
   <style>
+/* ==========================================================================
+   🟡 重力五子棋 (Gravity Gomoku 2D) 专属样式
+   ========================================================================== */
 
-  .toolbar-gravity {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    gap: 3px;
-    padding: 4px 6px;
-    background: #0f172a;
-    border-radius: 8px;
-    border: 1px solid #334155;
-    margin-top: 6px;
-  }
-  .gravity-col-btn {
-    flex: 1;
-    background: #1e293b;
-    border: 1px solid #475569;
-    color: #94a3b8;
-    padding: 5px 0;
-    border-radius: 5px;
-    font-size: 0.74rem;
-    font-weight: 700;
-    cursor: pointer;
-    text-align: center;
-  }
+  #board-canvas { display: block !important; width: 100%; height: 100%; }
+  .toolbar-gravity { width: 100%; display: flex !important; justify-content: space-between; gap: 3px; padding: 4px 6px; background: #0f172a; border-radius: 8px; border: 1px solid #334155; margin-top: 6px; }
+  .gravity-col-btn { flex: 1; background: #1e293b; border: 1px solid #475569; color: #94a3b8; padding: 5px 0; border-radius: 5px; font-size: 0.74rem; font-weight: 700; cursor: pointer; text-align: center; }
   .gravity-col-btn:hover { background: #3b82f6; color: #fff; }
-  #board-canvas {
-    width: 100%;
-    max-width: 480px;
-    aspect-ratio: 1;
-    background: #0f172a;
-    border-radius: 12px;
-    display: block;
-    cursor: pointer;
-  }
 
   </style>
 </head>
@@ -64,6 +38,7 @@
         <span>◀ 返回大厅</span>
       </button>
       <div class="current-game-badge" id="current-game-title">🟡 重力五子棋 (Gravity Gomoku 2D)</div>
+      
       <button class="btn-icon" id="restart-btn" onclick="resetCurrentGame()">🔄 重开</button>
     </div>
 
@@ -74,7 +49,7 @@
       <div class="mode-tab" id="tab-online" onclick="switchGameMode('ONLINE')">🌐 好友联机</div>
     </div>
     <!-- 联机房间控制面板 -->
-      <div class="online-panel" id="online-panel">
+      <div class="online-panel hidden" id="online-panel">
         <div class="room-header">
           <div>房间号: <span class="room-id-badge" id="display-room-id">未创建</span></div>
           <div id="display-role-info" style="font-size:0.8rem; color:#cbd5e1;">尚未进入房间</div>
@@ -176,22 +151,14 @@
         </div>
       </div>
 
-      <!-- 步步为营 2人/4人 模式切换栏 -->
-      <div id="quoridor-player-toggle" class="quoridor-mode-bar" style="display:none;">
-        <button class="btn-q-mode active" id="btn-q-2p" onclick="setQuoridorPlayerCount(2)">👥 经典双人 (10板)</button>
-        <button class="btn-q-mode" id="btn-q-4p" onclick="setQuoridorPlayerCount(4)">👥👥 四人大乱斗 (5板)</button>
-      </div>
+      
 
-      <!-- 游戏主舞台容器 -->
-      <div class="stage-wrapper">
-        <!-- 1. 2D Canvas (步步为营 & 2D重力五子棋) -->
-        
-  
-
-    <!-- 舞台容器 -->
+    <!-- 舞台主容器 -->
     <div class="stage-wrapper">
+<canvas id="board-canvas"></canvas>
+    </div>
 
-      <canvas id="board-canvas"></canvas>
+    
       <div class="game-status" id="status-text">正在加载游戏...</div>
       <div class="toolbar-gravity" id="toolbar-gravity">
         <div class="gravity-col-btn" onclick="dropGravityCol(0)">1列</div>
@@ -205,7 +172,6 @@
         <div class="gravity-col-btn" onclick="dropGravityCol(8)">9列</div>
       </div>
 
-    </div>
   </div>
 
 

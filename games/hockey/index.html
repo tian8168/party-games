@@ -7,7 +7,11 @@
   <link rel="stylesheet" href="../../shared/css/common.css">
   <link rel="stylesheet" href="../../shared/css/game-layout.css">
   <style>
-极光桌上冰球专属舞台 (HOCKEY STAGE)
+/* ==========================================================================
+   🏒 极光空气桌上冰球 专属样式
+   ========================================================================== */
+/* ==========================================================================
+       极光桌上冰球专属舞台 (HOCKEY STAGE)
        ========================================================================== */
     #hockey-stage {
       width: 100%;
@@ -27,7 +31,8 @@
       cursor: crosshair;
     }
 
-    /* 
+    
+#hockey-stage { display: block !important; }
   </style>
 </head>
 <body>
@@ -61,8 +66,8 @@
     </div>
     
 
-    <!-- 舞台容器 -->
-    <div class="stage-wrapper">
+    <!-- 舞台主容器 -->
+    <div class="stage-wrapper action-mode">
 <div id="hockey-stage">
           <canvas id="hockey-canvas"></canvas>
         </div>
@@ -70,6 +75,9 @@
         <!-- 5. 拔刀居合斩舞台 -->
         
     </div>
+    <div class="game-status" id="status-text"></div>
+
+    
   </div>
 
 

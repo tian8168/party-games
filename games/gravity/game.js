@@ -4,10 +4,11 @@
 
 window.GAME_KEY = 'GRAVITY';
 window.GAME_RULES = {
-  'GRAVITY': {"title":"重力五子棋 (2D) 规则","body":"<p><strong>重力下落：</strong>点击任意一列，棋子受重力自然滑落堆叠到底部。</p><br>\n           <p><strong>胜利目标：</strong>在横向、纵向或对角线连成 <b>5 颗连续同色棋子</b> 者获胜！</p><br>\n           <p><strong>核心博弈：</strong>棋子无法悬空停留，小心别给对手送出\"垫脚石\"！</p>"}
+  'GRAVITY': {"title":"重力五子棋 (2D) 规则","body":"<p><strong>重力下落：</strong>点击任意一列，棋子受重力自然滑落堆叠到底部。</p><br><p><strong>胜利目标：</strong>在横向、纵向或对角线连成 <b>5 颗连续同色棋子</b> 者获胜！</p><br><p><strong>核心博弈：</strong>棋子无法悬空停留，小心别给对手送出\"垫脚石\"！</p>"}
 };
 
 const STATE = {
+  currentView: 'GAME',
   currentGame: 'GRAVITY',
   gameMode: 'AI',
   turn: 1,
@@ -127,7 +128,8 @@ window.handleGameOnlineAction = function(msg) {
 };
 
 const canvas2D = document.getElementById('board-canvas');
-const ctx2D = canvas2D.getContext('2d');
+const ctx2D = canvas2D ? canvas2D.getContext('2d') : null;
+let cellSize = 0, grooveSize = 0, offset = 0;
 
 // 3. 2D 重力五子棋逻辑 (GRAVITY 2D)
     // ==========================================================================

@@ -7,7 +7,11 @@
   <link rel="stylesheet" href="../../shared/css/common.css">
   <link rel="stylesheet" href="../../shared/css/game-layout.css">
   <style>
-12. 坦克震荡 (Tank Trouble) 样式
+/* ==========================================================================
+   🛡️ 坦克震荡 (Tank Trouble) 专属样式
+   ========================================================================== */
+/* ==========================================================================
+       12. 坦克震荡 (Tank Trouble) 样式
        ========================================================================== */
     .stage-wrapper.tanktrouble-mode {
       aspect-ratio: auto;
@@ -186,8 +190,8 @@
         font-size: 0.85rem;
       }
     }
-    /* ==========================================================================
-       
+    
+#tanktrouble-stage { display: flex !important; }
   </style>
 </head>
 <body>
@@ -221,7 +225,7 @@
     </div>
     
 
-    <!-- 舞台容器 -->
+    <!-- 舞台主容器 -->
     <div class="stage-wrapper tanktrouble-mode">
 <div id="tanktrouble-stage">
           <div class="tanktrouble-hud">
@@ -270,6 +274,9 @@
         <!-- 13. 飞行棋舞台 -->
         
     </div>
+    <div class="game-status" id="status-text"></div>
+
+    
   </div>
 
 

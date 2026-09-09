@@ -1,30 +1,33 @@
 // ==========================================================================
-// 💣 极限抛物线弹道 (Scorched Earth Tank) · 独立游戏逻辑 (Isolated Game Engine)
+// 🎯 极限抛物线 (Worms Artillery) · 独立游戏逻辑 (Isolated Game Engine)
 // ==========================================================================
 
 window.GAME_KEY = 'TANK';
 window.GAME_RULES = {
-  'TANK': {"title":"极限抛物线 规则","body":"<p><strong>弹道对轰：</strong>观察上方【实时风向与风速】，拖动滑杆调节发射【角度】与【力度】！</p><br>\n           <p><strong>地形破坏：</strong>炮弹击中地面会炸出凹陷弹坑，直接命中或爆炸溅射直接扣除坦克生命！</p>"}
+  'TANK': {"title":"极限抛物线 规则","body":"<p><strong>弹道对轰：</strong>观察实时风向与风速，调节角度与力度发射炮弹！击毁敌方坦克夺取胜利！</p>"}
 };
 
 const STATE = {
+  currentView: 'GAME',
 
       currentGame: 'TANK',
       gameMode: 'AI',
-      turn: 1,
-      tank: {
-        p1Hp: 100,
-        p2Hp: 100,
-        wind: 0,
-        tank1: { x: 60, y: 200, angle: 45, power: 60 },
-        tank2: { x: 420, y: 200, angle: 45, power: 60 },
-        terrain: [],
-        bullet: null,
-        animId: null
-      }
+      tank: { p1Hp: 100, p2Hp: 100, wind: 0, tank1: { x: 60, y: 200, angle: 45, power: 60 }, tank2: { x: 420, y: 200, angle: 45, power: 60 }, terrain: [], bullet: null, animId: null }
     
 };
 window.STATE = STATE;
+
+function checkIsMyTurn() {
+  if (STATE.gameMode === 'LOCAL') return true;
+  if (STATE.gameMode === 'AI') return STATE.turn === 1;
+  if (STATE.gameMode === 'ONLINE') {
+    if (!STATE.online.opponentJoined) return false;
+    if (STATE.online.myRole === 'host' && STATE.turn === 1) return true;
+    if (STATE.online.myRole === 'guest' && STATE.turn === 2) return true;
+    return false;
+  }
+  return false;
+}
 
 function switchGameMode(mode, doReset = true) {
   if (typeof AUDIO !== 'undefined' && AUDIO.play) AUDIO.play('click');
@@ -44,7 +47,13 @@ function switchGameMode(mode, doReset = true) {
 }
 
 function resetCurrentGame() {
-  resetTankMatch();
+  
+      if (typeof initTankGame === 'function') initTankGame();
+      resetTankMatch();
+      requestAnimationFrame(() => {
+        resizeTankCanvas();
+      });
+    
 }
 
 // --- 游戏专属引擎核心逻辑 ---
@@ -321,12 +330,11 @@ function resetCurrentGame() {
 // --- 页面装载自动初始化 ---
 window.addEventListener('DOMContentLoaded', () => {
   recordRecentGame('TANK');
+  resetCurrentGame();
   const params = new URLSearchParams(window.location.search);
   const roomParam = params.get('room');
   if (roomParam && typeof joinExistingRoom === 'function') {
     switchGameMode('ONLINE', false);
     joinExistingRoom(roomParam);
-  } else {
-    resetCurrentGame();
   }
 });

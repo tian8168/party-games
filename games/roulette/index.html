@@ -3,11 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>🎲 恶魔轮盘赌 (Buckshot Roulette) · 聚会游戏大厅</title>
+  <title>💀 恶魔轮盘赌 (Buckshot Roulette) · 聚会游戏大厅</title>
   <link rel="stylesheet" href="../../shared/css/common.css">
   <link rel="stylesheet" href="../../shared/css/game-layout.css">
   <style>
-恶魔轮盘赌专属舞台 (ROULETTE STAGE)
+/* ==========================================================================
+   💀 恶魔轮盘赌 (Buckshot Roulette) 专属样式
+   ========================================================================== */
+/* ==========================================================================
+       恶魔轮盘赌专属舞台 (ROULETTE STAGE)
        ========================================================================== */
     #roulette-stage {
       width: 100%;
@@ -154,8 +158,8 @@
       opacity: 0.85;
     }
 
-    /* ==========================================================================
-       
+    
+#roulette-stage { display: flex !important; }
   </style>
 </head>
 <body>
@@ -177,7 +181,7 @@
       <button class="btn-back-lobby" onclick="window.location.href='../../'">
         <span>◀ 返回大厅</span>
       </button>
-      <div class="current-game-badge" id="current-game-title">🎲 恶魔轮盘赌 (Buckshot Roulette)</div>
+      <div class="current-game-badge" id="current-game-title">💀 恶魔轮盘赌 (Buckshot Roulette)</div>
       
       <button class="btn-icon" id="restart-btn" onclick="resetCurrentGame()">🔄 重开</button>
     </div>
@@ -189,7 +193,7 @@
       <div class="mode-tab" id="tab-online" onclick="switchGameMode('ONLINE')">🌐 好友联机</div>
     </div>
     <!-- 联机房间控制面板 -->
-      <div class="online-panel" id="online-panel">
+      <div class="online-panel hidden" id="online-panel">
         <div class="room-header">
           <div>房间号: <span class="room-id-badge" id="display-room-id">未创建</span></div>
           <div id="display-role-info" style="font-size:0.8rem; color:#cbd5e1;">尚未进入房间</div>
@@ -210,8 +214,8 @@
       
     
 
-    <!-- 舞台容器 -->
-    <div class="stage-wrapper">
+    <!-- 舞台主容器 -->
+    <div class="stage-wrapper action-mode">
 <div id="roulette-stage">
           <div class="roulette-flash-overlay" id="roulette-flash"></div>
           <!-- 对手信息栏 -->
@@ -280,6 +284,9 @@
         <!-- 4. 极光桌上冰球舞台 -->
         
     </div>
+    <div class="game-status" id="status-text"></div>
+
+    
   </div>
 
 

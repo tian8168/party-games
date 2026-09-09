@@ -4,10 +4,11 @@
 
 window.GAME_KEY = 'GRAVITY3D';
 window.GAME_RULES = {
-  'GRAVITY3D': {"title":"3D 立体五子棋 规则","body":"<p><strong>三维空间结构：</strong>底座立有 5x5 共 25 根立柱，每根柱子最多串 5 颗珠子（共 125 个空间节点）。</p><br>\n           <p><strong>视角操作：</strong>鼠标按住/单指滑动可 <b>360° 旋转视角</b>，滚轮/双指可缩放，点击立柱即可投子。</p><br>\n           <p><strong>13 维空间获胜：</strong>率先在任意方向连成 <b>5 颗珠子直线</b>（包括垂直线、平面横纵线、平面斜线，以及贯穿整个立方体的 <b>4 条空间大对角线</b>）者获胜！</p>"}
+  'GRAVITY3D': {"title":"3D 立体五子棋 规则","body":"<p><strong>三维空间结构：</strong>底座立有 5x5 共 25 根立柱，每根柱子最多串 5 颗珠子（共 125 个空间节点）。</p><br><p><strong>视角操作：</strong>鼠标按住/单指滑动可 <b>360° 旋转视角</b>，滚轮/双指可缩放，点击立柱即可投子。</p><br><p><strong>13 维空间获胜：</strong>率先在任意方向连成 <b>5 颗珠子直线</b>（含 4 条空间大对角线）者获胜！</p>"}
 };
 
 const STATE = {
+  currentView: 'GAME',
   currentGame: 'GRAVITY3D',
   gameMode: 'AI',
   turn: 1,

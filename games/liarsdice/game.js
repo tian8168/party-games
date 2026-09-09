@@ -4,28 +4,31 @@
 
 window.GAME_KEY = 'LIARSDICE';
 window.GAME_RULES = {
-  'LIARSDICE': {"title":"皇家大话骰 规则","body":"<p><strong>叫牌规则：</strong>双方暗摇5颗骰子，轮流报点。下一个人的叫牌必须【个数更多】或【点数更大】！</p><br>\n           <p><strong>万能1点：</strong>1点可代表任意点数（除非场上有人叫过1点）。</p><br>\n           <p><strong>当场质疑：</strong>觉得对方在吹牛虚报？直接喊「开」！算错者扣1点生命，扣完淘汰！</p>"}
+  'LIARSDICE': {"title":"皇家大话骰 规则","body":"<p><strong>叫牌规则：</strong>双方暗摇5颗骰子，轮流报点。下一个人的叫牌必须【个数更多】或【点数更大】！觉得对方吹牛直接喊「开」！</p>"}
 };
 
 const STATE = {
+  currentView: 'GAME',
 
       currentGame: 'LIARSDICE',
       gameMode: 'AI',
       turn: 1,
-      liarsdice: {
-        p1Hp: 3,
-        p2Hp: 3,
-        p1Dice: [1, 2, 3, 4, 5],
-        p2Dice: [1, 2, 3, 4, 5],
-        currentBid: null,
-        selectedQty: 3,
-        selectedVal: 3,
-        onesCalled: false,
-        revealed: false
-      }
+      liarsdice: { p1Hp: 3, p2Hp: 3, p1Dice: [1, 2, 3, 4, 5], p2Dice: [1, 2, 3, 4, 5], currentBid: null, selectedQty: 3, selectedVal: 3, onesCalled: false, revealed: false }
     
 };
 window.STATE = STATE;
+
+function checkIsMyTurn() {
+  if (STATE.gameMode === 'LOCAL') return true;
+  if (STATE.gameMode === 'AI') return STATE.turn === 1;
+  if (STATE.gameMode === 'ONLINE') {
+    if (!STATE.online.opponentJoined) return false;
+    if (STATE.online.myRole === 'host' && STATE.turn === 1) return true;
+    if (STATE.online.myRole === 'guest' && STATE.turn === 2) return true;
+    return false;
+  }
+  return false;
+}
 
 function switchGameMode(mode, doReset = true) {
   if (typeof AUDIO !== 'undefined' && AUDIO.play) AUDIO.play('click');
@@ -45,7 +48,10 @@ function switchGameMode(mode, doReset = true) {
 }
 
 function resetCurrentGame() {
-  resetLiarsDiceMatch();
+  
+      if (typeof initLiarsDiceGame === 'function') initLiarsDiceGame();
+      resetLiarsDiceMatch();
+    
 }
 
 // --- 游戏专属引擎核心逻辑 ---
@@ -242,12 +248,11 @@ function resetCurrentGame() {
 // --- 页面装载自动初始化 ---
 window.addEventListener('DOMContentLoaded', () => {
   recordRecentGame('LIARSDICE');
+  resetCurrentGame();
   const params = new URLSearchParams(window.location.search);
   const roomParam = params.get('room');
   if (roomParam && typeof joinExistingRoom === 'function') {
     switchGameMode('ONLINE', false);
     joinExistingRoom(roomParam);
-  } else {
-    resetCurrentGame();
   }
 });

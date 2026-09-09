@@ -4,29 +4,30 @@
 
 window.GAME_KEY = 'SUMO';
 window.GAME_RULES = {
-  'SUMO': {"title":"🚗 物理飞车相扑 规则与操作指南","body":"<p><strong>极限推土机：</strong>在圆形空中悬浮擂台上，按住【冲刺】推撞对手，松开自动转弯瞄准！</p><br>\n           <p><strong>双人同屏对战：</strong>支持在手机或电脑同屏激战！</p>\n           <ul>\n             <li><b>🔴 玩家 1 (红车)：</b>按住下方红键、触碰屏幕左半侧、或键盘按 <b>W / A / S / D / 空格键</b> 冲刺！</li>\n             <li><b>🔵 玩家 2 (蓝车)：</b>按住下方蓝键、触碰屏幕右半侧、或键盘按 <b>方向键 / 回车 / L 键</b> 冲刺！</li>\n           </ul><br>\n           <p><strong>坠落深渊：</strong>利用动量冲撞把对方顶出擂台边缘即可得分，抢先得 <b>3 分</b> 者夺得总冠军！</p>"}
+  'SUMO': {"title":"🚗 物理飞车相扑 规则","body":"<p><strong>极限推土机：</strong>按住【冲刺】推撞对手，松开自动转弯瞄准！将对手顶出悬浮擂台边缘得分，抢先 <b>3 分</b> 夺冠！</p>"}
 };
 
 const STATE = {
+  currentView: 'GAME',
 
       currentGame: 'SUMO',
       gameMode: 'AI',
-      sumo: {
-        p1Score: 0,
-        p2Score: 0,
-        targetScore: 3,
-        car1: { x: 130, y: 180, vx: 0, vy: 0, angle: 0, r: 17, boosting: false, falling: false, fallScale: 1, fallAlpha: 1, fallSpin: 0 },
-        car2: { x: 230, y: 180, vx: 0, vy: 0, angle: Math.PI, r: 17, boosting: false, falling: false, fallScale: 1, fallAlpha: 1, fallSpin: 0 },
-        arenaRadius: 130,
-        particles: [],
-        animId: null,
-        roundOver: false,
-        matchOver: false,
-        aiReactionDelay: 0
-      }
+      sumo: { p1Score: 0, p2Score: 0, targetScore: 3, car1: { x: 130, y: 180, vx: 0, vy: 0, angle: 0, r: 17, boosting: false, falling: false, fallScale: 1, fallAlpha: 1, fallSpin: 0 }, car2: { x: 230, y: 180, vx: 0, vy: 0, angle: Math.PI, r: 17, boosting: false, falling: false, fallScale: 1, fallAlpha: 1, fallSpin: 0 }, arenaRadius: 130, particles: [], animId: null, roundOver: false, matchOver: false, aiReactionDelay: 0 }
     
 };
 window.STATE = STATE;
+
+function checkIsMyTurn() {
+  if (STATE.gameMode === 'LOCAL') return true;
+  if (STATE.gameMode === 'AI') return STATE.turn === 1;
+  if (STATE.gameMode === 'ONLINE') {
+    if (!STATE.online.opponentJoined) return false;
+    if (STATE.online.myRole === 'host' && STATE.turn === 1) return true;
+    if (STATE.online.myRole === 'guest' && STATE.turn === 2) return true;
+    return false;
+  }
+  return false;
+}
 
 function switchGameMode(mode, doReset = true) {
   if (typeof AUDIO !== 'undefined' && AUDIO.play) AUDIO.play('click');
@@ -46,7 +47,14 @@ function switchGameMode(mode, doReset = true) {
 }
 
 function resetCurrentGame() {
-  resetSumoMatch();
+  
+      if (typeof initSumoGame === 'function') initSumoGame();
+      resetSumoMatch();
+      requestAnimationFrame(() => {
+        resizeSumoCanvas();
+        renderSumo();
+      });
+    
 }
 
 // --- 游戏专属引擎核心逻辑 ---
@@ -632,12 +640,11 @@ function resetCurrentGame() {
 // --- 页面装载自动初始化 ---
 window.addEventListener('DOMContentLoaded', () => {
   recordRecentGame('SUMO');
+  resetCurrentGame();
   const params = new URLSearchParams(window.location.search);
   const roomParam = params.get('room');
   if (roomParam && typeof joinExistingRoom === 'function') {
     switchGameMode('ONLINE', false);
     joinExistingRoom(roomParam);
-  } else {
-    resetCurrentGame();
   }
 });
