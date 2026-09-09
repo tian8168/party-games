@@ -581,3 +581,75 @@ canvas.game-canvas {
     height: 380px !important;
   }
 }
+
+/* ==========================================================================
+   PWA Standalone & Install Prompt Styles
+   ========================================================================== */
+@media all and (display-mode: standalone) {
+  body {
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .pwa-install-banner { display: none !important; }
+}
+
+.pwa-install-banner {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, rgba(30, 27, 75, 0.94), rgba(15, 23, 42, 0.96));
+  border: 1px solid #6366f1;
+  border-radius: 12px;
+  padding: 10px 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 6px 24px rgba(99, 102, 241, 0.35);
+  backdrop-filter: blur(8px);
+}
+.pwa-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.pwa-banner-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+.pwa-banner-text h4 {
+  margin: 0;
+  font-size: 0.92rem;
+  color: #f8fafc;
+}
+.pwa-banner-text p {
+  margin: 3px 0 0 0;
+  font-size: 0.74rem;
+  color: #94a3b8;
+}
+.pwa-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn-pwa-install {
+  padding: 7px 16px;
+  background: linear-gradient(135deg, #4f46e5, #6366f1);
+  border: 1px solid #818cf8;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(99, 102, 241, 0.4);
+  transition: transform 0.1s;
+}
+.btn-pwa-install:hover { transform: scale(1.04); }
+.btn-pwa-close {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 4px;
+}
+

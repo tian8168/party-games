@@ -158,3 +158,52 @@ window.closeModal = closeModal;
 window.handleModalRestart = handleModalRestart;
 window.handleModalReturnLobby = handleModalReturnLobby;
 window.initCommonHeader = initCommonHeader;
+
+// ==========================================================================
+// 📱 PWA Service Worker 注册与安装引导 (PWA Integration)
+// ==========================================================================
+if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
+  window.addEventListener('load', () => {
+    const swPath = window.location.pathname.includes('/games/') ? '../sw.js' : './sw.js';
+    navigator.serviceWorker.register(swPath).then((reg) => {
+      console.log('[PWA] Service Worker registered with scope:', reg.scope);
+    }).catch((err) => {
+      console.warn('[PWA] Service Worker registration failed:', err);
+    });
+  });
+}
+
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  if (sessionStorage.getItem('pwa_banner_dismissed') === '1') return;
+  const banner = document.getElementById('pwa-install-banner');
+  if (banner) banner.style.display = 'flex';
+});
+
+function triggerPwaInstall() {
+  if (deferredInstallPrompt) {
+    deferredInstallPrompt.prompt();
+    deferredInstallPrompt.userChoice.then((choice) => {
+      if (choice.outcome === 'accepted') {
+        showToast('🎉 感谢安装！已添加至桌面，可脱离浏览器全屏畅玩', 3000);
+      }
+      deferredInstallPrompt = null;
+      const banner = document.getElementById('pwa-install-banner');
+      if (banner) banner.style.display = 'none';
+    });
+  } else {
+    showToast('💡 可在手机浏览器菜单中点击【添加到主屏幕】直接安装', 3000);
+  }
+}
+
+function dismissPwaBanner() {
+  const banner = document.getElementById('pwa-install-banner');
+  if (banner) banner.style.display = 'none';
+  sessionStorage.setItem('pwa_banner_dismissed', '1');
+}
+
+window.triggerPwaInstall = triggerPwaInstall;
+window.dismissPwaBanner = dismissPwaBanner;
+
