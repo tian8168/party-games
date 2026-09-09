@@ -6,12 +6,14 @@
   <title>物理飞车相扑 (Car Sumo) · 聚会游戏大厅</title>
   <link rel="stylesheet" href="../common/common.css">
   <style>
-    /* ==========================================================================
-       3. 物理飞车相扑 (SUMO) 样式
-       ========================================================================== */
+    /* Override stage-wrapper to allow larger canvas for sumo */
+    .stage-wrapper {
+      max-width: 780px !important;
+      width: 100% !important;
+    }
+
     #sumo-stage {
       width: 100%;
-      height: 100%;
       position: relative;
       background: radial-gradient(circle at center, #0f172a 0%, #030712 100%);
       border-radius: 14px;
@@ -27,7 +29,6 @@
 
     #sumo-canvas {
       width: 100%;
-      height: 100%;
       display: block;
       touch-action: none;
     }
@@ -48,19 +49,19 @@
       background: rgba(15, 23, 42, 0.85);
       border: 1px solid rgba(255, 255, 255, 0.2);
       border-radius: 8px;
-      padding: 4px 8px;
+      padding: 6px 12px;
       font-weight: 800;
-      font-size: 0.82rem;
+      font-size: 0.9rem;
       backdrop-filter: blur(4px);
     }
 
     .sumo-touch-hint {
       position: absolute;
-      bottom: 54px;
+      bottom: 64px;
       left: 0;
       right: 0;
       text-align: center;
-      font-size: 0.72rem;
+      font-size: 0.76rem;
       color: rgba(255, 255, 255, 0.5);
       pointer-events: none;
       z-index: 6;
@@ -69,22 +70,22 @@
 
     .sumo-controls-bar {
       position: absolute;
-      bottom: 8px;
-      left: 8px;
-      right: 8px;
+      bottom: 10px;
+      left: 10px;
+      right: 10px;
       display: flex;
       justify-content: center;
-      gap: 8px;
+      gap: 10px;
       z-index: 10;
       pointer-events: auto;
     }
 
     .btn-sumo-boost {
       flex: 1;
-      max-width: 260px;
-      padding: 10px 4px;
+      max-width: 280px;
+      padding: 12px 6px;
       color: #fff;
-      font-size: 0.88rem;
+      font-size: 0.9rem;
       font-weight: 800;
       border-radius: 10px;
       cursor: pointer;
@@ -112,7 +113,51 @@
       filter: brightness(1.25);
     }
 
-    
+    /* Start overlay */
+    .sumo-start-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(3, 7, 18, 0.88);
+      backdrop-filter: blur(6px);
+      gap: 18px;
+    }
+    .sumo-start-overlay h3 {
+      color: #f1f5f9;
+      font-size: 1.5rem;
+      margin: 0;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+    }
+    .sumo-start-overlay .sub {
+      color: #94a3b8;
+      font-size: 0.82rem;
+      margin-top: -8px;
+      text-align: center;
+      line-height: 1.5;
+    }
+    .btn-sumo-start {
+      padding: 14px 48px;
+      font-size: 1.15rem;
+      font-weight: 900;
+      color: #fff;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      border: 2px solid #818cf8;
+      border-radius: 14px;
+      cursor: pointer;
+      box-shadow: 0 6px 24px rgba(99, 102, 241, 0.5);
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+    .btn-sumo-start:hover {
+      transform: scale(1.04);
+      box-shadow: 0 8px 32px rgba(99, 102, 241, 0.7);
+    }
+    .btn-sumo-start:active {
+      transform: scale(0.97);
+    }
   </style>
 </head>
 <body>
@@ -127,6 +172,11 @@
       </div>
     </div>
 
+    <div class="mode-nav">
+      <div class="mode-tab active" id="tab-ai" onclick="switchGameMode('AI')">🤖 人机对弈</div>
+      <div class="mode-tab" id="tab-local" onclick="switchGameMode('LOCAL')">👥 双人同屏</div>
+    </div>
+
     <div class="stage-wrapper">
       <div id="sumo-stage">
           <canvas id="sumo-canvas"></canvas>
@@ -135,10 +185,20 @@
             <div class="sumo-score-badge" style="color:#cbd5e1;" id="sumo-match-target">抢 3 胜</div>
             <div class="sumo-score-badge" style="color:#38bdf8;" id="sumo-p2-score">🔵 电脑: 0</div>
           </div>
-          <div class="sumo-touch-hint" id="sumo-touch-hint">💡 支持WASD与方向键 / 触碰屏幕两端控制</div>
+          <div class="sumo-touch-hint" id="sumo-touch-hint">💡 WASD 控制方向与冲刺 / 方向键控制第二玩家</div>
           <div class="sumo-controls-bar" id="sumo-controls-bar">
-            <button class="btn-sumo-boost btn-sumo-p1" id="btn-sumo-boost">🚀 按住冲刺 (松开瞄准)</button>
-            <button class="btn-sumo-boost btn-sumo-p2" id="btn-sumo-boost-p2" style="display:flex;">🚀 蓝方冲刺 (松开瞄准)</button>
+            <button class="btn-sumo-boost btn-sumo-p1" id="btn-sumo-boost">🚀 按住冲刺 [空格/W]</button>
+            <button class="btn-sumo-boost btn-sumo-p2" id="btn-sumo-boost-p2" style="display:none;">🚀 蓝方冲刺 [↑/回车]</button>
+          </div>
+          <!-- Start Overlay -->
+          <div class="sumo-start-overlay" id="sumo-start-overlay">
+            <h3>🚗 物理飞车相扑</h3>
+            <div class="sub">
+              🔴 P1: <b>WASD</b> 控制方向 + <b>空格</b> 冲刺<br>
+              🔵 P2: <b>方向键</b> 控制方向 + <b>回车</b> 冲刺<br>
+              将对手撞出擂台边缘即可得分！
+            </div>
+            <button class="btn-sumo-start" id="btn-sumo-start" onclick="startSumoMatch()">⚡ 开始对战</button>
           </div>
         </div>
     </div>
@@ -166,9 +226,11 @@
 
     STATE.sumo = {
         p1Score: 0, p2Score: 0, targetScore: 3,
-        car1: { x: 130, y: 180, vx: 0, vy: 0, angle: 0, r: 17, boosting: false, falling: false, fallScale: 1, fallAlpha: 1, fallSpin: 0 },
-        car2: { x: 230, y: 180, vx: 0, vy: 0, angle: 3.14159, r: 17, boosting: false, falling: false, fallScale: 1, fallAlpha: 1, fallSpin: 0 },
-        arenaRadius: 130, particles: [], animId: null, roundOver: false, matchOver: false, aiReactionDelay: 0
+        car1: null, car2: null,
+        arenaRadius: 180, particles: [], animId: null,
+        roundOver: false, matchOver: false, aiReactionDelay: 0,
+        started: false,
+        keys: { p1: { up:false, down:false, left:false, right:false }, p2: { up:false, down:false, left:false, right:false } }
       };
 
     function checkIsMyTurn() {
@@ -182,27 +244,7 @@
       return true;
     }
 
-    function updateScoreboard() {
-      const cardP1 = document.getElementById('card-p1');
-      const cardP2 = document.getElementById('card-p2');
-      const cardP3 = document.getElementById('card-p3');
-      const cardP4 = document.getElementById('card-p4');
-      if (cardP1) {
-        cardP1.classList.toggle('active-turn', STATE.turn === 1);
-        const n1 = document.getElementById('name-p1');
-        if (n1) n1.innerHTML = '🔴 玩家 1 (主)' + (STATE.scores[1] !== undefined ? ' <small>('+STATE.scores[1]+')</small>' : '');
-      }
-      if (cardP2) {
-        cardP2.classList.toggle('active-turn', STATE.turn === 2);
-        const n2 = document.getElementById('name-p2');
-        if (n2) {
-          const p2Label = STATE.gameMode === 'AI' ? '🤖 电脑 (AI)' : (STATE.gameMode === 'ONLINE' ? '🟢 好友 (客)' : '🟢 玩家 2');
-          n2.innerHTML = p2Label + (STATE.scores[2] !== undefined ? ' <small>('+STATE.scores[2]+')</small>' : '');
-        }
-      }
-      if (cardP3) cardP3.classList.toggle('active-turn', STATE.turn === 3);
-      if (cardP4) cardP4.classList.toggle('active-turn', STATE.turn === 4);
-    }
+    function updateScoreboard() {}
 
     function switchGameMode(mode, doReset = true) {
       STATE.gameMode = mode;
@@ -210,17 +252,46 @@
       const activeTab = document.getElementById('tab-' + mode.toLowerCase());
       if (activeTab) activeTab.classList.add('active');
 
-      const onlinePanel = document.getElementById('online-panel');
-      if (onlinePanel) {
-        onlinePanel.style.display = mode === 'ONLINE' ? 'flex' : 'none';
-        if (mode === 'ONLINE' && window.ONLINE_NETWORK) {
-          ONLINE_NETWORK.createRoom(STATE.currentGame);
+      // Show/hide P2 boost button
+      const btnP2 = document.getElementById('btn-sumo-boost-p2');
+      if (btnP2) btnP2.style.display = mode === 'LOCAL' ? 'flex' : 'none';
+
+      // Update labels
+      const isLocal = mode === 'LOCAL';
+      const p2ScoreEl = document.getElementById('sumo-p2-score');
+      if (p2ScoreEl) p2ScoreEl.textContent = `${isLocal ? '🔵 玩家2' : '🔵 电脑'}: 0`;
+      
+      const hintEl = document.getElementById('sumo-touch-hint');
+      if (hintEl) {
+        hintEl.textContent = isLocal
+          ? '💡 🔴P1: WASD+空格 · 🔵P2: 方向键+回车'
+          : '💡 WASD 控制方向，空格冲刺，将对手推出擂台！';
+      }
+      
+      const btnP1 = document.getElementById('btn-sumo-boost');
+      if (btnP1) btnP1.textContent = isLocal ? '🚀 P1 冲刺 [空格]' : '🚀 按住冲刺 [空格/W]';
+      if (btnP2) btnP2.textContent = '🚀 P2 冲刺 [回车/↑]';
+
+      // Update start overlay description
+      const overlay = document.getElementById('sumo-start-overlay');
+      if (overlay) {
+        overlay.style.display = 'flex';
+        const sub = overlay.querySelector('.sub');
+        if (sub) {
+          sub.innerHTML = isLocal
+            ? '🔴 P1: <b>WASD</b> 控制方向 + <b>空格</b> 冲刺<br>🔵 P2: <b>方向键</b> 控制方向 + <b>回车</b> 冲刺<br>将对手撞出擂台边缘即可得分！'
+            : '🔴 P1: <b>WASD</b> 控制方向 + <b>空格</b> 冲刺<br>🤖 电脑会自动追踪并发起攻击<br>将对手撞出擂台边缘即可得分！';
         }
       }
-      updateScoreboard();
-      if (doReset && typeof resetCurrentGame === 'function') {
-        resetCurrentGame();
-      }
+
+      // Stop & reset
+      STATE.sumo.started = false;
+      if (STATE.sumo.animId) { cancelAnimationFrame(STATE.sumo.animId); STATE.sumo.animId = null; }
+      STATE.sumo.p1Score = 0;
+      STATE.sumo.p2Score = 0;
+      resizeSumoCanvas();
+      resetSumoRound();
+      renderSumo();
     }
 
     function sendOnlineAction(data) {
@@ -230,41 +301,47 @@
     }
   
 
-    // 9. 物理飞车相扑核心逻辑 (SUMO)
+    // ==========================================================================
+    // 物理飞车相扑核心逻辑 (SUMO)
     // ==========================================================================
     let sumoInputBound = false;
+
+    function startSumoMatch() {
+      const overlay = document.getElementById('sumo-start-overlay');
+      if (overlay) overlay.style.display = 'none';
+      
+      STATE.sumo.started = true;
+      STATE.sumo.p1Score = 0;
+      STATE.sumo.p2Score = 0;
+      STATE.sumo.roundOver = false;
+      STATE.sumo.matchOver = false;
+
+      resizeSumoCanvas();
+      resetSumoRound();
+      startSumoLoop();
+    }
 
     function initSumoGame() {
       STATE.sumo.p1Score = 0;
       STATE.sumo.p2Score = 0;
       STATE.sumo.roundOver = false;
       STATE.sumo.matchOver = false;
+      STATE.sumo.started = false;
 
       const isLocal = STATE.gameMode === 'LOCAL';
       const p1ScoreEl = document.getElementById('sumo-p1-score');
       const p2ScoreEl = document.getElementById('sumo-p2-score');
-      const hintEl = document.getElementById('sumo-touch-hint');
-      const btnP1 = document.getElementById('btn-sumo-boost');
-      const btnP2 = document.getElementById('btn-sumo-boost-p2');
 
       if (p1ScoreEl) p1ScoreEl.textContent = `${isLocal ? '🔴 玩家1' : '🔴 玩家'}: 0`;
       if (p2ScoreEl) p2ScoreEl.textContent = `${isLocal ? '🔵 玩家2' : '🔵 电脑'}: 0`;
-      if (hintEl) {
-        hintEl.textContent = isLocal
-          ? '💡 触屏左/P1冲刺 · 触屏右/P2冲刺 (松开自动转向)'
-          : '💡 触碰屏幕或下方按键冲刺 (松开自动转向瞄准)';
-      }
-      if (btnP1) {
-        btnP1.textContent = isLocal ? '🚀 P1 冲刺 [A/W/空格]' : '🚀 按住冲刺 [空格/W/↑]';
-      }
-      if (btnP2) {
-        btnP2.style.display = isLocal ? 'flex' : 'none';
-        btnP2.textContent = '🚀 P2 冲刺 [L/回车/↑]';
-      }
+
+      // Show start overlay
+      const overlay = document.getElementById('sumo-start-overlay');
+      if (overlay) overlay.style.display = 'flex';
 
       resizeSumoCanvas();
       resetSumoRound();
-      startSumoLoop();
+      renderSumo(); // Draw once so user sees the arena
 
       if (!sumoInputBound) {
         sumoInputBound = true;
@@ -302,7 +379,7 @@
 
       if (canvas) {
         canvas.addEventListener('pointerdown', (e) => {
-          if (STATE.currentGame !== 'SUMO') return;
+          if (STATE.currentGame !== 'SUMO' || !STATE.sumo.started) return;
           e.preventDefault();
           const rect = canvas.getBoundingClientRect();
           const touchX = e.clientX - rect.left;
@@ -328,23 +405,25 @@
         canvas.addEventListener('pointerleave', cancelCanvasBoost);
       }
 
-            window.addEventListener('keydown', (e) => {
-        if (STATE.currentGame !== 'SUMO') return;
+      window.addEventListener('keydown', (e) => {
+        if (STATE.currentGame !== 'SUMO' || !STATE.sumo.started) return;
         if (['Space', 'KeyW', 'ArrowUp', 'KeyA', 'KeyS', 'KeyD', 'KeyL', 'Enter', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
           e.preventDefault();
         }
         if (STATE.sumo && STATE.sumo.keys) {
           const k1 = STATE.sumo.keys.p1;
-          if (['KeyW', 'Space'].includes(e.code)) k1.up = true;
+          if (e.code === 'KeyW') k1.up = true;
           if (e.code === 'KeyS') k1.down = true;
           if (e.code === 'KeyA') k1.left = true;
           if (e.code === 'KeyD') k1.right = true;
+          if (e.code === 'Space') { k1.up = true; setSumoBoostP1(true); }
           if (STATE.gameMode === 'LOCAL') {
             const k2 = STATE.sumo.keys.p2;
-            if (['ArrowUp', 'Enter'].includes(e.code)) k2.up = true;
+            if (e.code === 'ArrowUp') k2.up = true;
             if (e.code === 'ArrowDown') k2.down = true;
             if (e.code === 'ArrowLeft') k2.left = true;
             if (e.code === 'ArrowRight') k2.right = true;
+            if (e.code === 'Enter') { k2.up = true; setSumoBoostP2(true); }
           }
         }
       });
@@ -352,16 +431,18 @@
         if (STATE.currentGame !== 'SUMO') return;
         if (STATE.sumo && STATE.sumo.keys) {
           const k1 = STATE.sumo.keys.p1;
-          if (['KeyW', 'Space'].includes(e.code)) k1.up = false;
+          if (e.code === 'KeyW') k1.up = false;
           if (e.code === 'KeyS') k1.down = false;
           if (e.code === 'KeyA') k1.left = false;
           if (e.code === 'KeyD') k1.right = false;
+          if (e.code === 'Space') { k1.up = false; setSumoBoostP1(false); }
           if (STATE.gameMode === 'LOCAL') {
             const k2 = STATE.sumo.keys.p2;
-            if (['ArrowUp', 'Enter'].includes(e.code)) k2.up = false;
+            if (e.code === 'ArrowUp') k2.up = false;
             if (e.code === 'ArrowDown') k2.down = false;
             if (e.code === 'ArrowLeft') k2.left = false;
             if (e.code === 'ArrowRight') k2.right = false;
+            if (e.code === 'Enter') { k2.up = false; setSumoBoostP2(false); }
           }
         }
       });
@@ -370,53 +451,39 @@
     function resizeSumoCanvas() {
       const c = document.getElementById('sumo-canvas');
       if (!c) return;
-      const rect = c.parentElement ? c.parentElement.getBoundingClientRect() : null;
-      const w = (rect && rect.width > 50) ? Math.floor(rect.width) : (c.offsetWidth || 340);
-      const h = (rect && rect.height > 50) ? Math.floor(rect.height) : (c.offsetHeight || 340);
+      const stage = document.getElementById('sumo-stage');
+      const stageW = stage ? stage.clientWidth : 700;
+      const w = Math.max(stageW, 400);
+      const h = Math.max(Math.min(w * 0.72, 520), 340);
       c.width = w;
       c.height = h;
-      STATE.sumo.arenaRadius = Math.min(w, h) * 0.46;
+      STATE.sumo.arenaRadius = Math.min(w, h) * 0.42;
     }
 
     function resetSumoRound() {
       const c = document.getElementById('sumo-canvas');
       if (!c) return;
       const cx = c.width / 2;
-      const cy = c.height / 2 - 12;
-      const R = STATE.sumo.arenaRadius || 130;
-      const offset = Math.min(65, R * 0.5);
+      const cy = c.height / 2;
+      const R = STATE.sumo.arenaRadius || 180;
+      const offset = Math.min(80, R * 0.45);
+      const carR = Math.max(18, Math.min(22, R * 0.12));
 
       STATE.sumo.car1 = {
-        x: cx - offset,
-        y: cy,
-        vx: 0,
-        vy: 0,
-        angle: 0,
-        r: 17,
-        boosting: false,
-        falling: false,
-        fallScale: 1,
-        fallAlpha: 1,
-        fallSpin: 0
+        x: cx - offset, y: cy,
+        vx: 0, vy: 0, angle: 0, r: carR,
+        boosting: false, falling: false, fallScale: 1, fallAlpha: 1, fallSpin: 0
       };
 
       STATE.sumo.car2 = {
-        x: cx + offset,
-        y: cy,
-        vx: 0,
-        vy: 0,
-        angle: Math.PI,
-        r: 17,
-        boosting: false,
-        falling: false,
-        fallScale: 1,
-        fallAlpha: 1,
-        fallSpin: 0
+        x: cx + offset, y: cy,
+        vx: 0, vy: 0, angle: Math.PI, r: carR,
+        boosting: false, falling: false, fallScale: 1, fallAlpha: 1, fallSpin: 0
       };
 
       STATE.sumo.particles = [];
       STATE.sumo.roundOver = false;
-      STATE.sumo.aiReactionDelay = 25;
+      STATE.sumo.aiReactionDelay = 30;
       STATE.sumo.keys = { p1: { up:false, down:false, left:false, right:false }, p2: { up:false, down:false, left:false, right:false } };
 
       const isLocal = STATE.gameMode === 'LOCAL';
@@ -434,7 +501,7 @@
       const FIXED_STEP = 1000 / 60;
 
       function loop(now) {
-        if (STATE.currentGame === 'SUMO') {
+        if (STATE.currentGame === 'SUMO' && STATE.sumo.started) {
           if (!now) now = performance.now();
           let elapsed = now - lastTime;
           lastTime = now;
@@ -461,8 +528,8 @@
       const c = document.getElementById('sumo-canvas');
       if (!c) return;
       const cx = c.width / 2;
-      const cy = c.height / 2 - 12;
-      const R = STATE.sumo.arenaRadius || 130;
+      const cy = c.height / 2;
+      const R = STATE.sumo.arenaRadius || 180;
 
       // When round is ending (someone falling)
       if (STATE.sumo.roundOver) {
@@ -493,31 +560,37 @@
         return a;
       };
 
-
+      // Apply controls for a car
       function applyCarPhysics(car, keys, opp, color1, color2) {
-        if (keys.left) car.angle -= 0.08;
-        if (keys.right) car.angle += 0.08;
+        // Explicit directional steering
+        const turnSpeed = 0.10;
+        if (keys.left) car.angle -= turnSpeed;
+        if (keys.right) car.angle += turnSpeed;
+
+        // Auto-aim only when NO keys are pressed at all
         if (!keys.up && !keys.down && !keys.left && !keys.right) {
           const targetAngle = Math.atan2(opp.y - car.y, opp.x - car.x);
           const diff = wrapAngle(targetAngle - car.angle);
-          car.angle += diff * 0.09;
+          car.angle += diff * 0.06;
         }
+
         car.boosting = keys.up;
         if (keys.up) {
-          car.vx += Math.cos(car.angle) * 0.48;
-          car.vy += Math.sin(car.angle) * 0.48;
+          car.vx += Math.cos(car.angle) * 0.55;
+          car.vy += Math.sin(car.angle) * 0.55;
           if (Math.random() < 0.75) {
             STATE.sumo.particles.push({
               x: car.x - Math.cos(car.angle) * (car.r + 2),
               y: car.y - Math.sin(car.angle) * (car.r + 2),
               vx: -Math.cos(car.angle) * 2.5 + (Math.random() - 0.5) * 2,
               vy: -Math.sin(car.angle) * 2.5 + (Math.random() - 0.5) * 2,
-              life: 0.65, color: Math.random() > 0.5 ? color1 : color2, size: 3
+              life: 0.7, color: Math.random() > 0.5 ? color1 : color2, size: 3.5
             });
           }
         } else if (keys.down) {
-          car.vx -= Math.cos(car.angle) * 0.35;
-          car.vy -= Math.sin(car.angle) * 0.35;
+          // Reverse / brake
+          car.vx -= Math.cos(car.angle) * 0.38;
+          car.vy -= Math.sin(car.angle) * 0.38;
         }
       }
 
@@ -526,38 +599,56 @@
         if (STATE.gameMode === 'LOCAL') {
           applyCarPhysics(c2, STATE.sumo.keys.p2, c1, '#38bdf8', '#3b82f6');
         } else {
-          // AI Logic
+          // AI Logic - smarter behavior
           if (STATE.sumo.aiReactionDelay > 0) {
             STATE.sumo.aiReactionDelay--;
           } else {
+            const distToP1 = Math.hypot(c1.x - c2.x, c1.y - c2.y);
+            const distToCenter = Math.hypot(c2.x - cx, c2.y - cy);
             const targetAngle = Math.atan2(c1.y - c2.y, c1.x - c2.x);
             const diff = wrapAngle(targetAngle - c2.angle);
-            c2.angle += diff * 0.08;
-            if (Math.abs(diff) < 0.4 && Math.random() < 0.8) {
-              c2.vx += Math.cos(c2.angle) * 0.48;
-              c2.vy += Math.sin(c2.angle) * 0.48;
+            c2.angle += diff * 0.09;
+
+            // AI adapts: if near edge, retreat toward center
+            if (distToCenter > R * 0.7) {
+              const centerAngle = Math.atan2(cy - c2.y, cx - c2.x);
+              const cDiff = wrapAngle(centerAngle - c2.angle);
+              c2.angle += cDiff * 0.12;
+              c2.vx += Math.cos(c2.angle) * 0.42;
+              c2.vy += Math.sin(c2.angle) * 0.42;
+              c2.boosting = true;
+            } else if (Math.abs(diff) < 0.5 && Math.random() < 0.82) {
+              c2.vx += Math.cos(c2.angle) * 0.50;
+              c2.vy += Math.sin(c2.angle) * 0.50;
               c2.boosting = true;
               if (Math.random() < 0.75) {
                 STATE.sumo.particles.push({
-                  x: c2.x - Math.cos(c2.angle) * (c2.r + 2), y: c2.y - Math.sin(c2.angle) * (c2.r + 2),
-                  vx: -Math.cos(c2.angle) * 2.5 + (Math.random() - 0.5) * 2, vy: -Math.sin(c2.angle) * 2.5 + (Math.random() - 0.5) * 2,
+                  x: c2.x - Math.cos(c2.angle) * (c2.r + 2),
+                  y: c2.y - Math.sin(c2.angle) * (c2.r + 2),
+                  vx: -Math.cos(c2.angle) * 2.5 + (Math.random() - 0.5) * 2,
+                  vy: -Math.sin(c2.angle) * 2.5 + (Math.random() - 0.5) * 2,
                   life: 0.65, color: '#38bdf8', size: 3
                 });
               }
             } else {
               c2.boosting = false;
+              // Occasional dodge
+              if (distToP1 < R * 0.4 && Math.random() < 0.15) {
+                c2.angle += (Math.random() > 0.5 ? 1 : -1) * 0.6;
+              }
             }
           }
         }
       }
+
       // Drag and speed limit
       [c1, c2].forEach(car => {
-        car.vx *= 0.95;
-        car.vy *= 0.95;
+        car.vx *= 0.955;
+        car.vy *= 0.955;
         const spd = Math.hypot(car.vx, car.vy);
-        if (spd > 8.0) {
-          car.vx = (car.vx / spd) * 8.0;
-          car.vy = (car.vy / spd) * 8.0;
+        if (spd > 9.0) {
+          car.vx = (car.vx / spd) * 9.0;
+          car.vy = (car.vy / spd) * 9.0;
         }
         car.x += car.vx;
         car.y += car.vy;
@@ -580,24 +671,28 @@
 
         const relVel = (c1.vx - c2.vx) * nx + (c1.vy - c2.vy) * ny;
         if (relVel > 0) {
-          const restitution = 1.45;
+          // Stronger collision: boosting car gets bonus impulse
+          const c1Boosting = c1.boosting ? 1.3 : 1.0;
+          const c2Boosting = c2.boosting ? 1.3 : 1.0;
+          const restitution = 1.6;
           const impulse = (1 + restitution) * relVel * 0.5;
-          c1.vx -= nx * impulse;
-          c1.vy -= ny * impulse;
-          c2.vx += nx * impulse;
-          c2.vy += ny * impulse;
+          c1.vx -= nx * impulse * c2Boosting;
+          c1.vy -= ny * impulse * c2Boosting;
+          c2.vx += nx * impulse * c1Boosting;
+          c2.vy += ny * impulse * c1Boosting;
 
           AUDIO.play('bonk');
 
-          for (let i = 0; i < 10; i++) {
+          // Impact particles
+          for (let i = 0; i < 14; i++) {
             STATE.sumo.particles.push({
               x: (c1.x + c2.x) / 2,
               y: (c1.y + c2.y) / 2,
-              vx: (Math.random() - 0.5) * 8,
-              vy: (Math.random() - 0.5) * 8,
-              life: 0.9,
+              vx: (Math.random() - 0.5) * 10,
+              vy: (Math.random() - 0.5) * 10,
+              life: 1.0,
               color: Math.random() > 0.5 ? '#f59e0b' : '#ffffff',
-              size: Math.random() * 3 + 2
+              size: Math.random() * 4 + 2
             });
           }
         }
@@ -654,9 +749,14 @@
 
         showModal('相扑擂台 战报', msg);
 
+        // Reset and show start overlay
+        STATE.sumo.started = false;
+        if (STATE.sumo.animId) { cancelAnimationFrame(STATE.sumo.animId); STATE.sumo.animId = null; }
         STATE.sumo.p1Score = 0;
         STATE.sumo.p2Score = 0;
         resetSumoRound();
+        const overlay = document.getElementById('sumo-start-overlay');
+        if (overlay) overlay.style.display = 'flex';
       } else {
         resetSumoRound();
       }
@@ -667,24 +767,24 @@
       if (!c) return;
       const ctx = c.getContext('2d');
       const cx = c.width / 2;
-      const cy = c.height / 2 - 12;
-      const R = STATE.sumo.arenaRadius || 130;
+      const cy = c.height / 2;
+      const R = STATE.sumo.arenaRadius || 180;
 
       ctx.clearRect(0, 0, c.width, c.height);
 
       // 1. Arena Abyss Drop-off
       ctx.save();
       ctx.beginPath();
-      ctx.arc(cx, cy, R + 14, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(239, 68, 68, 0.15)';
+      ctx.arc(cx, cy, R + 16, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(239, 68, 68, 0.12)';
       ctx.fill();
 
       // Hazard dashed ring
       ctx.beginPath();
-      ctx.arc(cx, cy, R + 4, 0, Math.PI * 2);
+      ctx.arc(cx, cy, R + 5, 0, Math.PI * 2);
       ctx.strokeStyle = '#ef4444';
       ctx.lineWidth = 2;
-      if (ctx.setLineDash) ctx.setLineDash([6, 6]);
+      if (ctx.setLineDash) ctx.setLineDash([8, 8]);
       ctx.stroke();
       if (ctx.setLineDash) ctx.setLineDash([]);
 
@@ -702,18 +802,25 @@
       ctx.strokeStyle = '#38bdf8';
       ctx.stroke();
 
-      // Center crosshair and inner ring
+      // Inner ring decorations
       ctx.beginPath();
-      ctx.arc(cx, cy, R * 0.35, 0, Math.PI * 2);
+      ctx.arc(cx, cy, R * 0.6, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.12)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, R * 0.3, 0, Math.PI * 2);
       ctx.strokeStyle = 'rgba(56, 189, 248, 0.2)';
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
-      ctx.lineWidth = 2;
+      // Center crosshair
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+      ctx.lineWidth = 1.5;
       ctx.beginPath();
-      ctx.moveTo(cx - 24, cy); ctx.lineTo(cx + 24, cy);
-      ctx.moveTo(cx, cy - 24); ctx.lineTo(cx, cy + 24);
+      ctx.moveTo(cx - 30, cy); ctx.lineTo(cx + 30, cy);
+      ctx.moveTo(cx, cy - 30); ctx.lineTo(cx, cy + 30);
       ctx.stroke();
       ctx.restore();
 
@@ -750,14 +857,14 @@
         ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
         ctx.fill();
 
-        // Wheels (4 small rounded rectangles)
+        // Wheels
         ctx.fillStyle = '#334155';
-        ctx.fillRect(-car.r * 0.7, -car.r - 2, car.r * 0.5, 4);
-        ctx.fillRect(car.r * 0.2, -car.r - 2, car.r * 0.5, 4);
-        ctx.fillRect(-car.r * 0.7, car.r - 2, car.r * 0.5, 4);
-        ctx.fillRect(car.r * 0.2, car.r - 2, car.r * 0.5, 4);
+        ctx.fillRect(-car.r * 0.7, -car.r - 3, car.r * 0.5, 5);
+        ctx.fillRect(car.r * 0.2, -car.r - 3, car.r * 0.5, 5);
+        ctx.fillRect(-car.r * 0.7, car.r - 2, car.r * 0.5, 5);
+        ctx.fillRect(car.r * 0.2, car.r - 2, car.r * 0.5, 5);
 
-        // Heavy Front Bumper (Push Guard)
+        // Heavy Front Bumper
         ctx.beginPath();
         ctx.arc(car.r * 0.5, 0, car.r * 0.9, -Math.PI * 0.35, Math.PI * 0.35);
         ctx.lineWidth = 6;
@@ -781,7 +888,7 @@
         ctx.strokeStyle = '#ffffff';
         ctx.stroke();
 
-        // Cockpit / Windshield
+        // Cockpit
         ctx.beginPath();
         ctx.arc(car.r * 0.15, 0, car.r * 0.45, 0, Math.PI * 2);
         ctx.fillStyle = '#0f172a';
@@ -793,9 +900,20 @@
         // Headlights
         ctx.fillStyle = '#fef08a';
         ctx.beginPath();
-        ctx.arc(car.r * 0.75, -car.r * 0.4, 2.5, 0, Math.PI * 2);
-        ctx.arc(car.r * 0.75, car.r * 0.4, 2.5, 0, Math.PI * 2);
+        ctx.arc(car.r * 0.75, -car.r * 0.4, 3, 0, Math.PI * 2);
+        ctx.arc(car.r * 0.75, car.r * 0.4, 3, 0, Math.PI * 2);
         ctx.fill();
+
+        // Direction indicator arrow (shows where car is aiming)
+        if (!car.falling && car.boosting) {
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+          ctx.beginPath();
+          ctx.moveTo(car.r + 8, 0);
+          ctx.lineTo(car.r + 2, -5);
+          ctx.lineTo(car.r + 2, 5);
+          ctx.closePath();
+          ctx.fill();
+        }
 
         ctx.restore();
       });
@@ -813,14 +931,19 @@
     }
 
     window.addEventListener('DOMContentLoaded', () => {
-      initCommonHeader("🚗 物理飞车相扑 规则与操作指南", `<p><strong>极限推土机：</strong>在圆形空中悬浮擂台上，按住【冲刺】推撞对手，松开自动转弯瞄准！</p><br>
-          <p><strong>双人同屏对战：</strong>支持在手机或电脑同屏激战！</p>
+      initCommonHeader("🚗 物理飞车相扑 规则与操作指南", `<p><strong>极限推土机：</strong>在圆形空中悬浮擂台上，用 WASD 控制方向，空格冲刺推撞对手！</p><br>
+          <p><strong>双人同屏对战：</strong>切换到"双人同屏"模式即可和朋友一起玩！</p>
           <ul>
-            <li><b>🔴 玩家 1 (红车)：</b>按住下方红键、触碰屏幕左半侧、或键盘按 <b>W / A / S / D / 空格键</b> 冲刺！</li>
-            <li><b>🔵 玩家 2 (蓝车)：</b>按住下方蓝键、触碰屏幕右半侧、或键盘按 <b>方向键 / 回车 / L 键</b> 冲刺！</li>
+            <li><b>🔴 玩家 1 (红车)：</b><b>WASD</b> 控制方向，<b>空格</b> 冲刺</li>
+            <li><b>🔵 玩家 2 (蓝车)：</b><b>方向键</b> 控制方向，<b>回车</b> 冲刺</li>
           </ul><br>
           <p><strong>坠落深渊：</strong>利用动量冲撞把对方顶出擂台边缘即可得分，抢先得 <b>3 分</b> 者夺得总冠军！</p>`, resetCurrentGame);
       initSumoGame();
+    });
+
+    window.addEventListener('resize', () => {
+      resizeSumoCanvas();
+      if (!STATE.sumo.started) renderSumo();
     });
   </script>
 </body>
