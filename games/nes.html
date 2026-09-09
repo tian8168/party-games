@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>FC/GBA 怀旧街机厅 (WebRTC双人联机版) · 聚会游戏大厅</title>
+  <title>复古全能街机厅 (WASM五合一: FC/GBA/SFC/MD/GB) · 聚会游戏大厅</title>
   <link rel="stylesheet" href="../common/common.css">
   <style>
     .stage-wrapper {
@@ -72,7 +72,7 @@
       color: #fff;
     }
 
-    /* Engine Selector Bar */
+    /* Engine & Platform Selector Bar */
     .engine-bar {
       width: 100%;
       display: flex;
@@ -94,18 +94,27 @@
       align-items: center;
       gap: 6px;
     }
-    .engine-mode-select {
+    .engine-chips {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+    .platform-pill {
       background: #1e293b;
       border: 1px solid #334155;
-      color: #38bdf8;
-      font-size: 0.76rem;
+      color: #94a3b8;
+      font-size: 0.7rem;
       font-weight: 800;
-      padding: 3px 8px;
-      border-radius: 6px;
-      outline: none;
-      cursor: pointer;
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+    .platform-pill.active {
+      background: #0284c7;
+      border-color: #38bdf8;
+      color: #fff;
     }
 
+    /* Screen Wrapper & CRT Shader */
     #nes-screen-wrapper {
       width: 100%;
       aspect-ratio: 256 / 240;
@@ -129,6 +138,23 @@
       display: block;
       image-rendering: pixelated;
       image-rendering: crisp-edges;
+      transition: filter 0.2s;
+    }
+
+    /* CRT Scanlines Overlay */
+    .crt-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 10;
+      display: none;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%);
+      background-size: 100% 4px;
+      box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.7);
+    }
+    .crt-active .crt-overlay { display: block; }
+    .crt-active canvas {
+      filter: contrast(1.1) brightness(1.04) saturate(1.15);
     }
 
     .nes-start-overlay {
@@ -214,7 +240,7 @@
       font-weight: 800;
       font-size: 0.85rem;
       color: #f1f5f9;
-      max-width: 45%;
+      max-width: 40%;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -229,15 +255,16 @@
     }
     .nes-tool-buttons {
       display: flex;
-      gap: 6px;
+      gap: 5px;
+      flex-wrap: wrap;
     }
     .btn-tool {
       background: #1e293b;
       border: 1px solid rgba(255, 255, 255, 0.15);
       color: #cbd5e1;
-      padding: 4px 10px;
+      padding: 4px 9px;
       border-radius: 6px;
-      font-size: 0.75rem;
+      font-size: 0.74rem;
       font-weight: 700;
       cursor: pointer;
       display: flex;
@@ -253,6 +280,23 @@
       color: #6ee7b7;
     }
     .btn-tool.accent:hover { background: #10b981; color: #fff; }
+    .btn-tool.active {
+      background: #2563eb;
+      border-color: #60a5fa;
+      color: #fff;
+    }
+
+    /* Slot selector */
+    .slot-select {
+      background: #0f172a;
+      border: 1px solid #475569;
+      color: #38bdf8;
+      font-size: 0.72rem;
+      font-weight: 800;
+      border-radius: 4px;
+      padding: 2px 4px;
+      outline: none;
+    }
 
     /* Controls Guide */
     .controls-guide {
@@ -551,7 +595,7 @@
   <div class="container in-game">
     <div class="game-header">
       <a href="../index.html" class="nav-back">🔙 返回大厅</a>
-      <h2 class="game-title">🕹️ FC/GBA 怀旧街机厅 (WebRTC双人联机版)</h2>
+      <h2 class="game-title">🕹️ 复古全能街机厅 (FC/GBA/SFC/MD/GB)</h2>
       <div class="header-actions">
         <button class="btn-icon" id="btn-fullscreen" onclick="toggleFullscreen()">⛶ 全屏</button>
         <button class="btn-icon" id="btn-sound-toggle">🔊</button>
@@ -576,44 +620,54 @@
         </div>
       </div>
 
-      <!-- Engine Indicator & Toggle -->
+      <!-- Engine & Multi-Platform Bar -->
       <div class="engine-bar">
         <div class="engine-status-tag">
-          <span>⚙️ 仿真引擎状态：</span>
+          <span>⚙️ 核心架构：</span>
           <span id="active-engine-badge" style="color:#38bdf8; font-weight:800;">🚀 WASM 增强版 (FCEUmm / 100%全兼容)</span>
         </div>
-        <div>
-          <select class="engine-mode-select" id="engine-selector" onchange="changeEngineMode(this.value)">
-            <option value="AUTO">🤖 自动智能调度 (推荐)</option>
-            <option value="WASM" selected>🚀 优先 WASM 核心 (支持即时存档/100%汉化)</option>
-            <option value="JSNES">⚡ 优先 JSNES 极速版 (零等待冷启动)</option>
-          </select>
+        <div class="engine-chips">
+          <span class="platform-pill active" id="pill-fc">FC/NES</span>
+          <span class="platform-pill" id="pill-gba">GBA</span>
+          <span class="platform-pill" id="pill-sfc">SFC</span>
+          <span class="platform-pill" id="pill-md">MD</span>
+          <span class="platform-pill" id="pill-gb">GB</span>
         </div>
       </div>
 
       <div id="nes-screen-wrapper">
+        <!-- CRT Overlay Scanlines -->
+        <div class="crt-overlay"></div>
+
         <!-- Start / Switch Overlay -->
         <div class="nes-start-overlay" id="nes-overlay">
-          <h3>🎮 经典怀旧红白机 / GBA</h3>
+          <h3>🎮 复古全能经典街机</h3>
           <div class="current-game-tag" id="overlay-game-title">🔥 魂斗罗一代30命S枪散弹版</div>
           <button class="btn-launch-game" id="btn-launch-now" onclick="launchCurrentSelection()">⚡ 立即投币开玩</button>
           <div class="nes-status-text" id="nes-status"></div>
         </div>
       </div>
 
-      <!-- Quick Action Toolbar: Savestates / Reset / Pause -->
+      <!-- Quick Action Toolbar: Savestates / Fast-Forward / CRT / Custom ROM -->
       <div class="nes-quick-toolbar">
         <div class="nes-now-playing">
           <span class="nes-now-badge">正在运行</span>
           <span id="bar-game-title">魂斗罗一代30命S枪散弹版</span>
         </div>
         <div class="nes-tool-buttons">
-          <button class="btn-tool accent" onclick="quickSaveState()" title="一键保存当前进度">💾 即时存档</button>
-          <button class="btn-tool accent" onclick="quickLoadState()" title="一键还原进度">📂 即时读档</button>
-          <button class="btn-tool" onclick="togglePauseGame()">⏸️ 暂停/继续</button>
-          <label class="btn-tool" style="cursor:pointer; margin:0;" title="加载任意本地 .nes 或 .gba 文件">
-            📥 自定义ROM
-            <input type="file" id="custom-rom-file" accept=".nes,.gba" style="display:none;" onchange="handleCustomRomFile(event)">
+          <select class="slot-select" id="save-slot-select" title="存档槽位选择">
+            <option value="1">槽位 1</option>
+            <option value="2">槽位 2</option>
+            <option value="3">槽位 3</option>
+          </select>
+          <button class="btn-tool accent" onclick="quickSaveState()" title="一键保存当前进度到选定槽位">💾 存档</button>
+          <button class="btn-tool accent" onclick="quickLoadState()" title="一键还原选定槽位进度">📂 读档</button>
+          <button class="btn-tool" id="btn-fast-forward" onclick="toggleFastForward()" title="倍速快进 (快捷键: Tab)">⏩ 快进</button>
+          <button class="btn-tool" id="btn-crt-toggle" onclick="toggleCrtShader()" title="切换复古 CRT 电视扫描线滤镜">📺 CRT滤镜</button>
+          <button class="btn-tool" onclick="togglePauseGame()">⏸️ 暂停</button>
+          <label class="btn-tool" style="cursor:pointer; margin:0;" title="加载任意本地 ROM (.nes, .gba, .sfc, .md, .gb)">
+            📥 导入ROM
+            <input type="file" id="custom-rom-file" accept=".nes,.gba,.sfc,.smc,.md,.gen,.bin,.gb,.gbc" style="display:none;" onchange="handleCustomRomFile(event)">
           </label>
         </div>
       </div>
@@ -641,12 +695,14 @@
         <div class="control-card">
           <b>🎮 键位一 (传统小键盘)</b><br>
           <span class="key">↑</span> <span class="key">↓</span> <span class="key">←</span> <span class="key">→</span> 移动<br>
-          <span class="key">Z</span> 攻击(B) &nbsp; <span class="key">X</span> 跳跃(A) &nbsp; <span class="key">Enter</span> 开始(Start)
+          <span class="key">Z</span> 攻击(B) &nbsp; <span class="key">X</span> 跳跃(A) &nbsp; <span class="key">Enter</span> 开始(Start)<br>
+          <span class="key">Tab</span> 倍速快进 &nbsp; <span class="key">Shift</span> 投币/选择
         </div>
         <div class="control-card">
           <b>⚡ 键位二 (WASD双手流)</b><br>
           <span class="key">W</span> <span class="key">A</span> <span class="key">S</span> <span class="key">D</span> 移动<br>
-          <span class="key">J</span> 攻击(B) &nbsp; <span class="key">K</span> 跳跃(A) &nbsp; <span class="key">U</span> 连射 &nbsp; <span class="key">I</span> 连跳
+          <span class="key">J</span> 攻击(B) &nbsp; <span class="key">K</span> 跳跃(A) &nbsp; <span class="key">U</span> 连射 &nbsp; <span class="key">I</span> 连跳<br>
+          支持跨设备 P2P 联机 · 💾 3槽位即时存档
         </div>
       </div>
     </div>
@@ -690,14 +746,14 @@
     let emuBrowser = null;        // JSNES instance
     let currentNostalgist = null; // WASM Nostalgist instance
     let activeEngineType = 'WASM';// 'WASM' or 'JSNES'
-    let preferredMode = 'WASM';   // 'AUTO', 'WASM', 'JSNES'
-    let savedStateBlob = null;    // In-memory savestate
+    let currentPlatform = 'FC';   // 'FC', 'GBA', 'SFC', 'MD', 'GB'
+    let isFastForward = false;
+    let isCrtEnabled = false;
     let allGames = [];
     let currentCategory = 'COOP';
     let currentSelectedGame = null;
     let netplay = null;
 
-    // Dual Player Cooperative Keywords for filtering
     const coopKeywords = ['魂斗罗', '坦克', '雪人', '松鼠', '双截龙', '赤色要塞', '沙罗曼蛇', '热血', '敲冰块', '泡泡龙', '兵蜂', '影子传说', '恐龙', '赤影战士'];
 
     function setStatus(msg, isErr = false) {
@@ -708,16 +764,118 @@
       }
     }
 
-    function changeEngineMode(val) {
-      preferredMode = val;
-      showToast('⚙️ 引擎偏好已设定为: ' + (val === 'WASM' ? 'WASM 增强核心' : (val === 'JSNES' ? 'JSNES 极速核心' : '自动智能调度')), 2000);
+    function updatePlatformPills(platform) {
+      currentPlatform = platform;
+      document.querySelectorAll('.platform-pill').forEach(p => p.classList.remove('active'));
+      const idMap = { 'FC': 'pill-fc', 'GBA': 'pill-gba', 'SFC': 'pill-sfc', 'MD': 'pill-md', 'GB': 'pill-gb' };
+      const el = document.getElementById(idMap[platform]);
+      if (el) el.classList.add('active');
+    }
+
+    // --- CRT Shader Toggle ---
+    function toggleCrtShader() {
+      isCrtEnabled = !isCrtEnabled;
+      const wrap = document.getElementById('nes-screen-wrapper');
+      const btn = document.getElementById('btn-crt-toggle');
+      if (wrap) wrap.classList.toggle('crt-active', isCrtEnabled);
+      if (btn) btn.classList.toggle('active', isCrtEnabled);
+      showToast(isCrtEnabled ? '📺 已开启复古 CRT 扫描线显像管滤镜' : '📺 已切回现代高精像素模式', 1500);
+    }
+
+    // --- Fast Forward Accelerator ---
+    function toggleFastForward() {
+      isFastForward = !isFastForward;
+      const btn = document.getElementById('btn-fast-forward');
+      if (btn) btn.classList.toggle('active', isFastForward);
+
+      if (currentNostalgist) {
+        try {
+          currentNostalgist.sendCommand(isFastForward ? 'FAST_FORWARD' : 'FAST_FORWARD');
+          showToast(isFastForward ? '⏩ 快进模式已开启' : '▶️ 恢复正常速度', 1000);
+        } catch(e) {}
+      }
+    }
+
+    // --- 💾 Multi-Slot Savestates System (IndexedDB / LocalStorage) ---
+    function getSaveKey(slot) {
+      const romName = currentSelectedGame ? currentSelectedGame.file : 'custom_rom';
+      return `nes_savestate_${romName}_slot_${slot}`;
+    }
+
+    async function quickSaveState(broadcast = true) {
+      const slot = document.getElementById('save-slot-select').value;
+      if (currentNostalgist) {
+        try {
+          const res = await currentNostalgist.saveState();
+          const stateBlob = res.state;
+          
+          // Persist to localStorage / IndexedDB via FileReader
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            try {
+              localStorage.setItem(getSaveKey(slot), e.target.result);
+              showToast(`💾 进度已保存至【槽位 ${slot}】！随时可读档恢复`, 2000);
+            } catch(storageErr) {
+              // Blob too big for localStorage, keep in memory cache
+              window._memSavestates = window._memSavestates || {};
+              window._memSavestates[getSaveKey(slot)] = stateBlob;
+              showToast(`💾 进度已存入临时内存【槽位 ${slot}】！`, 2000);
+            }
+          };
+          reader.readAsDataURL(stateBlob);
+
+          if (broadcast && netplay && netplay.role === 'host') {
+            netplay.sendCommand('save', { slot: slot });
+          }
+          if (window.AUDIO) window.AUDIO.play('click');
+        } catch(e) {
+          showToast('❌ 存档失败: ' + e.message, 2500);
+        }
+      } else {
+        showToast('ℹ️ 即时存档需在 WASM 核心下运行', 2500);
+      }
+    }
+
+    async function quickLoadState(broadcast = true) {
+      const slot = document.getElementById('save-slot-select').value;
+      if (currentNostalgist) {
+        const key = getSaveKey(slot);
+        let blobToLoad = null;
+
+        if (window._memSavestates && window._memSavestates[key]) {
+          blobToLoad = window._memSavestates[key];
+        } else {
+          const dataUrl = localStorage.getItem(key);
+          if (dataUrl) {
+            const resp = await fetch(dataUrl);
+            blobToLoad = await resp.blob();
+          }
+        }
+
+        if (!blobToLoad) {
+          showToast(`⚠️ 槽位 ${slot} 暂无存档，请先点击【存档】`, 2000);
+          return;
+        }
+
+        try {
+          await currentNostalgist.loadState(blobToLoad);
+          showToast(`📂 已从【槽位 ${slot}】即时恢复游戏进度！`, 2000);
+          if (broadcast && netplay && netplay.role === 'host') {
+            netplay.sendCommand('load', { slot: slot });
+          }
+          if (window.AUDIO) window.AUDIO.play('drop');
+        } catch(e) {
+          showToast('❌ 读档失败: ' + e.message, 2500);
+        }
+      } else {
+        showToast('ℹ️ 即时读档需在 WASM 核心下运行', 2500);
+      }
     }
 
     // --- 🌐 Netplay Integration ---
     function initNetplay() {
       netplay = new NesNetplay({
         onRemoteInput: (player, btn, isDown) => {
-          // Inject remote player input
           injectControllerInput(player, btn, isDown);
         },
         onSyncRom: (rom) => {
@@ -742,7 +900,6 @@
         }
       });
 
-      // Check URL search parameters for auto-joining room
       const urlParams = new URLSearchParams(window.location.search);
       const roomParam = urlParams.get('room');
       if (roomParam) {
@@ -875,7 +1032,6 @@
       const overlay = document.getElementById('nes-overlay');
       if (overlay) overlay.style.display = 'flex';
 
-      // If Netplay Host selects a new game, broadcast to Guest
       if (netplay && netplay.role === 'host') {
         netplay.broadcastRom(game);
       }
@@ -898,7 +1054,7 @@
           return resp.arrayBuffer();
         })
         .then(buffer => {
-          runRomBuffer(buffer, game.title, game.mapper);
+          runRomBuffer(buffer, game.title, game.file);
         })
         .catch(err => {
           console.error(err);
@@ -910,11 +1066,10 @@
       const file = e.target.files && e.target.files[0];
       if (!file) return;
 
-      setStatus('⏳ 正在读取本地文件: ' + file.name);
-      const isGba = file.name.toLowerCase().endsWith('.gba');
+      setStatus('⏳ 正在读取本地 ROM: ' + file.name);
       const reader = new FileReader();
       reader.onload = function(evt) {
-        runRomBuffer(evt.target.result, file.name, isGba ? 'GBA' : null);
+        runRomBuffer(evt.target.result, file.name, file.name);
       };
       reader.onerror = function() {
         setStatus('❌ 读取文件失败', true);
@@ -922,8 +1077,8 @@
       reader.readAsArrayBuffer(file);
     }
 
-    // Main Engine Dispatcher: WASM vs JSNES
-    async function runRomBuffer(buffer, title, mapper) {
+    // --- 🚀 Multi-Platform WebAssembly Core Dispatcher ---
+    async function runRomBuffer(buffer, title, filename = '') {
       if (currentNostalgist) {
         try { await currentNostalgist.exit(); } catch(e) {}
         currentNostalgist = null;
@@ -936,56 +1091,70 @@
       const container = document.getElementById('nes-screen-wrapper');
       container.querySelectorAll('canvas').forEach(c => c.remove());
 
-      const isGba = (mapper === 'GBA' || title.toLowerCase().endsWith('.gba'));
-      let useWasm = (preferredMode === 'WASM') || isGba;
-      if (preferredMode === 'AUTO') {
-        if (mapper !== undefined && mapper !== null && ![0,1,2,3,4].includes(mapper)) {
-          useWasm = true;
-        }
+      // Detect Platform and Core from file extension
+      const lower = (filename || title).toLowerCase();
+      let coreToUse = 'fceumm';
+      let platformTag = 'FC';
+
+      if (lower.endsWith('.gba')) {
+        coreToUse = 'mgba';
+        platformTag = 'GBA';
+      } else if (lower.endsWith('.sfc') || lower.endsWith('.smc')) {
+        coreToUse = 'snes9x';
+        platformTag = 'SFC';
+      } else if (lower.endsWith('.md') || lower.endsWith('.gen') || lower.endsWith('.bin')) {
+        coreToUse = 'genesis_plus_gx';
+        platformTag = 'MD';
+      } else if (lower.endsWith('.gb') || lower.endsWith('.gbc')) {
+        coreToUse = 'gambatte';
+        platformTag = 'GB';
+      } else {
+        coreToUse = 'fceumm';
+        platformTag = 'FC';
       }
 
+      updatePlatformPills(platformTag);
+
       const badge = document.getElementById('active-engine-badge');
+      activeEngineType = 'WASM';
+      if (badge) badge.innerHTML = `🚀 WASM 硬件核心 [${coreToUse.toUpperCase()}] · ${platformTag} 机种`;
+      setStatus(`⏳ 正在初始化 WebAssembly [${coreToUse}] 仿真核心...`);
 
-      if (useWasm && typeof Nostalgist !== 'undefined') {
-        activeEngineType = 'WASM';
-        if (badge) badge.innerHTML = isGba ? '🚀 WASM 核心 (mGBA / Game Boy Advance)' : '🚀 WASM 核心 (FCEUmm / 100%全兼容/即时存档)';
-        setStatus('⏳ 正在初始化 WebAssembly 硬件仿真核心...');
+      try {
+        const blob = new Blob([buffer]);
+        currentNostalgist = await Nostalgist.launch({
+          core: coreToUse,
+          rom: blob,
+          element: container
+        });
 
-        try {
-          const blob = new Blob([buffer]);
-          const coreToUse = isGba ? 'mgba' : 'fceumm';
-          
-          currentNostalgist = await Nostalgist.launch({
-            core: coreToUse,
-            rom: blob,
-            element: container
-          });
-
-          const cvs = container.querySelector('canvas');
-          if (cvs) {
-            cvs.style.width = '100%';
-            cvs.style.height = '100%';
-            cvs.style.objectFit = 'contain';
-            cvs.style.imageRendering = 'pixelated';
-          }
-
-          document.getElementById('nes-overlay').style.display = 'none';
-          setupCustomControls();
-          setupTouchControls();
-          showToast('🎮 ' + (isGba ? 'GBA' : 'WASM') + ' 核心启动成功！支持即时存档与双人联机', 2500);
-        } catch(wasmErr) {
-          console.warn('WASM launch failed, falling back to JSNES:', wasmErr);
-          runWithJsnes(buffer, container, title);
+        const cvs = container.querySelector('canvas');
+        if (cvs) {
+          cvs.style.width = '100%';
+          cvs.style.height = '100%';
+          cvs.style.objectFit = 'contain';
+          cvs.style.imageRendering = 'pixelated';
         }
-      } else {
-        runWithJsnes(buffer, container, title);
+
+        document.getElementById('nes-overlay').style.display = 'none';
+        setupCustomControls();
+        setupTouchControls();
+        showToast(`🎮 【${platformTag}】机种内核启动成功！支持多槽存档与P2P联机`, 2500);
+      } catch(wasmErr) {
+        console.warn('WASM launch failed, trying fallback:', wasmErr);
+        if (platformTag === 'FC') {
+          runWithJsnes(buffer, container, title);
+        } else {
+          setStatus('❌ 核心启动异常: ' + wasmErr.message, true);
+        }
       }
     }
 
     function runWithJsnes(buffer, container, title) {
       activeEngineType = 'JSNES';
+      updatePlatformPills('FC');
       const badge = document.getElementById('active-engine-badge');
-      if (badge) badge.innerHTML = '⚡ JSNES 极速核心 (零等待秒开)';
+      if (badge) badge.innerHTML = '⚡ JSNES 极速轻量核心';
 
       try {
         const bytes = new Uint8Array(buffer);
@@ -999,7 +1168,7 @@
           romData: romData,
           onError: function(e) {
             console.error('JSNES Error:', e);
-            setStatus('❌ JSNES 不支持该芯片 (' + e.message + ')，请切换为 WASM 核心重试', true);
+            setStatus('❌ JSNES 不支持该芯片 (' + e.message + ')', true);
             document.getElementById('nes-overlay').style.display = 'flex';
           }
         });
@@ -1010,46 +1179,6 @@
       } catch(err) {
         console.error(err);
         setStatus('❌ 启动失败: ' + err.message, true);
-      }
-    }
-
-    // Savestates
-    async function quickSaveState(broadcast = true) {
-      if (currentNostalgist) {
-        try {
-          const res = await currentNostalgist.saveState();
-          savedStateBlob = res.state;
-          showToast('💾 进度已即时存档！', 2000);
-          if (broadcast && netplay && netplay.role === 'host') {
-            netplay.sendCommand('save');
-          }
-          if (window.AUDIO) window.AUDIO.play('click');
-        } catch(e) {
-          showToast('❌ 存档失败: ' + e.message, 2500);
-        }
-      } else {
-        showToast('ℹ️ 即时存档需切换至【WASM 增强核心】体验', 2500);
-      }
-    }
-
-    async function quickLoadState(broadcast = true) {
-      if (currentNostalgist) {
-        if (!savedStateBlob) {
-          showToast('⚠️ 暂无历史存档，请先点击【即时存档】', 2000);
-          return;
-        }
-        try {
-          await currentNostalgist.loadState(savedStateBlob);
-          showToast('📂 进度已即时恢复！', 2000);
-          if (broadcast && netplay && netplay.role === 'host') {
-            netplay.sendCommand('load');
-          }
-          if (window.AUDIO) window.AUDIO.play('drop');
-        } catch(e) {
-          showToast('❌ 读档失败: ' + e.message, 2500);
-        }
-      } else {
-        showToast('ℹ️ 即时读档需切换至【WASM 增强核心】体验', 2500);
       }
     }
 
@@ -1153,17 +1282,10 @@
       });
     }
 
-    // --- Input Handling (Dispatches to Local + Netplay Stream) ---
+    // --- Input Handling ---
     function triggerLocalButton(btn, isDown) {
-      // If Host: I control Player 1.
-      // If Guest: I control Player 2.
-      // If Solo: I control Player 1.
       const myPlayer = (netplay && netplay.role === 'guest') ? 2 : 1;
-      
-      // Inject to local emulator
       injectControllerInput(myPlayer, btn, isDown);
-
-      // Broadcast to remote peer
       if (netplay && netplay.role !== 'solo') {
         netplay.sendInput(myPlayer, btn, isDown);
       }
@@ -1188,6 +1310,12 @@
       };
 
       window.addEventListener('keydown', (e) => {
+        if (e.code === 'Tab') {
+          e.preventDefault();
+          toggleFastForward();
+          return;
+        }
+
         const btn = keyMapping[e.code];
         if (btn) {
           e.preventDefault();
