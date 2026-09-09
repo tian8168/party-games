@@ -576,8 +576,8 @@
 
         car.boosting = keys.up;
         if (keys.up) {
-          car.vx += Math.cos(car.angle) * 0.55;
-          car.vy += Math.sin(car.angle) * 0.55;
+          car.vx += Math.cos(car.angle) * 0.36;
+          car.vy += Math.sin(car.angle) * 0.36;
           if (Math.random() < 0.75) {
             STATE.sumo.particles.push({
               x: car.x - Math.cos(car.angle) * (car.r + 2),
@@ -589,8 +589,8 @@
           }
         } else if (keys.down) {
           // Reverse / brake
-          car.vx -= Math.cos(car.angle) * 0.38;
-          car.vy -= Math.sin(car.angle) * 0.38;
+          car.vx -= Math.cos(car.angle) * 0.25;
+          car.vy -= Math.sin(car.angle) * 0.25;
         }
       }
 
@@ -614,12 +614,12 @@
               const centerAngle = Math.atan2(cy - c2.y, cx - c2.x);
               const cDiff = wrapAngle(centerAngle - c2.angle);
               c2.angle += cDiff * 0.12;
-              c2.vx += Math.cos(c2.angle) * 0.42;
-              c2.vy += Math.sin(c2.angle) * 0.42;
+              c2.vx += Math.cos(c2.angle) * 0.33;
+              c2.vy += Math.sin(c2.angle) * 0.33;
               c2.boosting = true;
             } else if (Math.abs(diff) < 0.5 && Math.random() < 0.82) {
-              c2.vx += Math.cos(c2.angle) * 0.50;
-              c2.vy += Math.sin(c2.angle) * 0.50;
+              c2.vx += Math.cos(c2.angle) * 0.36;
+              c2.vy += Math.sin(c2.angle) * 0.36;
               c2.boosting = true;
               if (Math.random() < 0.75) {
                 STATE.sumo.particles.push({
@@ -643,12 +643,12 @@
 
       // Drag and speed limit
       [c1, c2].forEach(car => {
-        car.vx *= 0.955;
-        car.vy *= 0.955;
+        car.vx *= 0.93;
+        car.vy *= 0.93;
         const spd = Math.hypot(car.vx, car.vy);
-        if (spd > 9.0) {
-          car.vx = (car.vx / spd) * 9.0;
-          car.vy = (car.vy / spd) * 9.0;
+        if (spd > 6.5) {
+          car.vx = (car.vx / spd) * 6.5;
+          car.vy = (car.vy / spd) * 6.5;
         }
         car.x += car.vx;
         car.y += car.vy;
