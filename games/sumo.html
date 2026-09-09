@@ -3,9 +3,541 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>物理飞车相扑 (Car Sumo) · 聚会游戏大厅</title>
-  <link rel="stylesheet" href="../common/common.css">
+  <title>🚗 物理飞车相扑 (Car Sumo) · Party Arcade</title>
+  <script src="../three.min.js"></script>
+  <script src="../OrbitControls.js"></script>
+  <script src="../mqtt.min.js"></script>
   <style>
+
+    :root {
+      --bg-gradient: radial-gradient(circle at center, #151d2a 0%, #080c14 100%);
+      --panel-bg: rgba(22, 32, 48, 0.85);
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --p1-color: #ff4757;
+      --p1-glow: rgba(255, 71, 87, 0.5);
+      --p2-color: #2ed573;
+      --p2-glow: rgba(46, 213, 115, 0.5);
+      --accent: #3b82f6;
+      --accent-glow: rgba(59, 130, 246, 0.5);
+      --neon-cyan: #38bdf8;
+      --gold: #f59e0b;
+      --gold-glow: rgba(245, 158, 11, 0.5);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-x: hidden;
+      padding: 10px 12px 24px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1080px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      transition: max-width 0.3s ease;
+    }
+
+    .container.in-game {
+      max-width: 680px;
+    }
+
+    /* 顶部通用导航栏 */
+    .app-header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 2px 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .brand-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      cursor: pointer;
+    }
+
+    .brand-title .badge {
+      font-size: 0.68rem;
+      padding: 2px 6px;
+      border-radius: 6px;
+      background: rgba(59, 130, 246, 0.2);
+      border: 1px solid rgba(59, 130, 246, 0.4);
+      color: #93c5fd;
+      font-weight: 600;
+      -webkit-text-fill-color: #93c5fd;
+    }
+
+    .header-tools {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .btn-icon {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #e2e8f0;
+      padding: 6px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s;
+    }
+
+    .btn-icon:hover {
+      background: #334155;
+      border-color: #64748b;
+    }
+
+    /* ==========================================================================
+       游戏房间视图 (GAME VIEW)
+       ========================================================================== */
+    #game-view {
+      width: 100%;
+      max-width: 520px;
+      margin: 0 auto;
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .game-nav-bar {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .btn-back-lobby {
+      background: #1e293b;
+      border: 1px solid #475569;
+      color: #38bdf8;
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s;
+    }
+    .btn-back-lobby:hover {
+      background: #334155;
+      border-color: #38bdf8;
+    }
+
+    .current-game-badge {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #f1f2f6;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* 模式切换选项卡 */
+    .mode-nav {
+      width: 100%;
+      display: flex;
+      background: #0f172a;
+      border-radius: 10px;
+      padding: 3px;
+      border: 1px solid #334155;
+    }
+
+    .mode-tab {
+      flex: 1;
+      text-align: center;
+      padding: 6px 0;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #94a3b8;
+      cursor: pointer;
+      border-radius: 7px;
+      transition: all 0.25s;
+    }
+
+    .mode-tab.active {
+      background: #3b82f6;
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+    }
+
+    /* 联机房间面板 */
+    .online-panel {
+      width: 100%;
+      background: var(--panel-bg);
+      border: 1px solid #475569;
+      border-radius: 12px;
+      padding: 8px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      backdrop-filter: blur(8px);
+    }
+    .online-panel.hidden { display: none; }
+
+    .room-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.82rem;
+    }
+
+    .room-id-badge {
+      background: #0f172a;
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-family: monospace;
+      font-weight: 700;
+      color: #38bdf8;
+      border: 1px solid #1e293b;
+    }
+
+    .online-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .btn-action-primary {
+      flex: 1;
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 7px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .btn-action-secondary {
+      background: #334155;
+      color: #e2e8f0;
+      border: 1px solid #475569;
+      padding: 6px 10px;
+      border-radius: 7px;
+      font-size: 0.82rem;
+      cursor: pointer;
+    }
+
+    /* 计分与角色状态栏 */
+    .scoreboard {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .scoreboard.scoreboard-4p {
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+
+    .player-card.p3.active {
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.5);
+    }
+    .player-card.p4.active {
+      border-color: var(--gold);
+      box-shadow: 0 0 12px var(--gold-glow);
+    }
+
+    .p3 .player-avatar { background: radial-gradient(circle at 35% 35%, #7dd3fc, var(--neon-cyan) 70%, #0369a1); }
+    .p4 .player-avatar { background: radial-gradient(circle at 35% 35%, #fef08a, var(--gold) 70%, #a16207); }
+
+    /* 步步为营 2P/4P 切换栏 */
+    .quoridor-mode-bar {
+      width: 100%;
+      display: flex;
+      gap: 8px;
+      margin-bottom: 2px;
+    }
+    .btn-q-mode {
+      flex: 1;
+      padding: 6px 0;
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #94a3b8;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-q-mode.active {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #fff;
+      border-color: #3b82f6;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+    }
+
+    .player-card {
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(8px);
+      border: 2px solid transparent;
+      border-radius: 10px;
+      padding: 7px 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s;
+    }
+
+    .player-card.active {
+      box-shadow: 0 4px 18px rgba(0,0,0,0.4);
+    }
+    .player-card.p1.active {
+      border-color: var(--p1-color);
+      box-shadow: 0 0 12px var(--p1-glow);
+    }
+    .player-card.p2.active {
+      border-color: var(--p2-color);
+      box-shadow: 0 0 12px var(--p2-glow);
+    }
+    .player-card.p2-yellow-active.active {
+      border-color: var(--gold);
+      box-shadow: 0 0 12px var(--gold-glow);
+    }
+
+    .player-avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      box-shadow: inset -2px -2px 4px rgba(0,0,0,0.5), inset 2px 2px 4px rgba(255,255,255,0.4);
+    }
+    .p1 .player-avatar { background: radial-gradient(circle at 35% 35%, #ff7f8e, var(--p1-color) 70%, #b32d3a); }
+    .p2 .player-avatar { background: radial-gradient(circle at 35% 35%, #7bed9f, var(--p2-color) 70%, #1e824c); }
+    .p2.yellow-theme .player-avatar { background: radial-gradient(circle at 35% 35%, #fef08a, #eab308 70%, #a16207); }
+
+    .player-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .player-name {
+      font-size: 0.8rem;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .player-subinfo {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+
+    .wall-bars { display: flex; gap: 2px; margin-top: 2px; }
+    .wall-pip { width: 5px; height: 7px; background: #eccc68; border-radius: 1px; }
+    .wall-pip.used { background: #475569; opacity: 0.3; }
+
+    /* 舞台主容器 (480x480 max) */
+    .stage-wrapper {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      max-width: 480px;
+      max-height: 480px;
+      background: #131d2c;
+      border-radius: 16px;
+      padding: 6px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.05);
+      border: 1px solid #334155;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* 魂斗罗动作模式自适应样式 */
+    .stage-wrapper.contra-mode {
+      aspect-ratio: auto;
+      height: auto;
+      max-height: none;
+      max-width: 520px;
+      background: transparent;
+      border: none;
+      padding: 0;
+      box-shadow: none;
+      overflow: visible;
+    }
+
+    #board-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      border-radius: 10px;
+      cursor: pointer;
+      touch-action: none;
+    }
+
+    /* 3D 舞台 */
+    #board-3d-wrapper {
+      width: 100%;
+      height: 100%;
+      display: none;
+      position: relative;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    #board-3d-canvas {
+      width: 100% !important;
+      height: 100% !important;
+      display: block;
+      touch-action: none;
+      cursor: grab;
+    }
+    #board-3d-canvas:active { cursor: grabbing; }
+
+    .btn-reset-cam {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid #475569;
+      color: #e2e8f0;
+      padding: 5px 10px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      z-index: 10;
+      backdrop-filter: blur(4px);
+      transition: all 0.2s;
+    }
+    .btn-reset-cam:hover { background: #334155; color: #38bdf8; border-color: #38bdf8; }
+
+    .tip-3d-overlay {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.85);
+      color: #94a3b8;
+      font-size: 0.72rem;
+      padding: 4px 10px;
+      border-radius: 12px;
+      pointer-events: none;
+      white-space: nowrap;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+      border: 1px solid #334155;
+    }
+    .gravity-col-btn {
+      flex: 1;
+      background: #1e293b;
+      border: 1px solid #475569;
+      color: #94a3b8;
+      padding: 5px 0;
+      border-radius: 5px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+    }
+    .gravity-col-btn:hover { background: #3b82f6; color: #fff; }
+
+    /* Toast 浮窗 */
+    .toast {
+      position: fixed;
+      top: 20px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid #38bdf8;
+      color: #f0f9ff;
+      padding: 9px 16px;
+      border-radius: 20px;
+      font-size: 0.84rem;
+      font-weight: 500;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      gap: 6px;
+      animation: fadeInDown 0.3s ease;
+      max-width: 90%;
+      text-align: center;
+    }
+
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 通用弹窗 */
+    .modal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 16px;
+    }
+    .modal.show { display: flex; }
+    .modal-content {
+      background: #1e293b;
+      border: 1px solid #475569;
+      border-radius: 16px;
+      padding: 20px;
+      max-width: 400px;
+      width: 100%;
+      color: #e2e8f0;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+      text-align: center;
+    }
+    .modal-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 10px; color: #fff; }
+    .modal-body { font-size: 0.85rem; line-height: 1.6; color: #cbd5e1; margin-bottom: 18px; text-align: left; }
+    .modal-btn {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: white;
+      border: none;
+      padding: 9px 22px;
+      border-radius: 8px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+  
+    /* --- 新增分类标签与通用舞台美化 --- */
+    .tag-reflex { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
+
     /* ==========================================================================
        3. 物理飞车相扑 (SUMO) 样式
        ========================================================================== */
@@ -112,117 +644,1628 @@
       filter: brightness(1.25);
     }
 
-    
   </style>
+  <script src="js/sumo.js"></script>
 </head>
 <body>
   <div class="container in-game">
-    <div class="game-header">
-      <a href="../index.html" class="nav-back">🔙 返回大厅</a>
-      <h2 class="game-title">🚗 物理飞车相扑 (Car Sumo)</h2>
-      <div class="header-actions">
-        <button class="btn-icon" id="btn-sound-toggle">🔊</button>
-        <button class="btn-icon" id="btn-rules-header">📖 规则</button>
-        <button class="btn-icon" id="restart-btn">🔄 重置</button>
+    <!-- 顶部导航 -->
+    <header class="app-header">
+      <div class="brand-title" onclick="location.href='../index.html'">
+        <span>🎮 聚会游戏大厅</span>
+        <span class="badge">Party Hub</span>
       </div>
-    </div>
+      <div class="header-tools">
+        <button class="btn-icon" onclick="location.href='../index.html'">🏠 返回大厅</button>
+      </div>
+    </header>
 
-    <div class="stage-wrapper">
-      <div id="sumo-stage">
-          <canvas id="sumo-canvas"></canvas>
-          <div class="sumo-hud">
-            <div class="sumo-score-badge" style="color:#ef4444;" id="sumo-p1-score">🔴 玩家: 0</div>
-            <div class="sumo-score-badge" style="color:#cbd5e1;" id="sumo-match-target">抢 3 胜</div>
-            <div class="sumo-score-badge" style="color:#38bdf8;" id="sumo-p2-score">🔵 电脑: 0</div>
-          </div>
-          <div class="sumo-touch-hint" id="sumo-touch-hint">💡 触碰屏幕或按住按键冲刺 (松开自动转向)</div>
-          <div class="sumo-controls-bar" id="sumo-controls-bar">
-            <button class="btn-sumo-boost btn-sumo-p1" id="btn-sumo-boost">🚀 按住冲刺 (松开瞄准)</button>
-            <button class="btn-sumo-boost btn-sumo-p2" id="btn-sumo-boost-p2" style="display:flex;">🚀 蓝方冲刺 (松开瞄准)</button>
+    <!-- 游戏视图 -->
+    <div id="game-view" style="display: flex;">
+      <div class="game-nav-bar">
+        <button class="btn-back-lobby" onclick="location.href='../index.html'">← 返回大厅</button>
+        <div id="current-game-title" class="current-game-badge">🚗 物理飞车相扑 (Car Sumo)</div>
+        <div></div>
+      </div>
+
+      <!-- 模式切换 -->
+      <div class="mode-nav">
+        <div id="tab-ai" class="mode-tab active" onclick="switchGameMode('AI')">🤖 人工智能 (AI)</div>
+        <div id="tab-local" class="mode-tab" onclick="switchGameMode('LOCAL')">👥 同屏双人 (Local)</div>
+        <div id="tab-online" class="mode-tab" onclick="switchGameMode('ONLINE')">🌐 局域网/在线</div>
+      </div>
+
+      <!-- 联机面板 -->
+      <div id="online-panel" class="online-panel hidden">
+        <div class="room-header">
+          <span>房间号: <span id="room-id-display" class="room-id-badge">------</span></span>
+          <span id="mqtt-status" style="font-size:0.75rem; color:#94a3b8;">未连接</span>
+        </div>
+        <div class="online-actions">
+          <button class="btn-action-primary" onclick="createOnlineRoom()">➕ 创建新房间</button>
+          <button class="btn-action-secondary" onclick="joinOnlineRoomPrompt()">🔑 加入已有房间</button>
+        </div>
+      </div>
+
+      <!-- 计分栏 -->
+      <div id="scoreboard" class="scoreboard">
+        <div id="p1-card" class="player-card p1 active">
+          <div class="player-avatar"></div>
+          <div class="player-info">
+            <div class="player-name" id="p1-name">玩家 1 (P1)</div>
+            <div class="player-subinfo" id="p1-sub">得分: <span id="p1-score">0</span></div>
           </div>
         </div>
+        <div id="p2-card" class="player-card p2">
+          <div class="player-avatar"></div>
+          <div class="player-info">
+            <div class="player-name" id="p2-name">玩家 2 (AI)</div>
+            <div class="player-subinfo" id="p2-sub">得分: <span id="p2-score">0</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 专属舞台 -->
+
+          <div class="stage-wrapper" style="max-width:520px; aspect-ratio: 1/1;">
+            <div id="sumo-stage" style="display:flex;">
+              <div class="sumo-hud">
+                <div class="sumo-score-badge" style="color:var(--p1-color)" id="sumo-p1-hud">P1: 0</div>
+                <div class="sumo-score-badge" style="color:var(--p2-color)" id="sumo-p2-hud">P2: 0</div>
+              </div>
+              <canvas id="sumo-canvas"></canvas>
+              <div class="sumo-touch-hint">长按两侧区域控制对应赛车冲刺与转向</div>
+              <div class="sumo-controls-bar">
+                <button class="btn-sumo-boost" id="btn-sumo-p1" style="background:var(--p1-color)">P1 氮气冲刺</button>
+                <button class="btn-sumo-boost" id="btn-sumo-p2" style="background:var(--p2-color)">P2 氮气冲刺</button>
+              </div>
+            </div>
+          </div>
+          <div id="game-status" class="game-status">准备就绪</div>
+    
     </div>
   </div>
 
-  <script src="../common/audio.js"></script>
-  <script src="../common/common.js"></script>
+  <div id="toast" class="toast"></div>
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <div id="modal-title" class="modal-title">游戏提示</div>
+      <div id="modal-body" class="modal-body"></div>
+      <button class="modal-btn" onclick="closeModal()">确定</button>
+    </div>
+  </div>
+
   <script>
-    
-    // 基础游戏运行时状态
-    const STATE = {
-      currentView: 'GAME',
-      currentGame: 'SUMO',
-      gameMode: 'AI',
-      turn: 1,
-      scores: { 1: 0, 2: 0, 3: 0, 4: 0 },
-      online: {
-        connected: false,
-        roomId: null,
-        myRole: 'host',
-        opponentJoined: false,
-        mqttClient: null
+
+    // Canvas roundRect 跨端安全兼容垫片
+    (function() {
+      function polyfill(proto) {
+        if (!proto || proto.roundRect) return;
+        proto.roundRect = function(x, y, w, h, radii) {
+          let r = Array.isArray(radii) ? radii[0] : (radii || 0);
+          r = Math.min(r, w / 2, h / 2);
+          this.beginPath();
+          this.moveTo(x + r, y);
+          this.arcTo(x + w, y, x + w, y + h, r);
+          this.arcTo(x + w, y + h, x, y + h, r);
+          this.arcTo(x, y + h, x, y, r);
+          this.arcTo(x, y, x + w, y, r);
+          this.closePath();
+          return this;
+        };
+      }
+      if (typeof CanvasRenderingContext2D !== 'undefined') polyfill(CanvasRenderingContext2D.prototype);
+      if (typeof HTMLCanvasElement !== 'undefined') {
+        const origGetContext = HTMLCanvasElement.prototype.getContext;
+        HTMLCanvasElement.prototype.getContext = function(type, ...args) {
+          const ctx = origGetContext.apply(this, [type, ...args]);
+          if (ctx && !ctx.roundRect) polyfill(ctx);
+          return ctx;
+        };
+      }
+    })();
+
+    // ==========================================================================
+    // 0. 原生 Web Audio 纯合成音效系统 (0 体积无外链依赖)
+    // ==========================================================================
+    const AUDIO = {
+      ctx: null,
+      enabled: true,
+      init() {
+        if (!this.ctx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (AudioCtx) this.ctx = new AudioCtx();
+        }
+      },
+      toggle() {
+        this.enabled = !this.enabled;
+        return this.enabled;
+      },
+      play(type) {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+        const t = this.ctx.currentTime;
+        try {
+          if (type === 'click') {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(600, t);
+            osc.frequency.exponentialRampToValueAtTime(150, t + 0.05);
+            gain.gain.setValueAtTime(0.12, t);
+            gain.gain.linearRampToValueAtTime(0.01, t + 0.05);
+            osc.connect(gain); gain.connect(this.ctx.destination);
+            osc.start(t); osc.stop(t + 0.05);
+          } else if (type === 'drop') {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(320, t);
+            osc.frequency.exponentialRampToValueAtTime(110, t + 0.09);
+            gain.gain.setValueAtTime(0.25, t);
+            gain.gain.linearRampToValueAtTime(0.01, t + 0.09);
+            osc.connect(gain); gain.connect(this.ctx.destination);
+            osc.start(t); osc.stop(t + 0.09);
+          } else if (type === 'shot') { // 霰弹枪炸鸣
+            const bufferSize = this.ctx.sampleRate * 0.35;
+            const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+              data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.1));
+            }
+            const noise = this.ctx.createBufferSource();
+            noise.buffer = buffer;
+            const filter = this.ctx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(1400, t);
+            filter.frequency.linearRampToValueAtTime(150, t + 0.3);
+            const gain = this.ctx.createGain();
+            gain.gain.setValueAtTime(0.65, t);
+            gain.gain.exponentialRampToValueAtTime(0.01, t + 0.35);
+            noise.connect(filter); filter.connect(gain); gain.connect(this.ctx.destination);
+            noise.start(t);
+          } else if (type === 'blank') { // 空枪撞针清脆咔哒
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(1500, t);
+            osc.frequency.exponentialRampToValueAtTime(600, t + 0.035);
+            gain.gain.setValueAtTime(0.18, t);
+            gain.gain.linearRampToValueAtTime(0.01, t + 0.035);
+            osc.connect(gain); gain.connect(this.ctx.destination);
+            osc.start(t); osc.stop(t + 0.035);
+          } else if (type === 'rack') { // 机械上膛声
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(220, t);
+            osc.frequency.exponentialRampToValueAtTime(480, t + 0.08);
+            gain.gain.setValueAtTime(0.18, t);
+            gain.gain.linearRampToValueAtTime(0.01, t + 0.08);
+            osc.connect(gain); gain.connect(this.ctx.destination);
+            osc.start(t); osc.stop(t + 0.08);
+          } else if (type === 'hit') { // 冰球撞击
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(700, t);
+            osc.frequency.exponentialRampToValueAtTime(260, t + 0.06);
+            gain.gain.setValueAtTime(0.28, t);
+            gain.gain.linearRampToValueAtTime(0.01, t + 0.06);
+            osc.connect(gain); gain.connect(this.ctx.destination);
+            osc.start(t); osc.stop(t + 0.06);
+          } else if (type === 'goal') { // 进球庆祝
+            [523.25, 659.25, 783.99, 1046.5].forEach((freq, i) => {
+              const osc = this.ctx.createOscillator();
+              const gain = this.ctx.createGain();
+              osc.type = 'triangle';
+              osc.frequency.setValueAtTime(freq, t + i * 0.07);
+              gain.gain.setValueAtTime(0.2, t + i * 0.07);
+              gain.gain.linearRampToValueAtTime(0.01, t + i * 0.07 + 0.22);
+              osc.connect(gain); gain.connect(this.ctx.destination);
+              osc.start(t + i * 0.07); osc.stop(t + i * 0.07 + 0.22);
+            });
+          
+          
+          } else if (type === 'contra_shoot') {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(520, t);
+            osc.frequency.exponentialRampToValueAtTime(180, t + 0.06);
+            gain.gain.setValueAtTime(0.2, t);
+            gain.gain.linearRampToValueAtTime(0.01, t + 0.06);
+            osc.connect(gain); gain.connect(this.ctx.destination);
+            osc.start(t); osc.stop(t + 0.06);
+          } else if (type === 'contra_spread') {
+            [480, 640, 780].forEach((f, idx) => {
+              const osc = this.ctx.createOscillator();
+              const gain = this.ctx.createGain();
+              osc.type = 'square';
+              osc.frequency.setValueAtTime(f, t + idx * 0.01);
+              osc.frequency.exponentialRampToValueAtTime(160, t + idx * 0.01 + 0.08);
+              gain.gain.setValueAtTime(0.18, t + idx * 0.01);
+              gain.gain.linearRampToValueAtTime(0.01, t + idx * 0.01 + 0.08);
+              osc.connect(gain); gain.connect(this.ctx.destination);
+              osc.start(t + idx * 0.01); osc.stop(t + idx * 0.01 + 0.08);
+            });
+          } else if (type === 'contra_jump') {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(180, t);
+            osc.frequency.linearRampToValueAtTime(460, t + 0.12);
+            gain.gain.setValueAtTime(0.25, t);
+            gain.gain.linearRampToValueAtTime(0.01, t + 0.12);
+            osc.connect(gain); gain.connect(this.ctx.destination);
+            osc.start(t); osc.stop(t + 0.12);
+          } else if (type === 'contra_explode') {
+            const bufferSize = this.ctx.sampleRate * 0.28;
+            const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.18));
+            const noise = this.ctx.createBufferSource(); noise.buffer = buffer;
+            const filter = this.ctx.createBiquadFilter(); filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(600, t); filter.frequency.linearRampToValueAtTime(80, t + 0.28);
+            const gain = this.ctx.createGain();
+            gain.gain.setValueAtTime(0.65, t); gain.gain.exponentialRampToValueAtTime(0.01, t + 0.28);
+            noise.connect(filter); filter.connect(gain); gain.connect(this.ctx.destination);
+            noise.start(t);
+          } else if (type === 'contra_30') {
+            // 经典 Konami 秘籍 1-UP 升调和弦
+            [330, 392, 659, 523, 587, 784].forEach((f, i) => {
+              const osc = this.ctx.createOscillator();
+              const gain = this.ctx.createGain();
+              osc.type = 'square';
+              osc.frequency.setValueAtTime(f, t + i * 0.07);
+              gain.gain.setValueAtTime(0.25, t + i * 0.07);
+              gain.gain.exponentialRampToValueAtTime(0.001, t + i * 0.07 + 0.18);
+              osc.connect(gain); gain.connect(this.ctx.destination);
+              osc.start(t + i * 0.07); osc.stop(t + i * 0.07 + 0.18);
+            });
+
+          } else if (type === 'heartbeat') {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(65, t);
+            osc.frequency.exponentialRampToValueAtTime(35, t + 0.12);
+            gain.gain.setValueAtTime(0.35, t);
+            gain.gain.linearRampToValueAtTime(0.01, t + 0.12);
+            osc.connect(gain); gain.connect(this.ctx.destination);
+            osc.start(t); osc.stop(t + 0.12);
+          } else if (type === 'draw_signal') {
+            [880, 1760].forEach((freq) => {
+              const osc = this.ctx.createOscillator();
+              const gain = this.ctx.createGain();
+              osc.type = 'sine';
+              osc.frequency.setValueAtTime(freq, t);
+              gain.gain.setValueAtTime(0.3, t);
+              gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+              osc.connect(gain); gain.connect(this.ctx.destination);
+              osc.start(t); osc.stop(t + 0.25);
+            });
+          } else if (type === 'slash') {
+            const bufferSize = this.ctx.sampleRate * 0.18;
+            const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.2));
+            const noise = this.ctx.createBufferSource(); noise.buffer = buffer;
+            const filter = this.ctx.createBiquadFilter(); filter.type = 'bandpass';
+            filter.frequency.setValueAtTime(2400, t);
+            filter.frequency.exponentialRampToValueAtTime(300, t + 0.18);
+            const gain = this.ctx.createGain();
+            gain.gain.setValueAtTime(0.7, t); gain.gain.linearRampToValueAtTime(0.01, t + 0.18);
+            noise.connect(filter); filter.connect(gain); gain.connect(this.ctx.destination);
+            noise.start(t);
+          } else if (type === 'false_start') {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(140, t);
+            osc.frequency.setValueAtTime(110, t + 0.1);
+            gain.gain.setValueAtTime(0.3, t);
+            gain.gain.linearRampToValueAtTime(0.01, t + 0.25);
+            osc.connect(gain); gain.connect(this.ctx.destination);
+            osc.start(t); osc.stop(t + 0.25);
+          } else if (type === 'dice_shake') {
+            for (let i = 0; i < 4; i++) {
+              const dt = t + i * 0.04;
+              const osc = this.ctx.createOscillator();
+              const gain = this.ctx.createGain();
+              osc.type = 'triangle';
+              osc.frequency.setValueAtTime(300 + Math.random() * 200, dt);
+              gain.gain.setValueAtTime(0.18, dt);
+              gain.gain.exponentialRampToValueAtTime(0.01, dt + 0.035);
+              osc.connect(gain); gain.connect(this.ctx.destination);
+              osc.start(dt); osc.stop(dt + 0.035);
+            }
+          } else if (type === 'cup_slam') {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(120, t);
+            osc.frequency.exponentialRampToValueAtTime(40, t + 0.1);
+            gain.gain.setValueAtTime(0.4, t);
+            gain.gain.linearRampToValueAtTime(0.01, t + 0.1);
+            osc.connect(gain); gain.connect(this.ctx.destination);
+            osc.start(t); osc.stop(t + 0.1);
+          } else if (type === 'bid') {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(523.25, t);
+            osc.frequency.exponentialRampToValueAtTime(659.25, t + 0.08);
+            gain.gain.setValueAtTime(0.2, t);
+            gain.gain.linearRampToValueAtTime(0.01, t + 0.08);
+            osc.connect(gain); gain.connect(this.ctx.destination);
+            osc.start(t); osc.stop(t + 0.08);
+          } else if (type === 'reveal') {
+            [440, 659.25, 880, 1174.66].forEach((f, i) => {
+              const osc = this.ctx.createOscillator();
+              const gain = this.ctx.createGain();
+              osc.type = 'sine';
+              osc.frequency.setValueAtTime(f, t + i * 0.06);
+              gain.gain.setValueAtTime(0.2, t + i * 0.06);
+              gain.gain.exponentialRampToValueAtTime(0.01, t + i * 0.06 + 0.25);
+              osc.connect(gain); gain.connect(this.ctx.destination);
+              osc.start(t + i * 0.06); osc.stop(t + i * 0.06 + 0.25);
+            });
+          } else if (type === 'bonk') {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(280, t);
+            osc.frequency.exponentialRampToValueAtTime(80, t + 0.07);
+            gain.gain.setValueAtTime(0.35, t);
+            gain.gain.linearRampToValueAtTime(0.01, t + 0.07);
+            osc.connect(gain); gain.connect(this.ctx.destination);
+            osc.start(t); osc.stop(t + 0.07);
+          } else if (type === 'fall') {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(350, t);
+            osc.frequency.exponentialRampToValueAtTime(40, t + 0.4);
+            gain.gain.setValueAtTime(0.2, t);
+            gain.gain.linearRampToValueAtTime(0.01, t + 0.4);
+            osc.connect(gain); gain.connect(this.ctx.destination);
+            osc.start(t); osc.stop(t + 0.4);
+          } else if (type === 'tank_fire') {
+            const bufferSize = this.ctx.sampleRate * 0.2;
+            const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.15));
+            const noise = this.ctx.createBufferSource(); noise.buffer = buffer;
+            const filter = this.ctx.createBiquadFilter(); filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(800, t); filter.frequency.linearRampToValueAtTime(100, t + 0.2);
+            const gain = this.ctx.createGain();
+            gain.gain.setValueAtTime(0.55, t); gain.gain.exponentialRampToValueAtTime(0.01, t + 0.2);
+            noise.connect(filter); filter.connect(gain); gain.connect(this.ctx.destination);
+            noise.start(t);
+          } else if (type === 'tank_explosion') {
+            const bufferSize = this.ctx.sampleRate * 0.35;
+            const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.2));
+            const noise = this.ctx.createBufferSource(); noise.buffer = buffer;
+            const filter = this.ctx.createBiquadFilter(); filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(450, t); filter.frequency.linearRampToValueAtTime(60, t + 0.35);
+            const gain = this.ctx.createGain();
+            gain.gain.setValueAtTime(0.65, t); gain.gain.exponentialRampToValueAtTime(0.01, t + 0.35);
+            noise.connect(filter); filter.connect(gain); gain.connect(this.ctx.destination);
+            noise.start(t);
+          } else if (type === 'slice') {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(900, t);
+            osc.frequency.exponentialRampToValueAtTime(250, t + 0.04);
+            gain.gain.setValueAtTime(0.18, t);
+            gain.gain.linearRampToValueAtTime(0.01, t + 0.04);
+            osc.connect(gain); gain.connect(this.ctx.destination);
+            osc.start(t); osc.stop(t + 0.04);
+          } else if (type === 'perfect') {
+            const scaleNotes = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25, 587.33, 659.25, 783.99, 880.00, 1046.50];
+            const noteIdx = Math.min((arguments[1] || 0), scaleNotes.length - 1);
+            const freq = scaleNotes[noteIdx];
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, t);
+            gain.gain.setValueAtTime(0.28, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.45);
+            osc.connect(gain); gain.connect(this.ctx.destination);
+            osc.start(t); osc.stop(t + 0.45);
+
+          } else if (type === 'win') {
+            [440, 554.37, 659.25, 880].forEach((freq, i) => {
+              const osc = this.ctx.createOscillator();
+              const gain = this.ctx.createGain();
+              osc.type = 'sine';
+              osc.frequency.setValueAtTime(freq, t + i * 0.09);
+              gain.gain.setValueAtTime(0.22, t + i * 0.09);
+              gain.linearRampToValueAtTime(0.01, t + i * 0.09 + 0.3);
+              osc.connect(gain); gain.connect(this.ctx.destination);
+              osc.start(t + i * 0.09); osc.stop(t + i * 0.09 + 0.3);
+            });
+          } else if (type === 'plane_hop') {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(520, t);
+            osc.frequency.exponentialRampToValueAtTime(880, t + 0.06);
+            gain.gain.setValueAtTime(0.18, t);
+            gain.gain.linearRampToValueAtTime(0.01, t + 0.06);
+            osc.connect(gain); gain.connect(this.ctx.destination);
+            osc.start(t); osc.stop(t + 0.06);
+          } else if (type === 'plane_takeoff') {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(180, t);
+            osc.frequency.exponentialRampToValueAtTime(950, t + 0.28);
+            gain.gain.setValueAtTime(0.15, t);
+            gain.gain.linearRampToValueAtTime(0.01, t + 0.28);
+            osc.connect(gain); gain.connect(this.ctx.destination);
+            osc.start(t); osc.stop(t + 0.28);
+          } else if (type === 'plane_fly') {
+            const bufferSize = Math.floor(this.ctx.sampleRate * 0.3);
+            const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+              data[i] = (Math.random() * 2 - 1) * Math.sin((i / bufferSize) * Math.PI);
+            }
+            const noise = this.ctx.createBufferSource();
+            noise.buffer = buffer;
+            const filter = this.ctx.createBiquadFilter();
+            filter.type = 'bandpass';
+            filter.frequency.setValueAtTime(800, t);
+            filter.frequency.exponentialRampToValueAtTime(2200, t + 0.15);
+            filter.frequency.exponentialRampToValueAtTime(600, t + 0.3);
+            const gain = this.ctx.createGain();
+            gain.gain.setValueAtTime(0.28, t);
+            gain.gain.linearRampToValueAtTime(0.01, t + 0.3);
+            noise.connect(filter); filter.connect(gain); gain.connect(this.ctx.destination);
+            noise.start(t);
+          } else if (type === 'plane_crash') {
+            const bufferSize = Math.floor(this.ctx.sampleRate * 0.4);
+            const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+              data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.15));
+            }
+            const noise = this.ctx.createBufferSource();
+            noise.buffer = buffer;
+            const filter = this.ctx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(600, t);
+            filter.frequency.linearRampToValueAtTime(80, t + 0.4);
+            const gain = this.ctx.createGain();
+            gain.gain.setValueAtTime(0.55, t);
+            gain.gain.exponentialRampToValueAtTime(0.01, t + 0.4);
+            noise.connect(filter); filter.connect(gain); gain.connect(this.ctx.destination);
+            noise.start(t);
+          } else if (type === 'plane_win') {
+            [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((freq, i) => {
+              const osc = this.ctx.createOscillator();
+              const gain = this.ctx.createGain();
+              osc.type = 'triangle';
+              osc.frequency.setValueAtTime(freq, t + i * 0.08);
+              gain.gain.setValueAtTime(0.25, t + i * 0.08);
+              gain.gain.linearRampToValueAtTime(0.01, t + i * 0.08 + 0.28);
+              osc.connect(gain); gain.connect(this.ctx.destination);
+              osc.start(t + i * 0.08); osc.stop(t + i * 0.08 + 0.28);
+            });
+          }
+        } catch(e) {}
       }
     };
+
+    function toggleSound() {
+      const on = AUDIO.toggle();
+      document.getElementById('btn-sound-toggle').textContent = on ? '🔊' : '🔇';
+      showToast(on ? '🔊 音效已开启' : '🔇 音效已静音');
+    }
+
+    // ==========================================================================
+    // 1. 全局架构与大厅路由状态机
+    // ==========================================================================
+    const STATE = {
+      currentView: 'LOBBY',    // 'LOBBY' 或 'GAME'
+      currentGame: 'QUORIDOR', // 'QUORIDOR', 'GRAVITY', 'GRAVITY3D', 'ROULETTE', 'HOCKEY'
+      gameMode: 'AI',          // 'ONLINE', 'AI', 'LOCAL'
+      turn: 1,                 // 1: P1, 2: P2
+      winner: null,
+      animating: false,
+
+      // 联机模块
+      online: {
+        roomId: null,
+        myRole: null, // 'host' 或 'guest'
+        connected: false,
+        mqttClient: null,
+        opponentJoined: false
+      },
+
+      // 步步为营状态 (支持2P双人与4人大乱斗)
+      quoridor: {
+        playerCount: 2,
+        p1: { r: 8, c: 4, walls: 10 },
+        p2: { r: 0, c: 4, walls: 10 },
+        p3: { r: 4, c: 0, walls: 5 },
+        p4: { r: 4, c: 8, walls: 5 },
+        wallsH: new Set(),
+        wallsV: new Set(),
+        tool: 'MOVE',
+        hoverPos: null,
+        lastMove: null
+      },
+
+      // 2D 重力五子棋状态
+      gravity: {
+        board: Array.from({ length: 9 }, () => new Array(9).fill(0)),
+        hoverCol: null,
+        winningLine: null,
+        animatingPiece: null,
+        lastMove: null
+      },
+
+      // 2D 重力四子棋状态 (7×6 Connect Four)
+      gravity4: {
+        board: Array.from({ length: 6 }, () => new Array(7).fill(0)),
+        hoverCol: null,
+        winningLine: null,
+        animatingPiece: null,
+        lastMove: null
+      },
+
+      // 3D 立体五子棋状态
+      gravity3d: {
+        board: Array.from({ length: 5 }, () => Array.from({ length: 5 }, () => new Array(5).fill(0))),
+        hoverRod: null,
+        winningLine: null,
+        lastMove: null
+      },
+
+      // 3D 立体四子棋状态 (4×4×4)
+      gravity3d4: {
+        board: Array.from({ length: 4 }, () => Array.from({ length: 4 }, () => new Array(4).fill(0))),
+        hoverRod: null,
+        winningLine: null,
+        lastMove: null
+      },
+
+      // 恶魔轮盘赌状态
+      roulette: {
+        p1Hp: 4,
+        p2Hp: 4,
+        maxHp: 4,
+        shells: [], // true: 实弹, false: 空包弹
+        sawed: false, // 是否锯断枪管双倍伤害
+        p1Cuffed: false,
+        p2Cuffed: false,
+        p1Items: [],
+        p2Items: [],
+        knownNext: null // 放大镜偷看结果
+      },
+
+      
+      
+      // 魂斗罗状态机
+      contra: {
+        lives: 3,
+        weapon: 'NORMAL', // 'NORMAL', 'S', 'M', 'L'
+        score: 0,
+        cameraX: 0,
+        levelWidth: 2200,
+        bossActive: false,
+        bossDefeated: false,
+        player: {
+          x: 50, y: 220, vx: 0, vy: 0,
+          w: 20, h: 36, onGround: false,
+          facing: 1, crouch: false, aimUp: false,
+          invincibleTime: 0, animFrame: 0, jumpAngle: 0
+        },
+        bullets: [],
+        enemyBullets: [],
+        enemies: [],
+        capsules: [],
+        pickups: [],
+        particles: [],
+        platforms: [],
+        boss: {
+          x: 1950, y: 120, w: 160, h: 160,
+          coreHp: 60, maxCoreHp: 60,
+          turretLeftHp: 20, turretRightHp: 20,
+          sniperHp: 15,
+          active: false
+        },
+        keys: { left: false, right: false, up: false, down: false, fire: false, jump: false },
+        animId: null
+      },
+      // 拔刀居合斩状态
+      iaido: {
+        state: 'IDLE', // 'IDLE', 'WAITING', 'SIGNAL', 'RESOLVED', 'OVER'
+        p1Wins: 0,
+        p2Wins: 0,
+        targetWins: 3,
+        timer: null,
+        signalTime: 0,
+        roundNum: 1
+      },
+
+      // 皇家大话骰状态
+      liarsdice: {
+        p1Hp: 3,
+        p2Hp: 3,
+        p1Dice: [1, 2, 3, 4, 5],
+        p2Dice: [1, 2, 3, 4, 5],
+        currentBid: null, // { qty: 3, val: 3, by: 1 }
+        selectedQty: 3,
+        selectedVal: 3,
+        onesCalled: false,
+        revealed: false
+      },
+
+      // 物理飞车相扑状态
+      sumo: {
+        p1Score: 0,
+        p2Score: 0,
+        targetScore: 3,
+        car1: { x: 130, y: 180, vx: 0, vy: 0, angle: 0, r: 17, boosting: false, falling: false, fallScale: 1, fallAlpha: 1, fallSpin: 0 },
+        car2: { x: 230, y: 180, vx: 0, vy: 0, angle: Math.PI, r: 17, boosting: false, falling: false, fallScale: 1, fallAlpha: 1, fallSpin: 0 },
+        arenaRadius: 130,
+        particles: [],
+        animId: null,
+        roundOver: false,
+        matchOver: false,
+        aiReactionDelay: 0
+      },
+
+      // 极限抛物线状态
+      tank: {
+        p1Hp: 100,
+        p2Hp: 100,
+        wind: 0, // -5 ~ +5
+        tank1: { x: 60, y: 200, angle: 45, power: 60 },
+        tank2: { x: 420, y: 200, angle: 45, power: 60 },
+        terrain: [],
+        bullet: null, // { x, y, vx, vy, trail: [] }
+        animId: null
+      },
+
+      // 极光叠叠高状态
+      stack: {
+        score: 0,
+        combo: 0,
+        layers: [], // { x, z, w, d, hue }
+        current: null, // { x, z, w, d, axis: 'x', dir: 1, speed: 2.2, hue }
+        falling: [], // sliced blocks tumbling down
+        animId: null,
+        over: false
+      },
+      // 极光空气桌上冰球状态
+      hockey: {
+        p1Score: 0,
+        p2Score: 0,
+        maxScore: 5,
+        puck: { x: 180, y: 250, vx: 0, vy: 0, radius: 14 },
+        paddle1: { x: 180, y: 440, radius: 22 },
+        paddle2: { x: 180, y: 60, radius: 22 },
+        particles: [],
+        animId: null
+      },
+
+      // 坦克震荡状态 (Tank Trouble)
+      tanktrouble: {
+        p1Score: 0,
+        p2Score: 0,
+        p3Score: 0,
+        targetScore: 5,
+        roundOver: false,
+        matchOver: false,
+        maze: { cols: 8, rows: 6, cw: 65, ch: 60, walls: [] },
+        tanks: {
+          p1: { id: 1, x: 50, y: 50, angle: 0, r: 11, color: '#ef4444', dead: false, reloadTimer: 0, weapon: 'NORMAL', ammo: 0 },
+          p2: { id: 2, x: 470, y: 310, angle: Math.PI, r: 11, color: '#22c55e', dead: false, reloadTimer: 0, weapon: 'NORMAL', ammo: 0 },
+          p3: { id: 3, x: 470, y: 50, angle: Math.PI * 0.5, r: 11, color: '#3b82f6', dead: true, reloadTimer: 0, weapon: 'NORMAL', ammo: 0 }
+        },
+        bullets: [],
+        crates: [],
+        particles: [],
+        treads: [],
+        keys: {
+          p1: { forward: false, backward: false, left: false, right: false, fire: false },
+          p2: { forward: false, backward: false, left: false, right: false, fire: false }
+        },
+        animId: null,
+        nextRoundTimer: null,
+        crateTimer: null,
+        aiTimer: 0
+      },
+
+      // 四人飞行棋状态 (Aeroplane Chess 4P)
+      aeroplane: {
+        playerCount: 4,
+        humanPlayers: [0], // 0: 红方, 1: 黄方, 2: 蓝方, 3: 绿方
+        turn: 0,           // 0..3
+        diceVal: 0,
+        diceRolling: false,
+        consecutiveSixes: 0,
+        animating: false,
+        selectedPlane: null,
+        validPlanes: [],
+        fastAI: false,
+        waitingForPlayerChoice: false,
+        players: [
+          { id: 0, color: '#ef4444', name: '红方', finishedCount: 0, planes: [{ id: 0, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 1, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 2, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 3, state: 'HANGAR', step: 0, homeStep: -1 }] },
+          { id: 1, color: '#f59e0b', name: '黄方', finishedCount: 0, planes: [{ id: 0, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 1, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 2, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 3, state: 'HANGAR', step: 0, homeStep: -1 }] },
+          { id: 2, color: '#38bdf8', name: '蓝方', finishedCount: 0, planes: [{ id: 0, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 1, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 2, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 3, state: 'HANGAR', step: 0, homeStep: -1 }] },
+          { id: 3, color: '#22c55e', name: '绿方', finishedCount: 0, planes: [{ id: 0, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 1, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 2, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 3, state: 'HANGAR', step: 0, homeStep: -1 }] }
+        ],
+        particles: [],
+        animId: null,
+        aiTimer: null
+      }
+    };
+
+    function showToast(text, duration = 3000) {
+      const toast = document.getElementById('toast-msg');
+      toast.innerHTML = text;
+      toast.style.display = 'flex';
+      clearTimeout(toast._timer);
+      toast._timer = setTimeout(() => { toast.style.display = 'none'; }, duration);
+    }
+
+    // --- 大厅与游戏切换 ---
+    // --- 聚会大厅特色能力：随机选游戏与最近常玩 ---
+    function randomPickGame() {
+      AUDIO.play('drop');
+      const gameKeys = ['CONTRA', 'QUORIDOR', 'AEROPLANE', 'ROULETTE', 'HOCKEY', 'GRAVITY', 'GRAVITY4', 'GRAVITY3D', 'GRAVITY3D4', 'IAIDO', 'LIARSDICE', 'SUMO', 'TANK', 'STACK', 'TANKTROUBLE'];
+      const chosen = gameKeys[Math.floor(Math.random() * gameKeys.length)];
+      const titles = {
+        'CONTRA': '💥 魂斗罗 (Contra)',
+        'QUORIDOR': '🧱 步步为营·4人乱斗',
+        'AEROPLANE': '✈️ 四人飞行棋 (Aeroplane Chess)',
+        'ROULETTE': '🔫 恶魔轮盘赌',
+        'HOCKEY': '🏒 极光桌上冰球',
+        'GRAVITY': '⬇️ 重力五子棋',
+        'GRAVITY4': '🟡 重力四子棋',
+        'GRAVITY3D': '🧊 3D 立体五子棋',
+        'GRAVITY3D4': '💜 3D 立体四子棋',
+        'IAIDO': '⚡ 拔刀居合斩',
+        'LIARSDICE': '🎲 皇家大话骰',
+        'SUMO': '🚗 物理飞车相扑',
+        'TANK': '🎯 极限抛物线',
+        'STACK': '🥞 极光叠叠高',
+        'TANKTROUBLE': '🛡️ 坦克震荡 (Tank Trouble)'
+      };
+      showToast(`🎲 聚会天命摇中：【${titles[chosen]}】！开战！`, 2000);
+      setTimeout(() => {
+        enterGame(chosen);
+      }, 400);
+    }
+
+    function recordRecentGame(gameKey) {
+      try {
+        let recents = JSON.parse(localStorage.getItem('arcade_recent_games') || '[]');
+        recents = recents.filter(k => k !== gameKey);
+        recents.unshift(gameKey);
+        if (recents.length > 4) recents.length = 4;
+        localStorage.setItem('arcade_recent_games', JSON.stringify(recents));
+        renderRecentGames();
+      } catch(e) {}
+    }
+
+    function renderRecentGames() {
+      try {
+        const recents = JSON.parse(localStorage.getItem('arcade_recent_games') || '[]');
+        const bar = document.getElementById('recent-games-bar');
+        const list = document.getElementById('recent-pills-list');
+        if (!bar || !list) return;
+        if (!recents || recents.length === 0) {
+          bar.style.display = 'none';
+          return;
+        }
+        bar.style.display = 'flex';
+        list.innerHTML = '';
+        const names = {
+          'CONTRA': '💥 魂斗罗', 'QUORIDOR': '🧱 步步为营', 'AEROPLANE': '✈️ 飞行棋', 'ROULETTE': '🔫 轮盘赌',
+          'HOCKEY': '🏒 冰球', 'GRAVITY': '⬇️ 重力五子棋', 'GRAVITY4': '🟡 重力四子棋',
+          'GRAVITY3D': '🧊 3D五子棋', 'GRAVITY3D4': '💜 3D四子棋',
+          'IAIDO': '⚡ 拔刀斩', 'LIARSDICE': '🎲 大话骰', 'SUMO': '🚗 飞车相扑',
+          'TANK': '🎯 抛物线', 'STACK': '🥞 叠叠高', 'TANKTROUBLE': '🛡️ 坦克震荡'
+        };
+        recents.forEach(k => {
+          if (names[k]) {
+            const pill = document.createElement('div');
+            pill.className = 'recent-pill';
+            pill.textContent = names[k];
+            pill.onclick = (e) => { e.stopPropagation(); enterGame(k); };
+            list.appendChild(pill);
+          }
+        });
+      } catch(e) {}
+    }
+
+    function returnToLobby() {
+      const c = document.querySelector('.container'); if (c) c.classList.remove('in-game');
+      const modeTabs = document.querySelector('.mode-nav');
+      if (modeTabs) modeTabs.style.display = 'flex';
+      AUDIO.play('click');
+      STATE.currentView = 'LOBBY';
+      document.getElementById('lobby-view').style.display = 'flex';
+      document.getElementById('game-view').style.display = 'none';
+      const stageWrapper = document.querySelector('.stage-wrapper');
+      if (stageWrapper) {
+        stageWrapper.classList.remove('contra-mode');
+        stageWrapper.classList.remove('tanktrouble-mode');
+      }
+      renderRecentGames();
+
+      // 停止所有游戏的动画循环与定时器
+      if (STATE.hockey.animId) { cancelAnimationFrame(STATE.hockey.animId); STATE.hockey.animId = null; }
+      if (STATE.sumo.animId) { cancelAnimationFrame(STATE.sumo.animId); STATE.sumo.animId = null; }
+      if (STATE.tank.animId) { cancelAnimationFrame(STATE.tank.animId); STATE.tank.animId = null; }
+      if (STATE.stack.animId) { cancelAnimationFrame(STATE.stack.animId); STATE.stack.animId = null; }
+      if (STATE.contra.animId) { cancelAnimationFrame(STATE.contra.animId); STATE.contra.animId = null; }
+      if (STATE.iaido.timer) { clearTimeout(STATE.iaido.timer); STATE.iaido.timer = null; }
+      if (STATE.tanktrouble.animId) { cancelAnimationFrame(STATE.tanktrouble.animId); STATE.tanktrouble.animId = null; }
+      if (STATE.tanktrouble.nextRoundTimer) { clearTimeout(STATE.tanktrouble.nextRoundTimer); STATE.tanktrouble.nextRoundTimer = null; }
+      if (STATE.tanktrouble.crateTimer) { clearInterval(STATE.tanktrouble.crateTimer); STATE.tanktrouble.crateTimer = null; }
+      if (STATE.aeroplane && STATE.aeroplane.animId) { cancelAnimationFrame(STATE.aeroplane.animId); STATE.aeroplane.animId = null; }
+      if (STATE.aeroplane && STATE.aeroplane.aiTimer) { clearTimeout(STATE.aeroplane.aiTimer); STATE.aeroplane.aiTimer = null; }
+
+      // 更新浏览器 URL
+      const newUrl = `${window.location.protocol}//${window.location.host}${window.location.pathname}`;
+      window.history.replaceState({ path: newUrl }, '', newUrl);
+    }
+
+    function enterGame(gameKey, mode = 'AI') {
+      const c = document.querySelector('.container'); if (c) c.classList.add('in-game');
+      AUDIO.play('click');
+      recordRecentGame(gameKey);
+      STATE.currentView = 'GAME';
+      STATE.currentGame = gameKey;
+      STATE.gameMode = mode;
+
+      document.getElementById('lobby-view').style.display = 'none';
+      document.getElementById('game-view').style.display = 'flex';
+
+      const gameTitles = {
+        'QUORIDOR': '🧱 步步为营',
+        'AEROPLANE': '✈️ 四人飞行棋 (Aeroplane Chess)',
+        'GRAVITY': '⬇️ 重力五子棋',
+        'GRAVITY4': '🟡 重力四子棋 (Connect Four)',
+        'GRAVITY3D': '🧊 3D 立体五子棋',
+        'GRAVITY3D4': '💜 3D 立体四子棋',
+        'ROULETTE': '🔫 恶魔轮盘赌',
+        'HOCKEY': '🏒 极光空气冰球',
+        'IAIDO': '⚡ 拔刀居合斩',
+        'LIARSDICE': '🎲 皇家大话骰',
+        'SUMO': '🚗 物理飞车相扑',
+        'TANK': '🎯 极限抛物线',
+        'STACK': '🥞 极光叠叠高',
+        'CONTRA': '💥 魂斗罗 (Contra)',
+        'TANKTROUBLE': '🛡️ 坦克震荡 (Tank Trouble)'
+      };
+      document.getElementById('current-game-title').textContent = gameTitles[gameKey] || '双人对战';
+
+      // 针对不支持联机模式的游戏隐藏联机Tab
+      const tabOnline = document.getElementById('tab-online');
+      if (['HOCKEY', 'SUMO', 'STACK', 'CONTRA', 'TANKTROUBLE'].includes(gameKey)) {
+        tabOnline.style.display = 'none';
+        if (STATE.gameMode === 'ONLINE') STATE.gameMode = 'AI';
+      } else {
+        tabOnline.style.display = 'block';
+      }
+
+      switchGameMode(STATE.gameMode, false);
+      setupStageForGame(gameKey);
+      resetCurrentGame();
+      updateScoreboard();
+
+      // 更新浏览器 URL
+      const newUrl = `${window.location.protocol}//${window.location.host}${window.location.pathname}?game=${gameKey.toLowerCase()}`;
+      window.history.replaceState({ path: newUrl }, '', newUrl);
+    }
+
+    function filterLobby(category) {
+      AUDIO.play('click');
+      const pills = document.querySelectorAll('.category-pill');
+      pills.forEach(p => p.classList.remove('active'));
+      if (event && event.target) event.target.classList.add('active');
+
+      const cards = document.querySelectorAll('.game-card');
+      cards.forEach(card => {
+        if (category === 'ALL') {
+          card.style.display = 'flex';
+        } else if (category === '4PLAYER') {
+          card.style.display = card.dataset.players === '4' ? 'flex' : 'none';
+        } else {
+          card.style.display = card.dataset.cat === category ? 'flex' : 'none';
+        }
+      });
+    }
+
+    function setupStageForGame(gameKey) {
+      const modeTabs = document.querySelector('.mode-nav');
+      if (modeTabs) modeTabs.style.display = (gameKey === 'CONTRA' || gameKey === 'STACK') ? 'none' : 'flex';
+      const stageWrapper = document.querySelector('.stage-wrapper');
+      if (stageWrapper) {
+        stageWrapper.classList.toggle('contra-mode', gameKey === 'CONTRA');
+        stageWrapper.classList.toggle('tanktrouble-mode', gameKey === 'TANKTROUBLE');
+      }
+      const canvas2D = document.getElementById('board-canvas');
+      const wrapper3D = document.getElementById('board-3d-wrapper');
+      const rouletteStage = document.getElementById('roulette-stage');
+      const hockeyStage = document.getElementById('hockey-stage');
+      const genericScoreboard = document.getElementById('generic-scoreboard');
+
+      const toolQuoridor = document.getElementById('toolbar-quoridor');
+      const toolGravity = document.getElementById('toolbar-gravity');
+      const toolGravity4 = document.getElementById('toolbar-gravity4');
+
+      const iaidoStage = document.getElementById('iaido-stage');
+      const liarsStage = document.getElementById('liarsdice-stage');
+      const sumoStage = document.getElementById('sumo-stage');
+      const tankStage = document.getElementById('tank-stage');
+      const stackStage = document.getElementById('stack-stage');
+      const contraStage = document.getElementById('contra-stage');
+      const tanktroubleStage = document.getElementById('tanktrouble-stage');
+      const aeroplaneStage = document.getElementById('aeroplane-stage');
+      const aeroplaneHud = document.getElementById('aeroplane-hud');
+      const aeroplaneControls = document.getElementById('aeroplane-controls');
+
+      // 隐藏所有舞台
+      canvas2D.style.display = 'none';
+      wrapper3D.style.display = 'none';
+      rouletteStage.style.display = 'none';
+      hockeyStage.style.display = 'none';
+      iaidoStage.style.display = 'none';
+      liarsStage.style.display = 'none';
+      sumoStage.style.display = 'none';
+      tankStage.style.display = 'none';
+      stackStage.style.display = 'none';
+      contraStage.style.display = 'none';
+      if (tanktroubleStage) tanktroubleStage.style.display = 'none';
+      if (aeroplaneStage) aeroplaneStage.style.display = 'none';
+      if (aeroplaneHud) aeroplaneHud.style.display = 'none';
+      if (aeroplaneControls) aeroplaneControls.style.display = 'none';
+      genericScoreboard.style.display = 'grid';
+
+      toolQuoridor.style.display = 'none';
+      toolGravity.style.display = 'none';
+      if (toolGravity4) toolGravity4.style.display = 'none';
+
+      document.getElementById('walls-wrapper-p1').style.display = 'none';
+      document.getElementById('walls-wrapper-p2').style.display = 'none';
+      document.getElementById('wall-bars-p1').style.display = 'none';
+      document.getElementById('wall-bars-p2').style.display = 'none';
+
+      const card2 = document.getElementById('card-p2');
+      card2.classList.remove('yellow-theme', 'p2-yellow-active');
+
+      const qToggle = document.getElementById('quoridor-player-toggle');
+      if (qToggle) qToggle.style.display = gameKey === 'QUORIDOR' ? 'flex' : 'none';
+
+      if (gameKey === 'QUORIDOR') {
+        canvas2D.style.display = 'block';
+        toolQuoridor.style.display = 'grid';
+        document.getElementById('walls-wrapper-p1').style.display = 'block';
+        document.getElementById('walls-wrapper-p2').style.display = 'block';
+        document.getElementById('wall-bars-p1').style.display = 'flex';
+        document.getElementById('wall-bars-p2').style.display = 'flex';
+        resizeCanvas2D();
+      } else if (gameKey === 'GRAVITY') {
+        canvas2D.style.display = 'block';
+        toolGravity.style.display = 'flex';
+        card2.classList.add('yellow-theme', 'p2-yellow-active');
+        resizeCanvas2D();
+      } else if (gameKey === 'GRAVITY4') {
+        canvas2D.style.display = 'block';
+        if (toolGravity4) toolGravity4.style.display = 'flex';
+        card2.classList.add('yellow-theme', 'p2-yellow-active');
+        resizeCanvas2D();
+      } else if (gameKey === 'GRAVITY3D') {
+        wrapper3D.style.display = 'block';
+        card2.classList.add('yellow-theme', 'p2-yellow-active');
+        init3DSceneIfNeeded();
+        if (typeof window.build3DBoard === 'function') window.build3DBoard(5);
+        resize3D();
+        update3DScene();
+      } else if (gameKey === 'GRAVITY3D4') {
+        wrapper3D.style.display = 'block';
+        card2.classList.add('yellow-theme', 'p2-yellow-active');
+        init3DSceneIfNeeded();
+        if (typeof window.build3DBoard === 'function') window.build3DBoard(4);
+        resize3D();
+        update3DScene();
+      } else if (gameKey === 'ROULETTE') {
+        rouletteStage.style.display = 'flex';
+        genericScoreboard.style.display = 'none';
+        initRouletteGame();
+      } else if (gameKey === 'HOCKEY') {
+        hockeyStage.style.display = 'block';
+        genericScoreboard.style.display = 'none';
+        initHockeyGame();
+      } else if (gameKey === 'IAIDO') {
+        iaidoStage.style.display = 'flex';
+        genericScoreboard.style.display = 'none';
+        initIaidoGame();
+      } else if (gameKey === 'LIARSDICE') {
+        liarsStage.style.display = 'flex';
+        genericScoreboard.style.display = 'none';
+        initLiarsDiceGame();
+      } else if (gameKey === 'SUMO') {
+        sumoStage.style.display = 'flex';
+        genericScoreboard.style.display = 'none';
+        initSumoGame();
+        requestAnimationFrame(() => {
+          resizeSumoCanvas();
+          renderSumo();
+        });
+      } else if (gameKey === 'TANK') {
+        tankStage.style.display = 'flex';
+        genericScoreboard.style.display = 'none';
+        initTankGame();
+      } else if (gameKey === 'STACK') {
+        stackStage.style.display = 'block';
+        genericScoreboard.style.display = 'none';
+        initStackGame();
+      } else if (gameKey === 'CONTRA') {
+        contraStage.style.display = 'flex';
+        genericScoreboard.style.display = 'none';
+        initContraGame();
+        requestAnimationFrame(() => {
+          resizeContraCanvas();
+          renderContra();
+        });
+      } else if (gameKey === 'TANKTROUBLE') {
+        if (tanktroubleStage) tanktroubleStage.style.display = 'flex';
+        genericScoreboard.style.display = 'none';
+        initTankTroubleGame();
+        requestAnimationFrame(() => {
+          resizeTankTroubleCanvas();
+          renderTankTrouble();
+        });
+      } else if (gameKey === 'AEROPLANE') {
+        if (aeroplaneStage) aeroplaneStage.style.display = 'block';
+        if (aeroplaneHud) aeroplaneHud.style.display = 'grid';
+        if (aeroplaneControls) aeroplaneControls.style.display = 'flex';
+        genericScoreboard.style.display = 'none';
+        initAeroplaneGame();
+        requestAnimationFrame(() => {
+          resizeAeroplaneCanvas();
+          renderAeroplane();
+        });
+      }
+    }
+
+    function switchGameMode(mode, doReset = true) {
+      AUDIO.play('click');
+      STATE.gameMode = mode;
+      document.getElementById('tab-online').classList.toggle('active', mode === 'ONLINE');
+      document.getElementById('tab-ai').classList.toggle('active', mode === 'AI');
+      document.getElementById('tab-local').classList.toggle('active', mode === 'LOCAL');
+      document.getElementById('online-panel').classList.toggle('hidden', mode !== 'ONLINE');
+
+      if (doReset) {
+        resetCurrentGame();
+        updateScoreboard();
+      }
+    }
+
+    function resetCurrentGame() {
+      STATE.winner = null;
+      STATE.turn = 1;
+      STATE.animating = false;
+
+      if (STATE.currentGame === 'QUORIDOR') {
+        const is4P = STATE.quoridor.playerCount === 4;
+        const initialWalls = is4P ? 5 : 10;
+        STATE.quoridor.p1 = { r: 8, c: 4, walls: initialWalls };
+        STATE.quoridor.p2 = { r: 0, c: 4, walls: initialWalls };
+        STATE.quoridor.p3 = { r: 4, c: 0, walls: initialWalls };
+        STATE.quoridor.p4 = { r: 4, c: 8, walls: initialWalls };
+        STATE.quoridor.wallsH.clear();
+        STATE.quoridor.wallsV.clear();
+        STATE.quoridor.hoverPos = null;
+        STATE.quoridor.lastMove = null;
+        setQuoridorTool('MOVE');
+        render2D();
+      } else if (STATE.currentGame === 'GRAVITY') {
+        STATE.gravity.board = Array.from({ length: 9 }, () => new Array(9).fill(0));
+        STATE.gravity.hoverCol = null;
+        STATE.gravity.winningLine = null;
+        STATE.gravity.animatingPiece = null;
+        STATE.gravity.lastMove = null;
+        render2D();
+      } else if (STATE.currentGame === 'GRAVITY4') {
+        STATE.gravity4.board = Array.from({ length: 6 }, () => new Array(7).fill(0));
+        STATE.gravity4.hoverCol = null;
+        STATE.gravity4.winningLine = null;
+        STATE.gravity4.animatingPiece = null;
+        STATE.gravity4.lastMove = null;
+        render2D();
+      } else if (STATE.currentGame === 'GRAVITY3D') {
+        STATE.gravity3d.board = Array.from({ length: 5 }, () => Array.from({ length: 5 }, () => new Array(5).fill(0)));
+        STATE.gravity3d.hoverRod = null;
+        STATE.gravity3d.winningLine = null;
+        STATE.gravity3d.lastMove = null;
+        if (typeof resetSocketHighlights === 'function') resetSocketHighlights();
+        if (typeof set3DHover === 'function') set3DHover(null, null);
+        update3DScene();
+      } else if (STATE.currentGame === 'GRAVITY3D4') {
+        STATE.gravity3d4.board = Array.from({ length: 4 }, () => Array.from({ length: 4 }, () => new Array(4).fill(0)));
+        STATE.gravity3d4.hoverRod = null;
+        STATE.gravity3d4.winningLine = null;
+        STATE.gravity3d4.lastMove = null;
+        if (typeof resetSocketHighlights === 'function') resetSocketHighlights();
+        if (typeof set3DHover === 'function') set3DHover(null, null);
+        update3DScene();
+      } else if (STATE.currentGame === 'ROULETTE') {
+        initRouletteGame();
+      } else if (STATE.currentGame === 'HOCKEY') {
+        resetHockeyMatch();
+      } else if (STATE.currentGame === 'IAIDO') {
+        resetIaidoMatch();
+      } else if (STATE.currentGame === 'LIARSDICE') {
+        resetLiarsDiceMatch();
+      } else if (STATE.currentGame === 'SUMO') {
+        resetSumoMatch();
+      } else if (STATE.currentGame === 'TANK') {
+        resetTankMatch();
+      } else if (STATE.currentGame === 'STACK') {
+        resetStackMatch();
+      } else if (STATE.currentGame === 'CONTRA') {
+        resetContraMatch();
+      } else if (STATE.currentGame === 'TANKTROUBLE') {
+        resetTankTroubleMatch();
+      } else if (STATE.currentGame === 'AEROPLANE') {
+        resetAeroplaneGame();
+      }
+      updateScoreboard();
+    }
+
+    function setQuoridorPlayerCount(count) {
+      AUDIO.play('click');
+      STATE.quoridor.playerCount = count;
+      document.getElementById('btn-q-2p').classList.toggle('active', count === 2);
+      document.getElementById('btn-q-4p').classList.toggle('active', count === 4);
+      resetCurrentGame();
+      updateScoreboard();
+    }
 
     function checkIsMyTurn() {
       if (STATE.gameMode === 'LOCAL') return true;
       if (STATE.gameMode === 'AI') return STATE.turn === 1;
       if (STATE.gameMode === 'ONLINE') {
+        if (!STATE.online.opponentJoined) return false;
         if (STATE.online.myRole === 'host' && STATE.turn === 1) return true;
         if (STATE.online.myRole === 'guest' && STATE.turn === 2) return true;
         return false;
       }
-      return true;
+      return false;
     }
 
-    function updateScoreboard() {
-      const cardP1 = document.getElementById('card-p1');
-      const cardP2 = document.getElementById('card-p2');
-      const cardP3 = document.getElementById('card-p3');
-      const cardP4 = document.getElementById('card-p4');
-      if (cardP1) {
-        cardP1.classList.toggle('active-turn', STATE.turn === 1);
-        const n1 = document.getElementById('name-p1');
-        if (n1) n1.innerHTML = '🔴 玩家 1 (主)' + (STATE.scores[1] !== undefined ? ' <small>('+STATE.scores[1]+')</small>' : '');
-      }
-      if (cardP2) {
-        cardP2.classList.toggle('active-turn', STATE.turn === 2);
-        const n2 = document.getElementById('name-p2');
-        if (n2) {
-          const p2Label = STATE.gameMode === 'AI' ? '🤖 电脑 (AI)' : (STATE.gameMode === 'ONLINE' ? '🟢 好友 (客)' : '🟢 玩家 2');
-          n2.innerHTML = p2Label + (STATE.scores[2] !== undefined ? ' <small>('+STATE.scores[2]+')</small>' : '');
+    function endTurn() {
+      if (STATE.currentGame === 'QUORIDOR') {
+        if (STATE.quoridor.playerCount === 4) {
+          // 顺时针流转：1(南门) -> 3(西门) -> 2(北门) -> 4(东门) -> 1
+          const order = { 1: 3, 3: 2, 2: 4, 4: 1 };
+          STATE.turn = order[STATE.turn] || 1;
+        } else {
+          STATE.turn = STATE.turn === 1 ? 2 : 1;
         }
-      }
-      if (cardP3) cardP3.classList.toggle('active-turn', STATE.turn === 3);
-      if (cardP4) cardP4.classList.toggle('active-turn', STATE.turn === 4);
-    }
-
-    function switchGameMode(mode, doReset = true) {
-      STATE.gameMode = mode;
-      document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
-      const activeTab = document.getElementById('tab-' + mode.toLowerCase());
-      if (activeTab) activeTab.classList.add('active');
-
-      const onlinePanel = document.getElementById('online-panel');
-      if (onlinePanel) {
-        onlinePanel.style.display = mode === 'ONLINE' ? 'flex' : 'none';
-        if (mode === 'ONLINE' && window.ONLINE_NETWORK) {
-          ONLINE_NETWORK.createRoom(STATE.currentGame);
-        }
+      } else {
+        STATE.turn = STATE.turn === 1 ? 2 : 1;
       }
       updateScoreboard();
-      if (doReset && typeof resetCurrentGame === 'function') {
-        resetCurrentGame();
+
+      if (!STATE.winner && STATE.gameMode === 'AI' && STATE.turn !== 1) {
+        STATE.animating = true;
+        const botNames = {
+          2: '🟢 绿方电脑',
+          3: '🔵 蓝方电脑',
+          4: '🟡 黄方电脑'
+        };
+        const bName = botNames[STATE.turn] || '🤖 电脑 AI';
+        document.getElementById('status-text').textContent = `${bName} 正在深思熟虑...`;
+        setTimeout(() => {
+          if (STATE.currentGame === 'QUORIDOR') runQuoridorAI();
+          else if (STATE.currentGame === 'GRAVITY') runGravity2DAI();
+          else if (STATE.currentGame === 'GRAVITY4') runGravity4AI();
+          else if (STATE.currentGame === 'GRAVITY3D') runGravity3DAI();
+          else if (STATE.currentGame === 'GRAVITY3D4') runGravity3D4AI();
+          else if (STATE.currentGame === 'ROULETTE') runRouletteAI();
+        }, 500);
       }
+    }
+
+    // ==========================================================================
+    // 7. MQTT 在线联机通信中枢
+    // ==========================================================================
+    const MQTT_BROKER = 'wss://broker.emqx.io:8084/mqtt';
+    let myClientId = 'client_' + Math.random().toString(36).substring(2, 9);
+
+    function initMqtt(roomId, role) {
+      if (STATE.online.mqttClient) {
+        try { STATE.online.mqttClient.end(); } catch (e) {}
+      }
+
+      STATE.online.roomId = roomId;
+      STATE.online.myRole = role;
+      document.getElementById('display-room-id').textContent = roomId;
+      document.getElementById('display-role-info').innerHTML = role === 'host' ? 
+        '你是 <b style="color:var(--p1-color)">🔴 房主 (红方)</b>' : 
+        '你是 <b style="color:var(--p2-color)">🟢 好友 (客方)</b>';
+
+      showToast(`正在连接房间 ${roomId}...`);
+      const client = mqtt.connect(MQTT_BROKER, { clientId: myClientId, keepalive: 30, clean: true });
+      STATE.online.mqttClient = client;
+
+      client.on('connect', () => {
+        STATE.online.connected = true;
+        const topic = `game_hall_v2/room/${roomId}`;
+        client.subscribe(topic, () => {
+          if (role === 'guest') {
+            client.publish(topic, JSON.stringify({ type: 'JOIN', sender: myClientId, game: STATE.currentGame }));
+            showToast('已进入房间，正在等待同步...');
+          } else {
+            showToast('房间已就绪！点击复制链接发给好友');
+          }
+        });
+      });
+
+      client.on('message', (topic, payload) => {
+        try {
+          const msg = JSON.parse(payload.toString());
+          if (msg.sender === myClientId) return;
+
+          if (msg.type === 'JOIN') {
+            if (STATE.online.myRole === 'host') {
+              STATE.online.opponentJoined = true;
+              showToast('🎉 好友已进入房间！对战正式开始！');
+              sendOnlineAction({ type: 'SYNC', game: STATE.currentGame, turn: STATE.turn });
+              updateScoreboard();
+            }
+          } else if (msg.type === 'SYNC') {
+            if (STATE.online.myRole === 'guest') {
+              STATE.online.opponentJoined = true;
+              if (msg.game && msg.game !== STATE.currentGame) {
+                enterGame(msg.game, 'ONLINE');
+              }
+              showToast('🎮 同步成功，对战开始！');
+              updateScoreboard();
+            }
+          } else if (msg.type === 'QUORIDOR_MOVE') {
+            executeQuoridorMove(msg.r, msg.c);
+          } else if (msg.type === 'QUORIDOR_WALL') {
+            executeQuoridorWall(msg.wallType, msg.r, msg.c);
+          } else if (msg.type === 'GRAVITY_DROP') {
+            const tr = getGravityLandingRow(msg.col);
+            if (tr !== -1) executeGravityDrop(msg.col, tr, STATE.turn, false);
+          } else if (msg.type === 'GRAVITY3D_DROP') {
+            const ty = get3DLandingHeight(msg.x, msg.z);
+            if (ty !== -1) execute3DDrop(msg.x, msg.z, ty, STATE.turn, false);
+          } else if (msg.type === 'ROULETTE_SHOOT') {
+            executeRouletteShot(msg.target, false);
+          } else if (msg.type === 'ROULETTE_ITEM') {
+            // 对手使用了道具，弹出提示
+            showToast(`对手使用了道具：${ROULETTE_ITEM_DEFS[msg.itemKey].name}`);
+          } else if (msg.type === 'AEROPLANE_ROLL') {
+            handleOnlineAeroplaneRoll(msg.player, msg.val);
+          } else if (msg.type === 'AEROPLANE_MOVE') {
+            executeAeroplaneMove(msg.player, msg.plane, msg.roll, false);
+          } else if (msg.type === 'RESTART') {
+            resetCurrentGame();
+            showToast('🔄 对方重新开始了对局！');
+          }
+        } catch (e) {}
+      });
     }
 
     function sendOnlineAction(data) {
-      if (window.ONLINE_NETWORK) {
-        window.ONLINE_NETWORK.sendAction(data);
+      if (!STATE.online.mqttClient || !STATE.online.connected) return;
+      data.sender = myClientId;
+      data.game = STATE.currentGame;
+      STATE.online.mqttClient.publish(`game_hall_v2/room/${STATE.online.roomId}`, JSON.stringify(data));
+    }
+
+    function createOnlineRoom() {
+      AUDIO.play('click');
+      const roomId = Math.floor(100000 + Math.random() * 900000).toString();
+      const newUrl = `${window.location.protocol}//${window.location.host}${window.location.pathname}?game=${STATE.currentGame.toLowerCase()}&room=${roomId}`;
+      window.history.replaceState({ path: newUrl }, '', newUrl);
+
+      document.getElementById('btn-create-room').style.display = 'none';
+      document.getElementById('btn-share-link').style.display = 'flex';
+      resetCurrentGame();
+      initMqtt(roomId, 'host');
+    }
+
+    function copyInviteLink() {
+      AUDIO.play('click');
+      const url = `${window.location.protocol}//${window.location.host}${window.location.pathname}?game=${STATE.currentGame.toLowerCase()}&room=${STATE.online.roomId}`;
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(url).then(() => showToast('✅ 邀请链接已复制！快发给微信好友吧！'));
+      } else {
+        const input = document.createElement('input');
+        input.value = url;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+        showToast('✅ 邀请链接已复制！快发给微信好友吧！');
       }
     }
-  
 
+    function promptJoinRoom() {
+      AUDIO.play('click');
+      const id = prompt('请输入好友分享的 6 位房间号：');
+      if (id && id.trim()) {
+        const cleanId = id.trim();
+        const newUrl = `${window.location.protocol}//${window.location.host}${window.location.pathname}?game=${STATE.currentGame.toLowerCase()}&room=${cleanId}`;
+        window.history.replaceState({ path: newUrl }, '', newUrl);
+        joinExistingRoom(cleanId);
+      }
+    }
+
+    function joinExistingRoom(roomId) {
+      document.getElementById('btn-create-room').style.display = 'none';
+      document.getElementById('btn-share-link').style.display = 'none';
+      resetCurrentGame();
+      initMqtt(roomId, 'guest');
+    }
+
+    // ==========================================================================
+    // 8. 界面与弹窗更新
+    // ==========================================================================
+    function updateScoreboard() {
+      if (STATE.currentGame === 'AEROPLANE') {
+        updateAeroplaneHUD();
+        return;
+      }
+      const is4P = STATE.quoridor.playerCount === 4;
+      const genericScoreboard = document.getElementById('generic-scoreboard');
+
+      document.getElementById('walls-count-p1').textContent = STATE.quoridor.p1.walls;
+      document.getElementById('walls-count-p2').textContent = STATE.quoridor.p2.walls;
+      if (is4P) {
+        document.getElementById('walls-count-p3').textContent = STATE.quoridor.p3.walls;
+        document.getElementById('walls-count-p4').textContent = STATE.quoridor.p4.walls;
+      }
+
+      function renderWallBars(elemId, count, maxWalls) {
+        const el = document.getElementById(elemId);
+        if (!el) return;
+        el.innerHTML = '';
+        for (let i = 0; i < maxWalls; i++) {
+          const pip = document.createElement('div');
+          pip.className = 'wall-pip' + (i < count ? '' : ' used');
+          el.appendChild(pip);
+        }
+      }
+
+      const maxWalls = is4P ? 5 : 10;
+      renderWallBars('wall-bars-p1', STATE.quoridor.p1.walls, maxWalls);
+      renderWallBars('wall-bars-p2', STATE.quoridor.p2.walls, maxWalls);
+      if (is4P) {
+        renderWallBars('wall-bars-p3', STATE.quoridor.p3.walls, maxWalls);
+        renderWallBars('wall-bars-p4', STATE.quoridor.p4.walls, maxWalls);
+      }
+
+      const card1 = document.getElementById('card-p1');
+      const card2 = document.getElementById('card-p2');
+      const card3 = document.getElementById('card-p3');
+      const card4 = document.getElementById('card-p4');
+
+      card1.classList.toggle('active', STATE.turn === 1);
+      card2.classList.toggle('active', STATE.turn === 2);
+      if (card3) card3.classList.toggle('active', STATE.turn === 3);
+      if (card4) card4.classList.toggle('active', STATE.turn === 4);
+
+      if (STATE.currentGame === 'QUORIDOR' && is4P) {
+        genericScoreboard.classList.add('scoreboard-4p');
+        if (card3) card3.style.display = 'flex';
+        if (card4) card4.style.display = 'flex';
+        document.getElementById('walls-wrapper-p3').style.display = 'block';
+        document.getElementById('walls-wrapper-p4').style.display = 'block';
+        document.getElementById('wall-bars-p3').style.display = 'flex';
+        document.getElementById('wall-bars-p4').style.display = 'flex';
+        document.getElementById('name-p1').textContent = '🔴 南门 (先手)';
+        document.getElementById('name-p3').textContent = STATE.gameMode === 'AI' ? '🔵 西门 (电脑)' : '🔵 西门 (玩家3)';
+        document.getElementById('name-p2').textContent = STATE.gameMode === 'AI' ? '🟢 北门 (电脑)' : '🟢 北门 (玩家2)';
+        document.getElementById('name-p4').textContent = STATE.gameMode === 'AI' ? '🟡 东门 (电脑)' : '🟡 东门 (玩家4)';
+      } else {
+        genericScoreboard.classList.remove('scoreboard-4p');
+        if (card3) card3.style.display = 'none';
+        if (card4) card4.style.display = 'none';
+
+        const isYellow = ['GRAVITY', 'GRAVITY3D', 'GRAVITY4', 'GRAVITY3D4'].includes(STATE.currentGame);
+        const nameP1 = document.getElementById('name-p1');
+        const nameP2 = document.getElementById('name-p2');
+        if (isYellow) {
+          nameP1.textContent = '🔴 红方 (先手)';
+          nameP2.textContent = STATE.gameMode === 'AI' ? '🟡 黄方 (电脑)' : (STATE.gameMode === 'ONLINE' ? '🟡 黄方 (客方)' : '🟡 黄方 (后手)');
+        } else {
+          nameP1.textContent = '🔴 红方 (先手)';
+          nameP2.textContent = STATE.gameMode === 'AI' ? '🟢 绿方 (电脑)' : (STATE.gameMode === 'ONLINE' ? '🟢 绿方 (客方)' : '🟢 绿方 (后手)');
+        }
+      }
+
+      const status = document.getElementById('status-text');
+      if (status) {
+        status.style.display = ['QUORIDOR', 'GRAVITY', 'GRAVITY3D', 'GRAVITY4', 'GRAVITY3D4'].includes(STATE.currentGame) ? 'block' : 'none';
+      }
+      if (STATE.winner) {
+        const isYellowGame = ['GRAVITY', 'GRAVITY3D', 'GRAVITY4', 'GRAVITY3D4'].includes(STATE.currentGame);
+        const winnerNames = {
+          1: '🏆 🔴 红方胜利！',
+          2: isYellowGame ? '🏆 🟡 黄方胜利！' : '🏆 🟢 绿方胜利！',
+          3: '🏆 🔵 蓝方胜利！',
+          4: '🏆 🟡 黄方胜利！'
+        };
+        status.textContent = winnerNames[STATE.winner] || '🏆 对局结束！';
+      } else {
+        if (STATE.gameMode === 'ONLINE') {
+          status.textContent = !STATE.online.opponentJoined ? '⏳ 等待好友加入房间...' : (checkIsMyTurn() ? '👉 轮到你的回合！' : '⏳ 对手思考中...');
+        } else if (STATE.gameMode === 'AI') {
+          const names = {
+            1: '👉 轮到你行动',
+            2: '🤖 🟢 绿方电脑思考中...',
+            3: '🤖 🔵 蓝方电脑思考中...',
+            4: '🤖 🟡 黄方电脑思考中...'
+          };
+          status.textContent = names[STATE.turn] || '🤖 电脑思考中...';
+        } else {
+          const isYellowGame2 = ['GRAVITY', 'GRAVITY3D', 'GRAVITY4', 'GRAVITY3D4'].includes(STATE.currentGame);
+          const names = {
+            1: '👉 轮到 🔴 红方行动',
+            2: isYellowGame2 ? '👉 轮到 🟡 黄方行动' : '👉 轮到 🟢 绿方行动',
+            3: '👉 轮到 🔵 蓝方行动',
+            4: '👉 轮到 🟡 黄方行动'
+          };
+          status.textContent = names[STATE.turn] || '👉 轮到当前玩家行动';
+        }
+      }
+    }
+
+    function showModal(title, bodyHtml) {
+      document.getElementById('modal-title').textContent = title;
+      document.getElementById('modal-body').innerHTML = bodyHtml;
+      document.getElementById('game-modal').classList.add('show');
+    }
+
+    function showCurrentRules() {
+      AUDIO.play('click');
+      const gameKey = STATE.currentView === 'LOBBY' ? 'LOBBY' : STATE.currentGame;
+      if (gameKey === 'QUORIDOR') {
+        showModal('步步为营 (Quoridor 4P) 规则', `
+          <p><strong>胜利目标：</strong>率先到达自己对向的胜利线（🔴南冲北、🟢北冲南、🔵西冲东、🟡东冲西）！</p><br>
+          <p><strong>挡板分配：</strong>双人局各 10 块；四人局各 5 块！放板必须为所有玩家至少留一条活路！</p><br>
+          <p><strong>跳跃规则：</strong>面对邻格棋子可直线跳过；若正向受阻或有墙，可向侧方斜跳！</p><br>
+          <p><strong>轮替顺序：</strong>顺时针依次行动（🔴P1 -> 🔵P3 -> 🟢P2 -> 🟡P4）！</p>
+        `);
+      } else if (gameKey === 'AEROPLANE') {
+        showModal('✈️ 四人飞行棋 (Aeroplane Chess 4P) 规则', `
+          <p><strong>胜利目标：</strong>率先将己方全部 4 架战机巡航抵达中央大本营终点者夺得冠军！</p><br>
+          <p><strong>起飞规则：</strong>战机在停机坪待命，必须掷出 <b>6 点</b> 方可起飞至起始跑道出战。</p><br>
+          <p><strong>连掷奖励：</strong>掷出 6 点可获得再掷一次机会！但若<b>连续 3 次掷出 6 点</b>，将触发发动机过热警报坠机返航！</p><br>
+          <p><strong>同色跳跃：</strong>战机在外圈公用航线停留在与自身颜色相同的格子上，可直接向前<b>超速跳跃 4 格</b>！</p><br>
+          <p><strong>超速飞越：</strong>停在己方飞越跑道（相对第16格），可沿中央虚线<b>径直横跨整个棋盘</b>（直飞12格），击落中心敌机，着陆后再跳跃4格！</p><br>
+          <p><strong>空中撞机：</strong>停留在敌方战机所在格，直接将敌机<b>击落遣返停机坪</b>！同色战机在同格则触发<b>叠机编队</b>！</p><br>
+          <p><strong>精准冲线：</strong>进入终点直道后必须<b>刚好掷出对应点数</b>到达中央大本营。超出点数将折返倒退！</p><br>
+          <p><strong>多种模式：</strong>支持 1人挑战3电脑 AI、本地2-4人同屏轮流对战、以及好友联机房间！</p>
+        `);
+      } else if (gameKey === 'GRAVITY') {
+        showModal('重力五子棋 (2D) 规则', `
+          <p><strong>重力下落：</strong>点击任意一列，棋子受重力自然滑落堆叠到底部。</p><br>
+          <p><strong>胜利目标：</strong>在横向、纵向或对角线连成 <b>5 颗连续同色棋子</b> 者获胜！</p><br>
+          <p><strong>核心博弈：</strong>棋子无法悬空停留，小心别给对手送出"垫脚石"！</p>
+        `);
+      } else if (gameKey === 'GRAVITY4') {
+        showModal('🟡 重力四子棋 (Connect Four) 规则', `
+          <p><strong>经典玩法：</strong>7列×6行棋盘，点击列号按钮投子，棋子受重力滑落堆叠。</p><br>
+          <p><strong>胜利目标：</strong>率先在横向、纵向或对角线连成 <b>4 颗连续同色棋子</b> 者获胜！</p><br>
+          <p><strong>核心博弈：</strong>经典博弈名局！每一步都是攻防兼备，比五子棋更快节奏！</p>
+        `);
+      } else if (gameKey === 'GRAVITY3D') {
+        showModal('3D 立体五子棋 规则', `
+          <p><strong>三维空间结构：</strong>底座立有 5x5 共 25 根立柱，每根柱子最多串 5 颗珠子（共 125 个空间节点）。</p><br>
+          <p><strong>视角操作：</strong>鼠标按住/单指滑动可 <b>360° 旋转视角</b>，滚轮/双指可缩放，点击立柱即可投子。</p><br>
+          <p><strong>13 维空间获胜：</strong>率先在任意方向连成 <b>5 颗珠子直线</b>（包括垂直线、平面横纵线、平面斜线，以及贯穿整个立方体的 <b>4 条空间大对角线</b>）者获胜！</p>
+        `);
+      } else if (gameKey === 'GRAVITY3D4') {
+        showModal('💜 3D 立体四子棋 规则', `
+          <p><strong>三维结构：</strong>4×4×4 三维魔方棋盘，共 16 根立柱，每柱最多 4 颗珠子（64 个空间节点）。</p><br>
+          <p><strong>胜利目标：</strong>率先连成 <b>4 颗空间直线</b> 者获胜！共有 <b>76 条</b> 可能的胜利线（含空间对角线）！</p><br>
+          <p><strong>视角操作：</strong>拖拽旋转视角，点击立柱落子。比 3D 五子棋更快节奏，超高烧脑指数！</p>
+        `);
+      } else if (gameKey === 'ROULETTE') {
+        showModal('恶魔轮盘赌 规则', `
+          <p><strong>枪膛与子弹：</strong>每轮装入已知数量的 🔴 实弹 与 ⚪ 空包弹，轮流开枪。</p><br>
+          <p><strong>核心机制：</strong></p>
+          <ul>
+            <li><b>开枪打对手：</b>若是实弹扣除对方生命值；若是空包弹则安然无恙并换对手回合。</li>
+            <li><b>开枪打自己：</b>若是空包弹，<b>你将获得额外一次行动回合！</b> 若是实弹则扣自己血。</li>
+          </ul><br>
+          <p><strong>道具功效：</strong>🔍 放大镜看下一发真假；🔒 手铐锁住对手下回合；🪚 手锯造成2倍实弹伤害；🍺 啤酒退出一发弹；🚬 香烟回血。</p>
+        `);
+      } else if (gameKey === 'HOCKEY') {
+        showModal('极光空气冰球 规则', `
+          <p><strong>碰撞竞技：</strong>滑动己方推盘，利用刚体弹力高速撞击发光的冰球！</p><br>
+          <p><strong>破门得分：</strong>先将冰球攻入对方球门达到 <b>5 分</b> 的玩家赢得总冠军！</p>
+        `);
+      } else if (gameKey === 'IAIDO') {
+        showModal('拔刀居合斩 规则', `
+          <p><strong>屏息凝神：</strong>屏幕变暗等待，切勿提前触碰，<strong>抢跑直接判负！</strong></p><br>
+          <p><strong>一击必杀：</strong>红光闪现「斬」字瞬间，以极限手速点击屏幕，快 1 毫秒者胜！率先赢下 3 胜者问鼎剑圣！</p>
+        `);
+      } else if (gameKey === 'LIARSDICE') {
+        showModal('皇家大话骰 规则', `
+          <p><strong>叫牌规则：</strong>双方暗摇5颗骰子，轮流报点。下一个人的叫牌必须【个数更多】或【点数更大】！</p><br>
+          <p><strong>万能1点：</strong>1点可代表任意点数（除非场上有人叫过1点）。</p><br>
+          <p><strong>当场质疑：</strong>觉得对方在吹牛虚报？直接喊「开」！算错者扣1点生命，扣完淘汰！</p>
+        `);
+      } else if (gameKey === 'SUMO') {
+        showModal('🚗 物理飞车相扑 规则与操作指南', `
+          <p><strong>极限推土机：</strong>在圆形空中悬浮擂台上，按住【冲刺】推撞对手，松开自动转弯瞄准！</p><br>
+          <p><strong>双人同屏对战：</strong>支持在手机或电脑同屏激战！</p>
+          <ul>
+            <li><b>🔴 玩家 1 (红车)：</b>按住下方红键、触碰屏幕左半侧、或键盘按 <b>W / A / S / D / 空格键</b> 冲刺！</li>
+            <li><b>🔵 玩家 2 (蓝车)：</b>按住下方蓝键、触碰屏幕右半侧、或键盘按 <b>方向键 / 回车 / L 键</b> 冲刺！</li>
+          </ul><br>
+          <p><strong>坠落深渊：</strong>利用动量冲撞把对方顶出擂台边缘即可得分，抢先得 <b>3 分</b> 者夺得总冠军！</p>
+        `);
+      } else if (gameKey === 'TANK') {
+        showModal('极限抛物线 规则', `
+          <p><strong>弹道对轰：</strong>观察上方【实时风向与风速】，拖动滑杆调节发射【角度】与【力度】！</p><br>
+          <p><strong>地形破坏：</strong>炮弹击中地面会炸出凹陷弹坑，直接命中或爆炸溅射直接扣除坦克生命！</p>
+        `);
+      } else if (gameKey === 'STACK') {
+        showModal('极光叠叠高 规则', `
+          <p><strong>节奏切割：</strong>轻触屏幕让横飞的方块落下。对齐严丝合缝触发【PERFECT音阶连击】！</p><br>
+          <p><strong>削切缩小：</strong>没对齐的多余边缘会被一刀切掉，底座越来越窄，一旦切空整座塔彻底倒塌！</p>
+        `);
+      } else if (gameKey === 'CONTRA') {
+        showModal('💥 魂斗罗 (Contra: 丛林突袭) 规则与秘籍', `
+          <p><strong>经典操作：</strong>【W/A/S/D 或 摇杆】8向移动与瞄准；【J / 空格 / B键】开火；【K / A键】跳跃；【S / 下键】趴下躲子弹！鼠标轻触画面亦可直接开火！</p><br>
+          <p><strong>神级装备：</strong>击碎天上飞行的红白胶囊，抢夺 <b>🔴 S 弹 (5向扇形扩散弹)</b>、<b>🟡 M 机枪 (连发扫射)</b> 或 <b>🔵 L 激光 (高能贯穿)</b>！</p><br>
+          <p><strong>第一关要塞 BOSS：</strong>抵达最右侧基地防线，击破双联装转管炮台与高空狙击手，集火轰爆中央红色感应核心！</p><br>
+          <p><strong>经典秘籍：</strong>右上角常驻点击 <b>【⚡ 30 条命】</b>，一秒梦回童年红白机！</p>
+        `);
+      } else if (gameKey === 'TANKTROUBLE') {
+        showModal('🛡️ 坦克震荡 (Tank Trouble) 规则与指南', `
+          <p><strong>胜利目标：</strong>在不断随机生成的错综复杂迷宫中穿梭对轰，率先击毁敌方坦克达到 <b>5 分</b> 者获得总冠军！</p><br>
+          <p><strong>💥 物理反弹穿甲炮弹（无差别伤害）：</strong></p>
+          <ul>
+            <li>发射的炮弹可在迷宫坚硬墙壁间连续高速反弹 <b>7 次</b>，反射角精确等于入射角！</li>
+            <li><b>切记小心跳弹：</b>自己的炮弹反弹回来击中自己同样会粉身碎骨，切勿盲目乱射！</li>
+            <li>每辆坦克最多维持 <b>5 枚</b> 活跃炮弹，冷却完毕即可持续压制。</li>
+          </ul><br>
+          <p><strong>🎮 全端操作方案（完全还原经典与双人同屏）：</strong></p>
+          <ul>
+            <li><b>🔴 玩家 1 (红坦克)：</b>键盘 <b>ESDF</b> 移动（E前进、D后退、S左转、F右转），<b>Q</b> 键发射！（亦智能兼容 <b>WASD + 空格</b>）</li>
+            <li><b>🟢 玩家 2 (绿坦克)：</b>键盘方向键 <b>↑ ↓ ← →</b> 移动，<b>M</b> 键发射！（亦支持 Enter 键）</li>
+            <li><b>🔵 玩家 3 (蓝坦克)：</b>鼠标移动光标控制朝向与移动，<b>鼠标左键</b> 发射！</li>
+            <li><b>📱 移动端触屏：</b>双人同屏提供专属左右独立虚拟十字轮盘与发光开火键！</li>
+          </ul>
+        `);
+      } else {
+        showModal('聚会大厅 指南', `
+          <p>欢迎来到 <b>聚会游戏大厅 (Party Arcade)</b>！</p><br>
+          <p>点击任意游戏卡片即可直接开玩，支持人机对战、双人同屏以及好友微信/QQ链接联机！随时可点击左上角返回大厅挑选更多游戏。</p>
+        `);
+      }
+    }
+
+    
+    // ==========================================================================
     // 9. 物理飞车相扑核心逻辑 (SUMO)
     // ==========================================================================
     let sumoInputBound = false;
@@ -799,22 +2842,142 @@
       initSumoGame();
     }
 
-    // ==========================================================================
-    
 
-    function resetCurrentGame() {
-      initSumoGame();
+    function render2D() {
+      if (typeof renderQuoridor === 'function') renderQuoridor();
+      if (typeof renderGravity2D === 'function') renderGravity2D();
+      if (typeof renderGravity4 === 'function') renderGravity4();
     }
 
+    function resizeCanvas2D() {
+      const canvas2D = document.getElementById('board-canvas');
+      if (!canvas2D) return;
+      const rect = canvas2D.parentElement.getBoundingClientRect();
+      const sz = Math.min(rect.width, rect.height, 460);
+      canvas2D.width = sz;
+      canvas2D.height = sz;
+      render2D();
+    }
+
+    function setupStageForGame(gKey) {
+      const modeTabs = document.querySelector('.mode-nav');
+      if (modeTabs) modeTabs.style.display = (gKey === 'CONTRA' || gKey === 'STACK') ? 'none' : 'flex';
+      const stageWrapper = document.querySelector('.stage-wrapper');
+      if (stageWrapper) {
+        stageWrapper.classList.toggle('contra-mode', gKey === 'CONTRA');
+        stageWrapper.classList.toggle('tanktrouble-mode', gKey === 'TANKTROUBLE');
+      }
+
+      const card2 = document.getElementById('card-p2');
+      if (card2 && ['GRAVITY', 'GRAVITY4', 'GRAVITY3D', 'GRAVITY3D4'].includes(gKey)) {
+        card2.classList.add('yellow-theme', 'p2-yellow-active');
+      }
+
+      if (gKey === 'QUORIDOR') {
+        resizeCanvas2D();
+      } else if (gKey === 'GRAVITY' || gKey === 'GRAVITY4') {
+        resizeCanvas2D();
+      } else if (gKey === 'GRAVITY3D' || gKey === 'GRAVITY3D4') {
+        init3DSceneIfNeeded();
+        if (typeof window.build3DBoard === 'function') window.build3DBoard(gKey === 'GRAVITY3D' ? 5 : 4);
+        resize3D();
+        update3DScene();
+      } else if (gKey === 'ROULETTE') {
+        initRouletteGame();
+      } else if (gKey === 'HOCKEY') {
+        initHockeyGame();
+      } else if (gKey === 'IAIDO') {
+        initIaidoGame();
+      } else if (gKey === 'LIARSDICE') {
+        initLiarsDiceGame();
+      } else if (gKey === 'SUMO') {
+        initSumoGame();
+        requestAnimationFrame(() => { if (typeof resizeSumoCanvas === 'function') resizeSumoCanvas(); if (typeof renderSumo === 'function') renderSumo(); });
+      } else if (gKey === 'TANK') {
+        initTankGame();
+      } else if (gKey === 'STACK') {
+        initStackGame();
+      } else if (gKey === 'CONTRA') {
+        initContraGame();
+        requestAnimationFrame(() => { if (typeof resizeContraCanvas === 'function') resizeContraCanvas(); if (typeof renderContra === 'function') renderContra(); });
+      } else if (gKey === 'TANKTROUBLE') {
+        initTankTroubleGame();
+        requestAnimationFrame(() => { if (typeof resizeTankTroubleCanvas === 'function') resizeTankTroubleCanvas(); if (typeof renderTankTrouble === 'function') renderTankTrouble(); });
+      } else if (gKey === 'AEROPLANE') {
+        initAeroplaneGame();
+        requestAnimationFrame(() => { if (typeof resizeAeroplaneCanvas === 'function') resizeAeroplaneCanvas(); if (typeof renderAeroplane === 'function') renderAeroplane(); });
+      }
+    }
+
+    function resetCurrentGame() {
+      STATE.winner = null;
+      STATE.turn = 1;
+      STATE.animating = false;
+
+      if (STATE.currentGame === 'QUORIDOR') {
+        const is4P = STATE.quoridor ? STATE.quoridor.playerCount === 4 : false;
+        const initialWalls = is4P ? 5 : 10;
+        if (!STATE.quoridor) STATE.quoridor = {};
+        STATE.quoridor.p1 = { r: 8, c: 4, walls: initialWalls };
+        STATE.quoridor.p2 = { r: 0, c: 4, walls: initialWalls };
+        STATE.quoridor.p3 = { r: 4, c: 0, walls: initialWalls };
+        STATE.quoridor.p4 = { r: 4, c: 8, walls: initialWalls };
+        STATE.quoridor.wallsH = new Set();
+        STATE.quoridor.wallsV = new Set();
+        STATE.quoridor.hoverPos = null;
+        STATE.quoridor.lastMove = null;
+        if (typeof setQuoridorTool === 'function') setQuoridorTool('MOVE');
+        render2D();
+      } else if (STATE.currentGame === 'GRAVITY') {
+        STATE.gravity.board = Array.from({ length: 9 }, () => new Array(9).fill(0));
+        STATE.gravity.hoverCol = null;
+        STATE.gravity.winningLine = null;
+        STATE.gravity.animatingPiece = null;
+        STATE.gravity.lastMove = null;
+        render2D();
+      } else if (STATE.currentGame === 'GRAVITY4') {
+        STATE.gravity4.board = Array.from({ length: 6 }, () => new Array(7).fill(0));
+        STATE.gravity4.hoverCol = null;
+        STATE.gravity4.winningLine = null;
+        STATE.gravity4.animatingPiece = null;
+        STATE.gravity4.lastMove = null;
+        render2D();
+      } else if (STATE.currentGame === 'ROULETTE') {
+        if (typeof initRouletteGame === 'function') initRouletteGame();
+      } else if (STATE.currentGame === 'HOCKEY') {
+        if (typeof resetHockeyMatch === 'function') resetHockeyMatch();
+      } else if (STATE.currentGame === 'IAIDO') {
+        if (typeof resetIaidoMatch === 'function') resetIaidoMatch();
+      } else if (STATE.currentGame === 'LIARSDICE') {
+        if (typeof resetLiarsDiceMatch === 'function') resetLiarsDiceMatch();
+      } else if (STATE.currentGame === 'SUMO') {
+        if (typeof resetSumoMatch === 'function') resetSumoMatch();
+      } else if (STATE.currentGame === 'TANK') {
+        if (typeof resetTankMatch === 'function') resetTankMatch();
+      } else if (STATE.currentGame === 'STACK') {
+        if (typeof resetStackMatch === 'function') resetStackMatch();
+      } else if (STATE.currentGame === 'CONTRA') {
+        if (typeof resetContraMatch === 'function') resetContraMatch();
+      } else if (STATE.currentGame === 'TANKTROUBLE') {
+        if (typeof resetTankTroubleMatch === 'function') resetTankTroubleMatch();
+      } else if (STATE.currentGame === 'AEROPLANE') {
+        if (typeof resetAeroplaneGame === 'function') resetAeroplaneGame();
+      }
+      updateScoreboard();
+    }
+
+    function enterGame(gKey, mode = 'AI') {
+      STATE.currentView = 'GAME';
+      STATE.currentGame = gKey;
+      STATE.gameMode = mode;
+      setupStageForGame(gKey);
+      resetCurrentGame();
+      updateScoreboard();
+    }
+    
+
     window.addEventListener('DOMContentLoaded', () => {
-      initCommonHeader("🚗 物理飞车相扑 规则与操作指南", `<p><strong>极限推土机：</strong>在圆形空中悬浮擂台上，按住【冲刺】推撞对手，松开自动转弯瞄准！</p><br>
-          <p><strong>双人同屏对战：</strong>支持在手机或电脑同屏激战！</p>
-          <ul>
-            <li><b>🔴 玩家 1 (红车)：</b>按住下方红键、触碰屏幕左半侧、或键盘按 <b>W / A / S / D / 空格键</b> 冲刺！</li>
-            <li><b>🔵 玩家 2 (蓝车)：</b>按住下方蓝键、触碰屏幕右半侧、或键盘按 <b>方向键 / 回车 / L 键</b> 冲刺！</li>
-          </ul><br>
-          <p><strong>坠落深渊：</strong>利用动量冲撞把对方顶出擂台边缘即可得分，抢先得 <b>3 分</b> 者夺得总冠军！</p>`, resetCurrentGame);
-      initSumoGame();
+      enterGame('SUMO', 'AI');
     });
   </script>
 </body>
