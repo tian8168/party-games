@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>🚗 物理飞车相扑 (Sumo Cars) · 聚会游戏大厅</title>
+  <link rel="stylesheet" href="../../shared/css/common.css">
+  <link rel="stylesheet" href="../../shared/css/game-layout.css">
+  <style>
+3. 物理飞车相扑 (SUMO) 样式
+       ========================================================================== */
+    #sumo-stage {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      background: radial-gradient(circle at center, #0f172a 0%, #030712 100%);
+      border-radius: 14px;
+      border: 1px solid #1e293b;
+      overflow: hidden;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    #sumo-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      touch-action: none;
+    }
+
+    .sumo-hud {
+      position: absolute;
+      top: 8px;
+      left: 10px;
+      right: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .sumo-score-badge {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      padding: 4px 8px;
+      font-weight: 800;
+      font-size: 0.82rem;
+      backdrop-filter: blur(4px);
+    }
+
+    .sumo-touch-hint {
+      position: absolute;
+      bottom: 54px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 0.72rem;
+      color: rgba(255, 255, 255, 0.5);
+      pointer-events: none;
+      z-index: 6;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+    }
+
+    .sumo-controls-bar {
+      position: absolute;
+      bottom: 8px;
+      left: 8px;
+      right: 8px;
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      z-index: 10;
+      pointer-events: auto;
+    }
+
+    .btn-sumo-boost {
+      flex: 1;
+      max-width: 260px;
+      padding: 10px 4px;
+      color: #fff;
+      font-size: 0.88rem;
+      font-weight: 800;
+      border-radius: 10px;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: transform 0.05s ease, filter 0.05s ease;
+    }
+    .btn-sumo-p1 {
+      background: linear-gradient(135deg, #ef4444, #f97316);
+      border: 1px solid #fb923c;
+      box-shadow: 0 4px 14px rgba(239, 68, 68, 0.45);
+    }
+    .btn-sumo-p2 {
+      background: linear-gradient(135deg, #3b82f6, #06b6d4);
+      border: 1px solid #38bdf8;
+      box-shadow: 0 4px 14px rgba(59, 130, 246, 0.45);
+    }
+    .btn-sumo-boost:active, .btn-sumo-boost.boosting {
+      transform: scale(0.95);
+      filter: brightness(1.25);
+    }
+
+    /* ==========================================================================
+       
+  </style>
+</head>
+<body>
+  <div class="container in-game">
+    <!-- 顶部通用导航栏 -->
+    <header class="app-header">
+      <div class="brand-title" onclick="window.location.href='../../'">
+        <span>🎮 聚会游戏大厅</span>
+        <span class="badge">返回大厅</span>
+      </div>
+      <div class="header-tools">
+        <button class="btn-icon" id="btn-sound-toggle" onclick="toggleSound()">🔊</button>
+        <button class="btn-icon" id="btn-rules-header" onclick="showCurrentRules()">规则</button>
+      </div>
+    </header>
+
+    <!-- 游戏导航栏 -->
+    <div class="game-nav-bar">
+      <button class="btn-back-lobby" onclick="window.location.href='../../'">
+        <span>◀ 返回大厅</span>
+      </button>
+      <div class="current-game-badge" id="current-game-title">🚗 物理飞车相扑 (Sumo Cars)</div>
+      
+      <button class="btn-icon" id="restart-btn" onclick="resetCurrentGame()">🔄 重开</button>
+    </div>
+
+    
+    <div class="mode-nav">
+      <div class="mode-tab active" id="tab-ai" onclick="switchGameMode('AI')">🤖 人机对战</div>
+      <div class="mode-tab" id="tab-local" onclick="switchGameMode('LOCAL')">👥 同屏双人</div>
+    </div>
+    
+
+    <!-- 舞台容器 -->
+    <div class="stage-wrapper">
+<div id="sumo-stage">
+          <canvas id="sumo-canvas"></canvas>
+          <div class="sumo-hud">
+            <div class="sumo-score-badge" style="color:#ef4444;" id="sumo-p1-score">🔴 玩家: 0</div>
+            <div class="sumo-score-badge" style="color:#cbd5e1;" id="sumo-match-target">抢 3 胜</div>
+            <div class="sumo-score-badge" style="color:#38bdf8;" id="sumo-p2-score">🔵 电脑: 0</div>
+          </div>
+          <div class="sumo-touch-hint" id="sumo-touch-hint">💡 触碰屏幕或按住按键冲刺 (松开自动转向)</div>
+          <div class="sumo-controls-bar" id="sumo-controls-bar">
+            <button class="btn-sumo-boost btn-sumo-p1" id="btn-sumo-boost">🚀 按住冲刺 (松开瞄准)</button>
+            <button class="btn-sumo-boost btn-sumo-p2" id="btn-sumo-boost-p2" style="display:none;">🚀 蓝方冲刺 (松开瞄准)</button>
+          </div>
+        </div>
+
+        <!-- 8. 极限抛物线坦克舞台 -->
+        
+    </div>
+  </div>
+
+
+  <!-- Toast 提示 -->
+  <div class="toast" id="toast-msg"></div>
+
+  <!-- 规则与结算弹窗 -->
+  <div class="modal" id="game-modal">
+    <div class="modal-content">
+      <div class="modal-title" id="modal-title">游戏规则</div>
+      <div class="modal-body" id="modal-body"></div>
+      <button class="modal-btn" id="modal-confirm-btn">我知道了</button>
+    </div>
+  </div>
+
+
+  <script src="../../shared/js/audio.js"></script>
+  <script src="../../shared/js/utils.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>🎲 皇家大话骰 (Liar's Dice) · 聚会游戏大厅</title>
+  <link rel="stylesheet" href="../../shared/css/common.css">
+  <link rel="stylesheet" href="../../shared/css/game-layout.css">
+  <style>
+2. 皇家大话骰 (LIARSDICE) 样式
+       ========================================================================== */
+    #liarsdice-stage {
+      width: 100%;
+      min-height: 440px;
+      background: radial-gradient(circle at center, #064e3b 0%, #022c22 70%, #051b14 100%);
+      border: 2px solid #047857;
+      border-radius: 14px;
+      box-shadow: inset 0 0 40px rgba(0,0,0,0.6);
+      display: none;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 14px;
+      position: relative;
+    }
+
+    .dice-area {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .dice-area-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #6ee7b7;
+    }
+
+    .dice-tray {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(110, 231, 183, 0.2);
+      border-radius: 10px;
+      padding: 10px 8px;
+      min-height: 58px;
+    }
+
+    .die-face {
+      width: 42px;
+      height: 42px;
+      background: #f8fafc;
+      border: 2px solid #cbd5e1;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      color: #0f172a;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+      transition: transform 0.2s, filter 0.2s;
+    }
+    .die-face.die-hidden {
+      background: linear-gradient(135deg, #78350f, #451a03);
+      border-color: #92400e;
+      color: #f59e0b;
+      font-size: 1.2rem;
+      font-weight: 900;
+    }
+    .die-face.die-highlight {
+      border-color: #fbbf24;
+      box-shadow: 0 0 12px #fbbf24;
+      transform: translateY(-2px);
+    }
+
+    .liars-bid-hud {
+      background: rgba(0, 0, 0, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      text-align: center;
+    }
+
+    .liars-curr-bid {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #fef08a;
+    }
+
+    .liars-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .dice-picker-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .dice-qty-box {
+      display: flex;
+      align-items: center;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 2px;
+    }
+
+    .btn-qty-step {
+      width: 32px;
+      height: 32px;
+      background: #334155;
+      border: none;
+      color: #fff;
+      font-weight: 800;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .dice-qty-val {
+      width: 40px;
+      text-align: center;
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #38bdf8;
+    }
+
+    .dice-val-selector {
+      display: flex;
+      gap: 4px;
+      flex: 1;
+      justify-content: flex-end;
+    }
+
+    .btn-val-choice {
+      width: 34px;
+      height: 34px;
+      border-radius: 6px;
+      background: #1e293b;
+      border: 1px solid #475569;
+      color: #f8fafc;
+      font-size: 1.3rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-val-choice.active {
+      background: #f59e0b;
+      border-color: #fbbf24;
+      color: #000;
+      box-shadow: 0 0 10px rgba(245, 158, 11, 0.6);
+      transform: scale(1.1);
+    }
+
+    .liars-action-buttons {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .btn-dice-bid {
+      flex: 2;
+      background: linear-gradient(135deg, #10b981, #059669);
+      border: 1px solid #34d399;
+      color: #fff;
+      font-weight: 700;
+      padding: 10px 0;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.95rem;
+    }
+
+    .btn-dice-challenge {
+      flex: 1.3;
+      background: linear-gradient(135deg, #ef4444, #b91c1c);
+      border: 1px solid #f87171;
+      color: #fff;
+      font-weight: 800;
+      padding: 10px 0;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.95rem;
+    }
+
+    /* ==========================================================================
+       
+  </style>
+</head>
+<body>
+  <div class="container in-game">
+    <!-- 顶部通用导航栏 -->
+    <header class="app-header">
+      <div class="brand-title" onclick="window.location.href='../../'">
+        <span>🎮 聚会游戏大厅</span>
+        <span class="badge">返回大厅</span>
+      </div>
+      <div class="header-tools">
+        <button class="btn-icon" id="btn-sound-toggle" onclick="toggleSound()">🔊</button>
+        <button class="btn-icon" id="btn-rules-header" onclick="showCurrentRules()">规则</button>
+      </div>
+    </header>
+
+    <!-- 游戏导航栏 -->
+    <div class="game-nav-bar">
+      <button class="btn-back-lobby" onclick="window.location.href='../../'">
+        <span>◀ 返回大厅</span>
+      </button>
+      <div class="current-game-badge" id="current-game-title">🎲 皇家大话骰 (Liar's Dice)</div>
+      
+      <button class="btn-icon" id="restart-btn" onclick="resetCurrentGame()">🔄 重开</button>
+    </div>
+
+    
+    <div class="mode-nav">
+      <div class="mode-tab active" id="tab-ai" onclick="switchGameMode('AI')">🤖 人机对战</div>
+      <div class="mode-tab" id="tab-local" onclick="switchGameMode('LOCAL')">👥 同屏双人</div>
+    </div>
+    
+
+    <!-- 舞台容器 -->
+    <div class="stage-wrapper">
+<div id="liarsdice-stage">
+          <!-- 上方：对手骰子 -->
+          <div class="dice-area">
+            <div class="dice-area-header">
+              <span id="liars-p2-name">🔵 对手 (恶魔AI)</span>
+              <span id="liars-p2-hp">❤️❤️❤️</span>
+            </div>
+            <div class="dice-tray" id="liars-p2-tray"></div>
+          </div>
+
+          <!-- 中央：当前叫牌展示 -->
+          <div class="liars-bid-hud">
+            <div style="font-size:0.75rem; color:#94a3b8;" id="liars-turn-tip">等待摇骰...</div>
+            <div class="liars-curr-bid" id="liars-curr-bid-text">当前无人叫牌 (首叫起步)</div>
+            <div style="font-size:0.72rem; color:#a7f3d0;" id="liars-rule-note">💡 1点可代表任意点（除非有人叫过1点）</div>
+          </div>
+
+          <!-- 下方：己方骰子 -->
+          <div class="dice-area">
+            <div class="dice-area-header">
+              <span id="liars-p1-name">🔴 己方手牌</span>
+              <span id="liars-p1-hp">❤️❤️❤️</span>
+            </div>
+            <div class="dice-tray" id="liars-p1-tray"></div>
+          </div>
+
+          <!-- 叫牌操作器 -->
+          <div class="liars-controls" id="liars-controls">
+            <div class="dice-picker-row">
+              <div class="dice-qty-box">
+                <button class="btn-qty-step" onclick="stepDiceQty(-1)">-</button>
+                <span class="dice-qty-val" id="dice-qty-val">4</span>
+                <button class="btn-qty-step" onclick="stepDiceQty(1)">+</button>
+              </div>
+              <div class="dice-val-selector" id="dice-val-selector">
+                <div class="btn-val-choice" data-val="1" onclick="selectDiceVal(1)">⚀</div>
+                <div class="btn-val-choice" data-val="2" onclick="selectDiceVal(2)">⚁</div>
+                <div class="btn-val-choice active" data-val="3" onclick="selectDiceVal(3)">⚂</div>
+                <div class="btn-val-choice" data-val="4" onclick="selectDiceVal(4)">⚃</div>
+                <div class="btn-val-choice" data-val="5" onclick="selectDiceVal(5)">⚄</div>
+                <div class="btn-val-choice" data-val="6" onclick="selectDiceVal(6)">⚅</div>
+              </div>
+            </div>
+            <div class="liars-action-buttons">
+              <button class="btn-dice-bid" id="btn-dice-bid" onclick="submitDiceBid()">📢 叫牌下注</button>
+              <button class="btn-dice-challenge" id="btn-dice-challenge" onclick="challengeDiceBid()">🚨 开！(质疑)</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 7. 物理飞车相扑舞台 -->
+        
+    </div>
+  </div>
+
+
+  <!-- Toast 提示 -->
+  <div class="toast" id="toast-msg"></div>
+
+  <!-- 规则与结算弹窗 -->
+  <div class="modal" id="game-modal">
+    <div class="modal-content">
+      <div class="modal-title" id="modal-title">游戏规则</div>
+      <div class="modal-body" id="modal-body"></div>
+      <button class="modal-btn" id="modal-confirm-btn">我知道了</button>
+    </div>
+  </div>
+
+
+  <script src="../../shared/js/audio.js"></script>
+  <script src="../../shared/js/utils.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
