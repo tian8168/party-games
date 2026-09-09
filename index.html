@@ -47,11 +47,16 @@
 
     .container {
       width: 100%;
-      max-width: 680px;
+      max-width: 1080px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 12px;
+      gap: 16px;
+      transition: max-width 0.3s ease;
+    }
+
+    .container.in-game {
+      max-width: 680px;
     }
 
     /* 顶部通用导航栏 */
@@ -114,317 +119,438 @@
       border-color: #64748b;
     }
 
-    /* ==========================================================================
-       大厅视图 (LOBBY VIEW - BENTO GRID & ARCADE DESIGN)
+        /* ==========================================================================
+       大厅视图 (LOBBY VIEW - SWITCH / STEAM 主机风格海报流)
        ========================================================================== */
     #lobby-view {
       width: 100%;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 16px;
     }
 
-    /* 轮播/亮点 Banner */
+    /* 主机控制台顶栏 (Console Hero Bar) */
     .hero-banner {
       width: 100%;
-      background: linear-gradient(135deg, rgba(30, 58, 138, 0.75), rgba(88, 28, 135, 0.65));
-      border: 1px solid rgba(147, 197, 253, 0.35);
-      border-radius: 16px;
-      padding: 14px 16px;
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 27, 75, 0.88) 50%, rgba(17, 24, 39, 0.96) 100%);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 18px;
+      padding: 16px 20px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      gap: 12px;
+      box-shadow: 0 12px 32px -6px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-banner::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -20%;
+      width: 140%;
+      height: 200%;
+      background: radial-gradient(circle at 30% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 60%);
+      pointer-events: none;
     }
 
     .hero-banner-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 12px;
+      gap: 16px;
       flex-wrap: wrap;
+      position: relative;
+      z-index: 1;
     }
 
     .hero-banner-text {
       flex: 1;
-      min-width: 200px;
+      min-width: 240px;
+    }
+
+    .hero-system-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #38bdf8;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 4px;
+    }
+    .status-dot-pulse {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #22c55e;
+      box-shadow: 0 0 8px #22c55e;
+      animation: pulse-dot 2s infinite;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.3); opacity: 0.7; }
     }
 
     .hero-banner h2 {
-      font-size: 1.05rem;
-      font-weight: 800;
-      color: #fff;
+      font-size: 1.25rem;
+      font-weight: 900;
+      color: #ffffff;
       display: flex;
       align-items: center;
-      gap: 6px;
-      letter-spacing: 0.3px;
+      gap: 8px;
+      letter-spacing: 0.5px;
+      line-height: 1.25;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.5);
     }
 
     .hero-banner p {
-      font-size: 0.78rem;
-      color: #cbd5e1;
+      font-size: 0.82rem;
+      color: #94a3b8;
       line-height: 1.45;
-      margin-top: 2px;
+      margin-top: 4px;
     }
 
-    /* 破冰摇号按钮 */
+    /* 破冰摇号按钮 (Console Action Dice Button) */
     .btn-random-pick {
-      background: linear-gradient(135deg, #f59e0b, #ef4444);
-      border: 1px solid rgba(255, 255, 255, 0.35);
+      background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #3b82f6 100%);
+      border: 1px solid rgba(255, 255, 255, 0.3);
       color: #fff;
-      padding: 8px 14px;
-      border-radius: 12px;
-      font-size: 0.85rem;
+      padding: 10px 18px;
+      border-radius: 14px;
+      font-size: 0.88rem;
       font-weight: 800;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      box-shadow: 0 4px 14px rgba(245, 158, 11, 0.45);
-      transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+      gap: 8px;
+      box-shadow: 0 4px 18px rgba(139, 92, 246, 0.45);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
       white-space: nowrap;
-      animation: pulse-glow 2.4s infinite;
+      position: relative;
+      z-index: 1;
     }
     .btn-random-pick:hover {
-      transform: scale(1.05) translateY(-1px);
-      box-shadow: 0 6px 20px rgba(245, 158, 11, 0.7);
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 8px 25px rgba(236, 72, 153, 0.55);
     }
     .btn-random-pick:active {
       transform: scale(0.97);
     }
-    @keyframes pulse-glow {
-      0%, 100% { box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4); }
-      50% { box-shadow: 0 4px 22px rgba(239, 68, 68, 0.75); }
-    }
 
     /* 最近常玩快捷胶囊 */
     .recent-bar {
-      margin-top: 2px;
-      padding-top: 8px;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      padding-top: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 0.74rem;
+      gap: 10px;
+      font-size: 0.76rem;
       color: #cbd5e1;
+      position: relative;
+      z-index: 1;
     }
     .recent-label {
       font-weight: 700;
       color: #38bdf8;
       flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
     .recent-pills {
       display: flex;
-      gap: 6px;
+      gap: 8px;
       overflow-x: auto;
       scrollbar-width: none;
     }
     .recent-pills::-webkit-scrollbar { display: none; }
     .recent-pill {
-      background: rgba(15, 23, 42, 0.7);
+      background: rgba(15, 23, 42, 0.8);
       border: 1px solid rgba(255, 255, 255, 0.15);
-      padding: 3px 10px;
+      padding: 4px 12px;
       border-radius: 12px;
       cursor: pointer;
-      transition: all 0.15s;
+      transition: all 0.2s;
       white-space: nowrap;
-      font-size: 0.74rem;
+      font-size: 0.76rem;
       font-weight: 600;
+      color: #cbd5e1;
     }
     .recent-pill:hover {
-      background: rgba(59, 130, 246, 0.35);
+      background: rgba(59, 130, 246, 0.4);
       border-color: #60a5fa;
-      color: #fff;
+      color: #ffffff;
+      transform: translateY(-1px);
     }
 
     /* 分类标签栏 */
     .category-bar {
       width: 100%;
       display: flex;
-      gap: 6px;
+      gap: 8px;
       overflow-x: auto;
-      padding-bottom: 2px;
+      padding: 2px 2px 6px;
       scrollbar-width: none;
     }
     .category-bar::-webkit-scrollbar { display: none; }
-
     .category-pill {
       flex-shrink: 0;
       background: #1e293b;
       border: 1px solid #334155;
       color: #94a3b8;
-      padding: 6px 12px;
+      padding: 7px 15px;
       border-radius: 20px;
-      font-size: 0.8rem;
-      font-weight: 600;
+      font-size: 0.82rem;
+      font-weight: 700;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
     }
     .category-pill:hover {
-      color: #e2e8f0;
+      color: #f1f5f9;
       border-color: #475569;
+      background: #273549;
     }
     .category-pill.active {
-      background: #2563eb;
-      color: #fff;
-      border-color: #3b82f6;
-      box-shadow: 0 2px 10px rgba(37, 99, 235, 0.4);
+      background: linear-gradient(135deg, #2563eb, #3b82f6);
+      color: #ffffff;
+      border-color: #60a5fa;
+      box-shadow: 0 3px 12px rgba(37, 99, 235, 0.45);
     }
 
-    /* 便当盒游戏卡片网格 (Bento Grid) */
+    /* 主机海报瀑布流网格 (Console Grid) */
     .game-grid {
       width: 100%;
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 10px;
+      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+      gap: 18px;
     }
-    @media (max-width: 480px) {
+    @media (max-width: 680px) {
       .game-grid {
-        grid-template-columns: 1fr 1fr;
-        gap: 8px;
+        grid-template-columns: 1fr;
+        gap: 14px;
       }
     }
 
+    /* 主机风格游戏卡片 (Console Game Card) */
     .game-card {
-      background: var(--card-bg);
-      backdrop-filter: blur(8px);
-      border: 1px solid #334155;
-      border-radius: 14px;
-      padding: 12px 12px;
+      background: #0f172a;
+      border: 1px solid rgba(51, 65, 85, 0.9);
+      border-radius: 16px;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
-      gap: 8px;
       cursor: pointer;
       position: relative;
       overflow: hidden;
-      transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+      box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.6);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .game-card:hover {
-      transform: translateY(-3px);
-      border-color: #60a5fa;
-      background: rgba(30, 41, 59, 0.95);
-      box-shadow: 0 10px 24px rgba(0,0,0,0.55);
+      transform: translateY(-6px) scale(1.015);
+      border-color: #38bdf8;
+      box-shadow: 0 18px 36px -8px rgba(0, 0, 0, 0.8), 0 0 20px rgba(56, 189, 248, 0.25);
     }
 
-    /* 推荐大卡 (Hero Card) */
+    /* 重点主打卡片光晕 */
     .game-card.hero-card {
-      grid-column: span 2;
-      background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(49, 46, 129, 0.5));
-      border-color: rgba(99, 102, 241, 0.45);
+      border-color: rgba(99, 102, 241, 0.6);
     }
     .game-card.hero-card:hover {
-      border-color: #818cf8;
-      box-shadow: 0 12px 28px rgba(99, 102, 241, 0.35);
+      border-color: #a855f7;
+      box-shadow: 0 20px 40px -8px rgba(0, 0, 0, 0.8), 0 0 25px rgba(168, 85, 247, 0.35);
     }
 
-    .card-top {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
+    /* 封面海报容器 (16:9 Aspect Ratio) */
+    .card-cover-wrapper {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #090d16;
+      overflow: hidden;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
 
-    .card-icon-box {
-      width: 42px;
-      height: 42px;
-      border-radius: 10px;
-      background: rgba(15, 23, 42, 0.8);
-      border: 1px solid rgba(255,255,255,0.1);
+    /* 矢量原画渲染画布 */
+    .card-art-canvas {
+      width: 100%;
+      height: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.5rem;
-      flex-shrink: 0;
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .game-card:hover .card-art-canvas {
+      transform: scale(1.05);
+    }
+    .card-art-canvas svg {
+      width: 100%;
+      height: 100%;
+      display: block;
     }
 
-    .card-info {
+    /* 封面顶部浮空磨砂玻璃药丸标签 */
+    .cover-badges {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      right: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      pointer-events: none;
+      z-index: 2;
+    }
+    .badge-pill {
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 8px;
+      backdrop-filter: blur(8px);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      letter-spacing: 0.2px;
+    }
+    .badge-pill.players {
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: #38bdf8;
+    }
+    .badge-pill.players-4 {
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(245, 158, 11, 0.5);
+      color: #fbbf24;
+    }
+    .badge-pill.tag-hot {
+      background: rgba(220, 38, 38, 0.85);
+      border: 1px solid rgba(248, 113, 113, 0.6);
+      color: #fff;
+    }
+    .badge-pill.tag-new {
+      background: rgba(16, 185, 129, 0.85);
+      border: 1px solid rgba(52, 211, 153, 0.6);
+      color: #fff;
+    }
+    .badge-pill.tag-3d {
+      background: rgba(99, 102, 241, 0.85);
+      border: 1px solid rgba(165, 180, 252, 0.6);
+      color: #fff;
+    }
+    .badge-pill.tag-reflex {
+      background: rgba(217, 119, 6, 0.85);
+      border: 1px solid rgba(251, 191, 36, 0.6);
+      color: #fff;
+    }
+
+    /* 封面底部暗影遮罩 */
+    .cover-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.02) 50%, rgba(15, 23, 42, 0.85) 100%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* 卡片下半部分内容区域 */
+    .card-body {
+      padding: 12px 14px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: #0f172a;
+      flex: 1;
+    }
+
+    .card-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .title-group {
       flex: 1;
       min-width: 0;
     }
 
-    .card-title-row {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      flex-wrap: wrap;
-      margin-bottom: 2px;
-    }
-
-    .card-title {
-      font-size: 0.92rem;
-      font-weight: 700;
+    .card-main-title {
+      font-size: 1.02rem;
+      font-weight: 800;
       color: #f8fafc;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .card-tag {
-      font-size: 0.65rem;
-      padding: 1px 5px;
-      border-radius: 4px;
-      font-weight: 600;
-      white-space: nowrap;
-    }
-    .tag-hot { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239,68,68,0.4); }
-    .tag-new { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16,185,129,0.4); }
-    .tag-3d  { background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56,189,248,0.4); }
-    .tag-reflex { background: rgba(234, 179, 8, 0.2); color: #facc15; border: 1px solid rgba(234,179,8,0.4); }
-
-    .card-badges {
       display: flex;
-      gap: 4px;
-      flex-wrap: wrap;
-      margin-top: 3px;
-    }
-
-    .card-chip {
-      font-size: 0.65rem;
-      padding: 1px 5px;
-      border-radius: 4px;
-      background: rgba(255, 255, 255, 0.07);
-      color: #94a3b8;
-      font-weight: 600;
-      white-space: nowrap;
-    }
-    .card-chip.players {
-      background: rgba(59, 130, 246, 0.18);
-      color: #60a5fa;
-      border: 1px solid rgba(59, 130, 246, 0.3);
-    }
-    .card-chip.players-4 {
-      background: rgba(245, 158, 11, 0.2);
-      color: #fbbf24;
-      border: 1px solid rgba(245, 158, 11, 0.4);
-    }
-
-    .card-desc {
-      font-size: 0.74rem;
-      color: #94a3b8;
-      line-height: 1.35;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .card-footer {
-      display: flex;
-      justify-content: space-between;
       align-items: center;
-      font-size: 0.7rem;
+      gap: 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      letter-spacing: 0.3px;
+    }
+    .card-main-title .card-sub {
+      font-size: 0.72rem;
+      font-weight: 600;
       color: #64748b;
-      padding-top: 4px;
-      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      text-transform: uppercase;
     }
 
-    .card-action-hint {
-      color: #38bdf8;
-      font-weight: 700;
-      display: flex;
+    .card-tagline {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* 开玩按键 (Play Button Pill) */
+    .btn-play-action {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #e2e8f0;
+      font-size: 0.76rem;
+      font-weight: 800;
+      padding: 6px 14px;
+      border-radius: 12px;
+      display: inline-flex;
       align-items: center;
-      gap: 2px;
+      gap: 4px;
+      white-space: nowrap;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      flex-shrink: 0;
+    }
+    .game-card:hover .btn-play-action {
+      background: linear-gradient(135deg, #2563eb, #38bdf8);
+      border-color: #60a5fa;
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.5);
+      transform: scale(1.05);
+    }
+
+    /* 底部属性胶囊行 (Meta Chips) */
+    .card-meta-chips {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 2px;
+    }
+    .meta-chip {
+      font-size: 0.68rem;
+      padding: 2px 7px;
+      border-radius: 6px;
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      color: #94a3b8;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .meta-chip.accent {
+      background: rgba(56, 189, 248, 0.12);
+      border-color: rgba(56, 189, 248, 0.3);
+      color: #38bdf8;
     }
 
     /* ==========================================================================
@@ -2361,19 +2487,23 @@
     </header>
 
     <!-- ====================================================================
-         大厅视图 (LOBBY VIEW)
+         大厅视图 (LOBBY VIEW - SWITCH / STEAM 现代主机海报流)
          ==================================================================== -->
     <div id="lobby-view">
-      <!-- 推荐 Banner -->
+      <!-- 主机控制台顶栏 (Console Hero Bar) -->
       <div class="hero-banner">
         <div class="hero-banner-header">
           <div class="hero-banner-text">
+            <div class="hero-system-status">
+              <span class="status-dot-pulse"></span>
+              <span>PARTY SYSTEM ONLINE · MATRIX v2.5</span>
+            </div>
             <h2>🔥 聚会游戏大厅 · 随时开战</h2>
-            <p>15款经典神作与博弈对抗，支持单兵闯关、双人同屏与4人大乱斗！</p>
+            <p>15 款经典独立物理与博弈神作，支持单兵突破、双人同屏拼手速与 4 人大乱斗！</p>
           </div>
           <button class="btn-random-pick" onclick="randomPickGame()" title="聚会破冰摇号">
-            <span class="random-dice-icon">🎲</span>
-            <span class="random-dice-text">随机挑一款！</span>
+            <span>🎲</span>
+            <span>随机开战！</span>
           </button>
         </div>
         <!-- 最近常玩快捷栏 -->
@@ -2386,350 +2516,1084 @@
       <!-- 分类标签 -->
       <div class="category-bar">
         <div class="category-pill active" onclick="filterLobby('ALL')">全部 (15)</div>
-        <div class="category-pill" onclick="filterLobby('4PLAYER')">👥👥 4人混战</div>
+        <div class="category-pill" onclick="filterLobby('4PLAYER')">👥👥 4人混战 (7)</div>
         <div class="category-pill" onclick="filterLobby('STRATEGY')">🧠 策略博弈 (6)</div>
         <div class="category-pill" onclick="filterLobby('MIND')">🔫 心理欺诈 (2)</div>
         <div class="category-pill" onclick="filterLobby('PHYSICS')">⚡ 物理对抗 (5)</div>
         <div class="category-pill" onclick="filterLobby('REFLEX')">⚡ 极限手速 (2)</div>
       </div>
 
-      <!-- 便当盒游戏网格 (Bento Grid) -->
+      <!-- 主机大比例海报瀑布流 (Console Game Grid) -->
       <div class="game-grid" id="lobby-game-grid">
-        <!-- 1. 魂斗罗 (Hero Card) -->
-        <div class="game-card hero-card" data-cat="PHYSICS" data-players="2" onclick="enterGame('CONTRA')">
-          <div class="card-top">
-            <div class="card-icon-box" style="background:rgba(239,68,68,0.2); border-color:rgba(239,68,68,0.4);">💥</div>
-            <div class="card-info">
-              <div class="card-title-row">
-                <span class="card-title">魂斗罗 (Contra: 丛林突袭)</span>
-                <span class="card-tag tag-hot">FC经典神作</span>
-              </div>
-              <div class="card-badges">
-                <span class="card-chip players">👥 1-2人</span>
-                <span class="card-chip">⏱️ 3-5分钟</span>
-                <span class="card-chip">难度 ⭐⭐⭐</span>
-              </div>
-            </div>
-          </div>
-          <div class="card-desc">经典横版跳跃射击！8向射击、S散弹/F旋转弹、基地核心Boss，附「30条命」秘籍！</div>
-          <div class="card-footer">
-            <span>支持按键/虚拟摇杆</span>
-            <span class="card-action-hint">立即突击 →</span>
-          </div>
-        </div>
 
-        <!-- 2. 步步为营 (Hero Card) -->
-        <div class="game-card hero-card" data-cat="STRATEGY" data-players="4" onclick="enterGame('QUORIDOR')">
-          <div class="card-top">
-            <div class="card-icon-box" style="background:rgba(59,130,246,0.2); border-color:rgba(59,130,246,0.4);">🧱</div>
-            <div class="card-info">
-              <div class="card-title-row">
-                <span class="card-title">步步为营 (Quoridor 4P)</span>
-                <span class="card-tag tag-hot">4人大乱斗</span>
-              </div>
-              <div class="card-badges">
-                <span class="card-chip players-4">👥👥 2-4人</span>
-                <span class="card-chip">⏱️ 2-4分钟</span>
-                <span class="card-chip">烧脑 ⭐⭐</span>
-              </div>
-            </div>
-          </div>
-          <div class="card-desc">门萨殿堂级博弈！全新升级官方4人对决，筑墙截杀与绝地突围，步步惊心！</div>
-          <div class="card-footer">
-            <span>支持人机/同屏/联机</span>
-            <span class="card-action-hint">开启围堵 →</span>
-          </div>
+    <div class="game-card hero-card" data-cat="PHYSICS" data-players="2" onclick="enterGame('CONTRA')">
+      <div class="card-cover-wrapper">
+        <div class="card-art-canvas">
+          
+  <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="contraBg" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#062e24"/>
+        <stop offset="50%" stop-color="#0b1e2e"/>
+        <stop offset="100%" stop-color="#180b26"/>
+      </linearGradient>
+      <linearGradient id="contraFire" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="#f59e0b"/>
+        <stop offset="100%" stop-color="#ef4444"/>
+      </linearGradient>
+      <filter id="contraGlow">
+        <feGaussianBlur stdDeviation="3" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <rect width="320" height="180" fill="url(#contraBg)"/>
+    <!-- 网格地表与丛林剪影 -->
+    <path d="M0,135 Q80,125 160,138 T320,130 L320,180 L0,180 Z" fill="#041812"/>
+    <path d="M0,150 L320,150 M0,165 L320,165" stroke="#059669" stroke-width="0.8" stroke-dasharray="4 4" opacity="0.3"/>
+    <path d="M-10,180 L30,120 L70,180 M260,180 L290,125 L330,180" fill="#022c22" opacity="0.6"/>
+    <!-- 远景机械堡垒与激光眼 -->
+    <rect x="230" y="70" width="75" height="65" rx="6" fill="#1e293b" stroke="#334155" stroke-width="2"/>
+    <circle cx="260" cy="98" r="14" fill="#0f172a" stroke="#ef4444" stroke-width="3"/>
+    <circle cx="260" cy="98" r="6" fill="#ef4444" filter="url(#contraGlow)"/>
+    <line x1="260" y1="98" x2="165" y2="125" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.8"/>
+    <!-- 比尔突击剪影 (红色头巾) -->
+    <g transform="translate(55, 88)">
+      <path d="M15,45 L15,22 L24,18 L32,24 L30,45 Z" fill="#38bdf8"/>
+      <circle cx="22" cy="12" r="8" fill="#fcd34d"/>
+      <path d="M14,10 L30,10 L28,7 L16,7 Z" fill="#ef4444"/>
+      <path d="M14,9 L5,14 M14,10 L7,18" stroke="#ef4444" stroke-width="2.2" stroke-linecap="round"/>
+      <rect x="24" y="16" width="34" height="6" rx="2" fill="#0f172a" transform="rotate(-25 24 16)"/>
+      <rect x="54" y="5" width="8" height="4" fill="#64748b" transform="rotate(-25 24 16)"/>
+    </g>
+    <!-- S 散弹散射光辉 -->
+    <g filter="url(#contraGlow)">
+      <circle cx="120" cy="80" r="5.5" fill="#fef08a"/>
+      <circle cx="145" cy="62" r="5" fill="#fbbf24"/>
+      <circle cx="170" cy="45" r="4.5" fill="#f59e0b"/>
+      <circle cx="148" cy="92" r="5" fill="#fbbf24"/>
+      <circle cx="175" cy="110" r="4.5" fill="#f59e0b"/>
+      <line x1="105" y1="84" x2="120" y2="80" stroke="#f59e0b" stroke-width="2"/>
+      <line x1="105" y1="84" x2="145" y2="62" stroke="#f59e0b" stroke-width="2"/>
+      <line x1="105" y1="84" x2="170" y2="45" stroke="#f59e0b" stroke-width="1.5"/>
+      <line x1="105" y1="84" x2="148" y2="92" stroke="#f59e0b" stroke-width="2"/>
+      <line x1="105" y1="84" x2="175" y2="110" stroke="#f59e0b" stroke-width="1.5"/>
+    </g>
+    <!-- 基地爆炸火花 -->
+    <polygon points="190,45 197,33 207,43 218,31 212,47 225,52 210,60 216,72 201,64 192,74 192,58" fill="url(#contraFire)" opacity="0.95" filter="url(#contraGlow)"/>
+  </svg>
         </div>
+        <div class="cover-badges">
+          <span class="badge-pill players">👥 1-2人</span>
+          <span class="badge-pill tag-hot">🔥 FC经典神作</span>
+        </div>
+        <div class="cover-overlay"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="title-group">
+            <div class="card-main-title">
+              <span>魂斗罗</span>
+              <span class="card-sub">CONTRA</span>
+            </div>
+            <div class="card-tagline">经典横版跳跃射击 · 丛林突击</div>
+          </div>
+          <div class="btn-play-action">开玩 ▶</div>
+        </div>
+        <div class="card-meta-chips">
+          <span class="meta-chip">⏱️ 3-5分钟</span>
+          <span class="meta-chip">难度 ⭐⭐⭐</span>
+          <span class="meta-chip accent">S散弹 / 30命秘籍</span>
+        </div>
+      </div>
+    </div>
+  
 
-        <!-- 2b. 四人飞行棋 (Hero Card) -->
-        <div class="game-card hero-card" data-cat="STRATEGY" data-players="4" onclick="enterGame('AEROPLANE')">
-          <div class="card-top">
-            <div class="card-icon-box" style="background:rgba(239,68,68,0.2); border-color:rgba(239,68,68,0.4);">✈️</div>
-            <div class="card-info">
-              <div class="card-title-row">
-                <span class="card-title">四人飞行棋 (Aeroplane Chess 4P)</span>
-                <span class="card-tag tag-hot">聚会必玩</span>
-              </div>
-              <div class="card-badges">
-                <span class="card-chip players-4">👥👥 1-4人对战</span>
-                <span class="card-chip">⏱️ 3-8分钟</span>
-                <span class="card-chip">欢乐 ⭐⭐⭐</span>
-              </div>
-            </div>
-          </div>
-          <div class="card-desc">童年经典桌游！掷六起飞、同色跳跃、超速飞越直穿中心、空中撞机截杀！支持人机对弈与同屏4人！</div>
-          <div class="card-footer">
-            <span>支持人机/同屏/联机</span>
-            <span class="card-action-hint">立即起飞 →</span>
-          </div>
-        </div>
+    <div class="game-card hero-card" data-cat="STRATEGY" data-players="4" onclick="enterGame('QUORIDOR')">
+      <div class="card-cover-wrapper">
+        <div class="card-art-canvas">
+          
+  <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="qBg" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#0f172a"/>
+        <stop offset="100%" stop-color="#1e1b4b"/>
+      </linearGradient>
+      <linearGradient id="woodWall" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#f59e0b"/>
+        <stop offset="100%" stop-color="#b45309"/>
+      </linearGradient>
+      <filter id="qGlow">
+        <feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <rect width="320" height="180" fill="url(#qBg)"/>
+    <!-- 3D 等距投影棋盘 -->
+    <g transform="translate(160, 92) scale(1.05, 0.6) rotate(45)">
+      <!-- 棋盘底座 -->
+      <rect x="-85" y="-85" width="170" height="170" rx="14" fill="#1e293b" stroke="#334155" stroke-width="3"/>
+      <!-- 棋盘格点 -->
+      <g stroke="#475569" stroke-width="1" fill="#0f172a">
+        <rect x="-70" y="-70" width="30" height="30" rx="4"/>
+        <rect x="-30" y="-70" width="30" height="30" rx="4"/>
+        <rect x="10" y="-70" width="30" height="30" rx="4"/>
+        <rect x="50" y="-70" width="30" height="30" rx="4"/>
+        
+        <rect x="-70" y="-30" width="30" height="30" rx="4"/>
+        <rect x="-30" y="-30" width="30" height="30" rx="4"/>
+        <rect x="10" y="-30" width="30" height="30" rx="4"/>
+        <rect x="50" y="-30" width="30" height="30" rx="4"/>
 
-        <!-- 3. 恶魔轮盘赌 -->
-        <div class="game-card" data-cat="MIND" data-players="2" onclick="enterGame('ROULETTE')">
-          <div class="card-top">
-            <div class="card-icon-box">🔫</div>
-            <div class="card-info">
-              <div class="card-title-row">
-                <span class="card-title">恶魔轮盘赌</span>
-                <span class="card-tag tag-new">生死对决</span>
-              </div>
-              <div class="card-badges">
-                <span class="card-chip players">👥 1-2人</span>
-                <span class="card-chip">⏱️ 2分钟</span>
-              </div>
-            </div>
-          </div>
-          <div class="card-desc">霰弹枪真假实弹心理战！手铐、放大镜、手锯极限逆转，玩的就是心跳！</div>
-          <div class="card-footer">
-            <span>道具策略</span>
-            <span class="card-action-hint">扣动扳机 →</span>
-          </div>
-        </div>
+        <rect x="-70" y="10" width="30" height="30" rx="4"/>
+        <rect x="-30" y="10" width="30" height="30" rx="4"/>
+        <rect x="10" y="10" width="30" height="30" rx="4"/>
+        <rect x="50" y="10" width="30" height="30" rx="4"/>
 
-        <!-- 4. 极光桌上冰球 -->
-        <div class="game-card" data-cat="PHYSICS" data-players="2" onclick="enterGame('HOCKEY')">
-          <div class="card-top">
-            <div class="card-icon-box">🏒</div>
-            <div class="card-info">
-              <div class="card-title-row">
-                <span class="card-title">极光桌上冰球</span>
-                <span class="card-tag tag-new">物理对撞</span>
-              </div>
-              <div class="card-badges">
-                <span class="card-chip players">👥 1-2人</span>
-                <span class="card-chip">⏱️ 1分钟</span>
-              </div>
-            </div>
-          </div>
-          <div class="card-desc">真实刚体弹性碰撞与墙面极速反弹，抢先推盘轰入对方球门！</div>
-          <div class="card-footer">
-            <span>双人同屏拼手速</span>
-            <span class="card-action-hint">极速开球 →</span>
-          </div>
+        <rect x="-70" y="50" width="30" height="30" rx="4"/>
+        <rect x="-30" y="50" width="30" height="30" rx="4"/>
+        <rect x="10" y="50" width="30" height="30" rx="4"/>
+        <rect x="50" y="50" width="30" height="30" rx="4"/>
+      </g>
+      <!-- 四色棋子 -->
+      <circle cx="-55" cy="25" r="11" fill="#38bdf8" filter="url(#qGlow)"/> <!-- 蓝 -->
+      <circle cx="25" cy="-55" r="11" fill="#ef4444" filter="url(#qGlow)"/> <!-- 红 -->
+      <circle cx="-55" cy="-55" r="10" fill="#10b981"/> <!-- 绿 -->
+      <circle cx="25" cy="25" r="10" fill="#f59e0b"/> <!-- 黄 -->
+      <!-- 阻挡木墙 -->
+      <rect x="-35" y="-15" width="70" height="9" rx="2" fill="url(#woodWall)" stroke="#fef3c7" stroke-width="1.8" filter="url(#qGlow)"/>
+      <rect x="5" y="-65" width="9" height="60" rx="2" fill="url(#woodWall)" stroke="#fef3c7" stroke-width="1.8"/>
+    </g>
+  </svg>
         </div>
+        <div class="cover-badges">
+          <span class="badge-pill players-4">👥👥 2-4人</span>
+          <span class="badge-pill tag-hot">🔥 4人大乱斗</span>
+        </div>
+        <div class="cover-overlay"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="title-group">
+            <div class="card-main-title">
+              <span>步步为营</span>
+              <span class="card-sub">QUORIDOR 4P</span>
+            </div>
+            <div class="card-tagline">门萨殿堂级博弈 · 筑墙截杀突围</div>
+          </div>
+          <div class="btn-play-action">开玩 ▶</div>
+        </div>
+        <div class="card-meta-chips">
+          <span class="meta-chip">⏱️ 2-4分钟</span>
+          <span class="meta-chip">烧脑 ⭐⭐⭐</span>
+          <span class="meta-chip accent">4人联机/AI混战</span>
+        </div>
+      </div>
+    </div>
+  
 
-        <!-- 5. 重力五子棋 -->
-        <div class="game-card" data-cat="STRATEGY" data-players="2" onclick="enterGame('GRAVITY')">
-          <div class="card-top">
-            <div class="card-icon-box">⬇️</div>
-            <div class="card-info">
-              <div class="card-title-row">
-                <span class="card-title">重力五子棋</span>
-                <span class="card-tag tag-hot">连珠博弈</span>
-              </div>
-              <div class="card-badges">
-                <span class="card-chip players">👥 1-2人</span>
-                <span class="card-chip">⏱️ 2分钟</span>
-              </div>
-            </div>
-          </div>
-          <div class="card-desc">9x9 纵向重力滑落连珠，小心别给对手送出绝杀垫脚石！</div>
-          <div class="card-footer">
-            <span>经典连珠创新</span>
-            <span class="card-action-hint">落子对决 →</span>
-          </div>
+    <div class="game-card hero-card" data-cat="STRATEGY" data-players="4" onclick="enterGame('AEROPLANE')">
+      <div class="card-cover-wrapper">
+        <div class="card-art-canvas">
+          
+  <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="aeroBg" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#0284c7"/>
+        <stop offset="60%" stop-color="#1e1b4b"/>
+        <stop offset="100%" stop-color="#0f172a"/>
+      </linearGradient>
+      <linearGradient id="diceGold" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#fef08a"/>
+        <stop offset="100%" stop-color="#f59e0b"/>
+      </linearGradient>
+      <filter id="aeroGlow">
+        <feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <rect width="320" height="180" fill="url(#aeroBg)"/>
+    <!-- 棋盘跑道环线与十字导航航线 -->
+    <circle cx="160" cy="95" r="55" fill="none" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="6 4" opacity="0.4"/>
+    <line x1="160" y1="35" x2="160" y2="155" stroke="#f43f5e" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.5"/>
+    <line x1="100" y1="95" x2="220" y2="95" stroke="#facc15" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.5"/>
+    <!-- 四色停机坪角落 -->
+    <rect x="35" y="30" width="34" height="34" rx="8" fill="#10b981" opacity="0.3" stroke="#34d399" stroke-width="1.5"/>
+    <rect x="250" y="30" width="34" height="34" rx="8" fill="#3b82f6" opacity="0.3" stroke="#60a5fa" stroke-width="1.5"/>
+    <rect x="35" y="125" width="34" height="34" rx="8" fill="#f59e0b" opacity="0.3" stroke="#fbbf24" stroke-width="1.5"/>
+    <rect x="250" y="125" width="34" height="34" rx="8" fill="#ef4444" opacity="0.3" stroke="#f87171" stroke-width="1.5"/>
+    <!-- 飞行尾迹弧光 (Vapor trail) -->
+    <path d="M45,140 Q130,40 230,85" stroke="#ffffff" stroke-width="3" fill="none" opacity="0.75" filter="url(#aeroGlow)"/>
+    <path d="M45,140 Q130,40 230,85" stroke="#fef08a" stroke-width="1" fill="none"/>
+    <!-- 红色超音速战机 (正在疾速滑翔突进) -->
+    <g transform="translate(230, 85) rotate(25)">
+      <!-- 机翼与机身 -->
+      <polygon points="18,0 -12,-16 -4,0 -12,16" fill="#ef4444" stroke="#fecaca" stroke-width="1.5" filter="url(#aeroGlow)"/>
+      <polygon points="18,0 -6,-5 0,0 -6,5" fill="#ffffff"/>
+      <!-- 机尾喷射火焰 -->
+      <polygon points="-12,0 -22,-3 -18,0 -22,3" fill="#f97316"/>
+    </g>
+    <!-- 蓝色僚机 -->
+    <g transform="translate(95, 65) rotate(-35)">
+      <polygon points="14,0 -9,-12 -3,0 -9,12" fill="#38bdf8" stroke="#e0f2fe" stroke-width="1.2"/>
+    </g>
+    <!-- 幸运点数 6 金色飞行骰子 -->
+    <g transform="translate(142, 68)">
+      <rect x="0" y="0" width="36" height="36" rx="8" fill="url(#diceGold)" stroke="#ffffff" stroke-width="2" filter="url(#aeroGlow)"/>
+      <!-- 点数 6 -->
+      <circle cx="10" cy="9" r="2.8" fill="#ef4444"/>
+      <circle cx="10" cy="18" r="2.8" fill="#ef4444"/>
+      <circle cx="10" cy="27" r="2.8" fill="#ef4444"/>
+      <circle cx="26" cy="9" r="2.8" fill="#ef4444"/>
+      <circle cx="26" cy="18" r="2.8" fill="#ef4444"/>
+      <circle cx="26" cy="27" r="2.8" fill="#ef4444"/>
+    </g>
+    <!-- 胜利终点星芒 -->
+    <polygon points="160,20 163,27 170,27 165,32 167,39 160,35 153,39 155,32 150,27 157,27" fill="#facc15" filter="url(#aeroGlow)"/>
+  </svg>
         </div>
+        <div class="cover-badges">
+          <span class="badge-pill players-4">👥👥 1-4人</span>
+          <span class="badge-pill tag-hot">✈️ 经典童年</span>
+        </div>
+        <div class="cover-overlay"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="title-group">
+            <div class="card-main-title">
+              <span>四人飞行棋</span>
+              <span class="card-sub">AEROPLANE CHESS</span>
+            </div>
+            <div class="card-tagline">投骰起飞撞机截杀 · 捷径飞越直通终点</div>
+          </div>
+          <div class="btn-play-action">开玩 ▶</div>
+        </div>
+        <div class="card-meta-chips">
+          <span class="meta-chip">⏱️ 3-8分钟</span>
+          <span class="meta-chip">欢乐 ⭐⭐⭐</span>
+          <span class="meta-chip accent">人机对战 / 同屏4人</span>
+        </div>
+      </div>
+    </div>
+  
 
-        <!-- 5b. 重力四子棋 (Connect Four) -->
-        <div class="game-card" data-cat="STRATEGY" data-players="2" onclick="enterGame('GRAVITY4')">
-          <div class="card-top">
-            <div class="card-icon-box" style="background:rgba(251,191,36,0.18);border-color:rgba(251,191,36,0.4);">🟡</div>
-            <div class="card-info">
-              <div class="card-title-row">
-                <span class="card-title">重力四子棋 (Connect Four)</span>
-                <span class="card-tag tag-hot">经典名作</span>
-              </div>
-              <div class="card-badges">
-                <span class="card-chip players">👥 1-2人</span>
-                <span class="card-chip">⏱️ 1分钟</span>
-                <span class="card-chip">难度 ⭐⭐</span>
-              </div>
-            </div>
-          </div>
-          <div class="card-desc">经典 7×6 重力连四棋！棋子自由落体堆叠，横竖斜连成 4 颗者获胜！全球最畅销桌游之一！</div>
-          <div class="card-footer">
-            <span>连续四子制霸</span>
-            <span class="card-action-hint">投子连四 →</span>
-          </div>
+    <div class="game-card hero-card" data-cat="PHYSICS" data-players="4" onclick="enterGame('TANKTROUBLE')">
+      <div class="card-cover-wrapper">
+        <div class="card-art-canvas">
+          
+  <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="ttBg" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#0f172a"/>
+        <stop offset="50%" stop-color="#111827"/>
+        <stop offset="100%" stop-color="#1e293b"/>
+      </linearGradient>
+      <filter id="ttGlow">
+        <feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <rect width="320" height="180" fill="url(#ttBg)"/>
+    <!-- 迷宫墙体架构 -->
+    <g fill="#334155" stroke="#475569" stroke-width="1.2">
+      <rect x="25" y="22" width="270" height="8" rx="2"/>
+      <rect x="25" y="152" width="270" height="8" rx="2"/>
+      <rect x="25" y="22" width="8" height="138" rx="2"/>
+      <rect x="287" y="22" width="8" height="138" rx="2"/>
+      <!-- 内部障碍隔断 -->
+      <rect x="95" y="65" width="8" height="70" rx="2"/>
+      <rect x="95" y="65" width="65" height="8" rx="2"/>
+      <rect x="215" y="45" width="8" height="75" rx="2"/>
+      <rect x="165" y="115" width="58" height="8" rx="2"/>
+    </g>
+    <!-- 绿色坦克 (P1) -->
+    <g transform="translate(60, 100)">
+      <rect x="0" y="2" width="22" height="16" rx="3" fill="#16a34a" stroke="#22c55e" stroke-width="1"/>
+      <circle cx="11" cy="10" r="5" fill="#15803d"/>
+      <line x1="11" y1="10" x2="26" y2="10" stroke="#4ade80" stroke-width="2.5" stroke-linecap="round"/>
+    </g>
+    <!-- 红色坦克 (P2) -->
+    <g transform="translate(240, 65)">
+      <rect x="0" y="2" width="22" height="16" rx="3" fill="#dc2626" stroke="#ef4444" stroke-width="1"/>
+      <circle cx="11" cy="10" r="5" fill="#991b1b"/>
+      <line x1="11" y1="10" x2="-4" y2="10" stroke="#f87171" stroke-width="2.5" stroke-linecap="round"/>
+    </g>
+    <!-- 空投导弹箱 -->
+    <g transform="translate(145, 80)">
+      <rect x="0" y="0" width="18" height="18" rx="3" fill="#78350f" stroke="#f59e0b" stroke-width="1.2"/>
+      <text x="3" y="13" font-size="11" fill="#facc15">🚀</text>
+    </g>
+    <!-- 子弹反弹折射轨迹 -->
+    <path d="M86,110 L160,115 L215,75 L236,75" stroke="#facc15" stroke-width="2.5" stroke-dasharray="4 3" fill="none" filter="url(#ttGlow)"/>
+    <circle cx="215" cy="75" r="4.5" fill="#ef4444" filter="url(#ttGlow)"/>
+    <circle cx="236" cy="75" r="4" fill="#facc15" filter="url(#ttGlow)"/>
+  </svg>
         </div>
+        <div class="cover-badges">
+          <span class="badge-pill players-4">👥 1-3人</span>
+          <span class="badge-pill tag-new">🛡️ 经典弹射神作</span>
+        </div>
+        <div class="cover-overlay"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="title-group">
+            <div class="card-main-title">
+              <span>坦克震荡</span>
+              <span class="card-sub">TANK TROUBLE</span>
+            </div>
+            <div class="card-tagline">迷宫子弹反弹对轰 · 小心误伤自己</div>
+          </div>
+          <div class="btn-play-action">开玩 ▶</div>
+        </div>
+        <div class="card-meta-chips">
+          <span class="meta-chip">⏱️ 1分钟</span>
+          <span class="meta-chip">难度 ⭐⭐</span>
+          <span class="meta-chip accent">ESDF / 方向键 / 鼠标</span>
+        </div>
+      </div>
+    </div>
+  
 
-        <!-- 6. 3D 立体五子棋 -->
-        <div class="game-card" data-cat="STRATEGY" data-players="2" onclick="enterGame('GRAVITY3D')">
-          <div class="card-top">
-            <div class="card-icon-box">🧊</div>
-            <div class="card-info">
-              <div class="card-title-row">
-                <span class="card-title">3D 立体五子棋</span>
-                <span class="card-tag tag-3d">3D空间</span>
-              </div>
-              <div class="card-badges">
-                <span class="card-chip players">👥 1-2人</span>
-                <span class="card-chip">⏱️ 3分钟</span>
-              </div>
-            </div>
-          </div>
-          <div class="card-desc">胡桃木实木与不锈钢立柱，5x5x5 空间立体 13 维大对角线绝杀！</div>
-          <div class="card-footer">
-            <span>360° 空间旋转</span>
-            <span class="card-action-hint">立体穿珠 →</span>
-          </div>
+    <div class="game-card" data-cat="MIND" data-players="2" onclick="enterGame('ROULETTE')">
+      <div class="card-cover-wrapper">
+        <div class="card-art-canvas">
+          
+  <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="rBg" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#180509"/>
+        <stop offset="100%" stop-color="#05070e"/>
+      </linearGradient>
+      <radialGradient id="rLight" cx="50%" cy="40%" r="60%">
+        <stop offset="0%" stop-color="#ef4444" stop-opacity="0.25"/>
+        <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+      </radialGradient>
+      <filter id="rGlow">
+        <feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <rect width="320" height="180" fill="url(#rBg)"/>
+    <rect width="320" height="180" fill="url(#rLight)"/>
+    <!-- 桌面心跳线 -->
+    <path d="M10,135 L100,135 L112,112 L124,155 L136,122 L146,140 L156,135 L310,135" stroke="#ef4444" stroke-width="1.5" fill="none" opacity="0.4"/>
+    <!-- 12号霰弹枪剪影 -->
+    <g transform="translate(65, 68) rotate(-10)">
+      <rect x="0" y="20" width="165" height="15" rx="2" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
+      <rect x="0" y="25" width="165" height="4" fill="#0f172a"/>
+      <rect x="135" y="20" width="45" height="18" rx="2" fill="#334155"/>
+      <path d="M180,22 Q215,25 225,50 L210,55 Q200,35 180,32 Z" fill="#78350f" stroke="#92400e" stroke-width="1.2"/>
+      <path d="M145,38 Q150,52 140,55 L135,52 Q143,48 140,38 Z" fill="#64748b"/>
+    </g>
+    <!-- 红色实弹 & 蓝色空包弹 -->
+    <g transform="translate(45, 108)">
+      <!-- 实弹 (红) -->
+      <rect x="0" y="0" width="19" height="36" rx="3" fill="#dc2626" stroke="#f87171" stroke-width="1" filter="url(#rGlow)"/>
+      <rect x="0" y="28" width="19" height="8" rx="1" fill="#f59e0b"/>
+      <text x="3" y="17" font-family="'Impact', sans-serif" font-size="9" fill="#fef08a">LIVE</text>
+    </g>
+    <g transform="translate(75, 112)">
+      <!-- 空包弹 (蓝) -->
+      <rect x="0" y="0" width="19" height="36" rx="3" fill="#1d4ed8" stroke="#60a5fa" stroke-width="1"/>
+      <rect x="0" y="28" width="19" height="8" rx="1" fill="#94a3b8"/>
+      <text x="1" y="17" font-family="'Impact', sans-serif" font-size="8" fill="#93c5fd">BLANK</text>
+    </g>
+    <!-- 手铐与金属道具 -->
+    <circle cx="250" cy="115" r="17" fill="none" stroke="#94a3b8" stroke-width="3"/>
+    <circle cx="272" cy="125" r="17" fill="none" stroke="#94a3b8" stroke-width="3"/>
+    <line x1="260" y1="120" x2="266" y2="122" stroke="#cbd5e1" stroke-width="4"/>
+  </svg>
         </div>
+        <div class="cover-badges">
+          <span class="badge-pill players">👥 1-2人</span>
+          <span class="badge-pill tag-hot">🔫 生死博弈</span>
+        </div>
+        <div class="cover-overlay"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="title-group">
+            <div class="card-main-title">
+              <span>恶魔轮盘赌</span>
+              <span class="card-sub">ROULETTE</span>
+            </div>
+            <div class="card-tagline">霰弹枪实弹空包对赌 · 玩的就是心跳</div>
+          </div>
+          <div class="btn-play-action">开玩 ▶</div>
+        </div>
+        <div class="card-meta-chips">
+          <span class="meta-chip">⏱️ 2分钟</span>
+          <span class="meta-chip">心理博弈</span>
+          <span class="meta-chip accent">手铐/手锯/放大镜</span>
+        </div>
+      </div>
+    </div>
+  
 
-        <!-- 6b. 3D 立体四子棋 -->
-        <div class="game-card" data-cat="STRATEGY" data-players="2" onclick="enterGame('GRAVITY3D4')">
-          <div class="card-top">
-            <div class="card-icon-box" style="background:rgba(167,139,250,0.18);border-color:rgba(167,139,250,0.4);">💜</div>
-            <div class="card-info">
-              <div class="card-title-row">
-                <span class="card-title">3D 立体四子棋</span>
-                <span class="card-tag tag-3d">3D空间</span>
-              </div>
-              <div class="card-badges">
-                <span class="card-chip players">👥 1-2人</span>
-                <span class="card-chip">⏱️ 2分钟</span>
-                <span class="card-chip">难度 ⭐⭐⭐</span>
-              </div>
-            </div>
-          </div>
-          <div class="card-desc">4×4×4 三维空间魔方！在76条胜利线上竞速连四，比五子棋更激烈的立体棋局！</div>
-          <div class="card-footer">
-            <span>76条立体胜线</span>
-            <span class="card-action-hint">空间连四 →</span>
-          </div>
+    <div class="game-card" data-cat="PHYSICS" data-players="2" onclick="enterGame('HOCKEY')">
+      <div class="card-cover-wrapper">
+        <div class="card-art-canvas">
+          
+  <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="hBg" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#020617"/>
+        <stop offset="50%" stop-color="#082f49"/>
+        <stop offset="100%" stop-color="#0f172a"/>
+      </linearGradient>
+      <filter id="hGlow">
+        <feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <rect width="320" height="180" fill="url(#hBg)"/>
+    <!-- 赛博冰场 -->
+    <rect x="25" y="25" width="270" height="130" rx="20" fill="#030712" stroke="#0284c7" stroke-width="2"/>
+    <line x1="160" y1="25" x2="160" y2="155" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <circle cx="160" cy="90" r="32" fill="none" stroke="#0284c7" stroke-width="1.5"/>
+    <circle cx="160" cy="90" r="4" fill="#38bdf8"/>
+    <!-- 球门弧 -->
+    <path d="M25,65 Q50,90 25,115" stroke="#38bdf8" stroke-width="2" fill="none"/>
+    <path d="M295,65 Q270,90 295,115" stroke="#ef4444" stroke-width="2" fill="none"/>
+    <!-- 蓝色推盘 (P1) -->
+    <circle cx="85" cy="85" r="19" fill="#0284c7" stroke="#38bdf8" stroke-width="3" filter="url(#hGlow)"/>
+    <circle cx="85" cy="85" r="8" fill="#e0f2fe"/>
+    <!-- 红色推盘 (P2) -->
+    <circle cx="235" cy="95" r="19" fill="#dc2626" stroke="#f87171" stroke-width="3" filter="url(#hGlow)"/>
+    <circle cx="235" cy="95" r="8" fill="#fee2e2"/>
+    <!-- 极速飞驰冰球与光轨 -->
+    <line x1="95" y1="88" x2="185" y2="92" stroke="#facc15" stroke-width="2.5" stroke-linecap="round" opacity="0.7"/>
+    <circle cx="190" cy="92" r="9" fill="#facc15" stroke="#ffffff" stroke-width="2" filter="url(#hGlow)"/>
+    <!-- 火花粒子 -->
+    <circle cx="205" cy="88" r="1.5" fill="#fef08a"/>
+    <circle cx="210" cy="98" r="2" fill="#facc15"/>
+    <circle cx="178" cy="82" r="1.5" fill="#38bdf8"/>
+  </svg>
         </div>
+        <div class="cover-badges">
+          <span class="badge-pill players">👥 1-2人</span>
+          <span class="badge-pill tag-new">🏒 极速对撞</span>
+        </div>
+        <div class="cover-overlay"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="title-group">
+            <div class="card-main-title">
+              <span>极光桌上冰球</span>
+              <span class="card-sub">AIR HOCKEY</span>
+            </div>
+            <div class="card-tagline">真实刚体反弹碰撞 · 抢先推球破门</div>
+          </div>
+          <div class="btn-play-action">开玩 ▶</div>
+        </div>
+        <div class="card-meta-chips">
+          <span class="meta-chip">⏱️ 1分钟</span>
+          <span class="meta-chip">手速对决</span>
+          <span class="meta-chip accent">同屏双人对战</span>
+        </div>
+      </div>
+    </div>
+  
 
-        <!-- 7. 拔刀居合斩 -->
-        <div class="game-card" data-cat="REFLEX" data-players="4" onclick="enterGame('IAIDO')">
-          <div class="card-top">
-            <div class="card-icon-box">⚡</div>
-            <div class="card-info">
-              <div class="card-title-row">
-                <span class="card-title">拔刀居合斩</span>
-                <span class="card-tag tag-reflex">极限反应</span>
-              </div>
-              <div class="card-badges">
-                <span class="card-chip players-4">👥 1-4人轮战</span>
-                <span class="card-chip">⏱️ 10秒</span>
-              </div>
-            </div>
-          </div>
-          <div class="card-desc">屏息静气！红光「斬」出鞘刹那拼毫秒手速，抢跑直接判负！</div>
-          <div class="card-footer">
-            <span>聚会秒决胜负</span>
-            <span class="card-action-hint">拔刀对决 →</span>
-          </div>
+    <div class="game-card" data-cat="STRATEGY" data-players="2" onclick="enterGame('GRAVITY')">
+      <div class="card-cover-wrapper">
+        <div class="card-art-canvas">
+          
+  <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="gravBg" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#0b132b"/>
+        <stop offset="100%" stop-color="#1c2541"/>
+      </linearGradient>
+      <filter id="gravGlow">
+        <feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <rect width="320" height="180" fill="url(#gravBg)"/>
+    <!-- 垂直下落槽道 -->
+    <g stroke="#3a506b" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.5">
+      <line x1="80" y1="20" x2="80" y2="160"/>
+      <line x1="120" y1="20" x2="120" y2="160"/>
+      <line x1="160" y1="20" x2="160" y2="160"/>
+      <line x1="200" y1="20" x2="200" y2="160"/>
+      <line x1="240" y1="20" x2="240" y2="160"/>
+    </g>
+    <!-- 五连珠斜线光辉 -->
+    <line x1="75" y1="145" x2="245" y2="45" stroke="#38bdf8" stroke-width="4.5" filter="url(#gravGlow)" opacity="0.85"/>
+    <!-- 棋子排布 -->
+    <circle cx="80" cy="142" r="13" fill="#0284c7" stroke="#38bdf8" stroke-width="2" filter="url(#gravGlow)"/>
+    <circle cx="120" cy="117" r="13" fill="#0284c7" stroke="#38bdf8" stroke-width="2" filter="url(#gravGlow)"/>
+    <circle cx="160" cy="92" r="13" fill="#0284c7" stroke="#38bdf8" stroke-width="2" filter="url(#gravGlow)"/>
+    <circle cx="200" cy="67" r="13" fill="#0284c7" stroke="#38bdf8" stroke-width="2" filter="url(#gravGlow)"/>
+    <circle cx="240" cy="42" r="13" fill="#0284c7" stroke="#38bdf8" stroke-width="2" filter="url(#gravGlow)"/>
+    <!-- 对手金色棋子 -->
+    <circle cx="120" cy="142" r="12" fill="#d97706" stroke="#fbbf24" stroke-width="2"/>
+    <circle cx="160" cy="142" r="12" fill="#d97706" stroke="#fbbf24" stroke-width="2"/>
+    <circle cx="160" cy="117" r="12" fill="#d97706" stroke="#fbbf24" stroke-width="2"/>
+    <circle cx="200" cy="142" r="12" fill="#d97706" stroke="#fbbf24" stroke-width="2"/>
+    <!-- 正在下坠的棋子 -->
+    <circle cx="240" cy="20" r="10" fill="#38bdf8" opacity="0.8"/>
+    <line x1="240" y1="8" x2="240" y2="28" stroke="#fff" stroke-width="1.5"/>
+  </svg>
         </div>
+        <div class="cover-badges">
+          <span class="badge-pill players">👥 1-2人</span>
+          <span class="badge-pill tag-hot">⬇️ 连珠创新</span>
+        </div>
+        <div class="cover-overlay"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="title-group">
+            <div class="card-main-title">
+              <span>重力五子棋</span>
+              <span class="card-sub">GRAVITY GOMOKU</span>
+            </div>
+            <div class="card-tagline">纵向重力滑落连珠 · 谨防送绝杀底座</div>
+          </div>
+          <div class="btn-play-action">开玩 ▶</div>
+        </div>
+        <div class="card-meta-chips">
+          <span class="meta-chip">⏱️ 2分钟</span>
+          <span class="meta-chip">烧脑 ⭐⭐</span>
+          <span class="meta-chip accent">9×9 导轨下落</span>
+        </div>
+      </div>
+    </div>
+  
 
-        <!-- 8. 皇家大话骰 -->
-        <div class="game-card" data-cat="MIND" data-players="4" onclick="enterGame('LIARSDICE')">
-          <div class="card-top">
-            <div class="card-icon-box">🎲</div>
-            <div class="card-info">
-              <div class="card-title-row">
-                <span class="card-title">皇家大话骰</span>
-                <span class="card-tag tag-hot">聚会之王</span>
-              </div>
-              <div class="card-badges">
-                <span class="card-chip players-4">👥👥 2-4人</span>
-                <span class="card-chip">⏱️ 2分钟</span>
-              </div>
-            </div>
-          </div>
-          <div class="card-desc">暗摇点数，虚实试探！敢不敢跟我叫？当场质疑「开」！</div>
-          <div class="card-footer">
-            <span>酒吧聚会首选</span>
-            <span class="card-action-hint">摇盅叫点 →</span>
-          </div>
-        </div>
+    <div class="game-card" data-cat="STRATEGY" data-players="2" onclick="enterGame('GRAVITY4')">
+      <div class="card-cover-wrapper">
+        <div class="card-art-canvas">
+          
+  <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="g4Bg" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#1e1b4b"/>
+        <stop offset="100%" stop-color="#312e81"/>
+      </linearGradient>
+      <filter id="g4Glow">
+        <feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <rect width="320" height="180" fill="url(#g4Bg)"/>
+    <!-- 经典蓝色立式立架 -->
+    <g transform="translate(60, 22)">
+      <rect x="0" y="10" width="200" height="136" rx="14" fill="#2563eb" stroke="#60a5fa" stroke-width="2"/>
+      <path d="M-10,142 L210,142 L200,152 L0,152 Z" fill="#1d4ed8"/>
+      <!-- 圆孔与棋子 -->
+      <circle cx="30" cy="35" r="11" fill="#1e293b"/>
+      <circle cx="65" cy="35" r="11" fill="#1e293b"/>
+      <circle cx="100" cy="35" r="11" fill="#1e293b"/>
+      <circle cx="135" cy="35" r="11" fill="#fbbf24" filter="url(#g4Glow)"/>
+      <circle cx="170" cy="35" r="11" fill="#1e293b"/>
 
-        <!-- 9. 物理飞车相扑 -->
-        <div class="game-card" data-cat="PHYSICS" data-players="4" onclick="enterGame('SUMO')">
-          <div class="card-top">
-            <div class="card-icon-box">🚗</div>
-            <div class="card-info">
-              <div class="card-title-row">
-                <span class="card-title">物理飞车相扑</span>
-                <span class="card-tag tag-new">魔性乱斗</span>
-              </div>
-              <div class="card-badges">
-                <span class="card-chip players-4">👥 1-4人轮战</span>
-                <span class="card-chip">⏱️ 30秒</span>
-              </div>
-            </div>
-          </div>
-          <div class="card-desc">按住加速喷射，松开旋转瞄准！把对手彻底撞出擂台深渊！</div>
-          <div class="card-footer">
-            <span>魔性物理碰撞</span>
-            <span class="card-action-hint">狂暴冲撞 →</span>
-          </div>
-        </div>
+      <circle cx="30" cy="65" r="11" fill="#1e293b"/>
+      <circle cx="65" cy="65" r="11" fill="#1e293b"/>
+      <circle cx="100" cy="65" r="11" fill="#fbbf24" filter="url(#g4Glow)"/>
+      <circle cx="135" cy="65" r="11" fill="#ef4444"/>
+      <circle cx="170" cy="65" r="11" fill="#1e293b"/>
 
-        <!-- 10. 极限抛物线 -->
-        <div class="game-card" data-cat="PHYSICS" data-players="2" onclick="enterGame('TANK')">
-          <div class="card-top">
-            <div class="card-icon-box">🎯</div>
-            <div class="card-info">
-              <div class="card-title-row">
-                <span class="card-title">极限抛物线</span>
-                <span class="card-tag tag-new">弹道对轰</span>
-              </div>
-              <div class="card-badges">
-                <span class="card-chip players">👥 1-2人</span>
-                <span class="card-chip">⏱️ 2分钟</span>
-              </div>
-            </div>
-          </div>
-          <div class="card-desc">随机地形可破坏弹坑！测风向、定仰角、调蓄力高抛灭敌！</div>
-          <div class="card-footer">
-            <span>经典百战天虫风</span>
-            <span class="card-action-hint">精准炮击 →</span>
-          </div>
-        </div>
+      <circle cx="30" cy="95" r="11" fill="#1e293b"/>
+      <circle cx="65" cy="95" r="11" fill="#fbbf24" filter="url(#g4Glow)"/>
+      <circle cx="100" cy="95" r="11" fill="#ef4444"/>
+      <circle cx="135" cy="95" r="11" fill="#ef4444"/>
+      <circle cx="170" cy="95" r="11" fill="#fbbf24"/>
 
-        <!-- 11. 极光叠叠高 -->
-        <div class="game-card" data-cat="REFLEX" data-players="4" onclick="enterGame('STACK')">
-          <div class="card-top">
-            <div class="card-icon-box">🥞</div>
-            <div class="card-info">
-              <div class="card-title-row">
-                <span class="card-title">极光叠叠高</span>
-                <span class="card-tag tag-reflex">强迫症福音</span>
-              </div>
-              <div class="card-badges">
-                <span class="card-chip players-4">👥 1-4人轮战</span>
-                <span class="card-chip">⏱️ 45秒</span>
-              </div>
-            </div>
-          </div>
-          <div class="card-desc">严丝合缝触发八度天籁音阶！错位多余部分直接一刀削掉！</div>
-          <div class="card-footer">
-            <span>音阶治愈节奏</span>
-            <span class="card-action-hint">完美堆叠 →</span>
-          </div>
-        </div>
+      <circle cx="30" cy="125" r="11" fill="#fbbf24" filter="url(#g4Glow)"/>
+      <circle cx="65" cy="125" r="11" fill="#ef4444"/>
+      <circle cx="100" cy="125" r="11" fill="#fbbf24"/>
+      <circle cx="135" cy="125" r="11" fill="#ef4444"/>
+      <circle cx="170" cy="125" r="11" fill="#fbbf24"/>
 
-        <!-- 12. 坦克震荡 / 坦克动荡 -->
-        <div class="game-card" data-cat="PHYSICS" data-players="4" onclick="enterGame('TANKTROUBLE')">
-          <div class="card-top">
-            <div class="card-icon-box" style="background:rgba(34,197,94,0.2); border-color:rgba(34,197,94,0.4);">🛡️</div>
-            <div class="card-info">
-              <div class="card-title-row">
-                <span class="card-title">坦克震荡 / 坦克动荡 (Tank Trouble)</span>
-                <span class="card-tag tag-new">经典弹射神作</span>
-              </div>
-              <div class="card-badges">
-                <span class="card-chip players-4">👥 1-3人对战</span>
-                <span class="card-chip">⏱️ 1分钟</span>
-                <span class="card-chip">难度 ⭐⭐</span>
-              </div>
-            </div>
-          </div>
-          <div class="card-desc">经典迷宫弹射对轰！子弹反弹穿墙借力，小心反弹误伤自己！支持 ESDF / 方向键 / 鼠标三区同屏！</div>
-          <div class="card-footer">
-            <span>支持按键/双人同屏</span>
-            <span class="card-action-hint">开炮射击 →</span>
-          </div>
+      <!-- 连四贯穿线 -->
+      <line x1="30" y1="125" x2="135" y2="35" stroke="#fef08a" stroke-width="4" filter="url(#g4Glow)"/>
+    </g>
+  </svg>
         </div>
+        <div class="cover-badges">
+          <span class="badge-pill players">👥 1-2人</span>
+          <span class="badge-pill tag-hot">🟡 经典名作</span>
+        </div>
+        <div class="cover-overlay"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="title-group">
+            <div class="card-main-title">
+              <span>重力四子棋</span>
+              <span class="card-sub">CONNECT FOUR</span>
+            </div>
+            <div class="card-tagline">全球经典 7×6 连四棋 · 自由落体连珠</div>
+          </div>
+          <div class="btn-play-action">开玩 ▶</div>
+        </div>
+        <div class="card-meta-chips">
+          <span class="meta-chip">⏱️ 1分钟</span>
+          <span class="meta-chip">老少皆宜</span>
+          <span class="meta-chip accent">横竖斜连四获胜</span>
+        </div>
+      </div>
+    </div>
+  
+
+    <div class="game-card" data-cat="STRATEGY" data-players="2" onclick="enterGame('GRAVITY3D')">
+      <div class="card-cover-wrapper">
+        <div class="card-art-canvas">
+          
+  <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="g3dBg" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#0b0f19"/>
+        <stop offset="100%" stop-color="#1e1e38"/>
+      </linearGradient>
+      <filter id="g3dGlow">
+        <feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <rect width="320" height="180" fill="url(#g3dBg)"/>
+    <!-- 3D 等距木质底座 -->
+    <g transform="translate(160, 108)">
+      <polygon points="0,-35 105,0 0,35 -105,0" fill="#334155" stroke="#64748b" stroke-width="2"/>
+      <polygon points="-105,0 0,35 0,48 -105,13" fill="#1e293b"/>
+      <polygon points="0,35 105,0 105,13 0,48" fill="#0f172a"/>
+      <!-- 金属立柱点阵 -->
+      <g stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round">
+        <line x1="-60" y1="-10" x2="-60" y2="-68"/>
+        <line x1="-30" y1="0" x2="-30" y2="-58"/>
+        <line x1="0" y1="10" x2="0" y2="-48"/>
+        <line x1="30" y1="0" x2="30" y2="-58"/>
+        <line x1="60" y1="-10" x2="60" y2="-68"/>
+      </g>
+      <!-- 珠子 (穿串) -->
+      <circle cx="-60" cy="-20" r="8" fill="#34d399"/>
+      <circle cx="-60" cy="-36" r="8" fill="#fbbf24"/>
+      <circle cx="-30" cy="-10" r="8" fill="#fbbf24"/>
+      <circle cx="0" cy="0" r="8" fill="#34d399"/>
+      <circle cx="0" cy="-16" r="8" fill="#38bdf8" filter="url(#g3dGlow)"/>
+      <circle cx="30" cy="-32" r="8" fill="#38bdf8" filter="url(#g3dGlow)"/>
+      <circle cx="60" cy="-48" r="8" fill="#38bdf8" filter="url(#g3dGlow)"/>
+      <!-- 空间连线穿透光束 -->
+      <line x1="-60" y1="-16" x2="70" y2="-52" stroke="#38bdf8" stroke-width="3" filter="url(#g3dGlow)"/>
+    </g>
+  </svg>
+        </div>
+        <div class="cover-badges">
+          <span class="badge-pill players">👥 1-2人</span>
+          <span class="badge-pill tag-3d">🧊 3D空间</span>
+        </div>
+        <div class="cover-overlay"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="title-group">
+            <div class="card-main-title">
+              <span>3D 立体五子棋</span>
+              <span class="card-sub">3D GOMOKU</span>
+            </div>
+            <div class="card-tagline">5×5×5 空间胡桃木立柱 · 13维立体绝杀</div>
+          </div>
+          <div class="btn-play-action">开玩 ▶</div>
+        </div>
+        <div class="card-meta-chips">
+          <span class="meta-chip">⏱️ 3分钟</span>
+          <span class="meta-chip">难度 ⭐⭐⭐</span>
+          <span class="meta-chip accent">360°空间旋转</span>
+        </div>
+      </div>
+    </div>
+  
+
+    <div class="game-card" data-cat="STRATEGY" data-players="2" onclick="enterGame('GRAVITY3D4')">
+      <div class="card-cover-wrapper">
+        <div class="card-art-canvas">
+          
+  <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="g3d4Bg" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#140628"/>
+        <stop offset="100%" stop-color="#2a0d45"/>
+      </linearGradient>
+      <filter id="g3d4Glow">
+        <feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <rect width="320" height="180" fill="url(#g3d4Bg)"/>
+    <!-- 赛博 4x4x4 魔方空间 -->
+    <g transform="translate(160, 105)">
+      <polygon points="0,-30 90,0 0,30 -90,0" fill="#2e1065" stroke="#7e22ce" stroke-width="1.8"/>
+      <g stroke="#a855f7" stroke-width="1.5" opacity="0.7">
+        <line x1="-52" y1="-8" x2="-52" y2="-62"/>
+        <line x1="-16" y1="4" x2="-16" y2="-52"/>
+        <line x1="20" y1="4" x2="20" y2="-52"/>
+        <line x1="56" y1="-8" x2="56" y2="-62"/>
+      </g>
+      <!-- 霓虹紫与青色发光珠 -->
+      <circle cx="-52" cy="-22" r="8" fill="#a855f7" filter="url(#g3d4Glow)"/>
+      <circle cx="-16" cy="-32" r="8" fill="#06b6d4" filter="url(#g3d4Glow)"/>
+      <circle cx="20" cy="-42" r="8" fill="#a855f7" filter="url(#g3d4Glow)"/>
+      <circle cx="56" cy="-52" r="8" fill="#06b6d4" filter="url(#g3d4Glow)"/>
+      <!-- 76胜线空间折跃环 -->
+      <ellipse cx="0" cy="-36" rx="80" ry="24" fill="none" stroke="#f43f5e" stroke-width="1.2" stroke-dasharray="4 3"/>
+    </g>
+  </svg>
+        </div>
+        <div class="cover-badges">
+          <span class="badge-pill players">👥 1-2人</span>
+          <span class="badge-pill tag-3d">💜 3D空间</span>
+        </div>
+        <div class="cover-overlay"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="title-group">
+            <div class="card-main-title">
+              <span>3D 立体四子棋</span>
+              <span class="card-sub">CONNECT 3D-4</span>
+            </div>
+            <div class="card-tagline">4×4×4 魔方立体竞速 · 76条胜利线</div>
+          </div>
+          <div class="btn-play-action">开玩 ▶</div>
+        </div>
+        <div class="card-meta-chips">
+          <span class="meta-chip">⏱️ 2分钟</span>
+          <span class="meta-chip">难度 ⭐⭐⭐</span>
+          <span class="meta-chip accent">76条空间胜线</span>
+        </div>
+      </div>
+    </div>
+  
+
+    <div class="game-card" data-cat="REFLEX" data-players="4" onclick="enterGame('IAIDO')">
+      <div class="card-cover-wrapper">
+        <div class="card-art-canvas">
+          
+  <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="iaiBg" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#1a0407"/>
+        <stop offset="100%" stop-color="#050102"/>
+      </linearGradient>
+      <radialGradient id="moonGlow" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#ef4444"/>
+        <stop offset="70%" stop-color="#991b1b"/>
+        <stop offset="100%" stop-color="#450a0a" stop-opacity="0.1"/>
+      </radialGradient>
+      <filter id="iaiGlow">
+        <feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <rect width="320" height="180" fill="url(#iaiBg)"/>
+    <!-- 血月 -->
+    <circle cx="160" cy="85" r="54" fill="url(#moonGlow)" opacity="0.85"/>
+    <circle cx="160" cy="85" r="48" fill="#b91c1c"/>
+    <!-- 狂风落樱 -->
+    <circle cx="60" cy="40" r="2.5" fill="#f43f5e"/>
+    <circle cx="90" cy="70" r="2" fill="#fda4af"/>
+    <circle cx="230" cy="50" r="3" fill="#fda4af"/>
+    <circle cx="270" cy="110" r="2" fill="#f43f5e"/>
+    <!-- 极速一闪刀光 -->
+    <path d="M10,150 Q160,50 310,25" stroke="#ffffff" stroke-width="4" fill="none" filter="url(#iaiGlow)"/>
+    <path d="M10,150 Q160,50 310,25" stroke="#fef08a" stroke-width="1.8" fill="none"/>
+    <!-- 巨大书法语“斬” -->
+    <text x="135" y="105" font-family="'SimSun', 'STSong', serif" font-size="56" font-weight="900" fill="#ffffff" filter="url(#iaiGlow)">斬</text>
+  </svg>
+        </div>
+        <div class="cover-badges">
+          <span class="badge-pill players-4">👥 1-4人</span>
+          <span class="badge-pill tag-reflex">⚡ 极限反应</span>
+        </div>
+        <div class="cover-overlay"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="title-group">
+            <div class="card-main-title">
+              <span>拔刀居合斩</span>
+              <span class="card-sub">IAIDO DUEL</span>
+            </div>
+            <div class="card-tagline">红光「斬」出鞘拼毫秒手速 · 抢跑直接判负</div>
+          </div>
+          <div class="btn-play-action">开玩 ▶</div>
+        </div>
+        <div class="card-meta-chips">
+          <span class="meta-chip">⏱️ 10秒</span>
+          <span class="meta-chip">手速 ⭐⭐⭐⭐</span>
+          <span class="meta-chip accent">聚会秒决胜负</span>
+        </div>
+      </div>
+    </div>
+  
+
+    <div class="game-card" data-cat="MIND" data-players="4" onclick="enterGame('LIARSDICE')">
+      <div class="card-cover-wrapper">
+        <div class="card-art-canvas">
+          
+  <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="diceBg" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#022c22"/>
+        <stop offset="100%" stop-color="#0f172a"/>
+      </linearGradient>
+      <filter id="diceGlow">
+        <feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <rect width="320" height="180" fill="url(#diceBg)"/>
+    <!-- 金色骰盅剪影 -->
+    <g transform="translate(195, 40) rotate(25)">
+      <path d="M0,0 L62,0 L52,90 L10,90 Z" fill="#78350f" stroke="#f59e0b" stroke-width="3"/>
+      <line x1="5" y1="20" x2="57" y2="20" stroke="#fbbf24" stroke-width="2"/>
+    </g>
+    <!-- 桌面晶莹骰子 -->
+    <g transform="translate(68, 75)">
+      <!-- 骰子 1 (大红点) -->
+      <rect x="0" y="10" width="38" height="38" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.8"/>
+      <circle cx="19" cy="29" r="6.5" fill="#ef4444" filter="url(#diceGlow)"/>
+      <!-- 骰子 2 (五点) -->
+      <g transform="translate(50, -5)">
+        <rect x="0" y="0" width="36" height="36" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.8"/>
+        <circle cx="10" cy="10" r="3" fill="#1e293b"/>
+        <circle cx="26" cy="10" r="3" fill="#1e293b"/>
+        <circle cx="18" cy="18" r="3" fill="#1e293b"/>
+        <circle cx="10" cy="26" r="3" fill="#1e293b"/>
+        <circle cx="26" cy="26" r="3" fill="#1e293b"/>
+      </g>
+      <!-- 骰子 3 (六点) -->
+      <g transform="translate(98, 15)">
+        <rect x="0" y="0" width="36" height="36" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.8"/>
+        <circle cx="11" cy="9" r="2.8" fill="#1e293b"/>
+        <circle cx="11" cy="18" r="2.8" fill="#1e293b"/>
+        <circle cx="11" cy="27" r="2.8" fill="#1e293b"/>
+        <circle cx="25" cy="9" r="2.8" fill="#1e293b"/>
+        <circle cx="25" cy="18" r="2.8" fill="#1e293b"/>
+        <circle cx="25" cy="27" r="2.8" fill="#1e293b"/>
+      </g>
+    </g>
+    <!-- 金币筹码堆叠 -->
+    <circle cx="45" cy="130" r="14" fill="#fbbf24" stroke="#d97706" stroke-width="2"/>
+    <circle cx="45" cy="124" r="14" fill="#f59e0b" stroke="#d97706" stroke-width="2"/>
+    <circle cx="45" cy="118" r="14" fill="#fbbf24" stroke="#d97706" stroke-width="2"/>
+  </svg>
+        </div>
+        <div class="cover-badges">
+          <span class="badge-pill players-4">👥👥 2-4人</span>
+          <span class="badge-pill tag-hot">🎲 聚会之王</span>
+        </div>
+        <div class="cover-overlay"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="title-group">
+            <div class="card-main-title">
+              <span>皇家大话骰</span>
+              <span class="card-sub">LIAR'S DICE</span>
+            </div>
+            <div class="card-tagline">暗摇点数虚实试探 · 敢叫我就敢开你</div>
+          </div>
+          <div class="btn-play-action">开玩 ▶</div>
+        </div>
+        <div class="card-meta-chips">
+          <span class="meta-chip">⏱️ 2分钟</span>
+          <span class="meta-chip">酒吧必备</span>
+          <span class="meta-chip accent">吹牛欺诈神作</span>
+        </div>
+      </div>
+    </div>
+  
+
+    <div class="game-card" data-cat="PHYSICS" data-players="4" onclick="enterGame('SUMO')">
+      <div class="card-cover-wrapper">
+        <div class="card-art-canvas">
+          
+  <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="sumoBg" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#180b26"/>
+        <stop offset="100%" stop-color="#090d16"/>
+      </linearGradient>
+      <filter id="sumoGlow">
+        <feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <rect width="320" height="180" fill="url(#sumoBg)"/>
+    <!-- 圆形擂台台面 -->
+    <ellipse cx="160" cy="120" rx="130" ry="45" fill="#1e293b" stroke="#f59e0b" stroke-width="3"/>
+    <ellipse cx="160" cy="120" rx="100" ry="32" fill="#0f172a" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="5 5"/>
+    <!-- 碰撞爆裂火花与冲击波 -->
+    <polygon points="160,85 168,70 178,82 192,72 185,88 200,92 184,100 190,112 175,104 165,116 163,101 150,105 156,92 142,85 156,80" fill="#facc15" filter="url(#sumoGlow)"/>
+    <!-- 红车 (左) -->
+    <g transform="translate(105, 78) rotate(15)">
+      <rect x="0" y="0" width="38" height="22" rx="6" fill="#ef4444" stroke="#f87171" stroke-width="1.5"/>
+      <circle cx="8" cy="22" r="5" fill="#1e293b"/>
+      <circle cx="30" cy="22" r="5" fill="#1e293b"/>
+      <polygon points="-12,11 -2,7 -2,15" fill="#f97316"/>
+    </g>
+    <!-- 蓝车 (右) -->
+    <g transform="translate(178, 88) rotate(-15)">
+      <rect x="0" y="0" width="38" height="22" rx="6" fill="#0284c7" stroke="#38bdf8" stroke-width="1.5"/>
+      <circle cx="8" cy="22" r="5" fill="#1e293b"/>
+      <circle cx="30" cy="22" r="5" fill="#1e293b"/>
+      <polygon points="50,11 40,7 40,15" fill="#38bdf8"/>
+    </g>
+  </svg>
+        </div>
+        <div class="cover-badges">
+          <span class="badge-pill players-4">👥 1-4人</span>
+          <span class="badge-pill tag-new">🚗 魔性乱斗</span>
+        </div>
+        <div class="cover-overlay"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="title-group">
+            <div class="card-main-title">
+              <span>物理飞车相扑</span>
+              <span class="card-sub">CAR SUMO</span>
+            </div>
+            <div class="card-tagline">按住冲刺松开瞄准 · 把对手撞入深渊</div>
+          </div>
+          <div class="btn-play-action">开玩 ▶</div>
+        </div>
+        <div class="card-meta-chips">
+          <span class="meta-chip">⏱️ 30秒</span>
+          <span class="meta-chip">欢乐碰撞</span>
+          <span class="meta-chip accent">氮气加速漂移</span>
+        </div>
+      </div>
+    </div>
+  
+
+    <div class="game-card" data-cat="PHYSICS" data-players="2" onclick="enterGame('TANK')">
+      <div class="card-cover-wrapper">
+        <div class="card-art-canvas">
+          
+  <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="tBg" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#1e1b4b"/>
+        <stop offset="50%" stop-color="#7c2d12"/>
+        <stop offset="100%" stop-color="#ea580c"/>
+      </linearGradient>
+      <filter id="tGlow">
+        <feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <rect width="320" height="180" fill="url(#tBg)"/>
+    <!-- 远山地形与破坏弹坑 -->
+    <path d="M0,140 Q60,115 110,135 T220,130 Q260,110 320,145 L320,180 L0,180 Z" fill="#1c1917"/>
+    <!-- 玩家坦克 1 (左侧山崖) -->
+    <g transform="translate(45, 115)">
+      <rect x="0" y="8" width="26" height="10" rx="3" fill="#15803d"/>
+      <ellipse cx="13" cy="8" rx="8" ry="5" fill="#22c55e"/>
+      <line x1="13" y1="7" x2="28" y2="-2" stroke="#4ade80" stroke-width="2.5" stroke-linecap="round"/>
+    </g>
+    <!-- 玩家坦克 2 (右侧山崖) -->
+    <g transform="translate(250, 118)">
+      <rect x="0" y="8" width="26" height="10" rx="3" fill="#b45309"/>
+      <ellipse cx="13" cy="8" rx="8" ry="5" fill="#f59e0b"/>
+      <line x1="13" y1="7" x2="-2" y2="-2" stroke="#fcd34d" stroke-width="2.5" stroke-linecap="round"/>
+    </g>
+    <!-- 抛物线轨迹 -->
+    <path d="M72,112 Q160,-10 248,118" stroke="#fef08a" stroke-width="2.5" stroke-dasharray="5 4" fill="none" filter="url(#tGlow)"/>
+    <!-- 命中火球 -->
+    <circle cx="248" cy="118" r="17" fill="#ef4444" filter="url(#tGlow)"/>
+    <circle cx="248" cy="118" r="9" fill="#facc15"/>
+  </svg>
+        </div>
+        <div class="cover-badges">
+          <span class="badge-pill players">👥 1-2人</span>
+          <span class="badge-pill tag-new">🎯 弹道对轰</span>
+        </div>
+        <div class="cover-overlay"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="title-group">
+            <div class="card-main-title">
+              <span>极限抛物线</span>
+              <span class="card-sub">TANK WARS</span>
+            </div>
+            <div class="card-tagline">地形破坏弹坑 · 测风向调仰角高抛炸毁</div>
+          </div>
+          <div class="btn-play-action">开玩 ▶</div>
+        </div>
+        <div class="card-meta-chips">
+          <span class="meta-chip">⏱️ 2分钟</span>
+          <span class="meta-chip">弹道计算</span>
+          <span class="meta-chip accent">经典百战天虫风</span>
+        </div>
+      </div>
+    </div>
+  
+
+    <div class="game-card" data-cat="REFLEX" data-players="4" onclick="enterGame('STACK')">
+      <div class="card-cover-wrapper">
+        <div class="card-art-canvas">
+          
+  <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="stkBg" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#0f172a"/>
+        <stop offset="50%" stop-color="#2e1065"/>
+        <stop offset="100%" stop-color="#064e3b"/>
+      </linearGradient>
+      <filter id="stkGlow">
+        <feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <rect width="320" height="180" fill="url(#stkBg)"/>
+    <!-- 极光叠叠塔 -->
+    <g transform="translate(160, 138)">
+      <!-- 底层方块 (暗蓝) -->
+      <polygon points="0,-18 60,0 0,18 -60,0" fill="#0284c7" stroke="#38bdf8" stroke-width="1"/>
+      <!-- 第2层 (青绿) -->
+      <g transform="translate(0, -16)">
+        <polygon points="0,-18 55,0 0,18 -55,0" fill="#0d9488" stroke="#2dd4bf" stroke-width="1"/>
+      </g>
+      <!-- 第3层 (翠绿) -->
+      <g transform="translate(0, -32)">
+        <polygon points="0,-18 50,0 0,18 -50,0" fill="#16a34a" stroke="#4ade80" stroke-width="1"/>
+      </g>
+      <!-- 第4层 (明黄) -->
+      <g transform="translate(0, -48)">
+        <polygon points="0,-18 45,0 0,18 -45,0" fill="#ca8a04" stroke="#facc15" stroke-width="1"/>
+      </g>
+      <!-- 第5层 (粉红顶层 - 正在切片) -->
+      <g transform="translate(0, -64)">
+        <polygon points="0,-18 40,0 0,18 -40,0" fill="#db2777" stroke="#f472b6" stroke-width="1.5" filter="url(#stkGlow)"/>
+        <!-- 切割掉落碎片 -->
+        <g transform="translate(36, 12) rotate(15)">
+          <polygon points="0,-6 14,0 0,6 -14,0" fill="#be185d" opacity="0.7"/>
+        </g>
+      </g>
+    </g>
+    <!-- 音阶星光 -->
+    <circle cx="160" cy="46" r="3.5" fill="#ffffff" filter="url(#stkGlow)"/>
+  </svg>
+        </div>
+        <div class="cover-badges">
+          <span class="badge-pill players-4">👥 1-4人</span>
+          <span class="badge-pill tag-reflex">🥞 强迫症福音</span>
+        </div>
+        <div class="cover-overlay"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="title-group">
+            <div class="card-main-title">
+              <span>极光叠叠高</span>
+              <span class="card-sub">AURORA STACK</span>
+            </div>
+            <div class="card-tagline">严丝合缝触发天籁音阶 · 多余错位一刀削</div>
+          </div>
+          <div class="btn-play-action">开玩 ▶</div>
+        </div>
+        <div class="card-meta-chips">
+          <span class="meta-chip">⏱️ 45秒</span>
+          <span class="meta-chip">治愈节奏</span>
+          <span class="meta-chip accent">八度连击和弦</span>
+        </div>
+      </div>
+    </div>
+  
       </div>
     </div>
 
@@ -4018,6 +4882,7 @@
     }
 
     function returnToLobby() {
+      const c = document.querySelector('.container'); if (c) c.classList.remove('in-game');
       const modeTabs = document.querySelector('.mode-nav');
       if (modeTabs) modeTabs.style.display = 'flex';
       AUDIO.play('click');
@@ -4050,6 +4915,7 @@
     }
 
     function enterGame(gameKey, mode = 'AI') {
+      const c = document.querySelector('.container'); if (c) c.classList.add('in-game');
       AUDIO.play('click');
       recordRecentGame(gameKey);
       STATE.currentView = 'GAME';
