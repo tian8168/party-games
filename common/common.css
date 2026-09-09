@@ -25,6 +25,11 @@
   -webkit-user-select: none;
   margin: 0;
   padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body, button, select, input, a, .btn, .game-card, .category-pill, .recent-pill {
+  touch-action: manipulation;
 }
 
 body {
