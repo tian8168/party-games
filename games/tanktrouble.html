@@ -1,0 +1,1297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>坦克震荡 (Tank Trouble) · 聚会游戏大厅</title>
+  <link rel="stylesheet" href="../common/common.css">
+  <style>
+    /* ==========================================================================
+       12. 坦克震荡 (Tank Trouble) 样式
+       ========================================================================== */
+    .stage-wrapper.tanktrouble-mode {
+      aspect-ratio: auto;
+      height: auto;
+      max-height: none;
+      max-width: 540px;
+      background: #111827;
+      border: 1px solid #374151;
+      padding: 8px;
+      overflow: visible;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
+    }
+
+    #tanktrouble-stage {
+      width: 100%;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .tanktrouble-hud {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 6px 8px;
+      gap: 6px;
+    }
+
+    .tt-score-pill {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-weight: 800;
+      font-size: 0.85rem;
+      backdrop-filter: blur(4px);
+    }
+
+    .tt-target-pill {
+      background: rgba(30, 41, 59, 0.9);
+      border: 1px solid #475569;
+      color: #fbbf24;
+      border-radius: 8px;
+      padding: 4px 12px;
+      font-weight: 800;
+      font-size: 0.82rem;
+    }
+
+    .tt-canvas-wrapper {
+      width: 100%;
+      background: #e5e7eb;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 2px solid #374151;
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.2);
+      position: relative;
+    }
+
+    #tanktrouble-canvas {
+      width: 100%;
+      height: auto;
+      display: block;
+      touch-action: none;
+    }
+
+    .tanktrouble-touch-bar {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+      padding: 0 4px;
+    }
+
+    .tt-touch-player {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tt-dpad {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .tt-dpad-row {
+      display: flex;
+      gap: 3px;
+    }
+
+    .tt-btn {
+      width: 40px;
+      height: 40px;
+      background: #1e293b;
+      border: 1px solid #475569;
+      border-radius: 8px;
+      color: #f8fafc;
+      font-size: 0.85rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+    }
+    .tt-btn:active, .tt-btn.active {
+      background: #334155;
+      transform: scale(0.92);
+      filter: brightness(1.2);
+    }
+
+    .tt-btn-fire {
+      width: 62px;
+      height: 62px;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      color: #fff;
+      font-weight: 800;
+      font-size: 0.95rem;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.05s ease;
+    }
+    .tt-fire-p1 {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      border-color: #f87171;
+      box-shadow: 0 4px 16px rgba(239, 68, 68, 0.5);
+    }
+    .tt-fire-p2 {
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      border-color: #4ade80;
+      box-shadow: 0 4px 16px rgba(34, 197, 94, 0.5);
+    }
+    .tt-btn-fire:active, .tt-btn-fire.active {
+      transform: scale(0.92);
+      filter: brightness(1.25);
+    }
+
+    .tt-desktop-hints {
+      margin-top: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      font-size: 0.74rem;
+      color: #94a3b8;
+      text-align: center;
+    }
+    .tt-desktop-hints b {
+      color: #f1f5f9;
+    }
+    @media (max-width: 480px) {
+      .tt-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 0.78rem;
+      }
+      .tt-btn-fire {
+        width: 54px;
+        height: 54px;
+        font-size: 0.85rem;
+      }
+    }
+    
+  </style>
+</head>
+<body>
+  <div class="container in-game">
+    <div class="game-header">
+      <a href="../index.html" class="nav-back">🔙 返回大厅</a>
+      <h2 class="game-title">🛡️ 坦克震荡 (Tank Trouble)</h2>
+      <div class="header-actions">
+        <button class="btn-icon" id="btn-sound-toggle">🔊</button>
+        <button class="btn-icon" id="btn-rules-header">📖 规则</button>
+        <button class="btn-icon" id="restart-btn">🔄 重置</button>
+      </div>
+    </div>
+
+    <div class="stage-wrapper tanktrouble-mode">
+      <div id="tanktrouble-stage">
+          <div class="tanktrouble-hud">
+            <div class="tt-score-pill" style="color:#ef4444;" id="tt-p1-score">🔴 P1: 0</div>
+            <div class="tt-target-pill" id="tt-match-target">抢 5 胜</div>
+            <div class="tt-score-pill" style="color:#22c55e;" id="tt-p2-score">🟢 P2: 0</div>
+            <div class="tt-score-pill" style="color:#3b82f6; display:none;" id="tt-p3-score">🔵 P3: 0</div>
+          </div>
+          <div class="tt-canvas-wrapper">
+            <canvas id="tanktrouble-canvas" width="520" height="360"></canvas>
+          </div>
+          <!-- 移动端双人 / 单人触控面板 -->
+          <div class="tanktrouble-touch-bar" id="tt-touch-controls">
+            <!-- P1 移动端虚拟按键 (左侧) -->
+            <div class="tt-touch-player tt-touch-p1" id="tt-touch-p1">
+              <div class="tt-dpad">
+                <button class="tt-btn tt-up" id="tt-p1-up">▲</button>
+                <div class="tt-dpad-row">
+                  <button class="tt-btn tt-left" id="tt-p1-left">◀</button>
+                  <button class="tt-btn tt-down" id="tt-p1-down">▼</button>
+                  <button class="tt-btn tt-right" id="tt-p1-right">▶</button>
+                </div>
+              </div>
+              <button class="tt-btn-fire tt-fire-p1" id="tt-p1-fire">🔥 开火</button>
+            </div>
+            <!-- P2 移动端虚拟按键 (右侧，双人模式下显现) -->
+            <div class="tt-touch-player tt-touch-p2" id="tt-touch-p2" style="display:flex;">
+              <button class="tt-btn-fire tt-fire-p2" id="tt-p2-fire">🔥 开火</button>
+              <div class="tt-dpad">
+                <button class="tt-btn tt-up" id="tt-p2-up">▲</button>
+                <div class="tt-dpad-row">
+                  <button class="tt-btn tt-left" id="tt-p2-left">◀</button>
+                  <button class="tt-btn tt-down" id="tt-p2-down">▼</button>
+                  <button class="tt-btn tt-right" id="tt-p2-right">▶</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- 桌面端键位指引 -->
+          <div class="tt-desktop-hints" id="tt-desktop-hints">
+            <span>🔴 <b>P1:</b> WASD 移动 (人机时亦可按方向键) · <b>空格 / Q</b> 开火</span>
+            <span>🟢 <b>P2 (双人对战):</b> 方向键 <b>↑↓←→</b> 移动 · <b>M / Enter</b> 开火</span>
+          </div>
+        </div>
+    </div>
+  </div>
+
+  <script src="../common/audio.js"></script>
+  <script src="../common/common.js"></script>
+  <script>
+    
+    // 基础游戏运行时状态
+    const STATE = {
+      currentView: 'GAME',
+      currentGame: 'TANKTROUBLE',
+      gameMode: 'AI',
+      turn: 1,
+      scores: { 1: 0, 2: 0, 3: 0, 4: 0 },
+      online: {
+        connected: false,
+        roomId: null,
+        myRole: 'host',
+        opponentJoined: false,
+        mqttClient: null
+      }
+    };
+
+    function checkIsMyTurn() {
+      if (STATE.gameMode === 'LOCAL') return true;
+      if (STATE.gameMode === 'AI') return STATE.turn === 1;
+      if (STATE.gameMode === 'ONLINE') {
+        if (STATE.online.myRole === 'host' && STATE.turn === 1) return true;
+        if (STATE.online.myRole === 'guest' && STATE.turn === 2) return true;
+        return false;
+      }
+      return true;
+    }
+
+    function updateScoreboard() {
+      const cardP1 = document.getElementById('card-p1');
+      const cardP2 = document.getElementById('card-p2');
+      const cardP3 = document.getElementById('card-p3');
+      const cardP4 = document.getElementById('card-p4');
+      if (cardP1) {
+        cardP1.classList.toggle('active-turn', STATE.turn === 1);
+        const n1 = document.getElementById('name-p1');
+        if (n1) n1.innerHTML = '🔴 玩家 1 (主)' + (STATE.scores[1] !== undefined ? ' <small>('+STATE.scores[1]+')</small>' : '');
+      }
+      if (cardP2) {
+        cardP2.classList.toggle('active-turn', STATE.turn === 2);
+        const n2 = document.getElementById('name-p2');
+        if (n2) {
+          const p2Label = STATE.gameMode === 'AI' ? '🤖 电脑 (AI)' : (STATE.gameMode === 'ONLINE' ? '🟢 好友 (客)' : '🟢 玩家 2');
+          n2.innerHTML = p2Label + (STATE.scores[2] !== undefined ? ' <small>('+STATE.scores[2]+')</small>' : '');
+        }
+      }
+      if (cardP3) cardP3.classList.toggle('active-turn', STATE.turn === 3);
+      if (cardP4) cardP4.classList.toggle('active-turn', STATE.turn === 4);
+    }
+
+    function switchGameMode(mode, doReset = true) {
+      STATE.gameMode = mode;
+      document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+      const activeTab = document.getElementById('tab-' + mode.toLowerCase());
+      if (activeTab) activeTab.classList.add('active');
+
+      const onlinePanel = document.getElementById('online-panel');
+      if (onlinePanel) {
+        onlinePanel.style.display = mode === 'ONLINE' ? 'flex' : 'none';
+        if (mode === 'ONLINE' && window.ONLINE_NETWORK) {
+          ONLINE_NETWORK.createRoom(STATE.currentGame);
+        }
+      }
+      updateScoreboard();
+      if (doReset && typeof resetCurrentGame === 'function') {
+        resetCurrentGame();
+      }
+    }
+
+    function sendOnlineAction(data) {
+      if (window.ONLINE_NETWORK) {
+        window.ONLINE_NETWORK.sendAction(data);
+      }
+    }
+  
+
+    // 12. 坦克震荡核心逻辑 (TANK TROUBLE)
+    // ==========================================================================
+    function initTankTroubleGame() {
+      AUDIO.init();
+      if (STATE.tanktrouble.animId) {
+        cancelAnimationFrame(STATE.tanktrouble.animId);
+        STATE.tanktrouble.animId = null;
+      }
+      if (STATE.tanktrouble.nextRoundTimer) {
+        clearTimeout(STATE.tanktrouble.nextRoundTimer);
+        STATE.tanktrouble.nextRoundTimer = null;
+      }
+      STATE.tanktrouble.p1Score = 0;
+      STATE.tanktrouble.p2Score = 0;
+      STATE.tanktrouble.p3Score = 0;
+      STATE.tanktrouble.matchOver = false;
+      updateTankTroubleHUD();
+      setupTankTroubleInputs();
+      resetTankTroubleRound();
+
+      let lastTime = performance.now();
+      let accumulator = 0;
+      const FIXED_STEP = 1000 / 60; // 锁定 60Hz 基准物理频率，高刷屏绝不超速
+
+      function loop(now) {
+        if (STATE.currentGame !== 'TANKTROUBLE') return;
+        if (!now) now = performance.now();
+        let elapsed = now - lastTime;
+        lastTime = now;
+        if (elapsed > 100) elapsed = 100; // 防后台标签页积累突发
+        accumulator += elapsed;
+
+        while (accumulator >= FIXED_STEP) {
+          updateTankTroublePhysics();
+          accumulator -= FIXED_STEP;
+        }
+
+        renderTankTrouble();
+        STATE.tanktrouble.animId = requestAnimationFrame(loop);
+      }
+      STATE.tanktrouble.animId = requestAnimationFrame(loop);
+    }
+
+    function resetTankTroubleMatch() {
+      STATE.tanktrouble.p1Score = 0;
+      STATE.tanktrouble.p2Score = 0;
+      STATE.tanktrouble.p3Score = 0;
+      STATE.tanktrouble.matchOver = false;
+      updateTankTroubleHUD();
+      resetTankTroubleRound();
+    }
+
+    function updateTankTroubleHUD() {
+      const p1El = document.getElementById('tt-p1-score');
+      const p2El = document.getElementById('tt-p2-score');
+      const touchP2 = document.getElementById('tt-touch-p2');
+      if (p1El) p1El.textContent = `🔴 P1: ${STATE.tanktrouble.p1Score}`;
+      if (p2El) p2El.textContent = STATE.gameMode === 'AI' ? `🤖 AI: ${STATE.tanktrouble.p2Score}` : `🟢 P2: ${STATE.tanktrouble.p2Score}`;
+      if (touchP2) touchP2.style.display = STATE.gameMode === 'LOCAL' ? 'flex' : 'none';
+    }
+
+    function generateTankTroubleMaze(cols = 8, rows = 6) {
+      const cw = 520 / cols;
+      const ch = 360 / rows;
+      const totalCells = cols * rows;
+      const visited = new Uint8Array(totalCells);
+
+      const hWalls = Array.from({ length: rows }, () => new Uint8Array(cols).fill(1));
+      const vWalls = Array.from({ length: rows }, () => new Uint8Array(cols).fill(1));
+
+      const stack = [];
+      const startIdx = Math.floor(Math.random() * totalCells);
+      visited[startIdx] = 1;
+      stack.push(startIdx);
+      let visitedCount = 1;
+
+      while (visitedCount < totalCells && stack.length > 0) {
+        const current = stack[stack.length - 1];
+        const cr = Math.floor(current / cols);
+        const cc = current % cols;
+
+        const neighbors = [];
+        if (cr > 0 && !visited[(cr - 1) * cols + cc]) neighbors.push({ r: cr - 1, c: cc, dir: 'UP' });
+        if (cr < rows - 1 && !visited[(cr + 1) * cols + cc]) neighbors.push({ r: cr + 1, c: cc, dir: 'DOWN' });
+        if (cc > 0 && !visited[cr * cols + (cc - 1)]) neighbors.push({ r: cr, c: cc - 1, dir: 'LEFT' });
+        if (cc < cols - 1 && !visited[cr * cols + (cc + 1)]) neighbors.push({ r: cr, c: cc + 1, dir: 'RIGHT' });
+
+        if (neighbors.length > 0) {
+          const next = neighbors[Math.floor(Math.random() * neighbors.length)];
+          if (next.dir === 'UP') {
+            hWalls[cr][cc] = 0;
+          } else if (next.dir === 'DOWN') {
+            hWalls[cr + 1][cc] = 0;
+          } else if (next.dir === 'LEFT') {
+            vWalls[cr][cc] = 0;
+          } else if (next.dir === 'RIGHT') {
+            vWalls[cr][cc + 1] = 0;
+          }
+          visited[next.r * cols + next.c] = 1;
+          visitedCount++;
+          stack.push(next.r * cols + next.c);
+        } else {
+          stack.pop();
+        }
+      }
+
+      // 拆除 22% 内部残存死胡同墙体，形成环形战术对轰通道
+      for (let r = 1; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          if (hWalls[r][c] === 1 && Math.random() < 0.22) {
+            hWalls[r][c] = 0;
+          }
+        }
+      }
+      for (let r = 0; r < rows; r++) {
+        for (let c = 1; c < cols; c++) {
+          if (vWalls[r][c] === 1 && Math.random() < 0.22) {
+            vWalls[r][c] = 0;
+          }
+        }
+      }
+
+      const walls = [];
+      // 四周外围硬边界
+      walls.push({ x1: 0, y1: 0, x2: 520, y2: 0, type: 'H' });
+      walls.push({ x1: 0, y1: 360, x2: 520, y2: 360, type: 'H' });
+      walls.push({ x1: 0, y1: 0, x2: 0, y2: 360, type: 'V' });
+      walls.push({ x1: 520, y1: 0, x2: 520, y2: 360, type: 'V' });
+
+      // 迷宫内部横墙
+      for (let r = 1; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          if (hWalls[r][c] === 1) {
+            walls.push({ x1: c * cw, y1: r * ch, x2: (c + 1) * cw, y2: r * ch, type: 'H' });
+          }
+        }
+      }
+      // 迷宫内部竖墙
+      for (let r = 0; r < rows; r++) {
+        for (let c = 1; c < cols; c++) {
+          if (vWalls[r][c] === 1) {
+            walls.push({ x1: c * cw, y1: r * ch, x2: c * cw, y2: (r + 1) * ch, type: 'V' });
+          }
+        }
+      }
+
+      return { cols, rows, cw, ch, walls };
+    }
+
+    function resetTankTroubleRound() {
+      STATE.tanktrouble.roundOver = false;
+      STATE.tanktrouble.bullets = [];
+      STATE.tanktrouble.particles = [];
+      STATE.tanktrouble.treads = [];
+      STATE.tanktrouble.maze = generateTankTroubleMaze(8, 6);
+
+      const cw = STATE.tanktrouble.maze.cw;
+      const ch = STATE.tanktrouble.maze.ch;
+
+      // P1 出生于左上角 (0, 0)
+      STATE.tanktrouble.tanks.p1 = {
+        id: 1,
+        x: cw * 0.5,
+        y: ch * 0.5,
+        angle: 0,
+        r: 10,
+        color: '#ef4444',
+        dead: false,
+        reloadTimer: 0,
+        recoil: 0,
+        distTraveled: 0,
+        barrelLen: 14
+      };
+
+      // P2 出生于右下角 (7, 5)
+      STATE.tanktrouble.tanks.p2 = {
+        id: 2,
+        x: 520 - cw * 0.5,
+        y: 360 - ch * 0.5,
+        angle: Math.PI,
+        r: 10,
+        color: '#22c55e',
+        dead: false,
+        reloadTimer: 0,
+        recoil: 0,
+        distTraveled: 0,
+        barrelLen: 14
+      };
+
+      // 重置按键状态
+      const keys = STATE.tanktrouble.keys;
+      keys.p1 = { forward: false, backward: false, left: false, right: false, fire: false };
+      keys.p2 = { forward: false, backward: false, left: false, right: false, fire: false };
+    }
+
+    function setupTankTroubleInputs() {
+      if (window._ttInputsBound) return;
+      window._ttInputsBound = true;
+
+      const keys = STATE.tanktrouble.keys;
+
+      window.addEventListener('keydown', (e) => {
+        if (STATE.currentGame !== 'TANKTROUBLE') return;
+
+        // 屏蔽常用游戏控制键的默认页面滚动
+        if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'Space', 'KeyQ', 'KeyJ',
+             'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyM', 'Enter', 'KeyL'].includes(e.code)) {
+          e.preventDefault();
+        }
+
+        const isSingle = (STATE.gameMode === 'AI');
+
+        // P1 标准 WASD 控制
+        if (e.code === 'KeyW') keys.p1.forward = true;
+        if (e.code === 'KeyS') keys.p1.backward = true;
+        if (e.code === 'KeyA') keys.p1.left = true;
+        if (e.code === 'KeyD') keys.p1.right = true;
+        if (e.code === 'Space' || e.code === 'KeyQ' || e.code === 'KeyJ') {
+          if (!keys.p1.fire) fireTankTroubleBullet('p1');
+          keys.p1.fire = true;
+        }
+
+        // 人机对战单人模式下，方向键亦可同时无缝操控 P1
+        if (isSingle) {
+          if (e.code === 'ArrowUp') keys.p1.forward = true;
+          if (e.code === 'ArrowDown') keys.p1.backward = true;
+          if (e.code === 'ArrowLeft') keys.p1.left = true;
+          if (e.code === 'ArrowRight') keys.p1.right = true;
+          if (e.code === 'KeyM' || e.code === 'Enter') {
+            if (!keys.p1.fire) fireTankTroubleBullet('p1');
+            keys.p1.fire = true;
+          }
+        } else {
+          // 双人同屏对战模式下，方向键归 P2 控制
+          if (e.code === 'ArrowUp') keys.p2.forward = true;
+          if (e.code === 'ArrowDown') keys.p2.backward = true;
+          if (e.code === 'ArrowLeft') keys.p2.left = true;
+          if (e.code === 'ArrowRight') keys.p2.right = true;
+          if (e.code === 'KeyM' || e.code === 'Enter' || e.code === 'KeyL') {
+            if (!keys.p2.fire) fireTankTroubleBullet('p2');
+            keys.p2.fire = true;
+          }
+        }
+      });
+
+      window.addEventListener('keyup', (e) => {
+        if (STATE.currentGame !== 'TANKTROUBLE') return;
+
+        const isSingle = (STATE.gameMode === 'AI');
+
+        // P1 释放
+        if (e.code === 'KeyW') keys.p1.forward = false;
+        if (e.code === 'KeyS') keys.p1.backward = false;
+        if (e.code === 'KeyA') keys.p1.left = false;
+        if (e.code === 'KeyD') keys.p1.right = false;
+        if (e.code === 'Space' || e.code === 'KeyQ' || e.code === 'KeyJ') keys.p1.fire = false;
+
+        // 方向键释放判定
+        if (isSingle) {
+          if (e.code === 'ArrowUp') keys.p1.forward = false;
+          if (e.code === 'ArrowDown') keys.p1.backward = false;
+          if (e.code === 'ArrowLeft') keys.p1.left = false;
+          if (e.code === 'ArrowRight') keys.p1.right = false;
+          if (e.code === 'KeyM' || e.code === 'Enter') keys.p1.fire = false;
+        } else {
+          if (e.code === 'ArrowUp') keys.p2.forward = false;
+          if (e.code === 'ArrowDown') keys.p2.backward = false;
+          if (e.code === 'ArrowLeft') keys.p2.left = false;
+          if (e.code === 'ArrowRight') keys.p2.right = false;
+          if (e.code === 'KeyM' || e.code === 'Enter' || e.code === 'KeyL') keys.p2.fire = false;
+        }
+      });
+
+      // 窗口失焦时清空所有按键，绝不卡死
+      window.addEventListener('blur', () => {
+        if (STATE.currentGame === 'TANKTROUBLE') {
+          keys.p1.forward = keys.p1.backward = keys.p1.left = keys.p1.right = keys.p1.fire = false;
+          keys.p2.forward = keys.p2.backward = keys.p2.left = keys.p2.right = keys.p2.fire = false;
+        }
+      });
+
+      // 触屏按键绑定
+      const bindTtTouch = (id, onDown, onUp) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const down = (e) => { e.preventDefault(); el.classList.add('active'); onDown(); };
+        const up = (e) => { e.preventDefault(); el.classList.remove('active'); onUp(); };
+        el.onmousedown = down; el.onmouseup = up;
+        el.ontouchstart = down; el.ontouchend = up;
+        el.ontouchcancel = up;
+      };
+
+      // P1 触屏绑定
+      bindTtTouch('tt-p1-up',    () => { keys.p1.forward = true; },  () => { keys.p1.forward = false; });
+      bindTtTouch('tt-p1-down',  () => { keys.p1.backward = true; }, () => { keys.p1.backward = false; });
+      bindTtTouch('tt-p1-left',  () => { keys.p1.left = true; },     () => { keys.p1.left = false; });
+      bindTtTouch('tt-p1-right', () => { keys.p1.right = true; },    () => { keys.p1.right = false; });
+      bindTtTouch('tt-p1-fire',  () => { fireTankTroubleBullet('p1'); keys.p1.fire = true; }, () => { keys.p1.fire = false; });
+
+      // P2 触屏绑定
+      bindTtTouch('tt-p2-up',    () => { keys.p2.forward = true; },  () => { keys.p2.forward = false; });
+      bindTtTouch('tt-p2-down',  () => { keys.p2.backward = true; }, () => { keys.p2.backward = false; });
+      bindTtTouch('tt-p2-left',  () => { keys.p2.left = true; },     () => { keys.p2.left = false; });
+      bindTtTouch('tt-p2-right', () => { keys.p2.right = true; },    () => { keys.p2.right = false; });
+      bindTtTouch('tt-p2-fire',  () => { fireTankTroubleBullet('p2'); keys.p2.fire = true; }, () => { keys.p2.fire = false; });
+    }
+
+    function fireTankTroubleBullet(tankKey) {
+      if (STATE.tanktrouble.roundOver || STATE.tanktrouble.matchOver) return;
+      const tank = STATE.tanktrouble.tanks[tankKey];
+      if (!tank || tank.dead) return;
+      if (tank.reloadTimer > 0) return;
+
+      // 限制每辆坦克同屏最多 5 枚跳弹
+      const activeBullets = STATE.tanktrouble.bullets.filter(b => b.shooterKey === tankKey).length;
+      if (activeBullets >= 5) return;
+
+      AUDIO.play('contra_shoot');
+
+      // 后坐力反馈与装填冷却
+      tank.recoil = 3.5;
+      tank.reloadTimer = 16;
+
+      // 计算炮口发射坐标
+      const muzzleDist = tank.barrelLen + 2;
+      let spawnX = tank.x + Math.cos(tank.angle) * muzzleDist;
+      let spawnY = tank.y + Math.sin(tank.angle) * muzzleDist;
+
+      // 防穿墙保护：若炮口紧贴墙体，安全拉回至坦克轮廓边缘，防止出生即卡墙
+      const walls = STATE.tanktrouble.maze.walls;
+      for (let i = 0; i < walls.length; i++) {
+        const w = walls[i];
+        const dx = w.x2 - w.x1, dy = w.y2 - w.y1, lenSq = dx * dx + dy * dy;
+        if (lenSq === 0) continue;
+        let t = Math.max(0, Math.min(1, ((spawnX - w.x1) * dx + (spawnY - w.y1) * dy) / lenSq));
+        const nearX = w.x1 + t * dx, nearY = w.y1 + t * dy;
+        if (Math.hypot(spawnX - nearX, spawnY - nearY) < 4) {
+          spawnX = tank.x + Math.cos(tank.angle) * (tank.r + 2);
+          spawnY = tank.y + Math.sin(tank.angle) * (tank.r + 2);
+          break;
+        }
+      }
+
+      const speed = 4.8;
+      STATE.tanktrouble.bullets.push({
+        x: spawnX,
+        y: spawnY,
+        vx: Math.cos(tank.angle) * speed,
+        vy: Math.sin(tank.angle) * speed,
+        r: 3,
+        bouncesLeft: 6,
+        shooterKey: tankKey,
+        shooterId: tank.id,
+        safeFrames: 45, // 核心机制：出生后前 45 帧（约 0.75秒）发射者自身绝对免疫，杜绝秒杀自爆
+        age: 0
+      });
+
+      // 炮口开火火花与烟雾粒子
+      for (let i = 0; i < 4; i++) {
+        STATE.tanktrouble.particles.push({
+          x: spawnX,
+          y: spawnY,
+          vx: Math.cos(tank.angle) * 1.5 + (Math.random() - 0.5) * 1.2,
+          vy: Math.sin(tank.angle) * 1.5 + (Math.random() - 0.5) * 1.2,
+          life: 0.3,
+          color: '#cbd5e1',
+          r: 2.2
+        });
+      }
+    }
+
+    // 严谨高精度线段投影碰撞与滑动物理求解器 (彻底消除卡墙卡死现象)
+    function resolveTankWallCollision(tank, walls) {
+      const r = tank.r || 10;
+      const wallHalfThick = 2.5;
+      const minDist = r + wallHalfThick;
+
+      // 3 次松弛迭代确保多墙拐角处平滑贴合
+      for (let iter = 0; iter < 3; iter++) {
+        // 外围边界硬约束
+        if (tank.x < minDist + 2) tank.x = minDist + 2;
+        if (tank.x > 518 - minDist) tank.x = 518 - minDist;
+        if (tank.y < minDist + 2) tank.y = minDist + 2;
+        if (tank.y > 358 - minDist) tank.y = 358 - minDist;
+
+        for (let i = 0; i < walls.length; i++) {
+          const w = walls[i];
+          const dx = w.x2 - w.x1;
+          const dy = w.y2 - w.y1;
+          const lenSq = dx * dx + dy * dy;
+          if (lenSq === 0) continue;
+
+          // 点到线段投影 t 限制在 [0, 1]
+          let t = ((tank.x - w.x1) * dx + (tank.y - w.y1) * dy) / lenSq;
+          if (t < 0) t = 0;
+          else if (t > 1) t = 1;
+
+          const projX = w.x1 + t * dx;
+          const projY = w.y1 + t * dy;
+          const diffX = tank.x - projX;
+          const diffY = tank.y - projY;
+          const distSq = diffX * diffX + diffY * diffY;
+
+          if (distSq < minDist * minDist) {
+            const dist = Math.sqrt(distSq);
+            if (dist > 0.001) {
+              const pen = minDist - dist;
+              // 沿法线正交推开，保留切向速度，实现丝滑沿墙滑动
+              tank.x += (diffX / dist) * pen;
+              tank.y += (diffY / dist) * pen;
+            } else {
+              if (w.type === 'H') {
+                tank.y += (tank.y < 180 ? -minDist : minDist);
+              } else {
+                tank.x += (tank.x < 260 ? -minDist : minDist);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    function checkTankSlidingMove(tank, dx, dy, walls) {
+      tank.x += dx;
+      tank.y += dy;
+      resolveTankWallCollision(tank, walls);
+    }
+
+    function checkTankTroubleLOS(x1, y1, x2, y2, walls) {
+      function ccw(ax, ay, bx, by, cx, cy) {
+        return (cy - ay) * (bx - ax) > (by - ay) * (cx - ax);
+      }
+      function intersect(ax, ay, bx, by, cx, cy, dx, dy) {
+        return ccw(ax, ay, cx, cy, dx, dy) !== ccw(bx, by, cx, cy, dx, dy) &&
+               ccw(ax, ay, cx, cy, dx, dy) !== ccw(bx, by, cx, cy, dx, dy);
+      }
+      for (let i = 0; i < walls.length; i++) {
+        const w = walls[i];
+        if (intersect(x1, y1, x2, y2, w.x1, w.y1, w.x2, w.y2)) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    function updateTankTroubleAI() {
+      const p1 = STATE.tanktrouble.tanks.p1;
+      const p2 = STATE.tanktrouble.tanks.p2;
+      const walls = STATE.tanktrouble.maze.walls;
+      if (!p1 || !p2 || p1.dead || p2.dead) return;
+
+      const dx = p1.x - p2.x;
+      const dy = p1.y - p2.y;
+      const dist = Math.hypot(dx, dy);
+      const los = checkTankTroubleLOS(p2.x, p2.y, p1.x, p1.y, walls);
+
+      const rotSpeed = 0.065;
+      const moveSpeed = 2.2;
+
+      // 智能规避：检测附近 60px 内朝自己飞来的危险反弹子弹，主动紧急后撤躲避
+      const bullets = STATE.tanktrouble.bullets;
+      let dodgeDir = 0;
+      for (let i = 0; i < bullets.length; i++) {
+        const b = bullets[i];
+        const bdx = p2.x - b.x;
+        const bdy = p2.y - b.y;
+        const bdist = Math.hypot(bdx, bdy);
+        if (bdist < 60 && (b.vx * bdx + b.vy * bdy > 0)) {
+          dodgeDir = -1; // 紧急倒车避弹
+          break;
+        }
+      }
+
+      if (dodgeDir === -1) {
+        checkTankSlidingMove(p2, -Math.cos(p2.angle) * moveSpeed, -Math.sin(p2.angle) * moveSpeed, walls);
+        return;
+      }
+
+      if (los) {
+        // 视线通畅：炮口锁定 P1
+        const targetAngle = Math.atan2(dy, dx);
+        let diff = targetAngle - p2.angle;
+        while (diff < -Math.PI) diff += Math.PI * 2;
+        while (diff > Math.PI) diff -= Math.PI * 2;
+
+        if (Math.abs(diff) > 0.09) {
+          p2.angle += Math.sign(diff) * rotSpeed;
+        } else {
+          // 精准对准，立即开火！
+          if (p2.reloadTimer <= 0) {
+            fireTankTroubleBullet('p2');
+          }
+        }
+
+        // 保持适中战术距离
+        if (dist > 140) {
+          checkTankSlidingMove(p2, Math.cos(p2.angle) * moveSpeed, Math.sin(p2.angle) * moveSpeed, walls);
+        } else if (dist < 75) {
+          checkTankSlidingMove(p2, -Math.cos(p2.angle) * (moveSpeed * 0.7), -Math.sin(p2.angle) * (moveSpeed * 0.7), walls);
+        }
+      } else {
+        // 视线受阻：沿迷宫巡逻寻机
+        STATE.tanktrouble.aiTimer = (STATE.tanktrouble.aiTimer || 0) + 1;
+        if (STATE.tanktrouble.aiTimer % 75 === 0) {
+          if (p2.reloadTimer <= 0 && Math.random() < 0.3) {
+            fireTankTroubleBullet('p2');
+          }
+        }
+
+        // 前方雷达探测：前置 36px 撞墙提前微调方向
+        const probeDist = 36;
+        const probeX = p2.x + Math.cos(p2.angle) * probeDist;
+        const probeY = p2.y + Math.sin(p2.angle) * probeDist;
+        let blocked = false;
+        for (let i = 0; i < walls.length; i++) {
+          const w = walls[i];
+          if (w.type === 'H' && Math.abs(probeY - w.y1) < 8 && probeX >= Math.min(w.x1, w.x2) && probeX <= Math.max(w.x1, w.x2)) {
+            blocked = true; break;
+          }
+          if (w.type === 'V' && Math.abs(probeX - w.x1) < 8 && probeY >= Math.min(w.y1, w.y2) && probeY <= Math.max(w.y1, w.y2)) {
+            blocked = true; break;
+          }
+        }
+
+        if (blocked || probeX < 18 || probeX > 502 || probeY < 18 || probeY > 342) {
+          p2.angle += (Math.random() < 0.5 ? 1 : -1) * 0.14;
+        } else {
+          checkTankSlidingMove(p2, Math.cos(p2.angle) * moveSpeed, Math.sin(p2.angle) * moveSpeed, walls);
+        }
+      }
+    }
+
+    function updateTankTroublePhysics() {
+      if (STATE.tanktrouble.roundOver || STATE.tanktrouble.matchOver) {
+        updateTankTroubleParticles();
+        return;
+      }
+
+      const tanks = STATE.tanktrouble.tanks;
+      const keys = STATE.tanktrouble.keys;
+      const walls = STATE.tanktrouble.maze.walls;
+      if (!STATE.tanktrouble.treads) STATE.tanktrouble.treads = [];
+
+      // 更新 P1 运动
+      const p1 = tanks.p1;
+      if (p1 && !p1.dead) {
+        if (p1.reloadTimer > 0) p1.reloadTimer--;
+        if (p1.recoil > 0) p1.recoil *= 0.8;
+
+        const rotSpeed = 0.065;
+        const forwardSpeed = 2.6;
+        const reverseSpeed = 1.7;
+
+        if (keys.p1.left) p1.angle -= rotSpeed;
+        if (keys.p1.right) p1.angle += rotSpeed;
+
+        let moveX = 0, moveY = 0;
+        if (keys.p1.forward) {
+          moveX += Math.cos(p1.angle) * forwardSpeed;
+          moveY += Math.sin(p1.angle) * forwardSpeed;
+        }
+        if (keys.p1.backward) {
+          moveX -= Math.cos(p1.angle) * reverseSpeed;
+          moveY -= Math.sin(p1.angle) * reverseSpeed;
+        }
+
+        if (moveX !== 0 || moveY !== 0) {
+          p1.x += moveX;
+          p1.y += moveY;
+          resolveTankWallCollision(p1, walls);
+
+          // 履带地面胎印
+          p1.distTraveled = (p1.distTraveled || 0) + Math.hypot(moveX, moveY);
+          if (p1.distTraveled > 8) {
+            p1.distTraveled = 0;
+            STATE.tanktrouble.treads.push({ x: p1.x, y: p1.y, angle: p1.angle, alpha: 0.38 });
+            if (STATE.tanktrouble.treads.length > 140) STATE.tanktrouble.treads.shift();
+          }
+        }
+      }
+
+      // 更新 P2 运动
+      const p2 = tanks.p2;
+      if (p2 && !p2.dead) {
+        if (p2.reloadTimer > 0) p2.reloadTimer--;
+        if (p2.recoil > 0) p2.recoil *= 0.8;
+
+        if (STATE.gameMode === 'AI') {
+          updateTankTroubleAI();
+        } else {
+          const rotSpeed = 0.065;
+          const forwardSpeed = 2.6;
+          const reverseSpeed = 1.7;
+
+          if (keys.p2.left) p2.angle -= rotSpeed;
+          if (keys.p2.right) p2.angle += rotSpeed;
+
+          let moveX = 0, moveY = 0;
+          if (keys.p2.forward) {
+            moveX += Math.cos(p2.angle) * forwardSpeed;
+            moveY += Math.sin(p2.angle) * forwardSpeed;
+          }
+          if (keys.p2.backward) {
+            moveX -= Math.cos(p2.angle) * reverseSpeed;
+            moveY -= Math.sin(p2.angle) * reverseSpeed;
+          }
+
+          if (moveX !== 0 || moveY !== 0) {
+            p2.x += moveX;
+            p2.y += moveY;
+            resolveTankWallCollision(p2, walls);
+
+            // 履带地面胎印
+            p2.distTraveled = (p2.distTraveled || 0) + Math.hypot(moveX, moveY);
+            if (p2.distTraveled > 8) {
+              p2.distTraveled = 0;
+              STATE.tanktrouble.treads.push({ x: p2.x, y: p2.y, angle: p2.angle, alpha: 0.38 });
+              if (STATE.tanktrouble.treads.length > 140) STATE.tanktrouble.treads.shift();
+            }
+          }
+        }
+      }
+
+      // 子弹高精度三级子步进折射物理 (杜绝穿墙与误伤)
+      const bullets = STATE.tanktrouble.bullets;
+      const substeps = 3;
+
+      for (let bi = bullets.length - 1; bi >= 0; bi--) {
+        const b = bullets[bi];
+        let bulletDestroyed = false;
+
+        for (let s = 0; s < substeps; s++) {
+          b.x += b.vx / substeps;
+          b.y += b.vy / substeps;
+          b.age += 0.33;
+          if (b.safeFrames > 0) b.safeFrames -= 0.33;
+
+          // 外围边界硬弹性反弹
+          if (b.x <= 4 + b.r) {
+            b.x = 4 + b.r; b.vx = Math.abs(b.vx); b.bouncesLeft--;
+            spawnTankTroubleSpark(b.x, b.y);
+          } else if (b.x >= 516 - b.r) {
+            b.x = 516 - b.r; b.vx = -Math.abs(b.vx); b.bouncesLeft--;
+            spawnTankTroubleSpark(b.x, b.y);
+          }
+          if (b.y <= 4 + b.r) {
+            b.y = 4 + b.r; b.vy = Math.abs(b.vy); b.bouncesLeft--;
+            spawnTankTroubleSpark(b.x, b.y);
+          } else if (b.y >= 356 - b.r) {
+            b.y = 356 - b.r; b.vy = -Math.abs(b.vy); b.bouncesLeft--;
+            spawnTankTroubleSpark(b.x, b.y);
+          }
+
+          // 迷宫内墙高保真折射
+          for (let i = 0; i < walls.length; i++) {
+            const w = walls[i];
+            if (w.type === 'H') {
+              const minX = Math.min(w.x1, w.x2) - 1.5;
+              const maxX = Math.max(w.x1, w.x2) + 1.5;
+              if (b.x >= minX && b.x <= maxX) {
+                if (Math.abs(b.y - w.y1) <= b.r + 2.0) {
+                  if ((b.vy > 0 && b.y <= w.y1 + 1.2) || (b.vy < 0 && b.y >= w.y1 - 1.2)) {
+                    b.vy = -b.vy;
+                    b.y = w.y1 + Math.sign(b.vy) * (b.r + 2.2);
+                    b.bouncesLeft--;
+                    spawnTankTroubleSpark(b.x, b.y);
+                    break;
+                  }
+                }
+              }
+            } else if (w.type === 'V') {
+              const minY = Math.min(w.y1, w.y2) - 1.5;
+              const maxY = Math.max(w.y1, w.y2) + 1.5;
+              if (b.y >= minY && b.y <= maxY) {
+                if (Math.abs(b.x - w.x1) <= b.r + 2.0) {
+                  if ((b.vx > 0 && b.x <= w.x1 + 1.2) || (b.vx < 0 && b.x >= w.x1 - 1.2)) {
+                    b.vx = -b.vx;
+                    b.x = w.x1 + Math.sign(b.vx) * (b.r + 2.2);
+                    b.bouncesLeft--;
+                    spawnTankTroubleSpark(b.x, b.y);
+                    break;
+                  }
+                }
+              }
+            }
+          }
+
+          if (b.bouncesLeft <= 0 || b.age > 650) {
+            bulletDestroyed = true;
+            break;
+          }
+
+          // 命中坦克判定
+          for (const key of ['p1', 'p2']) {
+            const t = tanks[key];
+            if (!t || t.dead) continue;
+
+            // 核心保障：开火保护期内，绝不炸死发射者自己
+            if (b.shooterId === t.id && b.safeFrames > 0) continue;
+
+            const dist = Math.hypot(b.x - t.x, b.y - t.y);
+            if (dist <= t.r + b.r + 0.5) {
+              explodeTankTroubleTank(t, b.shooterKey);
+              bulletDestroyed = true;
+              break;
+            }
+          }
+
+          if (bulletDestroyed) break;
+        }
+
+        if (bulletDestroyed) {
+          bullets.splice(bi, 1);
+        }
+      }
+
+      // 履带胎印缓慢渐隐
+      const treads = STATE.tanktrouble.treads;
+      for (let i = treads.length - 1; i >= 0; i--) {
+        treads[i].alpha *= 0.996;
+        if (treads[i].alpha < 0.02) treads.splice(i, 1);
+      }
+
+      updateTankTroubleParticles();
+    }
+
+    function spawnTankTroubleSpark(x, y) {
+      AUDIO.play('hit');
+      for (let i = 0; i < 3; i++) {
+        STATE.tanktrouble.particles.push({
+          x: x, y: y,
+          vx: (Math.random() - 0.5) * 3.5,
+          vy: (Math.random() - 0.5) * 3.5,
+          life: 0.35,
+          color: '#fbbf24',
+          r: 1.5
+        });
+      }
+    }
+
+    function explodeTankTroubleTank(tank, killerKey) {
+      if (tank.dead || STATE.tanktrouble.roundOver) return;
+      tank.dead = true;
+      STATE.tanktrouble.roundOver = true;
+
+      AUDIO.play('contra_explode');
+
+      for (let i = 0; i < 32; i++) {
+        const colors = [tank.color, '#f59e0b', '#ef4444', '#475569', '#ffffff'];
+        STATE.tanktrouble.particles.push({
+          x: tank.x,
+          y: tank.y,
+          vx: (Math.random() - 0.5) * 8.5,
+          vy: (Math.random() - 0.5) * 8.5,
+          life: 1.0,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          r: 2 + Math.random() * 3.5
+        });
+      }
+
+      if (tank.id === 1) {
+        STATE.tanktrouble.p2Score++;
+      } else {
+        STATE.tanktrouble.p1Score++;
+      }
+      updateTankTroubleHUD();
+
+      const target = STATE.tanktrouble.targetScore;
+      if (STATE.tanktrouble.p1Score >= target) {
+        STATE.tanktrouble.matchOver = true;
+        setTimeout(() => {
+          AUDIO.play('goal');
+          showModal('🏆 终极总冠军！', `<p><b>🔴 玩家 1 (红坦克)</b> 以 <b>${STATE.tanktrouble.p1Score} : ${STATE.tanktrouble.p2Score}</b> 彻底统治迷宫，荣获总冠军！</p>`);
+        }, 600);
+      } else if (STATE.tanktrouble.p2Score >= target) {
+        STATE.tanktrouble.matchOver = true;
+        setTimeout(() => {
+          AUDIO.play('goal');
+          const winnerName = STATE.gameMode === 'AI' ? '🤖 机器人 (AI)' : '🟢 玩家 2 (绿坦克)';
+          showModal('🏆 终极总冠军！', `<p><b>${winnerName}</b> 以 <b>${STATE.tanktrouble.p2Score} : ${STATE.tanktrouble.p1Score}</b> 彻底统治迷宫，荣获总冠军！</p>`);
+        }, 600);
+      } else {
+        STATE.tanktrouble.nextRoundTimer = setTimeout(() => {
+          if (STATE.currentGame === 'TANKTROUBLE' && !STATE.tanktrouble.matchOver) {
+            resetTankTroubleRound();
+          }
+        }, 1300);
+      }
+    }
+
+    function updateTankTroubleParticles() {
+      const ps = STATE.tanktrouble.particles;
+      for (let i = ps.length - 1; i >= 0; i--) {
+        const p = ps[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vx *= 0.93;
+        p.vy *= 0.93;
+        p.life -= 0.026;
+        if (p.life <= 0) {
+          ps.splice(i, 1);
+        }
+      }
+    }
+
+    function resizeTankTroubleCanvas() {
+      const c = document.getElementById('tanktrouble-canvas');
+      if (!c) return;
+      c.width = 520;
+      c.height = 360;
+    }
+
+    function renderTankTrouble() {
+      const c = document.getElementById('tanktrouble-canvas');
+      if (!c) return;
+      const ctx = c.getContext('2d');
+
+      // 背景与微网格
+      ctx.fillStyle = '#e2e8f0';
+      ctx.fillRect(0, 0, c.width, c.height);
+
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = 1;
+      const cw = STATE.tanktrouble.maze.cw || 65;
+      const ch = STATE.tanktrouble.maze.ch || 60;
+      for (let x = cw; x < c.width; x += cw) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, c.height); ctx.stroke();
+      }
+      for (let y = ch; y < c.height; y += ch) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(c.width, y); ctx.stroke();
+      }
+
+      // 绘制履带胎印
+      const treads = STATE.tanktrouble.treads || [];
+      for (let i = 0; i < treads.length; i++) {
+        const tr = treads[i];
+        ctx.save();
+        ctx.translate(tr.x, tr.y);
+        ctx.rotate(tr.angle);
+        ctx.fillStyle = `rgba(100, 116, 139, ${tr.alpha})`;
+        ctx.fillRect(-8, -10, 4, 3);
+        ctx.fillRect(-8, 7, 4, 3);
+        ctx.restore();
+      }
+
+      // 绘制迷宫墙体 (深色立体倒角)
+      const walls = STATE.tanktrouble.maze.walls;
+      ctx.strokeStyle = '#1e293b';
+      ctx.lineWidth = 4;
+      ctx.lineCap = 'round';
+      for (let i = 0; i < walls.length; i++) {
+        const w = walls[i];
+        ctx.beginPath();
+        ctx.moveTo(w.x1, w.y1);
+        ctx.lineTo(w.x2, w.y2);
+        ctx.stroke();
+      }
+
+      // 绘制跳弹 (金属高光质感)
+      const bullets = STATE.tanktrouble.bullets;
+      for (let i = 0; i < bullets.length; i++) {
+        const b = bullets[i];
+        ctx.save();
+        ctx.fillStyle = '#0f172a';
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#94a3b8';
+        ctx.beginPath();
+        ctx.arc(b.x - 1, b.y - 1, 1.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // 绘制坦克 (含双履带齿牙、车身装甲与开火后坐力)
+      const tanks = STATE.tanktrouble.tanks;
+      for (const key of ['p1', 'p2']) {
+        const t = tanks[key];
+        if (!t || t.dead) continue;
+
+        ctx.save();
+        ctx.translate(t.x, t.y);
+        ctx.rotate(t.angle);
+
+        // 两侧履带与齿牙
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(-11, -12, 22, 5);
+        ctx.fillRect(-11, 7, 22, 5);
+        ctx.fillStyle = '#475569';
+        for (let gx = -9; gx <= 7; gx += 4) {
+          ctx.fillRect(gx, -12, 1.5, 5);
+          ctx.fillRect(gx, 7, 1.5, 5);
+        }
+
+        // 装甲底盘
+        ctx.fillStyle = t.color;
+        ctx.beginPath();
+        if (ctx.roundRect) {
+          ctx.roundRect(-9, -8, 18, 16, 3);
+        } else {
+          ctx.rect(-9, -8, 18, 16);
+        }
+        ctx.fill();
+        ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        // 炮管 (带后坐力回弹位移)
+        const recoilOffset = t.recoil || 0;
+        ctx.fillStyle = '#1e293b';
+        ctx.fillRect(0 - recoilOffset, -2, t.barrelLen, 4);
+        ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(0 - recoilOffset, -2, t.barrelLen, 4);
+
+        // 炮塔中心旋转圆顶
+        ctx.fillStyle = t.color;
+        ctx.beginPath();
+        ctx.arc(0, 0, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        ctx.restore();
+      }
+
+      // 绘制爆炸碎屑与火花
+      const ps = STATE.tanktrouble.particles;
+      for (let i = 0; i < ps.length; i++) {
+        const p = ps[i];
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, p.life);
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r || 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    // ==========================================================================
+    
+
+    function resetCurrentGame() {
+      initTankTroubleGame();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initCommonHeader("🛡️ 坦克震荡 (Tank Trouble) 规则与指南", `<p><strong>胜利目标：</strong>在不断随机生成的错综复杂迷宫中穿梭对轰，率先击毁敌方坦克达到 <b>5 分</b> 者获得总冠军！</p><br>
+          <p><strong>💥 物理反弹穿甲炮弹（无差别伤害）：</strong></p>
+          <ul>
+            <li>发射的炮弹可在迷宫坚硬墙壁间连续高速反弹 <b>7 次</b>，反射角精确等于入射角！</li>
+            <li><b>切记小心跳弹：</b>自己的炮弹反弹回来击中自己同样会粉身碎骨，切勿盲目乱射！</li>
+            <li>每辆坦克最多维持 <b>5 枚</b> 活跃炮弹，冷却完毕即可持续压制。</li>
+          </ul><br>
+          <p><strong>🎮 全端操作方案（完全还原经典与双人同屏）：</strong></p>
+          <ul>
+            <li><b>🔴 玩家 1 (红坦克)：</b>键盘 <b>ESDF</b> 移动（E前进、D后退、S左转、F右转），<b>Q</b> 键发射！（亦智能兼容 <b>WASD + 空格</b>）</li>
+            <li><b>🟢 玩家 2 (绿坦克)：</b>键盘方向键 <b>↑ ↓ ← →</b> 移动，<b>M</b> 键发射！（亦支持 Enter 键）</li>
+            <li><b>🔵 玩家 3 (蓝坦克)：</b>鼠标移动光标控制朝向与移动，<b>鼠标左键</b> 发射！</li>
+            <li><b>📱 移动端触屏：</b>双人同屏提供专属左右独立虚拟十字轮盘与发光开火键！</li>
+          </ul>`, resetCurrentGame);
+      initTankTroubleGame();
+    });
+  </script>
+</body>
+</html>

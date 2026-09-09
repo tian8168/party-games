@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>极光桌上冰球 (Neon Hockey) · 聚会游戏大厅</title>
+  <link rel="stylesheet" href="../common/common.css">
+  <style>
+    /* ==========================================================================
+       极光桌上冰球专属舞台 (HOCKEY STAGE)
+       ========================================================================== */
+    #hockey-stage {
+      width: 100%;
+      height: 100%;
+      display: none;
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #070c16;
+    }
+
+    #hockey-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      touch-action: none;
+      cursor: crosshair;
+    }
+
+    /* 底部提示文字与工具栏 */
+    .game-status {
+      font-size: 0.84rem;
+      color: #e2e8f0;
+      min-height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 500;
+      text-align: center;
+    }
+
+    .toolbar-quoridor {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 6px;
+    }
+
+    .tool-btn {
+      background: #1e293b;
+      border: 1px solid #3b4c68;
+      color: var(--text-main);
+      padding: 7px 6px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tool-btn.active {
+      background: #334155;
+      border-color: #60a5fa;
+      color: #93c5fd;
+      box-shadow: 0 0 10px rgba(96, 165, 250, 0.4);
+    }
+
+    .toolbar-gravity {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      gap: 3px;
+      padding: 4px 6px;
+      background: #0f172a;
+      border-radius: 8px;
+      border: 1px solid #334155;
+    }
+    .gravity-col-btn {
+      flex: 1;
+      background: #1e293b;
+      border: 1px solid #475569;
+      color: #94a3b8;
+      padding: 5px 0;
+      border-radius: 5px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+    }
+    .gravity-col-btn:hover { background: #3b82f6; color: #fff; }
+
+    /* Toast 浮窗 */
+    .toast {
+      position: fixed;
+      top: 20px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid #38bdf8;
+      color: #f0f9ff;
+      padding: 9px 16px;
+      border-radius: 20px;
+      font-size: 0.84rem;
+      font-weight: 500;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      gap: 6px;
+      animation: fadeInDown 0.3s ease;
+      max-width: 90%;
+      text-align: center;
+    }
+
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 通用弹窗 */
+    .modal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 16px;
+    }
+    .modal.show { display: flex; }
+    .modal-content {
+      background: #1e293b;
+      border: 1px solid #475569;
+      border-radius: 16px;
+      padding: 20px;
+      max-width: 400px;
+      width: 100%;
+      color: #e2e8f0;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+      text-align: center;
+    }
+    .modal-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 10px; color: #fff; }
+    .modal-body { font-size: 0.85rem; line-height: 1.6; color: #cbd5e1; margin-bottom: 18px; text-align: left; }
+    .modal-btn {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: white;
+      border: none;
+      padding: 9px 22px;
+      border-radius: 8px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+  
+    
+  </style>
+</head>
+<body>
+  <div class="container in-game">
+    <div class="game-header">
+      <a href="../index.html" class="nav-back">🔙 返回大厅</a>
+      <h2 class="game-title">🏒 极光桌上冰球 (Neon Hockey)</h2>
+      <div class="header-actions">
+        <button class="btn-icon" id="btn-sound-toggle">🔊</button>
+        <button class="btn-icon" id="btn-rules-header">📖 规则</button>
+        <button class="btn-icon" id="restart-btn">🔄 重置</button>
+      </div>
+    </div>
+
+    
+      <div class="mode-nav">
+        <div class="mode-tab active" id="tab-ai" onclick="switchGameMode('AI')">🤖 人机对弈</div>
+  <div class="mode-tab" id="tab-local" onclick="switchGameMode('LOCAL')">👥 双人同屏</div>
+</div>
+    
+      <div class="generic-scoreboard" id="generic-scoreboard">
+        <div class="player-card p2" id="card-p2">
+          <div class="player-meta">
+            <span class="player-name" id="name-p2">🟢 玩家 2 (客)</span>
+            <span class="turn-badge">行动中</span>
+          </div>
+          <div id="walls-wrapper-p2" style="display:none; font-size:0.75rem; margin-top:2px;">
+            余墙: <span id="walls-count-p2">10</span>
+            <div id="wall-bars-p2" style="display:flex; gap:2px; height:4px; margin-top:2px;"></div>
+          </div>
+        </div>
+
+        <div class="player-card p1 active-turn" id="card-p1">
+          <div class="player-meta">
+            <span class="player-name" id="name-p1">🔴 玩家 1 (主)</span>
+            <span class="turn-badge">行动中</span>
+          </div>
+          <div id="walls-wrapper-p1" style="display:none; font-size:0.75rem; margin-top:2px;">
+            余墙: <span id="walls-count-p1">10</span>
+            <div id="wall-bars-p1" style="display:flex; gap:2px; height:4px; margin-top:2px;"></div>
+          </div>
+        </div>
+
+        <div class="player-card p3" id="card-p3" style="display:none;">
+          <div class="player-meta">
+            <span class="player-name" id="name-p3">🔵 玩家 3 (西)</span>
+            <span class="turn-badge">行动中</span>
+          </div>
+          <div id="walls-wrapper-p3" style="display:none; font-size:0.75rem; margin-top:2px;">
+            余墙: <span id="walls-count-p3">5</span>
+            <div id="wall-bars-p3" style="display:flex; gap:2px; height:4px; margin-top:2px;"></div>
+          </div>
+        </div>
+
+        <div class="player-card p4" id="card-p4" style="display:none;">
+          <div class="player-meta">
+            <span class="player-name" id="name-p4">🟡 玩家 4 (东)</span>
+            <span class="turn-badge">行动中</span>
+          </div>
+          <div id="walls-wrapper-p4" style="display:none; font-size:0.75rem; margin-top:2px;">
+            余墙: <span id="walls-count-p4">5</span>
+            <div id="wall-bars-p4" style="display:flex; gap:2px; height:4px; margin-top:2px;"></div>
+          </div>
+        </div>
+      </div>
+
+
+    <div class="stage-wrapper">
+      <div id="hockey-stage">
+          <canvas id="hockey-canvas"></canvas>
+        </div>
+    </div>
+  </div>
+
+  <script src="../common/audio.js"></script>
+  <script src="../common/common.js"></script>
+  <script>
+    
+    // 基础游戏运行时状态
+    const STATE = {
+      currentView: 'GAME',
+      currentGame: 'HOCKEY',
+      gameMode: 'AI',
+      turn: 1,
+      scores: { 1: 0, 2: 0, 3: 0, 4: 0 },
+      online: {
+        connected: false,
+        roomId: null,
+        myRole: 'host',
+        opponentJoined: false,
+        mqttClient: null
+      }
+    };
+
+    function checkIsMyTurn() {
+      if (STATE.gameMode === 'LOCAL') return true;
+      if (STATE.gameMode === 'AI') return STATE.turn === 1;
+      if (STATE.gameMode === 'ONLINE') {
+        if (STATE.online.myRole === 'host' && STATE.turn === 1) return true;
+        if (STATE.online.myRole === 'guest' && STATE.turn === 2) return true;
+        return false;
+      }
+      return true;
+    }
+
+    function updateScoreboard() {
+      const cardP1 = document.getElementById('card-p1');
+      const cardP2 = document.getElementById('card-p2');
+      const cardP3 = document.getElementById('card-p3');
+      const cardP4 = document.getElementById('card-p4');
+      if (cardP1) {
+        cardP1.classList.toggle('active-turn', STATE.turn === 1);
+        const n1 = document.getElementById('name-p1');
+        if (n1) n1.innerHTML = '🔴 玩家 1 (主)' + (STATE.scores[1] !== undefined ? ' <small>('+STATE.scores[1]+')</small>' : '');
+      }
+      if (cardP2) {
+        cardP2.classList.toggle('active-turn', STATE.turn === 2);
+        const n2 = document.getElementById('name-p2');
+        if (n2) {
+          const p2Label = STATE.gameMode === 'AI' ? '🤖 电脑 (AI)' : (STATE.gameMode === 'ONLINE' ? '🟢 好友 (客)' : '🟢 玩家 2');
+          n2.innerHTML = p2Label + (STATE.scores[2] !== undefined ? ' <small>('+STATE.scores[2]+')</small>' : '');
+        }
+      }
+      if (cardP3) cardP3.classList.toggle('active-turn', STATE.turn === 3);
+      if (cardP4) cardP4.classList.toggle('active-turn', STATE.turn === 4);
+    }
+
+    function switchGameMode(mode, doReset = true) {
+      STATE.gameMode = mode;
+      document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+      const activeTab = document.getElementById('tab-' + mode.toLowerCase());
+      if (activeTab) activeTab.classList.add('active');
+
+      const onlinePanel = document.getElementById('online-panel');
+      if (onlinePanel) {
+        onlinePanel.style.display = mode === 'ONLINE' ? 'flex' : 'none';
+        if (mode === 'ONLINE' && window.ONLINE_NETWORK) {
+          ONLINE_NETWORK.createRoom(STATE.currentGame);
+        }
+      }
+      updateScoreboard();
+      if (doReset && typeof resetCurrentGame === 'function') {
+        resetCurrentGame();
+      }
+    }
+
+    function sendOnlineAction(data) {
+      if (window.ONLINE_NETWORK) {
+        window.ONLINE_NETWORK.sendAction(data);
+      }
+    }
+  
+
+    // 6. 极光桌上冰球 (NEON AIR HOCKEY)
+    // ==========================================================================
+    const hockeyCanvas = document.getElementById('hockey-canvas');
+    const hockeyCtx = hockeyCanvas.getContext('2d');
+
+    function initHockeyGame() {
+      resetHockeyMatch();
+      resizeHockeyCanvas();
+      if (!STATE.hockey.animId) animateHockey();
+    }
+
+    function resetHockeyMatch() {
+      STATE.hockey.p1Score = 0;
+      STATE.hockey.p2Score = 0;
+      STATE.winner = null;
+      resetPuck(1);
+    }
+
+    function resetPuck(servingPlayer = 1) {
+      const h = STATE.hockey;
+      h.puck.x = 180;
+      h.puck.y = servingPlayer === 1 ? 300 : 200;
+      h.puck.vx = (Math.random() - 0.5) * 2;
+      h.puck.vy = servingPlayer === 1 ? -3 : 3;
+      h.paddle1.x = 180; h.paddle1.y = 440;
+      h.paddle2.x = 180; h.paddle2.y = 60;
+    }
+
+    function resizeHockeyCanvas() {
+      const rect = hockeyCanvas.parentElement.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      hockeyCanvas.width = rect.width * dpr;
+      hockeyCanvas.height = rect.height * dpr;
+      hockeyCtx.resetTransform();
+      hockeyCtx.scale(dpr, dpr);
+    }
+
+    let hockeyLastTime = performance.now();
+    let hockeyAccumulator = 0;
+    const HOCKEY_FIXED_STEP = 1000 / 60;
+
+    function animateHockey(now) {
+      STATE.hockey.animId = requestAnimationFrame(animateHockey);
+      if (STATE.currentGame !== 'HOCKEY' || STATE.currentView !== 'GAME') return;
+
+      const w = hockeyCanvas.getBoundingClientRect().width;
+      const h = hockeyCanvas.getBoundingClientRect().height;
+      if (w === 0 || h === 0) return;
+
+      if (!now) now = performance.now();
+      let elapsed = now - hockeyLastTime;
+      hockeyLastTime = now;
+      if (elapsed > 100) elapsed = 100;
+      hockeyAccumulator += elapsed;
+
+      while (hockeyAccumulator >= HOCKEY_FIXED_STEP) {
+        updateHockeyPhysics(w, h);
+        hockeyAccumulator -= HOCKEY_FIXED_STEP;
+      }
+      renderHockey(w, h);
+    }
+
+    function updateHockeyPhysics(w, h) {
+      if (STATE.winner) return;
+      const hk = STATE.hockey;
+      const p = hk.puck;
+      const pad1 = hk.paddle1;
+      const pad2 = hk.paddle2;
+
+      // 移动冰球
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vx *= 0.996; // 空气微弱阻力
+      p.vy *= 0.996;
+
+      // AI 追踪冰球 (Paddle 2)
+      if (STATE.gameMode === 'AI') {
+        const targetX = p.x;
+        const targetY = p.y < h * 0.45 ? Math.max(50, p.y - 15) : 60;
+        pad2.x += (targetX - pad2.x) * 0.12;
+        pad2.y += (targetY - pad2.y) * 0.1;
+      }
+
+      // 左右侧边墙体碰撞
+      if (p.x - p.radius < 0) { p.x = p.radius; p.vx = -p.vx * 0.95; AUDIO.play('hit'); spawnSparks(p.x, p.y, '#38bdf8'); }
+      if (p.x + p.radius > w) { p.x = w - p.radius; p.vx = -p.vx * 0.95; AUDIO.play('hit'); spawnSparks(p.x, p.y, '#38bdf8'); }
+
+      const goalLeft = w * 0.28, goalRight = w * 0.72;
+
+      // 上方门线判定
+      if (p.y - p.radius < 0) {
+        if (p.x > goalLeft && p.x < goalRight) {
+          // 进球！P1 得分！
+          AUDIO.play('goal');
+          hk.p1Score++;
+          spawnSparks(p.x, p.y, '#ff4757', 35);
+          showToast(`⚡ 绝杀破门！P1 得分！当前比分 ${hk.p1Score} : ${hk.p2Score}`);
+          if (hk.p1Score >= hk.maxScore) {
+            AUDIO.play('win');
+            STATE.winner = 1;
+            showModal('🎉 比赛获胜！', `P1 玩家率先攻入 ${hk.maxScore} 球，赢得极光冰球总冠军！`);
+          } else {
+            resetPuck(2);
+          }
+        } else {
+          p.y = p.radius; p.vy = -p.vy * 0.95; AUDIO.play('hit'); spawnSparks(p.x, p.y, '#ff4757');
+        }
+      }
+
+      // 下方门线判定
+      if (p.y + p.radius > h) {
+        if (p.x > goalLeft && p.x < goalRight) {
+          // 进球！P2 得分！
+          AUDIO.play('goal');
+          hk.p2Score++;
+          spawnSparks(p.x, p.y, '#2ed573', 35);
+          showToast(`⚡ 破门得分！P2 得分！当前比分 ${hk.p1Score} : ${hk.p2Score}`);
+          if (hk.p2Score >= hk.maxScore) {
+            AUDIO.play('win');
+            STATE.winner = 2;
+            showModal('🎉 比赛结束', `P2 玩家/电脑率先攻入 ${hk.maxScore} 球，赢得极光冰球胜利！`);
+          } else {
+            resetPuck(1);
+          }
+        } else {
+          p.y = h - p.radius; p.vy = -p.vy * 0.95; AUDIO.play('hit'); spawnSparks(p.x, p.y, '#2ed573');
+        }
+      }
+
+      // 推盘与冰球圆周碰撞检测
+      checkPaddleCollision(p, pad1);
+      checkPaddleCollision(p, pad2);
+
+      // 更新火花粒子
+      for (let i = hk.particles.length - 1; i >= 0; i--) {
+        const pt = hk.particles[i];
+        pt.x += pt.vx; pt.y += pt.vy; pt.life -= 0.035;
+        if (pt.life <= 0) hk.particles.splice(i, 1);
+      }
+    }
+
+    function checkPaddleCollision(puck, pad) {
+      const dx = puck.x - pad.x;
+      const dy = puck.y - pad.y;
+      const dist = Math.hypot(dx, dy);
+      const minDist = puck.radius + pad.radius;
+
+      if (dist < minDist) {
+        AUDIO.play('hit');
+        // 沿法线弹出
+        const angle = Math.atan2(dy, dx);
+        puck.x = pad.x + Math.cos(angle) * minDist;
+        puck.y = pad.y + Math.sin(angle) * minDist;
+
+        const speed = Math.hypot(puck.vx, puck.vy);
+        const newSpeed = Math.min(18, Math.max(speed, 6) * 1.08);
+        puck.vx = Math.cos(angle) * newSpeed;
+        puck.vy = Math.sin(angle) * newSpeed;
+        spawnSparks(puck.x, puck.y, '#f59e0b', 12);
+      }
+    }
+
+    function spawnSparks(x, y, color, count = 10) {
+      for (let i = 0; i < count; i++) {
+        const a = Math.random() * Math.PI * 2;
+        const spd = Math.random() * 5 + 1.5;
+        STATE.hockey.particles.push({
+          x, y,
+          vx: Math.cos(a) * spd,
+          vy: Math.sin(a) * spd,
+          color,
+          life: 1.0
+        });
+      }
+    }
+
+    function renderHockey(w, h) {
+      hockeyCtx.clearRect(0, 0, w, h);
+      const hk = STATE.hockey;
+
+      // 冰球场背景
+      hockeyCtx.fillStyle = '#080e1a';
+      hockeyCtx.fillRect(0, 0, w, h);
+
+      // 霓虹边线与中线
+      hockeyCtx.strokeStyle = 'rgba(56, 189, 248, 0.3)';
+      hockeyCtx.lineWidth = 2;
+      hockeyCtx.beginPath();
+      hockeyCtx.moveTo(0, h / 2); hockeyCtx.lineTo(w, h / 2);
+      hockeyCtx.stroke();
+
+      hockeyCtx.beginPath();
+      hockeyCtx.arc(w / 2, h / 2, 45, 0, Math.PI * 2);
+      hockeyCtx.stroke();
+
+      // 球门
+      const goalLeft = w * 0.28, goalRight = w * 0.72;
+      hockeyCtx.fillStyle = 'rgba(239, 68, 68, 0.3)';
+      hockeyCtx.fillRect(goalLeft, 0, goalRight - goalLeft, 8);
+      hockeyCtx.fillStyle = 'rgba(46, 213, 115, 0.3)';
+      hockeyCtx.fillRect(goalLeft, h - 8, goalRight - goalLeft, 8);
+
+      // 动态比分浮水印
+      hockeyCtx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+      hockeyCtx.font = 'bold 72px monospace';
+      hockeyCtx.textAlign = 'center';
+      hockeyCtx.fillText(`${hk.p2Score}`, w / 2, h / 2 - 30);
+      hockeyCtx.fillText(`${hk.p1Score}`, w / 2, h / 2 + 80);
+
+      // 绘制粒子
+      for (const pt of hk.particles) {
+        hockeyCtx.beginPath();
+        hockeyCtx.arc(pt.x, pt.y, 2.5 * pt.life, 0, Math.PI * 2);
+        hockeyCtx.fillStyle = pt.color;
+        hockeyCtx.globalAlpha = pt.life;
+        hockeyCtx.fill();
+      }
+      hockeyCtx.globalAlpha = 1.0;
+
+      // 绘制球门推盘 2 (上方 P2/AI)
+      hockeyCtx.beginPath();
+      hockeyCtx.arc(hk.paddle2.x, hk.paddle2.y, hk.paddle2.radius, 0, Math.PI * 2);
+      hockeyCtx.fillStyle = '#ef4444';
+      hockeyCtx.shadowColor = '#ef4444'; hockeyCtx.shadowBlur = 12;
+      hockeyCtx.fill();
+
+      // 绘制球门推盘 1 (下方 P1)
+      hockeyCtx.beginPath();
+      hockeyCtx.arc(hk.paddle1.x, hk.paddle1.y, hk.paddle1.radius, 0, Math.PI * 2);
+      hockeyCtx.fillStyle = '#22d3ee';
+      hockeyCtx.shadowColor = '#22d3ee'; hockeyCtx.shadowBlur = 12;
+      hockeyCtx.fill();
+
+      // 绘制发光冰球
+      hockeyCtx.beginPath();
+      hockeyCtx.arc(hk.puck.x, hk.puck.y, hk.puck.radius, 0, Math.PI * 2);
+      hockeyCtx.fillStyle = '#ffffff';
+      hockeyCtx.shadowColor = '#38bdf8'; hockeyCtx.shadowBlur = 16;
+      hockeyCtx.fill();
+      hockeyCtx.shadowBlur = 0;
+    }
+
+    // 冰球触控/鼠标操作
+    function onHockeyPointerMove(e) {
+      if (STATE.currentGame !== 'HOCKEY') return;
+      const rect = hockeyCanvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      const px = clientX - rect.left;
+      const py = clientY - rect.top;
+
+      // P1 推盘严格限制在己方下半区
+      STATE.hockey.paddle1.x = Math.max(STATE.hockey.paddle1.radius, Math.min(rect.width - STATE.hockey.paddle1.radius, px));
+      STATE.hockey.paddle1.y = Math.max(rect.height * 0.52, Math.min(rect.height - STATE.hockey.paddle1.radius, py));
+    }
+
+    hockeyCanvas.addEventListener('pointermove', onHockeyPointerMove);
+    hockeyCanvas.addEventListener('touchmove', (e) => { e.preventDefault(); onHockeyPointerMove(e); }, { passive: false });
+
+    // ==========================================================================
+    
+
+    function resetCurrentGame() {
+      initHockeyGame();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initCommonHeader("极光空气冰球 规则", `<p><strong>碰撞竞技：</strong>滑动己方推盘，利用刚体弹力高速撞击发光的冰球！</p><br>
+          <p><strong>破门得分：</strong>先将冰球攻入对方球门达到 <b>5 分</b> 的玩家赢得总冠军！</p>`, resetCurrentGame);
+      initHockeyGame();
+    });
+  </script>
+</body>
+</html>

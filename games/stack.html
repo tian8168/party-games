@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>极光叠叠高 (Stack Beat) · 聚会游戏大厅</title>
+  <link rel="stylesheet" href="../common/common.css">
+  <style>
+    /* ==========================================================================
+       5. 极光叠叠高 (STACK) 样式
+       ========================================================================== */
+    #stack-stage {
+      width: 100%;
+      height: 450px;
+      position: relative;
+      background: radial-gradient(circle at 50% 20%, #1e1b4b 0%, #0f172a 100%);
+      border-radius: 14px;
+      border: 1px solid #334155;
+      overflow: hidden;
+      display: none;
+      cursor: pointer;
+    }
+
+    #stack-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .stack-hud {
+      position: absolute;
+      top: 12px;
+      left: 14px;
+      right: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .stack-score-box {
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: #f8fafc;
+      text-shadow: 0 0 15px rgba(255,255,255,0.4);
+    }
+
+    .stack-combo-badge {
+      background: linear-gradient(135deg, #ec4899, #8b5cf6);
+      border: 1px solid rgba(255,255,255,0.3);
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: #fff;
+      display: none;
+    }
+
+    .stack-tap-tip {
+      position: absolute;
+      bottom: 16px;
+      width: 100%;
+      text-align: center;
+      color: #94a3b8;
+      font-size: 0.85rem;
+      font-weight: 600;
+      pointer-events: none;
+    }
+
+
+    /* ==========================================================================
+       12. 魂斗罗 (CONTRA) 专属样式与移动端触控手柄
+       ========================================================================== */
+    #contra-stage {
+      width: 100%;
+      max-width: 520px;
+      margin: 0 auto;
+      position: relative;
+      background: #020617;
+      border-radius: 16px;
+      border: 2px solid #ef4444;
+      box-shadow: 0 0 30px rgba(239, 68, 68, 0.35);
+      overflow: hidden;
+      display: none;
+      flex-direction: column;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    #contra-canvas {
+      width: 100%;
+      height: 310px;
+      display: block;
+      background: #020617;
+      image-rendering: pixelated;
+      cursor: crosshair;
+      touch-action: none;
+    }
+
+    .contra-hud-top {
+      position: absolute;
+      top: 6px;
+      left: 8px;
+      right: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+      pointer-events: none;
+      font-family: monospace, monospace;
+      font-weight: 900;
+      text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000;
+    }
+
+    .contra-life-badge {
+      color: #ef4444;
+      font-size: 0.95rem;
+      letter-spacing: 1px;
+    }
+
+    .contra-weapon-badge {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid #fbbf24;
+      color: #fbbf24;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+    }
+
+    .btn-konami-secret {
+      pointer-events: auto;
+      background: linear-gradient(135deg, #ec4899, #8b5cf6);
+      border: 1px solid #f472b6;
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(236, 72, 153, 0.5);
+      transition: all 0.2s;
+    }
+    .btn-konami-secret:active {
+      transform: scale(0.92);
+      filter: brightness(1.2);
+    }
+
+    
+  </style>
+</head>
+<body>
+  <div class="container in-game">
+    <div class="game-header">
+      <a href="../index.html" class="nav-back">🔙 返回大厅</a>
+      <h2 class="game-title">🥞 极光叠叠高 (Stack Beat)</h2>
+      <div class="header-actions">
+        <button class="btn-icon" id="btn-sound-toggle">🔊</button>
+        <button class="btn-icon" id="btn-rules-header">📖 规则</button>
+        <button class="btn-icon" id="restart-btn">🔄 重置</button>
+      </div>
+    </div>
+
+    <div class="stage-wrapper">
+      <div id="stack-stage" onclick="handleStackDrop()">
+          <canvas id="stack-canvas"></canvas>
+          <div class="stack-hud">
+            <div class="stack-score-box" id="stack-score">0</div>
+            <div class="stack-combo-badge" id="stack-combo">PERFECT x0</div>
+          </div>
+          <div class="stack-tap-tip" id="stack-tip">轻触屏幕任意位置落下晶体</div>
+        </div>
+    </div>
+  </div>
+
+  <script src="../common/audio.js"></script>
+  <script src="../common/common.js"></script>
+  <script>
+    
+    // 基础游戏运行时状态
+    const STATE = {
+      currentView: 'GAME',
+      currentGame: 'STACK',
+      gameMode: 'AI',
+      turn: 1,
+      scores: { 1: 0, 2: 0, 3: 0, 4: 0 },
+      online: {
+        connected: false,
+        roomId: null,
+        myRole: 'host',
+        opponentJoined: false,
+        mqttClient: null
+      }
+    };
+
+    function checkIsMyTurn() {
+      if (STATE.gameMode === 'LOCAL') return true;
+      if (STATE.gameMode === 'AI') return STATE.turn === 1;
+      if (STATE.gameMode === 'ONLINE') {
+        if (STATE.online.myRole === 'host' && STATE.turn === 1) return true;
+        if (STATE.online.myRole === 'guest' && STATE.turn === 2) return true;
+        return false;
+      }
+      return true;
+    }
+
+    function updateScoreboard() {
+      const cardP1 = document.getElementById('card-p1');
+      const cardP2 = document.getElementById('card-p2');
+      const cardP3 = document.getElementById('card-p3');
+      const cardP4 = document.getElementById('card-p4');
+      if (cardP1) {
+        cardP1.classList.toggle('active-turn', STATE.turn === 1);
+        const n1 = document.getElementById('name-p1');
+        if (n1) n1.innerHTML = '🔴 玩家 1 (主)' + (STATE.scores[1] !== undefined ? ' <small>('+STATE.scores[1]+')</small>' : '');
+      }
+      if (cardP2) {
+        cardP2.classList.toggle('active-turn', STATE.turn === 2);
+        const n2 = document.getElementById('name-p2');
+        if (n2) {
+          const p2Label = STATE.gameMode === 'AI' ? '🤖 电脑 (AI)' : (STATE.gameMode === 'ONLINE' ? '🟢 好友 (客)' : '🟢 玩家 2');
+          n2.innerHTML = p2Label + (STATE.scores[2] !== undefined ? ' <small>('+STATE.scores[2]+')</small>' : '');
+        }
+      }
+      if (cardP3) cardP3.classList.toggle('active-turn', STATE.turn === 3);
+      if (cardP4) cardP4.classList.toggle('active-turn', STATE.turn === 4);
+    }
+
+    function switchGameMode(mode, doReset = true) {
+      STATE.gameMode = mode;
+      document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+      const activeTab = document.getElementById('tab-' + mode.toLowerCase());
+      if (activeTab) activeTab.classList.add('active');
+
+      const onlinePanel = document.getElementById('online-panel');
+      if (onlinePanel) {
+        onlinePanel.style.display = mode === 'ONLINE' ? 'flex' : 'none';
+        if (mode === 'ONLINE' && window.ONLINE_NETWORK) {
+          ONLINE_NETWORK.createRoom(STATE.currentGame);
+        }
+      }
+      updateScoreboard();
+      if (doReset && typeof resetCurrentGame === 'function') {
+        resetCurrentGame();
+      }
+    }
+
+    function sendOnlineAction(data) {
+      if (window.ONLINE_NETWORK) {
+        window.ONLINE_NETWORK.sendAction(data);
+      }
+    }
+  
+
+    // 11. 极光叠叠高核心逻辑 (STACK)
+    // ==========================================================================
+    function initStackGame() {
+      STATE.stack.score = 0;
+      STATE.stack.combo = 0;
+      STATE.stack.over = false;
+      STATE.stack.layers = [];
+      STATE.stack.falling = [];
+
+      resizeStackCanvas();
+
+      STATE.stack.layers.push({
+        x: 0,
+        z: 0,
+        w: 150,
+        d: 150,
+        h: 16,
+        hue: 190
+      });
+
+      spawnNextStackLayer();
+      startStackLoop();
+      updateStackHUD();
+    }
+
+    function resizeStackCanvas() {
+      const c = document.getElementById('stack-canvas');
+      if (!c) return;
+      const rect = c.parentElement ? c.parentElement.getBoundingClientRect() : null;
+      c.width = (rect && rect.width > 50) ? rect.width : (c.offsetWidth || 360);
+      c.height = (rect && rect.height > 50) ? rect.height : (c.offsetHeight || 440);
+    }
+
+    function updateStackHUD() {
+      document.getElementById('stack-score').textContent = STATE.stack.score;
+      const comboBadge = document.getElementById('stack-combo');
+      if (STATE.stack.combo > 1) {
+        comboBadge.style.display = 'block';
+        comboBadge.textContent = `PERFECT x${STATE.stack.combo}`;
+      } else {
+        comboBadge.style.display = 'none';
+      }
+    }
+
+    function spawnNextStackLayer() {
+      const top = STATE.stack.layers[STATE.stack.layers.length - 1];
+      const axis = STATE.stack.layers.length % 2 === 0 ? 'x' : 'z';
+      const hue = (STATE.stack.layers.length * 14) % 360;
+
+      STATE.stack.current = {
+        x: axis === 'x' ? -180 : top.x,
+        z: axis === 'z' ? -180 : top.z,
+        w: top.w,
+        d: top.d,
+        h: 16,
+        axis: axis,
+        dir: 1,
+        speed: 2.4 + Math.min(2.5, STATE.stack.score * 0.05),
+        hue: hue
+      };
+    }
+
+    function handleStackDrop() {
+      AUDIO.init();
+      if (STATE.stack.over || !STATE.stack.current) {
+        if (STATE.stack.over) resetStackMatch();
+        return;
+      }
+
+      const cur = STATE.stack.current;
+      const top = STATE.stack.layers[STATE.stack.layers.length - 1];
+      const axis = cur.axis;
+
+      const delta = axis === 'x' ? cur.x - top.x : cur.z - top.z;
+      const size = axis === 'x' ? cur.w : cur.d;
+
+      if (Math.abs(delta) < 3.5) {
+        if (axis === 'x') cur.x = top.x;
+        else cur.z = top.z;
+
+        STATE.stack.combo++;
+        AUDIO.play('perfect', STATE.stack.combo);
+      } else if (Math.abs(delta) < size) {
+        const overlap = size - Math.abs(delta);
+        const sliceSize = Math.abs(delta);
+
+        STATE.stack.falling.push({
+          x: axis === 'x' ? (delta > 0 ? top.x + overlap : cur.x) : cur.x,
+          z: axis === 'z' ? (delta > 0 ? top.z + overlap : cur.z) : cur.z,
+          w: axis === 'x' ? sliceSize : cur.w,
+          d: axis === 'z' ? sliceSize : cur.d,
+          h: 16,
+          y: STATE.stack.layers.length * 16,
+          vy: 0,
+          hue: cur.hue
+        });
+
+        if (axis === 'x') {
+          cur.w = overlap;
+          cur.x = delta > 0 ? top.x : top.x - (size - overlap);
+        } else {
+          cur.d = overlap;
+          cur.z = delta > 0 ? top.z : top.z - (size - overlap);
+        }
+
+        STATE.stack.combo = 0;
+        AUDIO.play('slice');
+      } else {
+        STATE.stack.over = true;
+        STATE.stack.falling.push({
+          x: cur.x, z: cur.z, w: cur.w, d: cur.d, h: 16,
+          y: STATE.stack.layers.length * 16, vy: 0, hue: cur.hue
+        });
+        STATE.stack.current = null;
+        AUDIO.play('fall');
+        setTimeout(() => {
+          showModal('极光叠叠高 结算', `<h3>🏛️ 建造总层数: ${STATE.stack.score}</h3><br><p>节奏感极佳！点击任意位置可重新挑战更高摩天大厦！</p>`);
+        }, 800);
+        return;
+      }
+
+      STATE.stack.layers.push({
+        x: cur.x,
+        z: cur.z,
+        w: cur.w,
+        d: cur.d,
+        h: 16,
+        hue: cur.hue
+      });
+
+      STATE.stack.score++;
+      updateStackHUD();
+      spawnNextStackLayer();
+    }
+
+    function startStackLoop() {
+      if (STATE.stack.animId) cancelAnimationFrame(STATE.stack.animId);
+
+      let lastTime = performance.now();
+      let accumulator = 0;
+      const FIXED_STEP = 1000 / 60;
+
+      function loop(now) {
+        if (STATE.currentGame === 'STACK') {
+          if (!now) now = performance.now();
+          let elapsed = now - lastTime;
+          lastTime = now;
+          if (elapsed > 100) elapsed = 100;
+          accumulator += elapsed;
+
+          while (accumulator >= FIXED_STEP) {
+            updateStackAnim();
+            accumulator -= FIXED_STEP;
+          }
+
+          renderStack();
+          STATE.stack.animId = requestAnimationFrame(loop);
+        }
+      }
+      loop(performance.now());
+    }
+
+    function updateStackAnim() {
+      const cur = STATE.stack.current;
+      if (cur) {
+        if (cur.axis === 'x') {
+          cur.x += cur.speed * cur.dir;
+          if (cur.x > 180) { cur.x = 180; cur.dir = -1; }
+          else if (cur.x < -180) { cur.x = -180; cur.dir = 1; }
+        } else {
+          cur.z += cur.speed * cur.dir;
+          if (cur.z > 180) { cur.z = 180; cur.dir = -1; }
+          else if (cur.z < -180) { cur.z = -180; cur.dir = 1; }
+        }
+      }
+
+      STATE.stack.falling.forEach(f => {
+        f.vy += 0.8;
+        f.y -= f.vy;
+      });
+      STATE.stack.falling = STATE.stack.falling.filter(f => f.y > -200);
+    }
+
+    function renderStack() {
+      const c = document.getElementById('stack-canvas');
+      if (!c) return;
+      const ctx = c.getContext('2d');
+      ctx.clearRect(0, 0, c.width, c.height);
+
+      const cx = c.width / 2;
+      const cy = c.height * 0.72;
+      const camY = Math.max(0, (STATE.stack.layers.length - 4) * 16);
+
+      function toIso(x, z, y) {
+        return {
+          px: cx + (x - z) * 0.866,
+          py: cy + (x + z) * 0.5 - (y - camY)
+        };
+      }
+
+      function drawIsoBlock(block, yLevel) {
+        const p1 = toIso(block.x - block.w / 2, block.z - block.d / 2, yLevel);
+        const p2 = toIso(block.x + block.w / 2, block.z - block.d / 2, yLevel);
+        const p3 = toIso(block.x + block.w / 2, block.z + block.d / 2, yLevel);
+        const p4 = toIso(block.x - block.w / 2, block.z + block.d / 2, yLevel);
+
+        const h = block.h;
+
+        ctx.beginPath();
+        ctx.moveTo(p1.px, p1.py); ctx.lineTo(p2.px, p2.py);
+        ctx.lineTo(p3.px, p3.py); ctx.lineTo(p4.px, p4.py);
+        ctx.closePath();
+        ctx.fillStyle = `hsl(${block.hue}, 85%, 65%)`;
+        ctx.fill();
+        ctx.strokeStyle = `hsl(${block.hue}, 90%, 75%)`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(p2.px, p2.py); ctx.lineTo(p3.px, p3.py);
+        ctx.lineTo(p3.px, p3.py + h); ctx.lineTo(p2.px, p2.py + h);
+        ctx.closePath();
+        ctx.fillStyle = `hsl(${block.hue}, 80%, 45%)`;
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(p3.px, p3.py); ctx.lineTo(p4.px, p4.py);
+        ctx.lineTo(p4.px, p4.py + h); ctx.lineTo(p3.px, p3.py + h);
+        ctx.closePath();
+        ctx.fillStyle = `hsl(${block.hue}, 75%, 35%)`;
+        ctx.fill();
+      }
+
+      STATE.stack.layers.forEach((l, idx) => {
+        drawIsoBlock(l, idx * 16);
+      });
+
+      STATE.stack.falling.forEach(f => {
+        drawIsoBlock(f, f.y);
+      });
+
+      if (STATE.stack.current) {
+        drawIsoBlock(STATE.stack.current, STATE.stack.layers.length * 16);
+      }
+    }
+
+    function resetStackMatch() {
+      initStackGame();
+    }
+
+    
+    // ==========================================================================
+    // ==========================================================================
+    
+
+    function resetCurrentGame() {
+      initStackGame();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initCommonHeader("极光叠叠高 规则", `<p><strong>节奏切割：</strong>轻触屏幕让横飞的方块落下。对齐严丝合缝触发【PERFECT音阶连击】！</p><br>
+          <p><strong>削切缩小：</strong>没对齐的多余边缘会被一刀切掉，底座越来越窄，一旦切空整座塔彻底倒塌！</p>`, resetCurrentGame);
+      initStackGame();
+    });
+  </script>
+</body>
+</html>

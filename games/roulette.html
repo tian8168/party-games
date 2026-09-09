@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>恶魔轮盘赌 (Buckshot Roulette) · 聚会游戏大厅</title>
+  <link rel="stylesheet" href="../common/common.css">
+  <script src="../mqtt.min.js"></script>
+  <style>
+    /* ==========================================================================
+       恶魔轮盘赌专属舞台 (ROULETTE STAGE)
+       ========================================================================== */
+    #roulette-stage {
+      width: 100%;
+      height: 100%;
+      display: none;
+      flex-direction: column;
+      justify-content: space-between;
+      background: radial-gradient(circle at center, #1e1114 0%, #0a0608 100%);
+      border-radius: 12px;
+      padding: 12px;
+      border: 1px solid #5a1e28;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .roulette-gun-bench {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .shotgun-svg {
+      width: 220px;
+      height: 90px;
+      filter: drop-shadow(0 6px 12px rgba(0,0,0,0.8));
+      transition: transform 0.3s ease;
+    }
+    .shotgun-svg.aim-opponent { transform: rotate(0deg) scale(1); }
+    .shotgun-svg.aim-self { transform: rotate(180deg) scale(1); }
+
+    .roulette-flash-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: #ff2222;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.1s ease-out;
+      z-index: 50;
+    }
+
+    .roulette-info-badge {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid #7f1d1d;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      color: #fca5a5;
+      margin-top: 6px;
+      font-weight: 600;
+    }
+
+    .roulette-status-hud {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      padding: 4px 6px;
+    }
+
+    .hp-hearts-box {
+      display: flex;
+      gap: 3px;
+      align-items: center;
+    }
+    .hp-heart {
+      font-size: 1.1rem;
+      filter: drop-shadow(0 0 4px rgba(239, 68, 68, 0.6));
+    }
+    .hp-heart.empty {
+      filter: grayscale(1);
+      opacity: 0.3;
+    }
+
+    /* 道具栏 */
+    .roulette-items-dock {
+      width: 100%;
+      display: flex;
+      gap: 6px;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 6px;
+      min-height: 52px;
+      align-items: center;
+      overflow-x: auto;
+    }
+
+    .roulette-item-btn {
+      background: #1e293b;
+      border: 1px solid #475569;
+      color: #fff;
+      border-radius: 8px;
+      padding: 4px 8px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .roulette-item-btn:hover {
+      background: #334155;
+      border-color: #f59e0b;
+    }
+
+    .roulette-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      width: 100%;
+      margin-top: 6px;
+    }
+
+    .btn-roulette-shoot {
+      padding: 10px 6px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      transition: all 0.2s;
+    }
+    .btn-shoot-opp {
+      background: linear-gradient(135deg, #ef4444, #991b1b);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+    }
+    .btn-shoot-self {
+      background: linear-gradient(135deg, #f59e0b, #b45309);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+    }
+    .btn-roulette-shoot span.sub {
+      font-size: 0.66rem;
+      font-weight: 400;
+      opacity: 0.85;
+    }
+
+    
+  </style>
+</head>
+<body>
+  <div class="container in-game">
+    <div class="game-header">
+      <a href="../index.html" class="nav-back">🔙 返回大厅</a>
+      <h2 class="game-title">🔫 恶魔轮盘赌 (Buckshot Roulette)</h2>
+      <div class="header-actions">
+        <button class="btn-icon" id="btn-sound-toggle">🔊</button>
+        <button class="btn-icon" id="btn-rules-header">📖 规则</button>
+        <button class="btn-icon" id="restart-btn">🔄 重置</button>
+      </div>
+    </div>
+
+    
+      <div class="mode-nav">
+        <div class="mode-tab active" id="tab-ai" onclick="switchGameMode('AI')">🤖 人机对弈</div>
+  <div class="mode-tab" id="tab-local" onclick="switchGameMode('LOCAL')">👥 双人同屏</div>
+<div class="mode-tab" id="tab-online" onclick="switchGameMode('ONLINE')">🌐 好友联机</div>
+</div>
+      <div class="online-panel" id="online-panel">
+        <div class="online-info">
+          <span>房间号: <b id="display-room-id" style="color:var(--neon-cyan)">未连接</b></span>
+          <span id="display-role-info">你是 <b style="color:var(--p1-color)">🔴 房主</b></span>
+        </div>
+        <div class="online-actions">
+          <button class="btn-small" onclick="ONLINE_NETWORK.createRoom(STATE.currentGame)">创建新房</button>
+          <button class="btn-small" onclick="ONLINE_NETWORK.copyLink()">复制邀请链接</button>
+          <button class="btn-small" onclick="ONLINE_NETWORK.joinRoom(null, STATE.currentGame)">加入房间</button>
+        </div>
+      </div>
+    
+
+    <div class="stage-wrapper">
+      <div id="roulette-stage">
+          <div class="roulette-flash-overlay" id="roulette-flash"></div>
+          <!-- 对手信息栏 -->
+          <div class="roulette-status-hud">
+            <div>
+              <b id="roulette-opp-name" style="color:#f87171;">🤖 恶魔荷官</b>
+              <div class="hp-hearts-box" id="roulette-opp-hp"></div>
+            </div>
+            <div id="roulette-cuffed-opp" style="display:none; color:#f59e0b; font-size:0.75rem; font-weight:700;">🔒 被拷住</div>
+          </div>
+
+          <!-- 枪台中央区 -->
+          <div class="roulette-gun-bench">
+            <svg class="shotgun-svg aim-opponent" id="shotgun-svg" viewBox="0 0 240 80">
+              <defs>
+                <linearGradient id="gunMetal" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#64748b"/>
+                  <stop offset="50%" stop-color="#334155"/>
+                  <stop offset="100%" stop-color="#0f172a"/>
+                </linearGradient>
+                <linearGradient id="woodStock" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#b45309"/>
+                  <stop offset="100%" stop-color="#78350f"/>
+                </linearGradient>
+              </defs>
+              <!-- 枪托木柄 -->
+              <path d="M 10 50 Q 30 55 60 45 L 75 35 L 75 52 L 20 62 Z" fill="url(#woodStock)" stroke="#451a03" stroke-width="2"/>
+              <!-- 扳机与机匣 -->
+              <rect x="75" y="32" width="45" height="20" rx="3" fill="url(#gunMetal)" stroke="#1e293b" stroke-width="2"/>
+              <path d="M 90 52 Q 95 62 105 52" fill="none" stroke="#cbd5e1" stroke-width="3"/>
+              <!-- 双管猎枪枪管 -->
+              <rect x="120" y="30" width="105" height="11" rx="2" fill="url(#gunMetal)" stroke="#0f172a" stroke-width="2"/>
+              <rect x="120" y="41" width="105" height="11" rx="2" fill="url(#gunMetal)" stroke="#0f172a" stroke-width="2"/>
+              <!-- 枪口准星 -->
+              <circle cx="222" cy="28" r="2.5" fill="#f59e0b"/>
+            </svg>
+            <div class="roulette-info-badge" id="roulette-round-info">装弹中...</div>
+            <div id="roulette-saw-badge" style="display:none; color:#ef4444; font-size:0.75rem; font-weight:700; margin-top:4px;">🪚 双倍伤害已激活！</div>
+          </div>
+
+          <!-- 玩家道具与血量 -->
+          <div class="roulette-status-hud">
+            <div>
+              <b id="roulette-player-name" style="color:#60a5fa;">👤 玩家</b>
+              <div class="hp-hearts-box" id="roulette-player-hp"></div>
+            </div>
+            <div id="roulette-cuffed-player" style="display:none; color:#f59e0b; font-size:0.75rem; font-weight:700;">🔒 被拷住</div>
+          </div>
+
+          <!-- 道具架 -->
+          <div class="roulette-items-dock" id="roulette-items-container"></div>
+
+          <!-- 行动按键 -->
+          <div class="roulette-actions">
+            <button class="btn-roulette-shoot btn-shoot-opp" onclick="rouletteShoot('OPPONENT')">
+              <span>💥 射击对方</span>
+              <span class="sub">实弹扣对方血，空包弹换回合</span>
+            </button>
+            <button class="btn-roulette-shoot btn-shoot-self" onclick="rouletteShoot('SELF')">
+              <span>🎯 射击自己</span>
+              <span class="sub">若为空包弹可【再动一回合】</span>
+            </button>
+          </div>
+        </div>
+    </div>
+  </div>
+
+  <script src="../common/audio.js"></script>
+  <script src="../common/common.js"></script>
+  <script src="../common/network.js"></script>
+  <script>
+    
+    // 基础游戏运行时状态
+    const STATE = {
+      currentView: 'GAME',
+      currentGame: 'ROULETTE',
+      gameMode: 'AI',
+      turn: 1,
+      scores: { 1: 0, 2: 0, 3: 0, 4: 0 },
+      online: {
+        connected: false,
+        roomId: null,
+        myRole: 'host',
+        opponentJoined: false,
+        mqttClient: null
+      }
+    };
+
+    function checkIsMyTurn() {
+      if (STATE.gameMode === 'LOCAL') return true;
+      if (STATE.gameMode === 'AI') return STATE.turn === 1;
+      if (STATE.gameMode === 'ONLINE') {
+        if (STATE.online.myRole === 'host' && STATE.turn === 1) return true;
+        if (STATE.online.myRole === 'guest' && STATE.turn === 2) return true;
+        return false;
+      }
+      return true;
+    }
+
+    function updateScoreboard() {
+      const cardP1 = document.getElementById('card-p1');
+      const cardP2 = document.getElementById('card-p2');
+      const cardP3 = document.getElementById('card-p3');
+      const cardP4 = document.getElementById('card-p4');
+      if (cardP1) {
+        cardP1.classList.toggle('active-turn', STATE.turn === 1);
+        const n1 = document.getElementById('name-p1');
+        if (n1) n1.innerHTML = '🔴 玩家 1 (主)' + (STATE.scores[1] !== undefined ? ' <small>('+STATE.scores[1]+')</small>' : '');
+      }
+      if (cardP2) {
+        cardP2.classList.toggle('active-turn', STATE.turn === 2);
+        const n2 = document.getElementById('name-p2');
+        if (n2) {
+          const p2Label = STATE.gameMode === 'AI' ? '🤖 电脑 (AI)' : (STATE.gameMode === 'ONLINE' ? '🟢 好友 (客)' : '🟢 玩家 2');
+          n2.innerHTML = p2Label + (STATE.scores[2] !== undefined ? ' <small>('+STATE.scores[2]+')</small>' : '');
+        }
+      }
+      if (cardP3) cardP3.classList.toggle('active-turn', STATE.turn === 3);
+      if (cardP4) cardP4.classList.toggle('active-turn', STATE.turn === 4);
+    }
+
+    function switchGameMode(mode, doReset = true) {
+      STATE.gameMode = mode;
+      document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+      const activeTab = document.getElementById('tab-' + mode.toLowerCase());
+      if (activeTab) activeTab.classList.add('active');
+
+      const onlinePanel = document.getElementById('online-panel');
+      if (onlinePanel) {
+        onlinePanel.style.display = mode === 'ONLINE' ? 'flex' : 'none';
+        if (mode === 'ONLINE' && window.ONLINE_NETWORK) {
+          ONLINE_NETWORK.createRoom(STATE.currentGame);
+        }
+      }
+      updateScoreboard();
+      if (doReset && typeof resetCurrentGame === 'function') {
+        resetCurrentGame();
+      }
+    }
+
+    function sendOnlineAction(data) {
+      if (window.ONLINE_NETWORK) {
+        window.ONLINE_NETWORK.sendAction(data);
+      }
+    }
+  
+
+    // 5. 恶魔轮盘赌 (BUCKSHOT ROULETTE)
+    // ==========================================================================
+    const ROULETTE_ITEM_DEFS = {
+      'MAGNIFIER': { name: '🔍 放大镜', desc: '偷看下一发真假' },
+      'HANDCUFFS': { name: '🔒 手铐', desc: '封锁对方下回合' },
+      'SAW': { name: '🪚 手锯', desc: '下发实弹2倍伤害' },
+      'BEER': { name: '🍺 啤酒', desc: '退出当前子弹' },
+      'CIGARETTE': { name: '🚬 香烟', desc: '恢复1点生命值' }
+    };
+
+    function initRouletteGame() {
+      STATE.roulette.p1Hp = 4;
+      STATE.roulette.p2Hp = 4;
+      STATE.roulette.p1Items = ['MAGNIFIER', 'BEER', 'SAW'];
+      STATE.roulette.p2Items = ['MAGNIFIER', 'HANDCUFFS', 'CIGARETTE'];
+      STATE.roulette.sawed = false;
+      STATE.roulette.p1Cuffed = false;
+      STATE.roulette.p2Cuffed = false;
+      STATE.roulette.knownNext = null;
+      dealRouletteRound();
+    }
+
+    function dealRouletteRound() {
+      AUDIO.play('rack');
+      // 随机生成 2~4 发实弹与 2~4 发空包弹
+      const liveCount = Math.floor(Math.random() * 3) + 2; // 2..4
+      const blankCount = Math.floor(Math.random() * 3) + 2; // 2..4
+
+      const shells = [];
+      for (let i = 0; i < liveCount; i++) shells.push(true);
+      for (let i = 0; i < blankCount; i++) shells.push(false);
+      // Fisher-Yates 洗牌
+      for (let i = shells.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shells[i], shells[j]] = [shells[j], shells[i]];
+      }
+      STATE.roulette.shells = shells;
+      STATE.roulette.sawed = false;
+      STATE.roulette.knownNext = null;
+
+      // 补充随机道具（最多6个）
+      const itemKeys = Object.keys(ROULETTE_ITEM_DEFS);
+      if (STATE.roulette.p1Items.length < 6) {
+        STATE.roulette.p1Items.push(itemKeys[Math.floor(Math.random() * itemKeys.length)]);
+      }
+      if (STATE.roulette.p2Items.length < 6) {
+        STATE.roulette.p2Items.push(itemKeys[Math.floor(Math.random() * itemKeys.length)]);
+      }
+
+      renderRouletteUI(`新一轮装弹：🔴 ${liveCount} 发实弹 · ⚪ ${blankCount} 发空包弹`);
+      showToast(`🔫 新一轮开始！已装入 🔴 ${liveCount} 实弹，⚪ ${blankCount} 空包弹！`, 4000);
+    }
+
+    function renderRouletteUI(infoText) {
+      // 渲染血量
+      const renderHearts = (hp, maxHp = 4) => {
+        let html = '';
+        for (let i = 0; i < maxHp; i++) {
+          html += `<span class="hp-heart ${i < hp ? '' : 'empty'}">❤️</span>`;
+        }
+        return html;
+      };
+      document.getElementById('roulette-player-hp').innerHTML = renderHearts(STATE.roulette.p1Hp);
+      document.getElementById('roulette-opp-hp').innerHTML = renderHearts(STATE.roulette.p2Hp);
+
+      // 渲染名称与角色
+      document.getElementById('roulette-player-name').textContent = STATE.gameMode === 'ONLINE' && STATE.online.myRole === 'guest' ? '👤 绿方 (客方)' : '👤 红方 (你)';
+      document.getElementById('roulette-opp-name').textContent = STATE.gameMode === 'AI' ? '🤖 恶魔荷官 (AI)' : (STATE.gameMode === 'ONLINE' ? '👤 对方玩家' : '👤 对手 (P2)');
+
+      if (infoText) document.getElementById('roulette-round-info').textContent = infoText;
+
+      document.getElementById('roulette-saw-badge').style.display = STATE.roulette.sawed ? 'block' : 'none';
+      document.getElementById('roulette-cuffed-opp').style.display = STATE.roulette.p2Cuffed ? 'block' : 'none';
+      document.getElementById('roulette-cuffed-player').style.display = STATE.roulette.p1Cuffed ? 'block' : 'none';
+
+      // 渲染当前玩家道具
+      const itemsContainer = document.getElementById('roulette-items-container');
+      itemsContainer.innerHTML = '';
+      const myItems = STATE.turn === 1 ? STATE.roulette.p1Items : STATE.roulette.p2Items;
+      if (myItems.length === 0) {
+        itemsContainer.innerHTML = '<span style="font-size:0.75rem; color:#64748b; padding-left:4px;">无可用道具</span>';
+      } else {
+        myItems.forEach((itemKey, idx) => {
+          const btn = document.createElement('button');
+          btn.className = 'roulette-item-btn';
+          btn.textContent = ROULETTE_ITEM_DEFS[itemKey].name;
+          btn.title = ROULETTE_ITEM_DEFS[itemKey].desc;
+          btn.onclick = () => useRouletteItem(idx);
+          itemsContainer.appendChild(btn);
+        });
+      }
+
+      // 枪口指向动画
+      const gunSvg = document.getElementById('shotgun-svg');
+      gunSvg.classList.toggle('aim-self', false);
+      gunSvg.classList.toggle('aim-opponent', true);
+
+      // 状态文本
+      const status = document.getElementById('status-text');
+      if (STATE.winner) {
+        status.textContent = STATE.winner === 1 ? '🏆 玩家获得了最后的生还！' : '💀 恶魔荷官夺走了你的筹码！';
+      } else {
+        status.textContent = checkIsMyTurn() ? '👉 轮到你的回合：请选择射击目标或使用道具！' : '⏳ 对手正在抉择...';
+      }
+    }
+
+    function useRouletteItem(itemIdx) {
+      if (STATE.winner || STATE.animating) return;
+      if (!checkIsMyTurn()) { showToast('⏳ 尚未轮到你的回合！'); return; }
+
+      const isP1 = STATE.turn === 1;
+      const myItems = isP1 ? STATE.roulette.p1Items : STATE.roulette.p2Items;
+      const itemKey = myItems.splice(itemIdx, 1)[0];
+      AUDIO.play('click');
+
+      if (itemKey === 'MAGNIFIER') {
+        const isLive = STATE.roulette.shells[0];
+        STATE.roulette.knownNext = isLive;
+        showModal('🔍 放大镜偷窥结果', `你悄悄旋开枪膛，看到下一发子弹是：<br><br><b style="font-size:1.3rem; color:${isLive ? '#ef4444' : '#38bdf8'}">${isLive ? '🔴 实弹 (LIVE)' : '⚪ 空包弹 (BLANK)'}</b>！`);
+      } else if (itemKey === 'HANDCUFFS') {
+        if (isP1) STATE.roulette.p2Cuffed = true;
+        else STATE.roulette.p1Cuffed = true;
+        showToast('🔒 手铐生效！对手的下一个行动回合将被跳过！');
+      } else if (itemKey === 'SAW') {
+        STATE.roulette.sawed = true;
+        showToast('🪚 枪管已被截短！下一枪若是实弹，将造成 2 点致命伤害！');
+      } else if (itemKey === 'BEER') {
+        AUDIO.play('rack');
+        const ejected = STATE.roulette.shells.shift();
+        showToast(`🍺 咔哒！退出了当前一发子弹：【${ejected ? '🔴 实弹' : '⚪ 空包弹'}】！`);
+        STATE.roulette.knownNext = null;
+        if (STATE.roulette.shells.length === 0) dealRouletteRound();
+      } else if (itemKey === 'CIGARETTE') {
+        if (isP1) STATE.roulette.p1Hp = Math.min(STATE.roulette.maxHp, STATE.roulette.p1Hp + 1);
+        else STATE.roulette.p2Hp = Math.min(STATE.roulette.maxHp, STATE.roulette.p2Hp + 1);
+        showToast('🚬 深吸一口香烟，生命值 +1！');
+      }
+
+      renderRouletteUI();
+      if (STATE.gameMode === 'ONLINE') sendOnlineAction({ type: 'ROULETTE_ITEM', itemKey });
+    }
+
+    function rouletteShoot(target) {
+      if (STATE.winner || STATE.animating) return;
+      if (!checkIsMyTurn()) {
+        showToast(STATE.gameMode === 'ONLINE' && !STATE.online.opponentJoined ? '💡 请先等待好友加入房间！' : '⏳ 正在等待对方操作...');
+        return;
+      }
+      executeRouletteShot(target, true);
+    }
+
+    function executeRouletteShot(target, isLocalAction = false) {
+      STATE.animating = true;
+      const isLive = STATE.roulette.shells.shift();
+      STATE.roulette.knownNext = null;
+
+      const gunSvg = document.getElementById('shotgun-svg');
+      gunSvg.classList.toggle('aim-self', target === 'SELF');
+      gunSvg.classList.toggle('aim-opponent', target === 'OPPONENT');
+
+      const shooter = STATE.turn;
+      const victim = target === 'SELF' ? shooter : (shooter === 1 ? 2 : 1);
+      const dmg = STATE.roulette.sawed ? 2 : 1;
+      STATE.roulette.sawed = false;
+
+      setTimeout(() => {
+        if (isLive) {
+          AUDIO.play('shot');
+          // 枪火屏幕爆闪
+          const flash = document.getElementById('roulette-flash');
+          flash.style.opacity = '0.95';
+          setTimeout(() => { flash.style.opacity = '0'; }, 180);
+
+          if (victim === 1) STATE.roulette.p1Hp = Math.max(0, STATE.roulette.p1Hp - dmg);
+          else STATE.roulette.p2Hp = Math.max(0, STATE.roulette.p2Hp - dmg);
+
+          showToast(`💥 轰！！是【🔴 实弹】！造成了 ${dmg} 点伤害！`);
+
+          // 胜负判定
+          if (STATE.roulette.p1Hp <= 0 || STATE.roulette.p2Hp <= 0) {
+            AUDIO.play('win');
+            STATE.winner = STATE.roulette.p1Hp <= 0 ? 2 : 1;
+            const winName = STATE.winner === 1 ? '🔴 玩家' : '🤖 恶魔荷官/对手';
+            showModal('🎉 对决终结！', `${winName} 在生死轮盘中存活到了最后，赢得对赌！`);
+            STATE.animating = false;
+            renderRouletteUI();
+            return;
+          }
+
+          // 回合切换（考虑手铐）
+          advanceRouletteTurn();
+        } else {
+          AUDIO.play('blank');
+          showToast('💨 咔哒！是【⚪ 空包弹】！平安无事！');
+
+          // 如果朝自己开空枪，奖励额外一次连动回合！
+          if (target === 'SELF') {
+            showToast('🎁 孤注一掷成功！朝自己开出空包弹，你获得【连续行动】特权！', 3500);
+          } else {
+            advanceRouletteTurn();
+          }
+        }
+
+        if (STATE.roulette.shells.length === 0 && !STATE.winner) {
+          dealRouletteRound();
+        }
+
+        STATE.animating = false;
+        renderRouletteUI();
+
+        if (isLocalAction && STATE.gameMode === 'ONLINE') {
+          sendOnlineAction({ type: 'ROULETTE_SHOOT', target });
+        }
+      }, 400);
+    }
+
+    function advanceRouletteTurn() {
+      const nextPlayer = STATE.turn === 1 ? 2 : 1;
+      const isCuffed = nextPlayer === 1 ? STATE.roulette.p1Cuffed : STATE.roulette.p2Cuffed;
+
+      if (isCuffed) {
+        if (nextPlayer === 1) STATE.roulette.p1Cuffed = false;
+        else STATE.roulette.p2Cuffed = false;
+        showToast(`🔒 对手被手铐锁住，跳过回合！依然由你行动！`, 3000);
+      } else {
+        endTurn();
+      }
+    }
+
+    function runRouletteAI() {
+      if (STATE.winner || STATE.turn !== 2) return;
+      const r = STATE.roulette;
+
+      // 1. AI 道具使用决策
+      if (r.p2Hp <= 2 && r.p2Items.includes('CIGARETTE')) {
+        const idx = r.p2Items.indexOf('CIGARETTE');
+        r.p2Items.splice(idx, 1);
+        r.p2Hp = Math.min(r.maxHp, r.p2Hp + 1);
+        showToast('🚬 恶魔荷官抽了一根香烟，恢复了 1 点生命！');
+        renderRouletteUI();
+      }
+
+      if (!r.p1Cuffed && r.p2Items.includes('HANDCUFFS')) {
+        const idx = r.p2Items.indexOf('HANDCUFFS');
+        r.p2Items.splice(idx, 1);
+        r.p1Cuffed = true;
+        showToast('🔒 恶魔荷官向你掷出手铐！你的下一回合被锁定了！');
+        renderRouletteUI();
+      }
+
+      if (r.p2Items.includes('MAGNIFIER') && r.knownNext === null) {
+        const idx = r.p2Items.indexOf('MAGNIFIER');
+        r.p2Items.splice(idx, 1);
+        r.knownNext = r.shells[0];
+        renderRouletteUI();
+      }
+
+      // 2. 开枪决策
+      let target = 'OPPONENT';
+      if (r.knownNext === true) {
+        if (r.p2Items.includes('SAW') && !r.sawed) {
+          const idx = r.p2Items.indexOf('SAW');
+          r.p2Items.splice(idx, 1);
+          r.sawed = true;
+          showToast('🪚 恶魔荷官狞笑着用手锯锯断了枪管！');
+          renderRouletteUI();
+        }
+        target = 'OPPONENT'; // 确信实弹射击玩家
+      } else if (r.knownNext === false) {
+        target = 'SELF'; // 确信空包弹射击自己以夺取连动回合
+      } else {
+        // 计算实弹概率
+        const liveCount = r.shells.filter(s => s).length;
+        const pLive = liveCount / r.shells.length;
+        target = pLive <= 0.35 ? 'SELF' : 'OPPONENT';
+      }
+
+      setTimeout(() => {
+        executeRouletteShot(target, false);
+      }, 700);
+    }
+
+    // ==========================================================================
+    
+
+    function resetCurrentGame() {
+      initRouletteGame();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initCommonHeader("恶魔轮盘赌 规则", `<p><strong>枪膛与子弹：</strong>每轮装入已知数量的 🔴 实弹 与 ⚪ 空包弹，轮流开枪。</p><br>
+          <p><strong>核心机制：</strong></p>
+          <ul>
+            <li><b>开枪打对手：</b>若是实弹扣除对方生命值；若是空包弹则安然无恙并换对手回合。</li>
+            <li><b>开枪打自己：</b>若是空包弹，<b>你将获得额外一次行动回合！</b> 若是实弹则扣自己血。</li>
+          </ul><br>
+          <p><strong>道具功效：</strong>🔍 放大镜看下一发真假；🔒 手铐锁住对手下回合；🪚 手锯造成2倍实弹伤害；🍺 啤酒退出一发弹；🚬 香烟回血。</p>`, resetCurrentGame);
+      initRouletteGame();
+    });
+  </script>
+</body>
+</html>
