@@ -1747,7 +1747,17 @@
       'SUMO': 'sumo.html',
       'TANK': 'tank.html',
       'STACK': 'stack.html'
-    };
+    const prefetchedLinks = new Set();
+    function prefetchGame(gameKey) {
+      const file = fileMap[gameKey] || (gameKey.toLowerCase() + '.html');
+      const href = 'games/' + file;
+      if (prefetchedLinks.has(href)) return;
+      prefetchedLinks.add(href);
+      const link = document.createElement('link');
+      link.rel = 'prefetch';
+      link.href = href;
+      document.head.appendChild(link);
+    }
 
     function launchGame(gameKey) {
       if (window.AUDIO) window.AUDIO.play('click');
@@ -1863,6 +1873,19 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       renderRecentGames();
+
+      // 预加载优化：悬浮/轻触即预取游戏页面资源
+      document.querySelectorAll('.game-card').forEach(card => {
+        const handler = () => {
+          const onclickAttr = card.getAttribute('onclick');
+          if (onclickAttr) {
+            const match = onclickAttr.match(/enterGame\(['"]([^'"]+)['"]\)/);
+            if (match && match[1]) prefetchGame(match[1]);
+          }
+        };
+        card.addEventListener('pointerenter', handler, { passive: true, once: true });
+        card.addEventListener('touchstart', handler, { passive: true, once: true });
+      });
 
       // 音效按钮
       const soundBtn = document.getElementById('btn-sound-toggle');

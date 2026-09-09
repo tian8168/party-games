@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>四人飞行棋 · 聚会游戏大厅</title>
   <link rel="stylesheet" href="../common/common.css">
-  <script src="../mqtt.min.js"></script>
+  <script src="../mqtt.min.js" defer></script>
   <style>
     /* 舞台包装与Canvas */
     #aeroplane-stage {
@@ -1631,7 +1631,7 @@
     
 
     function resetCurrentGame() {
-      initAeroplaneState();
+      initAeroplaneGame();
     }
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -1643,7 +1643,7 @@
           <p><strong>空中撞机：</strong>停留在敌方战机所在格，直接将敌机<b>击落遣返停机坪</b>！同色战机在同格则触发<b>叠机编队</b>！</p><br>
           <p><strong>精准冲线：</strong>进入终点直道后必须<b>刚好掷出对应点数</b>到达中央大本营。超出点数将折返倒退！</p><br>
           <p><strong>多种模式：</strong>支持 1人挑战3电脑 AI、本地2-4人同屏轮流对战、以及好友联机房间！</p>`, resetCurrentGame);
-      initAeroplaneState();
+      initAeroplaneGame();
       if (window.resizeAeroplaneCanvas) resizeAeroplaneCanvas();
     });
     window.addEventListener('resize', () => {

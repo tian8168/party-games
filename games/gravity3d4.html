@@ -5,15 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>3D 立体四子棋 (Connect Four 3D) · 聚会游戏大厅</title>
   <link rel="stylesheet" href="../common/common.css">
-  <script src="../three.min.js"></script>
-  <script src="../OrbitControls.js"></script>
-  <script src="../mqtt.min.js"></script>
+  <script src="../three.min.js" defer></script>
+  <script src="../OrbitControls.js" defer></script>
+  <script src="../mqtt.min.js" defer></script>
   <style>
     /* 3D 舞台 */
     #board-3d-wrapper {
       width: 100%;
       height: 100%;
-      display: none;
+      display: block;
       position: relative;
       border-radius: 10px;
       overflow: hidden;
@@ -161,6 +161,8 @@
       currentGame: 'GRAVITY3D4',
       gameMode: 'AI',
       turn: 1,
+      winner: null,
+      animating: false,
       scores: { 1: 0, 2: 0, 3: 0, 4: 0 },
       online: {
         connected: false,
@@ -168,6 +170,12 @@
         myRole: 'host',
         opponentJoined: false,
         mqttClient: null
+      },
+      gravity3d4: {
+        board: Array.from({ length: 4 }, () => Array.from({ length: 4 }, () => new Array(4).fill(0))),
+        hoverRod: null,
+        winningLine: null,
+        lastMove: null
       }
     };
 
@@ -874,8 +882,39 @@
       }
     }
 
-    // ==========================================================================
-    
+    function endTurn() {
+      STATE.turn = STATE.turn === 1 ? 2 : 1;
+      updateScoreboard();
+
+      if (!STATE.winner && STATE.gameMode === 'AI' && STATE.turn === 2) {
+        STATE.animating = true;
+        setTimeout(() => {
+          if (typeof runGravity3D4AI === 'function') runGravity3D4AI();
+          STATE.animating = false;
+          if (typeof update3DScene === 'function') update3DScene();
+        }, 400);
+      }
+    }
+
+    function initGravity3D4() {
+      STATE.winner = null;
+      STATE.turn = 1;
+      STATE.animating = false;
+      if (!STATE.gravity3d4) {
+        STATE.gravity3d4 = {};
+      }
+      STATE.gravity3d4.board = Array.from({ length: 4 }, () => Array.from({ length: 4 }, () => new Array(4).fill(0)));
+      STATE.gravity3d4.hoverRod = null;
+      STATE.gravity3d4.winningLine = null;
+      STATE.gravity3d4.lastMove = null;
+      init3DSceneIfNeeded();
+      if (typeof build3DBoard === 'function') build3DBoard(4);
+      if (typeof resetSocketHighlights === 'function') resetSocketHighlights();
+      if (typeof set3DHover === 'function') set3DHover(null, null);
+      if (typeof resize3D === 'function') resize3D();
+      if (typeof update3DScene === 'function') update3DScene();
+      updateScoreboard();
+    }
 
     function resetCurrentGame() {
       initGravity3D4();
@@ -887,6 +926,9 @@
           <p><strong>视角操作：</strong>拖拽旋转视角，点击立柱落子。比 3D 五子棋更快节奏，超高烧脑指数！</p>`, resetCurrentGame);
       STATE.currentGame = 'GRAVITY3D4';
       initGravity3D4();
+    });
+    window.addEventListener('resize', () => {
+      if (typeof resize3D === 'function') resize3D();
     });
   </script>
 </body>

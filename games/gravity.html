@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>重力五子棋 (Gravity 2D) · 聚会游戏大厅</title>
   <link rel="stylesheet" href="../common/common.css">
-  <script src="../mqtt.min.js"></script>
+  <script src="../mqtt.min.js" defer></script>
   <style>
     .toolbar-gravity {
       display: flex;
@@ -133,6 +133,8 @@
       currentGame: 'GRAVITY',
       gameMode: 'AI',
       turn: 1,
+      winner: null,
+      animating: false,
       scores: { 1: 0, 2: 0, 3: 0, 4: 0 },
       online: {
         connected: false,
@@ -140,8 +142,47 @@
         myRole: 'host',
         opponentJoined: false,
         mqttClient: null
+      },
+      gravity: {
+        board: Array.from({ length: 9 }, () => new Array(9).fill(0)),
+        hoverCol: null,
+        winningLine: null,
+        animatingPiece: null,
+        lastMove: null
       }
     };
+
+    const canvas2D = document.getElementById('board-canvas');
+    const ctx2D = canvas2D ? canvas2D.getContext('2d') : null;
+    let cellSize = 0, grooveSize = 0, offset = 0;
+
+    function endTurn() {
+      STATE.turn = STATE.turn === 1 ? 2 : 1;
+      updateScoreboard();
+
+      if (!STATE.winner && STATE.gameMode === 'AI' && STATE.turn === 2) {
+        STATE.animating = true;
+        setTimeout(() => {
+          runGravity2DAI();
+          STATE.animating = false;
+          render2D();
+        }, 400);
+      }
+    }
+
+    function initGravity() {
+      STATE.winner = null;
+      STATE.turn = 1;
+      STATE.animating = false;
+      STATE.gravity.board = Array.from({ length: 9 }, () => new Array(9).fill(0));
+      STATE.gravity.hoverCol = null;
+      STATE.gravity.winningLine = null;
+      STATE.gravity.animatingPiece = null;
+      STATE.gravity.lastMove = null;
+      updateScoreboard();
+      resizeCanvas2D();
+      render2D();
+    }
 
     function checkIsMyTurn() {
       if (STATE.gameMode === 'LOCAL') return true;
@@ -366,15 +407,11 @@
     }
 
     function render2D() {
-      const isG = ['QUORIDOR', 'GRAVITY', 'GRAVITY4'].includes(STATE.currentGame);
-      if (STATE.currentView !== 'GAME' || !isG) return;
+      if (!canvas2D || !ctx2D) return;
       const w = canvas2D.getBoundingClientRect().width;
       const h = canvas2D.getBoundingClientRect().height;
       ctx2D.clearRect(0, 0, w, h);
-
-      if (STATE.currentGame === 'QUORIDOR') renderQuoridor();
-      else if (STATE.currentGame === 'GRAVITY4') renderGravity4();
-      else renderGravity2D();
+      renderGravity2D();
     }
 
     function renderQuoridor() {
@@ -518,6 +555,7 @@
           <p><strong>核心博弈：</strong>棋子无法悬空停留，小心别给对手送出"垫脚石"！</p>`, resetCurrentGame);
       initGravity();
     });
+    window.addEventListener('resize', resizeCanvas2D);
   </script>
 </body>
 </html>

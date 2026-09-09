@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>重力四子棋 (Connect Four) · 聚会游戏大厅</title>
   <link rel="stylesheet" href="../common/common.css">
-  <script src="../mqtt.min.js"></script>
+  <script src="../mqtt.min.js" defer></script>
   <style>
     .toolbar-gravity {
       display: flex;
@@ -131,6 +131,8 @@
       currentGame: 'GRAVITY4',
       gameMode: 'AI',
       turn: 1,
+      winner: null,
+      animating: false,
       scores: { 1: 0, 2: 0, 3: 0, 4: 0 },
       online: {
         connected: false,
@@ -138,8 +140,70 @@
         myRole: 'host',
         opponentJoined: false,
         mqttClient: null
+      },
+      gravity4: {
+        board: Array.from({ length: 6 }, () => new Array(7).fill(0)),
+        hoverCol: null,
+        winningLine: null,
+        animatingPiece: null,
+        lastMove: null
       }
     };
+
+    const canvas2D = document.getElementById('board-canvas');
+    const ctx2D = canvas2D ? canvas2D.getContext('2d') : null;
+    let cellSize = 0, grooveSize = 0, offset = 0;
+
+    function resizeCanvas2D() {
+      if (!canvas2D || !ctx2D) return;
+      const rect = canvas2D.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas2D.width = rect.width * dpr;
+      canvas2D.height = rect.height * dpr;
+      ctx2D.resetTransform();
+      ctx2D.scale(dpr, dpr);
+      const cols = 7;
+      grooveSize = rect.width / (cols * 4.5 + (cols - 1));
+      cellSize = grooveSize * 4.5;
+      offset = grooveSize / 2;
+      render2D();
+    }
+
+    function render2D() {
+      if (!canvas2D || !ctx2D) return;
+      const w = canvas2D.getBoundingClientRect().width;
+      const h = canvas2D.getBoundingClientRect().height;
+      ctx2D.clearRect(0, 0, w, h);
+      renderGravity4();
+    }
+
+    function endTurn() {
+      STATE.turn = STATE.turn === 1 ? 2 : 1;
+      updateScoreboard();
+
+      if (!STATE.winner && STATE.gameMode === 'AI' && STATE.turn === 2) {
+        STATE.animating = true;
+        setTimeout(() => {
+          runGravity4AI();
+          STATE.animating = false;
+          render2D();
+        }, 400);
+      }
+    }
+
+    function initGravity4() {
+      STATE.winner = null;
+      STATE.turn = 1;
+      STATE.animating = false;
+      STATE.gravity4.board = Array.from({ length: 6 }, () => new Array(7).fill(0));
+      STATE.gravity4.hoverCol = null;
+      STATE.gravity4.winningLine = null;
+      STATE.gravity4.animatingPiece = null;
+      STATE.gravity4.lastMove = null;
+      updateScoreboard();
+      resizeCanvas2D();
+      render2D();
+    }
 
     function checkIsMyTurn() {
       if (STATE.gameMode === 'LOCAL') return true;
@@ -569,6 +633,7 @@
           <p><strong>核心博弈：</strong>经典博弈名局！每一步都是攻防兼备，比五子棋更快节奏！</p>`, resetCurrentGame);
       initGravity4();
     });
+    window.addEventListener('resize', resizeCanvas2D);
   </script>
 </body>
 </html>
