@@ -94,13 +94,13 @@
     </div>
 
     <div class="toolbar-gravity" id="toolbar-gravity4" style="display:flex;">
-        <div class="gravity-col-btn" onclick="dropGravity4Col(0)">1</div>
-        <div class="gravity-col-btn" onclick="dropGravity4Col(1)">2</div>
-        <div class="gravity-col-btn" onclick="dropGravity4Col(2)">3</div>
-        <div class="gravity-col-btn" onclick="dropGravity4Col(3)">4</div>
-        <div class="gravity-col-btn" onclick="dropGravity4Col(4)">5</div>
-        <div class="gravity-col-btn" onclick="dropGravity4Col(5)">6</div>
-        <div class="gravity-col-btn" onclick="dropGravity4Col(6)">7</div>
+        <button class="btn-drop-col" onclick="dropGravity4Col(0)">1</button>
+        <button class="btn-drop-col" onclick="dropGravity4Col(1)">2</button>
+        <button class="btn-drop-col" onclick="dropGravity4Col(2)">3</button>
+        <button class="btn-drop-col" onclick="dropGravity4Col(3)">4</button>
+        <button class="btn-drop-col" onclick="dropGravity4Col(4)">5</button>
+        <button class="btn-drop-col" onclick="dropGravity4Col(5)">6</button>
+        <button class="btn-drop-col" onclick="dropGravity4Col(6)">7</button>
       </div>
   </div>
 
@@ -152,6 +152,51 @@
       cellSize = grooveSize * 4.5;
       offset = grooveSize / 2;
       render2D();
+    }
+
+    
+    if (canvas2D) {
+      canvas2D.addEventListener('pointermove', (e) => {
+        if (STATE.currentGame !== 'GRAVITY4' || STATE.animating || STATE.winner) return;
+        if (!checkIsMyTurn()) return;
+        const rect = canvas2D.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        const x = (e.clientX - rect.left) * dpr;
+        const sz = canvas2D.width;
+        const cols = 7;
+        const grooveSize = sz / (cols * 4.5 + (cols - 1));
+        const cellSize = grooveSize * 4.5;
+        const offset = grooveSize / 2;
+        let col = Math.floor((x - offset) / (cellSize + grooveSize));
+        if (col < 0) col = 0;
+        if (col >= 7) col = 6;
+        if (STATE.gravity4.hoverCol !== col) {
+          STATE.gravity4.hoverCol = col;
+          render2D();
+        }
+      });
+      canvas2D.addEventListener('pointerleave', () => {
+        if (STATE.gravity4.hoverCol !== null) {
+          STATE.gravity4.hoverCol = null;
+          render2D();
+        }
+      });
+      canvas2D.addEventListener('pointerdown', (e) => {
+        if (STATE.currentGame !== 'GRAVITY4' || STATE.animating || STATE.winner) return;
+        if (!checkIsMyTurn()) return;
+        const rect = canvas2D.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        const x = (e.clientX - rect.left) * dpr;
+        const sz = canvas2D.width;
+        const cols = 7;
+        const grooveSize = sz / (cols * 4.5 + (cols - 1));
+        const cellSize = grooveSize * 4.5;
+        const offset = grooveSize / 2;
+        let col = Math.floor((x - offset) / (cellSize + grooveSize));
+        if (col < 0) col = 0;
+        if (col >= 7) col = 6;
+        dropGravity4Col(col);
+      });
     }
 
     function render2D() {
