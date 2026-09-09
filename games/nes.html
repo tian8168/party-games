@@ -3,12 +3,73 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>FC/GBA 怀旧街机厅 (WASM双驱增强版) · 聚会游戏大厅</title>
+  <title>FC/GBA 怀旧街机厅 (WebRTC双人联机版) · 聚会游戏大厅</title>
   <link rel="stylesheet" href="../common/common.css">
   <style>
     .stage-wrapper {
       max-width: 880px !important;
       width: 100% !important;
+    }
+
+    /* Netplay Room & Engine Bar */
+    .netplay-bar {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 8px;
+      padding: 8px 12px;
+      background: linear-gradient(135deg, rgba(30, 27, 75, 0.7), rgba(15, 23, 42, 0.9));
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      border-radius: 10px;
+    }
+    .netplay-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .netplay-badge {
+      background: rgba(99, 102, 241, 0.2);
+      border: 1px solid #6366f1;
+      color: #a5b4fc;
+      font-size: 0.75rem;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .netplay-latency {
+      font-size: 0.72rem;
+      font-family: monospace;
+      color: #10b981;
+      font-weight: 700;
+    }
+    .netplay-actions {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .btn-netplay {
+      background: #1e293b;
+      border: 1px solid #475569;
+      color: #e2e8f0;
+      font-size: 0.74rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-netplay:hover { background: #334155; border-color: #818cf8; color: #fff; }
+    .btn-netplay.accent {
+      background: linear-gradient(135deg, #4f46e5, #6366f1);
+      border-color: #818cf8;
+      color: #fff;
     }
 
     /* Engine Selector Bar */
@@ -132,7 +193,7 @@
     }
     .nes-status-err { color: #ef4444; }
 
-    /* Action Toolbar (Save/Load/Reset/Pause) */
+    /* Quick Action Toolbar */
     .nes-quick-toolbar {
       width: 100%;
       display: flex;
@@ -389,6 +450,14 @@
       color: #fff;
       border-color: #3b82f6;
     }
+    .cat-tab.coop {
+      border-color: #818cf8;
+      color: #c7d2fe;
+    }
+    .cat-tab.coop.active {
+      background: linear-gradient(135deg, #4f46e5, #7c3aed);
+      color: #fff;
+    }
 
     /* Game Cards Grid */
     .games-grid {
@@ -455,6 +524,13 @@
       border-radius: 4px;
       font-weight: 700;
     }
+    .tag-coop {
+      background: rgba(99, 102, 241, 0.2);
+      color: #a5b4fc;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-weight: 700;
+    }
     .tag-cat {
       background: rgba(59, 130, 246, 0.15);
       color: #93c5fd;
@@ -475,7 +551,7 @@
   <div class="container in-game">
     <div class="game-header">
       <a href="../index.html" class="nav-back">🔙 返回大厅</a>
-      <h2 class="game-title">🕹️ FC/GBA 怀旧街机厅 (WASM双驱增强版)</h2>
+      <h2 class="game-title">🕹️ FC/GBA 怀旧街机厅 (WebRTC双人联机版)</h2>
       <div class="header-actions">
         <button class="btn-icon" id="btn-fullscreen" onclick="toggleFullscreen()">⛶ 全屏</button>
         <button class="btn-icon" id="btn-sound-toggle">🔊</button>
@@ -484,6 +560,22 @@
     </div>
 
     <div class="stage-wrapper">
+      <!-- 🌐 Netplay WebRTC Control Bar -->
+      <div class="netplay-bar">
+        <div class="netplay-left">
+          <div class="netplay-badge" id="netplay-badge">
+            <span>🌐</span>
+            <span id="netplay-status-text">单机模式</span>
+          </div>
+          <span class="netplay-latency" id="netplay-latency"></span>
+        </div>
+        <div class="netplay-actions" id="netplay-actions">
+          <button class="btn-netplay accent" onclick="openCreateRoomModal()">👥 创建双人联机房间</button>
+          <button class="btn-netplay" onclick="openJoinRoomPrompt()">🔗 加入房间</button>
+          <button class="btn-netplay" id="btn-leave-room" style="display:none;" onclick="leaveNetplayRoom()">🚪 退出房间</button>
+        </div>
+      </div>
+
       <!-- Engine Indicator & Toggle -->
       <div class="engine-bar">
         <div class="engine-status-tag">
@@ -573,7 +665,8 @@
       </div>
 
       <div class="category-tabs" id="category-tabs">
-        <div class="cat-tab active" data-cat="HOT" onclick="filterCategory('HOT')">🔥 热门必玩</div>
+        <div class="cat-tab coop active" data-cat="COOP" onclick="filterCategory('COOP')">👥 双人合作必玩</div>
+        <div class="cat-tab" data-cat="HOT" onclick="filterCategory('HOT')">🔥 热门必玩</div>
         <div class="cat-tab" data-cat="飞行射击" onclick="filterCategory('飞行射击')">💥 飞行射击</div>
         <div class="cat-tab" data-cat="动作格斗" onclick="filterCategory('动作格斗')">🥊 动作格斗</div>
         <div class="cat-tab" data-cat="平台跳跃" onclick="filterCategory('平台跳跃')">🍄 平台跳跃</div>
@@ -587,10 +680,12 @@
     </div>
   </div>
 
+  <script src="../mqtt.min.js"></script>
   <script src="../common/audio.js"></script>
   <script src="../common/common.js"></script>
   <script src="https://unpkg.com/jsnes@2/dist/jsnes.min.js"></script>
   <script src="js/nostalgist.umd.js"></script>
+  <script src="js/nes_netplay.js"></script>
   <script>
     let emuBrowser = null;        // JSNES instance
     let currentNostalgist = null; // WASM Nostalgist instance
@@ -598,8 +693,12 @@
     let preferredMode = 'WASM';   // 'AUTO', 'WASM', 'JSNES'
     let savedStateBlob = null;    // In-memory savestate
     let allGames = [];
-    let currentCategory = 'HOT';
+    let currentCategory = 'COOP';
     let currentSelectedGame = null;
+    let netplay = null;
+
+    // Dual Player Cooperative Keywords for filtering
+    const coopKeywords = ['魂斗罗', '坦克', '雪人', '松鼠', '双截龙', '赤色要塞', '沙罗曼蛇', '热血', '敲冰块', '泡泡龙', '兵蜂', '影子传说', '恐龙', '赤影战士'];
 
     function setStatus(msg, isErr = false) {
       const el = document.getElementById('nes-status');
@@ -614,6 +713,132 @@
       showToast('⚙️ 引擎偏好已设定为: ' + (val === 'WASM' ? 'WASM 增强核心' : (val === 'JSNES' ? 'JSNES 极速核心' : '自动智能调度')), 2000);
     }
 
+    // --- 🌐 Netplay Integration ---
+    function initNetplay() {
+      netplay = new NesNetplay({
+        onRemoteInput: (player, btn, isDown) => {
+          // Inject remote player input
+          injectControllerInput(player, btn, isDown);
+        },
+        onSyncRom: (rom) => {
+          showToast('🎮 房主已同步选择游戏: ' + rom.title, 3000);
+          selectGame(rom, true);
+        },
+        onCommand: (action, payload) => {
+          if (action === 'restart') restartCurrentRom(false);
+          else if (action === 'pause') togglePauseGame(false);
+          else if (action === 'save') quickSaveState(false);
+          else if (action === 'load') quickLoadState(false);
+        },
+        onStatusChange: (status) => {
+          updateNetplayUI(status);
+        },
+        onLatencyUpdate: (ms, type) => {
+          const el = document.getElementById('netplay-latency');
+          if (el) {
+            const color = ms < 40 ? '#10b981' : (ms < 120 ? '#f59e0b' : '#ef4444');
+            el.innerHTML = `<span style="color:${color};">● ${ms}ms [${type}]</span>`;
+          }
+        }
+      });
+
+      // Check URL search parameters for auto-joining room
+      const urlParams = new URLSearchParams(window.location.search);
+      const roomParam = urlParams.get('room');
+      if (roomParam) {
+        netplay.joinRoom(roomParam);
+      }
+    }
+
+    function updateNetplayUI(status) {
+      const badgeText = document.getElementById('netplay-status-text');
+      const leaveBtn = document.getElementById('btn-leave-room');
+      const badge = document.getElementById('netplay-badge');
+
+      if (status.state === 'WAITING') {
+        badgeText.innerHTML = `🔴 房主 (P1) · 房间: <b>${status.roomId}</b> · 等待中...`;
+        if (leaveBtn) leaveBtn.style.display = 'inline-block';
+        badge.style.borderColor = '#ef4444';
+      } else if (status.state === 'JOINED') {
+        badgeText.innerHTML = `🟢 客方 (P2) · 房间: <b>${status.roomId}</b> · 等待同步`;
+        if (leaveBtn) leaveBtn.style.display = 'inline-block';
+        badge.style.borderColor = '#10b981';
+      } else if (status.state === 'CONNECTED_P2P' || status.state === 'PEER_JOINED') {
+        const roleLabel = netplay.role === 'host' ? '🔴 房主 (P1)' : '🟢 客方 (P2)';
+        badgeText.innerHTML = `${roleLabel} · 房间: <b>${netplay.roomId}</b> · 联机对战中`;
+        if (leaveBtn) leaveBtn.style.display = 'inline-block';
+        badge.style.borderColor = '#10b981';
+      } else if (status.state === 'SOLO') {
+        badgeText.textContent = '单机模式';
+        if (leaveBtn) leaveBtn.style.display = 'none';
+        badge.style.borderColor = '#6366f1';
+        document.getElementById('netplay-latency').textContent = '';
+      } else if (status.state === 'ERROR') {
+        badgeText.textContent = '网络断开: ' + (status.text || '');
+        badge.style.borderColor = '#ef4444';
+      }
+    }
+
+    function openCreateRoomModal() {
+      const roomId = netplay.createRoom(currentSelectedGame);
+      const shareUrl = new URL(window.location.href);
+      shareUrl.searchParams.set('room', roomId);
+
+      navigator.clipboard.writeText(shareUrl.toString()).then(() => {
+        showModal('👥 双人联机房间已创建！', `
+          <p style="font-size:1.1rem; color:#38bdf8;">房间号：<b>${roomId}</b></p>
+          <p>你是 <b>🔴 玩家 1 (房主)</b>，好友加入后为 <b>🔵 玩家 2 (客机)</b>。</p>
+          <br>
+          <p>📋 <b>专属联机链接已自动复制到剪贴板！</b></p>
+          <p style="font-size:0.8rem; color:#94a3b8; word-break:break-all;">${shareUrl.toString()}</p>
+          <br>
+          <p>微信/QQ 发送给好友，对方直接点击链接即可免安装进房双人激战！</p>
+        `);
+      }).catch(() => {
+        showModal('👥 联机房间号：' + roomId, `请告诉好友输入 4 位房间号 <b>${roomId}</b> 即可直接同屏连线！`);
+      });
+    }
+
+    function openJoinRoomPrompt() {
+      const code = prompt('请输入好友分享的 4 位房间号：');
+      if (code) {
+        netplay.joinRoom(code);
+      }
+    }
+
+    function leaveNetplayRoom() {
+      if (netplay) netplay.leaveRoom();
+      showToast('已退出联机房间，切回单机模式', 2000);
+    }
+
+    // --- 🎮 Input Injection to Controller 1 or 2 ---
+    function injectControllerInput(player, btn, isDown) {
+      if (currentNostalgist) {
+        if (isDown) currentNostalgist.pressDown(btn, player);
+        else currentNostalgist.pressUp(btn, player);
+      } else if (emuBrowser && emuBrowser.nes) {
+        const nes = emuBrowser.nes;
+        const btnMap = {
+          'up': jsnes.Controller.BUTTON_UP,
+          'down': jsnes.Controller.BUTTON_DOWN,
+          'left': jsnes.Controller.BUTTON_LEFT,
+          'right': jsnes.Controller.BUTTON_RIGHT,
+          'a': jsnes.Controller.BUTTON_A,
+          'b': jsnes.Controller.BUTTON_B,
+          'y': jsnes.Controller.BUTTON_TURBO_B,
+          'x': jsnes.Controller.BUTTON_TURBO_A,
+          'start': jsnes.Controller.BUTTON_START,
+          'select': jsnes.Controller.BUTTON_SELECT
+        };
+        const nesBtn = btnMap[btn];
+        if (nesBtn !== undefined) {
+          if (isDown) nes.buttonDown(player, nesBtn);
+          else nes.buttonUp(player, nesBtn);
+        }
+      }
+    }
+
+    // --- Library Initialization ---
     function initLibrary() {
       fetch('./roms/roms_index.json')
         .then(r => r.json())
@@ -634,6 +859,7 @@
           }
 
           renderGrid();
+          initNetplay();
         })
         .catch(err => {
           console.error('Failed to load ROM index:', err);
@@ -648,6 +874,11 @@
       
       const overlay = document.getElementById('nes-overlay');
       if (overlay) overlay.style.display = 'flex';
+
+      // If Netplay Host selects a new game, broadcast to Guest
+      if (netplay && netplay.role === 'host') {
+        netplay.broadcastRom(game);
+      }
 
       renderGrid();
 
@@ -693,7 +924,6 @@
 
     // Main Engine Dispatcher: WASM vs JSNES
     async function runRomBuffer(buffer, title, mapper) {
-      // 1. Teardown previous running instances
       if (currentNostalgist) {
         try { await currentNostalgist.exit(); } catch(e) {}
         currentNostalgist = null;
@@ -706,11 +936,9 @@
       const container = document.getElementById('nes-screen-wrapper');
       container.querySelectorAll('canvas').forEach(c => c.remove());
 
-      // 2. Decide engine
       const isGba = (mapper === 'GBA' || title.toLowerCase().endsWith('.gba'));
       let useWasm = (preferredMode === 'WASM') || isGba;
       if (preferredMode === 'AUTO') {
-        // If mapper is non-standard or GBA, route to WASM!
         if (mapper !== undefined && mapper !== null && ![0,1,2,3,4].includes(mapper)) {
           useWasm = true;
         }
@@ -719,9 +947,8 @@
       const badge = document.getElementById('active-engine-badge');
 
       if (useWasm && typeof Nostalgist !== 'undefined') {
-        // --- WASM Libretro Core (FCEUmm / mGBA) ---
         activeEngineType = 'WASM';
-        if (badge) badge.innerHTML = isGba ? '🚀 WASM 核心 (mGBA / Game Boy Advance)' : '🚀 WASM 核心 (FCEUmm / 100%兼容/即时存档)';
+        if (badge) badge.innerHTML = isGba ? '🚀 WASM 核心 (mGBA / Game Boy Advance)' : '🚀 WASM 核心 (FCEUmm / 100%全兼容/即时存档)';
         setStatus('⏳ 正在初始化 WebAssembly 硬件仿真核心...');
 
         try {
@@ -734,7 +961,6 @@
             element: container
           });
 
-          // Style the injected canvas
           const cvs = container.querySelector('canvas');
           if (cvs) {
             cvs.style.width = '100%';
@@ -746,13 +972,12 @@
           document.getElementById('nes-overlay').style.display = 'none';
           setupCustomControls();
           setupTouchControls();
-          showToast('🎮 ' + (isGba ? 'GBA' : 'WASM') + ' 核心启动成功！支持即时存档', 2500);
+          showToast('🎮 ' + (isGba ? 'GBA' : 'WASM') + ' 核心启动成功！支持即时存档与双人联机', 2500);
         } catch(wasmErr) {
           console.warn('WASM launch failed, falling back to JSNES:', wasmErr);
           runWithJsnes(buffer, container, title);
         }
       } else {
-        // --- JSNES Light Engine ---
         runWithJsnes(buffer, container, title);
       }
     }
@@ -788,13 +1013,16 @@
       }
     }
 
-    // Savestates & State Management
-    async function quickSaveState() {
+    // Savestates
+    async function quickSaveState(broadcast = true) {
       if (currentNostalgist) {
         try {
           const res = await currentNostalgist.saveState();
           savedStateBlob = res.state;
-          showToast('💾 进度已即时存档！随时可一键读档', 2000);
+          showToast('💾 进度已即时存档！', 2000);
+          if (broadcast && netplay && netplay.role === 'host') {
+            netplay.sendCommand('save');
+          }
           if (window.AUDIO) window.AUDIO.play('click');
         } catch(e) {
           showToast('❌ 存档失败: ' + e.message, 2500);
@@ -804,7 +1032,7 @@
       }
     }
 
-    async function quickLoadState() {
+    async function quickLoadState(broadcast = true) {
       if (currentNostalgist) {
         if (!savedStateBlob) {
           showToast('⚠️ 暂无历史存档，请先点击【即时存档】', 2000);
@@ -813,6 +1041,9 @@
         try {
           await currentNostalgist.loadState(savedStateBlob);
           showToast('📂 进度已即时恢复！', 2000);
+          if (broadcast && netplay && netplay.role === 'host') {
+            netplay.sendCommand('load');
+          }
           if (window.AUDIO) window.AUDIO.play('drop');
         } catch(e) {
           showToast('❌ 读档失败: ' + e.message, 2500);
@@ -823,7 +1054,7 @@
     }
 
     let isGamePaused = false;
-    function togglePauseGame() {
+    function togglePauseGame(broadcast = true) {
       if (currentNostalgist) {
         if (isGamePaused) {
           currentNostalgist.resume();
@@ -834,13 +1065,13 @@
           isGamePaused = true;
           showToast('⏸️ 游戏已暂停', 1000);
         }
-      } else if (emuBrowser && emuBrowser.nes) {
-        // JSNES pause by start button toggle
-        showToast('按 Enter 键可暂停游戏', 1500);
+        if (broadcast && netplay && netplay.role !== 'solo') {
+          netplay.sendCommand('pause');
+        }
       }
     }
 
-    function restartCurrentRom() {
+    function restartCurrentRom(broadcast = true) {
       if (currentNostalgist) {
         currentNostalgist.restart();
         showToast('🔄 游戏已重启', 1500);
@@ -849,6 +1080,9 @@
         showToast('🔄 游戏已重启', 1500);
       } else {
         launchCurrentSelection();
+      }
+      if (broadcast && netplay && netplay.role !== 'solo') {
+        netplay.sendCommand('restart');
       }
     }
 
@@ -872,6 +1106,9 @@
 
         if (currentCategory === 'ALL') return true;
         if (currentCategory === 'HOT') return g.hot;
+        if (currentCategory === 'COOP') {
+          return coopKeywords.some(k => g.title.includes(k));
+        }
         return g.category === currentCategory;
       });
     }
@@ -889,12 +1126,14 @@
 
       list.forEach(g => {
         const isCur = currentSelectedGame && currentSelectedGame.file === g.file;
+        const isCoop = coopKeywords.some(k => g.title.includes(k));
         const card = document.createElement('div');
         card.className = 'game-card-item' + (isCur ? ' active' : '');
         card.onclick = () => selectGame(g, true);
 
         let icon = '🎮';
-        if (g.category === '飞行射击') icon = '🚀';
+        if (isCoop) icon = '👥';
+        else if (g.category === '飞行射击') icon = '🚀';
         else if (g.category === '动作格斗') icon = '🥊';
         else if (g.category === '平台跳跃') icon = '🍄';
         else if (g.category === '休闲体育') icon = '⚽';
@@ -905,7 +1144,7 @@
             <div class="game-card-title">${g.title}</div>
           </div>
           <div class="game-card-meta">
-            <span>${g.hot ? '<span class="tag-hot">🔥 经典</span>' : '<span class="tag-cat">' + g.category + '</span>'}</span>
+            <span>${isCoop ? '<span class="tag-coop">👥 双人</span>' : (g.hot ? '<span class="tag-hot">🔥 经典</span>' : '<span class="tag-cat">' + g.category + '</span>')}</span>
             <span class="tag-mapper">M:${g.mapper}</span>
             <span style="color:#64748b;">${Math.round(g.size / 1024)} KB</span>
           </div>
@@ -914,59 +1153,52 @@
       });
     }
 
-    // Input Handling: Dual Keyboard + Touch
+    // --- Input Handling (Dispatches to Local + Netplay Stream) ---
+    function triggerLocalButton(btn, isDown) {
+      // If Host: I control Player 1.
+      // If Guest: I control Player 2.
+      // If Solo: I control Player 1.
+      const myPlayer = (netplay && netplay.role === 'guest') ? 2 : 1;
+      
+      // Inject to local emulator
+      injectControllerInput(myPlayer, btn, isDown);
+
+      // Broadcast to remote peer
+      if (netplay && netplay.role !== 'solo') {
+        netplay.sendInput(myPlayer, btn, isDown);
+      }
+    }
+
     let customKeysBound = false;
     function setupCustomControls() {
       if (customKeysBound) return;
       customKeysBound = true;
 
-      window.addEventListener('keydown', (e) => {
-        if (['KeyW', 'KeyS', 'KeyA', 'KeyD', 'KeyJ', 'KeyK', 'KeyU', 'KeyI'].includes(e.code)) {
-          e.preventDefault();
-        }
+      const keyMapping = {
+        'KeyW': 'up', 'ArrowUp': 'up',
+        'KeyS': 'down', 'ArrowDown': 'down',
+        'KeyA': 'left', 'ArrowLeft': 'left',
+        'KeyD': 'right', 'ArrowRight': 'right',
+        'KeyJ': 'b', 'KeyZ': 'b',
+        'KeyK': 'a', 'KeyX': 'a',
+        'KeyU': 'y',
+        'KeyI': 'x',
+        'Enter': 'start',
+        'ShiftRight': 'select', 'ShiftLeft': 'select'
+      };
 
-        if (currentNostalgist) {
-          if (e.code === 'KeyW') currentNostalgist.pressDown('up');
-          if (e.code === 'KeyS') currentNostalgist.pressDown('down');
-          if (e.code === 'KeyA') currentNostalgist.pressDown('left');
-          if (e.code === 'KeyD') currentNostalgist.pressDown('right');
-          if (e.code === 'KeyJ') currentNostalgist.pressDown('b');
-          if (e.code === 'KeyK') currentNostalgist.pressDown('a');
-          if (e.code === 'KeyU') currentNostalgist.pressDown('y');
-          if (e.code === 'KeyI') currentNostalgist.pressDown('x');
-        } else if (emuBrowser && emuBrowser.nes) {
-          const nes = emuBrowser.nes;
-          if (e.code === 'KeyW') nes.buttonDown(1, jsnes.Controller.BUTTON_UP);
-          if (e.code === 'KeyS') nes.buttonDown(1, jsnes.Controller.BUTTON_DOWN);
-          if (e.code === 'KeyA') nes.buttonDown(1, jsnes.Controller.BUTTON_LEFT);
-          if (e.code === 'KeyD') nes.buttonDown(1, jsnes.Controller.BUTTON_RIGHT);
-          if (e.code === 'KeyJ') nes.buttonDown(1, jsnes.Controller.BUTTON_B);
-          if (e.code === 'KeyK') nes.buttonDown(1, jsnes.Controller.BUTTON_A);
-          if (e.code === 'KeyU') nes.buttonDown(1, jsnes.Controller.BUTTON_TURBO_B);
-          if (e.code === 'KeyI') nes.buttonDown(1, jsnes.Controller.BUTTON_TURBO_A);
+      window.addEventListener('keydown', (e) => {
+        const btn = keyMapping[e.code];
+        if (btn) {
+          e.preventDefault();
+          triggerLocalButton(btn, true);
         }
       });
 
       window.addEventListener('keyup', (e) => {
-        if (currentNostalgist) {
-          if (e.code === 'KeyW') currentNostalgist.pressUp('up');
-          if (e.code === 'KeyS') currentNostalgist.pressUp('down');
-          if (e.code === 'KeyA') currentNostalgist.pressUp('left');
-          if (e.code === 'KeyD') currentNostalgist.pressUp('right');
-          if (e.code === 'KeyJ') currentNostalgist.pressUp('b');
-          if (e.code === 'KeyK') currentNostalgist.pressUp('a');
-          if (e.code === 'KeyU') currentNostalgist.pressUp('y');
-          if (e.code === 'KeyI') currentNostalgist.pressUp('x');
-        } else if (emuBrowser && emuBrowser.nes) {
-          const nes = emuBrowser.nes;
-          if (e.code === 'KeyW') nes.buttonUp(1, jsnes.Controller.BUTTON_UP);
-          if (e.code === 'KeyS') nes.buttonUp(1, jsnes.Controller.BUTTON_DOWN);
-          if (e.code === 'KeyA') nes.buttonUp(1, jsnes.Controller.BUTTON_LEFT);
-          if (e.code === 'KeyD') nes.buttonUp(1, jsnes.Controller.BUTTON_RIGHT);
-          if (e.code === 'KeyJ') nes.buttonUp(1, jsnes.Controller.BUTTON_B);
-          if (e.code === 'KeyK') nes.buttonUp(1, jsnes.Controller.BUTTON_A);
-          if (e.code === 'KeyU') nes.buttonUp(1, jsnes.Controller.BUTTON_TURBO_B);
-          if (e.code === 'KeyI') nes.buttonUp(1, jsnes.Controller.BUTTON_TURBO_A);
+        const btn = keyMapping[e.code];
+        if (btn) {
+          triggerLocalButton(btn, false);
         }
       });
     }
@@ -976,42 +1208,26 @@
       if (touchBound) return;
       touchBound = true;
 
-      const btnMap = {
-        'up': jsnes.Controller.BUTTON_UP,
-        'down': jsnes.Controller.BUTTON_DOWN,
-        'left': jsnes.Controller.BUTTON_LEFT,
-        'right': jsnes.Controller.BUTTON_RIGHT,
-        'a': jsnes.Controller.BUTTON_A,
-        'b': jsnes.Controller.BUTTON_B,
-        'start': jsnes.Controller.BUTTON_START,
-        'select': jsnes.Controller.BUTTON_SELECT
-      };
-
       document.querySelectorAll('[data-btn]').forEach(el => {
-        const btnName = el.getAttribute('data-btn');
-        const nesBtn = btnMap[btnName];
+        const btn = el.getAttribute('data-btn');
+        if (!btn) return;
 
-        const press = (e) => {
+        el.addEventListener('pointerdown', (e) => {
           e.preventDefault();
-          if (currentNostalgist) {
-            currentNostalgist.pressDown(btnName);
-          } else if (emuBrowser && emuBrowser.nes && nesBtn !== undefined) {
-            emuBrowser.nes.buttonDown(1, nesBtn);
-          }
-        };
-        const release = (e) => {
+          triggerLocalButton(btn, true);
+        });
+        el.addEventListener('pointerup', (e) => {
           e.preventDefault();
-          if (currentNostalgist) {
-            currentNostalgist.pressUp(btnName);
-          } else if (emuBrowser && emuBrowser.nes && nesBtn !== undefined) {
-            emuBrowser.nes.buttonUp(1, nesBtn);
-          }
-        };
-
-        el.addEventListener('pointerdown', press);
-        el.addEventListener('pointerup', release);
-        el.addEventListener('pointercancel', release);
-        el.addEventListener('pointerleave', release);
+          triggerLocalButton(btn, false);
+        });
+        el.addEventListener('pointercancel', (e) => {
+          e.preventDefault();
+          triggerLocalButton(btn, false);
+        });
+        el.addEventListener('pointerleave', (e) => {
+          e.preventDefault();
+          triggerLocalButton(btn, false);
+        });
       });
     }
 
