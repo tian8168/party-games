@@ -5768,7 +5768,11 @@
       hockeyCtx.scale(dpr, dpr);
     }
 
-    function animateHockey() {
+    let hockeyLastTime = performance.now();
+    let hockeyAccumulator = 0;
+    const HOCKEY_FIXED_STEP = 1000 / 60;
+
+    function animateHockey(now) {
       STATE.hockey.animId = requestAnimationFrame(animateHockey);
       if (STATE.currentGame !== 'HOCKEY' || STATE.currentView !== 'GAME') return;
 
@@ -5776,7 +5780,16 @@
       const h = hockeyCanvas.getBoundingClientRect().height;
       if (w === 0 || h === 0) return;
 
-      updateHockeyPhysics(w, h);
+      if (!now) now = performance.now();
+      let elapsed = now - hockeyLastTime;
+      hockeyLastTime = now;
+      if (elapsed > 100) elapsed = 100;
+      hockeyAccumulator += elapsed;
+
+      while (hockeyAccumulator >= HOCKEY_FIXED_STEP) {
+        updateHockeyPhysics(w, h);
+        hockeyAccumulator -= HOCKEY_FIXED_STEP;
+      }
       renderHockey(w, h);
     }
 
@@ -6813,14 +6826,28 @@
     function startSumoLoop() {
       if (STATE.sumo.animId) cancelAnimationFrame(STATE.sumo.animId);
 
-      function loop() {
+      let lastTime = performance.now();
+      let accumulator = 0;
+      const FIXED_STEP = 1000 / 60;
+
+      function loop(now) {
         if (STATE.currentGame === 'SUMO') {
-          updateSumoPhysics();
+          if (!now) now = performance.now();
+          let elapsed = now - lastTime;
+          lastTime = now;
+          if (elapsed > 100) elapsed = 100;
+          accumulator += elapsed;
+
+          while (accumulator >= FIXED_STEP) {
+            updateSumoPhysics();
+            accumulator -= FIXED_STEP;
+          }
+
           renderSumo();
           STATE.sumo.animId = requestAnimationFrame(loop);
         }
       }
-      loop();
+      loop(performance.now());
     }
 
     function updateSumoPhysics() {
@@ -7280,33 +7307,49 @@
     function startTankBulletLoop() {
       if (STATE.tank.animId) cancelAnimationFrame(STATE.tank.animId);
 
-      function step() {
+      let lastTime = performance.now();
+      let accumulator = 0;
+      const FIXED_STEP = 1000 / 60;
+
+      function step(now) {
         if (!STATE.tank.bullet || STATE.currentGame !== 'TANK') return;
-
-        const b = STATE.tank.bullet;
-        b.trail.push({ x: b.x, y: b.y });
-        if (b.trail.length > 25) b.trail.shift();
-
-        b.vx += parseFloat(STATE.tank.wind) * 0.012;
-        b.vy += 0.28;
-        b.x += b.vx;
-        b.y += b.vy;
+        if (!now) now = performance.now();
+        let elapsed = now - lastTime;
+        lastTime = now;
+        if (elapsed > 100) elapsed = 100;
+        accumulator += elapsed;
 
         const c = document.getElementById('tank-canvas');
-        const xInt = Math.floor(b.x);
 
-        if (b.x < 0 || b.x >= c.width || b.y > c.height + 20) {
-          explodeTankShell(b.x, b.y, false);
-          return;
-        }
+        while (accumulator >= FIXED_STEP) {
+          accumulator -= FIXED_STEP;
+          const b = STATE.tank.bullet;
+          if (!b) break;
 
-        if (xInt >= 0 && xInt < c.width && b.y >= STATE.tank.terrain[xInt]) {
-          explodeTankShell(b.x, b.y, true);
-          return;
+          b.trail.push({ x: b.x, y: b.y });
+          if (b.trail.length > 25) b.trail.shift();
+
+          b.vx += parseFloat(STATE.tank.wind) * 0.012;
+          b.vy += 0.28;
+          b.x += b.vx;
+          b.y += b.vy;
+
+          const xInt = Math.floor(b.x);
+          if (b.x < 0 || b.x >= c.width || b.y > c.height + 20) {
+            explodeTankShell(b.x, b.y, false);
+            return;
+          }
+
+          if (xInt >= 0 && xInt < c.width && b.y >= STATE.tank.terrain[xInt]) {
+            explodeTankShell(b.x, b.y, true);
+            return;
+          }
         }
 
         renderTank();
-        STATE.tank.animId = requestAnimationFrame(step);
+        if (STATE.tank.bullet) {
+          STATE.tank.animId = requestAnimationFrame(step);
+        }
       }
 
       STATE.tank.animId = requestAnimationFrame(step);
@@ -7583,14 +7626,28 @@
     function startStackLoop() {
       if (STATE.stack.animId) cancelAnimationFrame(STATE.stack.animId);
 
-      function loop() {
+      let lastTime = performance.now();
+      let accumulator = 0;
+      const FIXED_STEP = 1000 / 60;
+
+      function loop(now) {
         if (STATE.currentGame === 'STACK') {
-          updateStackAnim();
+          if (!now) now = performance.now();
+          let elapsed = now - lastTime;
+          lastTime = now;
+          if (elapsed > 100) elapsed = 100;
+          accumulator += elapsed;
+
+          while (accumulator >= FIXED_STEP) {
+            updateStackAnim();
+            accumulator -= FIXED_STEP;
+          }
+
           renderStack();
           STATE.stack.animId = requestAnimationFrame(loop);
         }
       }
-      loop();
+      loop(performance.now());
     }
 
     function updateStackAnim() {
@@ -7995,14 +8052,28 @@
     function startContraLoop() {
       if (STATE.contra.animId) cancelAnimationFrame(STATE.contra.animId);
 
-      function loop() {
+      let lastTime = performance.now();
+      let accumulator = 0;
+      const FIXED_STEP = 1000 / 60;
+
+      function loop(now) {
         if (STATE.currentGame === 'CONTRA') {
-          updateContraPhysics();
+          if (!now) now = performance.now();
+          let elapsed = now - lastTime;
+          lastTime = now;
+          if (elapsed > 100) elapsed = 100;
+          accumulator += elapsed;
+
+          while (accumulator >= FIXED_STEP) {
+            updateContraPhysics();
+            accumulator -= FIXED_STEP;
+          }
+
           renderContra();
           STATE.contra.animId = requestAnimationFrame(loop);
         }
       }
-      loop();
+      loop(performance.now());
     }
 
     function updateContraPhysics() {
@@ -8588,9 +8659,23 @@
       setupTankTroubleInputs();
       resetTankTroubleRound();
 
-      function loop() {
+      let lastTime = performance.now();
+      let accumulator = 0;
+      const FIXED_STEP = 1000 / 60; // 锁定 60Hz 基准物理频率，高刷屏绝不超速
+
+      function loop(now) {
         if (STATE.currentGame !== 'TANKTROUBLE') return;
-        updateTankTroublePhysics();
+        if (!now) now = performance.now();
+        let elapsed = now - lastTime;
+        lastTime = now;
+        if (elapsed > 100) elapsed = 100; // 防后台标签页积累突发
+        accumulator += elapsed;
+
+        while (accumulator >= FIXED_STEP) {
+          updateTankTroublePhysics();
+          accumulator -= FIXED_STEP;
+        }
+
         renderTankTrouble();
         STATE.tanktrouble.animId = requestAnimationFrame(loop);
       }
