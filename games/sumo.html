@@ -164,6 +164,13 @@
       }
     };
 
+    STATE.sumo = {
+        p1Score: 0, p2Score: 0, targetScore: 3,
+        car1: { x: 130, y: 180, vx: 0, vy: 0, angle: 0, r: 17, boosting: false, falling: false, fallScale: 1, fallAlpha: 1, fallSpin: 0 },
+        car2: { x: 230, y: 180, vx: 0, vy: 0, angle: 3.14159, r: 17, boosting: false, falling: false, fallScale: 1, fallAlpha: 1, fallSpin: 0 },
+        arenaRadius: 130, particles: [], animId: null, roundOver: false, matchOver: false, aiReactionDelay: 0
+      };
+
     function checkIsMyTurn() {
       if (STATE.gameMode === 'LOCAL') return true;
       if (STATE.gameMode === 'AI') return STATE.turn === 1;

@@ -190,6 +190,7 @@
     
 
     <div class="stage-wrapper">
+      <div id="status-text" style="text-align:center; color:#fff; font-weight:bold; margin-bottom:10px; font-size:1.1rem; text-shadow: 0 0 5px rgba(255,255,255,0.5);"></div>
       <div id="roulette-stage">
           <div class="roulette-flash-overlay" id="roulette-flash"></div>
           <!-- 对手信息栏 -->
@@ -277,6 +278,10 @@
         mqttClient: null
       }
     };
+
+    STATE.roulette = {
+        p1Hp: 4, p2Hp: 4, maxHp: 4, shells: [], sawed: false, p1Cuffed: false, p2Cuffed: false, p1Items: [], p2Items: [], knownNext: null, turn: 1
+      };
 
     function checkIsMyTurn() {
       if (STATE.gameMode === 'LOCAL') return true;

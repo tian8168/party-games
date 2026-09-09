@@ -281,6 +281,10 @@
       }
     };
 
+    STATE.iaido = {
+        state: 'IDLE', p1Wins: 0, p2Wins: 0, targetWins: 3, timer: null, signalTime: 0, roundNum: 1
+      };
+
     function checkIsMyTurn() {
       if (STATE.gameMode === 'LOCAL') return true;
       if (STATE.gameMode === 'AI') return STATE.turn === 1;

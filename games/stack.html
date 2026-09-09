@@ -193,6 +193,10 @@
       }
     };
 
+    STATE.stack = {
+        score: 0, combo: 0, layers: [], current: null, falling: [], animId: null, over: false
+      };
+
     function checkIsMyTurn() {
       if (STATE.gameMode === 'LOCAL') return true;
       if (STATE.gameMode === 'AI') return STATE.turn === 1;

@@ -251,6 +251,14 @@
       }
     };
 
+    STATE.hockey = {
+        p1Score: 0, p2Score: 0, maxScore: 5,
+        puck: { x: 180, y: 250, vx: 0, vy: 0, radius: 14 },
+        paddle1: { x: 180, y: 440, radius: 22 },
+        paddle2: { x: 180, y: 60, radius: 22 },
+        particles: [], animId: null
+      };
+
     function checkIsMyTurn() {
       if (STATE.gameMode === 'LOCAL') return true;
       if (STATE.gameMode === 'AI') return STATE.turn === 1;

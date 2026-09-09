@@ -268,6 +268,19 @@
       }
     };
 
+    STATE.tanktrouble = {
+        p1Score: 0, p2Score: 0, p3Score: 0, targetScore: 5, roundOver: false, matchOver: false,
+        maze: { cols: 8, rows: 6, cw: 65, ch: 60, walls: [] },
+        tanks: {
+          p1: { id: 1, x: 50, y: 50, angle: 0, r: 11, color: '#ef4444', dead: false, reloadTimer: 0, weapon: 'NORMAL', ammo: 0 },
+          p2: { id: 2, x: 470, y: 310, angle: 3.14159, r: 11, color: '#22c55e', dead: false, reloadTimer: 0, weapon: 'NORMAL', ammo: 0 },
+          p3: { id: 3, x: 470, y: 50, angle: 1.5708, r: 11, color: '#3b82f6', dead: true, reloadTimer: 0, weapon: 'NORMAL', ammo: 0 }
+        },
+        bullets: [], crates: [], particles: [], treads: [],
+        keys: { p1: { forward: false, backward: false, left: false, right: false, fire: false }, p2: { forward: false, backward: false, left: false, right: false, fire: false } },
+        animId: null, nextRoundTimer: null, crateTimer: null, aiTimer: 0
+      };
+
     function checkIsMyTurn() {
       if (STATE.gameMode === 'LOCAL') return true;
       if (STATE.gameMode === 'AI') return STATE.turn === 1;

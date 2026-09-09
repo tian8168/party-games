@@ -314,6 +314,17 @@
       }
     };
 
+    STATE.aeroplane = {
+        playerCount: 4, humanPlayers: [0], turn: 0, diceVal: 0, diceRolling: false, consecutiveSixes: 0, animating: false, selectedPlane: null, validPlanes: [], fastAI: false, waitingForPlayerChoice: false,
+        players: [
+          { id: 0, color: '#ef4444', name: 'P1', finishedCount: 0, planes: [{ id: 0, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 1, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 2, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 3, state: 'HANGAR', step: 0, homeStep: -1 }] },
+          { id: 1, color: '#f59e0b', name: 'P2', finishedCount: 0, planes: [{ id: 0, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 1, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 2, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 3, state: 'HANGAR', step: 0, homeStep: -1 }] },
+          { id: 2, color: '#38bdf8', name: 'P3', finishedCount: 0, planes: [{ id: 0, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 1, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 2, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 3, state: 'HANGAR', step: 0, homeStep: -1 }] },
+          { id: 3, color: '#22c55e', name: 'P4', finishedCount: 0, planes: [{ id: 0, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 1, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 2, state: 'HANGAR', step: 0, homeStep: -1 }, { id: 3, state: 'HANGAR', step: 0, homeStep: -1 }] }
+        ],
+        particles: [], animId: null, aiTimer: null
+      };
+
     function checkIsMyTurn() {
       if (STATE.gameMode === 'LOCAL') return true;
       if (STATE.gameMode === 'AI') return STATE.turn === 1;
@@ -1600,20 +1611,6 @@
       }
       ctx.restore();
     }
-
-    document.getElementById('modal-confirm-btn').addEventListener('click', () => {
-      AUDIO.play('click');
-      document.getElementById('game-modal').classList.remove('show');
-      if (STATE.winner) resetCurrentGame();
-    });
-
-    document.getElementById('restart-btn').addEventListener('click', () => {
-      AUDIO.play('click');
-      resetCurrentGame();
-      if (STATE.gameMode === 'ONLINE' && STATE.online.roomId) {
-        sendOnlineAction({ type: 'RESTART' });
-      }
-    });
 
     window.addEventListener('resize', () => {
       if (STATE.currentView === 'GAME') {

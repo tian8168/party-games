@@ -291,6 +291,10 @@
       }
     };
 
+    STATE.liarsdice = {
+        p1Hp: 3, p2Hp: 3, p1Dice: [1, 2, 3, 4, 5], p2Dice: [1, 2, 3, 4, 5], currentBid: null, selectedQty: 3, selectedVal: 3, onesCalled: false, revealed: false
+      };
+
     function checkIsMyTurn() {
       if (STATE.gameMode === 'LOCAL') return true;
       if (STATE.gameMode === 'AI') return STATE.turn === 1;

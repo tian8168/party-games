@@ -297,6 +297,15 @@
       }
     };
 
+    STATE.contra = {
+        lives: 3, weapon: 'NORMAL', score: 0, cameraX: 0, levelWidth: 2200, bossActive: false, bossDefeated: false,
+        player: { x: 50, y: 220, vx: 0, vy: 0, w: 20, h: 36, onGround: false, facing: 1, crouch: false, aimUp: false, invincibleTime: 0, animFrame: 0, jumpAngle: 0 },
+        bullets: [], enemyBullets: [], enemies: [], capsules: [], pickups: [], particles: [], platforms: [],
+        boss: { x: 1950, y: 120, w: 160, h: 160, coreHp: 60, maxCoreHp: 60, turretLeftHp: 20, turretRightHp: 20, sniperHp: 15, active: false },
+        keys: { left: false, right: false, up: false, down: false, fire: false, jump: false },
+        animId: null
+      };
+
     function checkIsMyTurn() {
       if (STATE.gameMode === 'LOCAL') return true;
       if (STATE.gameMode === 'AI') return STATE.turn === 1;
