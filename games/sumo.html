@@ -135,7 +135,7 @@
             <div class="sumo-score-badge" style="color:#cbd5e1;" id="sumo-match-target">抢 3 胜</div>
             <div class="sumo-score-badge" style="color:#38bdf8;" id="sumo-p2-score">🔵 电脑: 0</div>
           </div>
-          <div class="sumo-touch-hint" id="sumo-touch-hint">💡 触碰屏幕或按住按键冲刺 (松开自动转向)</div>
+          <div class="sumo-touch-hint" id="sumo-touch-hint">💡 支持WASD与方向键 / 触碰屏幕两端控制</div>
           <div class="sumo-controls-bar" id="sumo-controls-bar">
             <button class="btn-sumo-boost btn-sumo-p1" id="btn-sumo-boost">🚀 按住冲刺 (松开瞄准)</button>
             <button class="btn-sumo-boost btn-sumo-p2" id="btn-sumo-boost-p2" style="display:flex;">🚀 蓝方冲刺 (松开瞄准)</button>
@@ -328,26 +328,41 @@
         canvas.addEventListener('pointerleave', cancelCanvasBoost);
       }
 
-      window.addEventListener('keydown', (e) => {
+            window.addEventListener('keydown', (e) => {
         if (STATE.currentGame !== 'SUMO') return;
         if (['Space', 'KeyW', 'ArrowUp', 'KeyA', 'KeyS', 'KeyD', 'KeyL', 'Enter', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
           e.preventDefault();
         }
-        if (STATE.gameMode === 'LOCAL') {
-          if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'Space'].includes(e.code)) setSumoBoostP1(true);
-          if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter', 'KeyL'].includes(e.code)) setSumoBoostP2(true);
-        } else {
-          if (['Space', 'KeyW', 'ArrowUp', 'KeyJ', 'Enter'].includes(e.code)) setSumoBoostP1(true);
+        if (STATE.sumo && STATE.sumo.keys) {
+          const k1 = STATE.sumo.keys.p1;
+          if (['KeyW', 'Space'].includes(e.code)) k1.up = true;
+          if (e.code === 'KeyS') k1.down = true;
+          if (e.code === 'KeyA') k1.left = true;
+          if (e.code === 'KeyD') k1.right = true;
+          if (STATE.gameMode === 'LOCAL') {
+            const k2 = STATE.sumo.keys.p2;
+            if (['ArrowUp', 'Enter'].includes(e.code)) k2.up = true;
+            if (e.code === 'ArrowDown') k2.down = true;
+            if (e.code === 'ArrowLeft') k2.left = true;
+            if (e.code === 'ArrowRight') k2.right = true;
+          }
         }
       });
-
       window.addEventListener('keyup', (e) => {
         if (STATE.currentGame !== 'SUMO') return;
-        if (STATE.gameMode === 'LOCAL') {
-          if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'Space'].includes(e.code)) setSumoBoostP1(false);
-          if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter', 'KeyL'].includes(e.code)) setSumoBoostP2(false);
-        } else {
-          if (['Space', 'KeyW', 'ArrowUp', 'KeyJ', 'Enter'].includes(e.code)) setSumoBoostP1(false);
+        if (STATE.sumo && STATE.sumo.keys) {
+          const k1 = STATE.sumo.keys.p1;
+          if (['KeyW', 'Space'].includes(e.code)) k1.up = false;
+          if (e.code === 'KeyS') k1.down = false;
+          if (e.code === 'KeyA') k1.left = false;
+          if (e.code === 'KeyD') k1.right = false;
+          if (STATE.gameMode === 'LOCAL') {
+            const k2 = STATE.sumo.keys.p2;
+            if (['ArrowUp', 'Enter'].includes(e.code)) k2.up = false;
+            if (e.code === 'ArrowDown') k2.down = false;
+            if (e.code === 'ArrowLeft') k2.left = false;
+            if (e.code === 'ArrowRight') k2.right = false;
+          }
         }
       });
     }
@@ -360,7 +375,7 @@
       const h = (rect && rect.height > 50) ? Math.floor(rect.height) : (c.offsetHeight || 340);
       c.width = w;
       c.height = h;
-      STATE.sumo.arenaRadius = Math.min(w, h) * 0.38;
+      STATE.sumo.arenaRadius = Math.min(w, h) * 0.46;
     }
 
     function resetSumoRound() {
@@ -402,6 +417,7 @@
       STATE.sumo.particles = [];
       STATE.sumo.roundOver = false;
       STATE.sumo.aiReactionDelay = 25;
+      STATE.sumo.keys = { p1: { up:false, down:false, left:false, right:false }, p2: { up:false, down:false, left:false, right:false } };
 
       const isLocal = STATE.gameMode === 'LOCAL';
       const p1ScoreEl = document.getElementById('sumo-p1-score');
@@ -477,80 +493,63 @@
         return a;
       };
 
-      // Car 1 (Red)
-      if (c1.boosting) {
-        c1.vx += Math.cos(c1.angle) * 0.48;
-        c1.vy += Math.sin(c1.angle) * 0.48;
-        if (Math.random() < 0.75) {
-          STATE.sumo.particles.push({
-            x: c1.x - Math.cos(c1.angle) * (c1.r + 2),
-            y: c1.y - Math.sin(c1.angle) * (c1.r + 2),
-            vx: -Math.cos(c1.angle) * 2.5 + (Math.random() - 0.5) * 2,
-            vy: -Math.sin(c1.angle) * 2.5 + (Math.random() - 0.5) * 2,
-            life: 0.65,
-            color: Math.random() > 0.5 ? '#f97316' : '#ef4444',
-            size: 3
-          });
-        }
-      } else {
-        const targetAngle = Math.atan2(c2.y - c1.y, c2.x - c1.x);
-        const diff = wrapAngle(targetAngle - c1.angle);
-        c1.angle += diff * 0.09;
-      }
 
-      // Car 2 (Blue)
-      if (STATE.gameMode === 'LOCAL') {
-        if (c2.boosting) {
-          c2.vx += Math.cos(c2.angle) * 0.48;
-          c2.vy += Math.sin(c2.angle) * 0.48;
+      function applyCarPhysics(car, keys, opp, color1, color2) {
+        if (keys.left) car.angle -= 0.08;
+        if (keys.right) car.angle += 0.08;
+        if (!keys.up && !keys.down && !keys.left && !keys.right) {
+          const targetAngle = Math.atan2(opp.y - car.y, opp.x - car.x);
+          const diff = wrapAngle(targetAngle - car.angle);
+          car.angle += diff * 0.09;
+        }
+        car.boosting = keys.up;
+        if (keys.up) {
+          car.vx += Math.cos(car.angle) * 0.48;
+          car.vy += Math.sin(car.angle) * 0.48;
           if (Math.random() < 0.75) {
             STATE.sumo.particles.push({
-              x: c2.x - Math.cos(c2.angle) * (c2.r + 2),
-              y: c2.y - Math.sin(c2.angle) * (c2.r + 2),
-              vx: -Math.cos(c2.angle) * 2.5 + (Math.random() - 0.5) * 2,
-              vy: -Math.sin(c2.angle) * 2.5 + (Math.random() - 0.5) * 2,
-              life: 0.65,
-              color: Math.random() > 0.5 ? '#38bdf8' : '#3b82f6',
-              size: 3
+              x: car.x - Math.cos(car.angle) * (car.r + 2),
+              y: car.y - Math.sin(car.angle) * (car.r + 2),
+              vx: -Math.cos(car.angle) * 2.5 + (Math.random() - 0.5) * 2,
+              vy: -Math.sin(car.angle) * 2.5 + (Math.random() - 0.5) * 2,
+              life: 0.65, color: Math.random() > 0.5 ? color1 : color2, size: 3
             });
           }
-        } else {
-          const targetAngle = Math.atan2(c1.y - c2.y, c1.x - c2.x);
-          const diff = wrapAngle(targetAngle - c2.angle);
-          c2.angle += diff * 0.09;
-        }
-      } else {
-        // AI Car 2
-        const p2TargetAngle = Math.atan2(c1.y - c2.y, c1.x - c2.x);
-        const p2Diff = wrapAngle(p2TargetAngle - c2.angle);
-        c2.angle += p2Diff * 0.085;
-
-        if (STATE.sumo.aiReactionDelay > 0) {
-          STATE.sumo.aiReactionDelay--;
-          c2.boosting = false;
-        } else {
-          const distToP1 = Math.hypot(c1.x - c2.x, c1.y - c2.y);
-          if (distToP1 < R * 1.5 && Math.abs(p2Diff) < 0.7) {
-            c2.boosting = true;
-            c2.vx += Math.cos(c2.angle) * 0.42;
-            c2.vy += Math.sin(c2.angle) * 0.42;
-            if (Math.random() < 0.6) {
-              STATE.sumo.particles.push({
-                x: c2.x - Math.cos(c2.angle) * (c2.r + 2),
-                y: c2.y - Math.sin(c2.angle) * (c2.r + 2),
-                vx: -Math.cos(c2.angle) * 2.5 + (Math.random() - 0.5) * 2,
-                vy: -Math.sin(c2.angle) * 2.5 + (Math.random() - 0.5) * 2,
-                life: 0.65,
-                color: '#38bdf8',
-                size: 3
-              });
-            }
-          } else {
-            c2.boosting = false;
-          }
+        } else if (keys.down) {
+          car.vx -= Math.cos(car.angle) * 0.35;
+          car.vy -= Math.sin(car.angle) * 0.35;
         }
       }
 
+      if (STATE.sumo.keys) {
+        applyCarPhysics(c1, STATE.sumo.keys.p1, c2, '#f97316', '#ef4444');
+        if (STATE.gameMode === 'LOCAL') {
+          applyCarPhysics(c2, STATE.sumo.keys.p2, c1, '#38bdf8', '#3b82f6');
+        } else {
+          // AI Logic
+          if (STATE.sumo.aiReactionDelay > 0) {
+            STATE.sumo.aiReactionDelay--;
+          } else {
+            const targetAngle = Math.atan2(c1.y - c2.y, c1.x - c2.x);
+            const diff = wrapAngle(targetAngle - c2.angle);
+            c2.angle += diff * 0.08;
+            if (Math.abs(diff) < 0.4 && Math.random() < 0.8) {
+              c2.vx += Math.cos(c2.angle) * 0.48;
+              c2.vy += Math.sin(c2.angle) * 0.48;
+              c2.boosting = true;
+              if (Math.random() < 0.75) {
+                STATE.sumo.particles.push({
+                  x: c2.x - Math.cos(c2.angle) * (c2.r + 2), y: c2.y - Math.sin(c2.angle) * (c2.r + 2),
+                  vx: -Math.cos(c2.angle) * 2.5 + (Math.random() - 0.5) * 2, vy: -Math.sin(c2.angle) * 2.5 + (Math.random() - 0.5) * 2,
+                  life: 0.65, color: '#38bdf8', size: 3
+                });
+              }
+            } else {
+              c2.boosting = false;
+            }
+          }
+        }
+      }
       // Drag and speed limit
       [c1, c2].forEach(car => {
         car.vx *= 0.95;

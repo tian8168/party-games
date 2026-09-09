@@ -992,80 +992,6 @@
     </div>
   
 
-    <div class="game-card" data-cat="MIND" data-players="2" onclick="enterGame('ROULETTE')">
-      <div class="card-cover-wrapper">
-        <div class="card-art-canvas">
-          
-  <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <linearGradient id="rBg" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="#180509"/>
-        <stop offset="100%" stop-color="#05070e"/>
-      </linearGradient>
-      <radialGradient id="rLight" cx="50%" cy="40%" r="60%">
-        <stop offset="0%" stop-color="#ef4444" stop-opacity="0.25"/>
-        <stop offset="100%" stop-color="#000" stop-opacity="0"/>
-      </radialGradient>
-      <filter id="rGlow">
-        <feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-      </filter>
-    </defs>
-    <rect width="320" height="180" fill="url(#rBg)"/>
-    <rect width="320" height="180" fill="url(#rLight)"/>
-    <!-- 桌面心跳线 -->
-    <path d="M10,135 L100,135 L112,112 L124,155 L136,122 L146,140 L156,135 L310,135" stroke="#ef4444" stroke-width="1.5" fill="none" opacity="0.4"/>
-    <!-- 12号霰弹枪剪影 -->
-    <g transform="translate(65, 68) rotate(-10)">
-      <rect x="0" y="20" width="165" height="15" rx="2" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
-      <rect x="0" y="25" width="165" height="4" fill="#0f172a"/>
-      <rect x="135" y="20" width="45" height="18" rx="2" fill="#334155"/>
-      <path d="M180,22 Q215,25 225,50 L210,55 Q200,35 180,32 Z" fill="#78350f" stroke="#92400e" stroke-width="1.2"/>
-      <path d="M145,38 Q150,52 140,55 L135,52 Q143,48 140,38 Z" fill="#64748b"/>
-    </g>
-    <!-- 红色实弹 & 蓝色空包弹 -->
-    <g transform="translate(45, 108)">
-      <!-- 实弹 (红) -->
-      <rect x="0" y="0" width="19" height="36" rx="3" fill="#dc2626" stroke="#f87171" stroke-width="1" filter="url(#rGlow)"/>
-      <rect x="0" y="28" width="19" height="8" rx="1" fill="#f59e0b"/>
-      <text x="3" y="17" font-family="'Impact', sans-serif" font-size="9" fill="#fef08a">LIVE</text>
-    </g>
-    <g transform="translate(75, 112)">
-      <!-- 空包弹 (蓝) -->
-      <rect x="0" y="0" width="19" height="36" rx="3" fill="#1d4ed8" stroke="#60a5fa" stroke-width="1"/>
-      <rect x="0" y="28" width="19" height="8" rx="1" fill="#94a3b8"/>
-      <text x="1" y="17" font-family="'Impact', sans-serif" font-size="8" fill="#93c5fd">BLANK</text>
-    </g>
-    <!-- 手铐与金属道具 -->
-    <circle cx="250" cy="115" r="17" fill="none" stroke="#94a3b8" stroke-width="3"/>
-    <circle cx="272" cy="125" r="17" fill="none" stroke="#94a3b8" stroke-width="3"/>
-    <line x1="260" y1="120" x2="266" y2="122" stroke="#cbd5e1" stroke-width="4"/>
-  </svg>
-        </div>
-        <div class="cover-badges">
-          <span class="badge-pill players">👥 1-2人</span>
-          <span class="badge-pill tag-hot">🔫 生死博弈</span>
-        </div>
-        <div class="cover-overlay"></div>
-      </div>
-      <div class="card-body">
-        <div class="card-header-row">
-          <div class="title-group">
-            <div class="card-main-title">
-              <span>恶魔轮盘赌</span>
-              <span class="card-sub">ROULETTE</span>
-            </div>
-            <div class="card-tagline">霰弹枪实弹空包对赌 · 玩的就是心跳</div>
-          </div>
-          <div class="btn-play-action">开玩 ▶</div>
-        </div>
-        <div class="card-meta-chips">
-          <span class="meta-chip">⏱️ 2分钟</span>
-          <span class="meta-chip">心理博弈</span>
-          <span class="meta-chip accent">手铐/手锯/放大镜</span>
-        </div>
-      </div>
-    </div>
-  
 
     <div class="game-card" data-cat="PHYSICS" data-players="2" onclick="enterGame('HOCKEY')">
       <div class="card-cover-wrapper">
@@ -1752,7 +1678,6 @@
       'QUORIDOR': 'quoridor.html',
       'AEROPLANE': 'aeroplane.html',
       'TANKTROUBLE': 'tanktrouble.html',
-      'ROULETTE': 'roulette.html',
       'HOCKEY': 'hockey.html',
       'GRAVITY': 'gravity.html',
       'GRAVITY4': 'gravity4.html',
@@ -1812,13 +1737,12 @@
 
     function randomPickGame() {
       if (window.AUDIO) window.AUDIO.play('drop');
-      const gameKeys = ['CONTRA', 'QUORIDOR', 'AEROPLANE', 'ROULETTE', 'HOCKEY', 'GRAVITY', 'GRAVITY4', 'GRAVITY3D', 'GRAVITY3D4', 'IAIDO', 'LIARSDICE', 'SUMO', 'TANK', 'STACK', 'TANKTROUBLE'];
+      const gameKeys = ['CONTRA', 'QUORIDOR', 'AEROPLANE', 'HOCKEY', 'GRAVITY', 'GRAVITY4', 'GRAVITY3D', 'GRAVITY3D4', 'IAIDO', 'LIARSDICE', 'SUMO', 'TANK', 'STACK', 'TANKTROUBLE'];
       const chosen = gameKeys[Math.floor(Math.random() * gameKeys.length)];
       const titles = {
         'CONTRA': '💥 魂斗罗 (Contra)',
         'QUORIDOR': '🧱 步步为营·4人乱斗',
         'AEROPLANE': '✈️ 四人飞行棋 (Aeroplane Chess)',
-        'ROULETTE': '🔫 恶魔轮盘赌',
         'HOCKEY': '🏒 极光桌上冰球',
         'GRAVITY': '⬇️ 重力五子棋',
         'GRAVITY4': '🟡 重力四子棋',
@@ -1864,7 +1788,6 @@
           'CONTRA': '💥 魂斗罗',
           'QUORIDOR': '🧱 步步为营',
           'AEROPLANE': '✈️ 飞行棋',
-          'ROULETTE': '🔫 轮盘赌',
           'HOCKEY': '🏒 空气冰球',
           'GRAVITY': '⬇️ 重力五子',
           'GRAVITY4': '🟡 四子棋',
