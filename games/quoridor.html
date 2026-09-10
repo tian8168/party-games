@@ -123,7 +123,61 @@
     .wall-pip { width: 5px; height: 7px; background: #eccc68; border-radius: 1px; }
     .wall-pip.used { background: #475569; opacity: 0.3; }
 
-    
+    .turn-hint-bar {
+      width: 100%;
+      padding: 8px 12px;
+      border-radius: 8px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #f8fafc;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      margin: 4px 0 6px;
+      transition: all 0.3s ease;
+    }
+    .turn-hint-bar.my-turn {
+      border-color: #2ed573;
+      background: rgba(46, 213, 115, 0.15);
+      color: #7bed9f;
+      box-shadow: 0 0 14px rgba(46, 213, 115, 0.3);
+    }
+    .turn-hint-bar.opp-turn {
+      border-color: #475569;
+      background: rgba(30, 41, 59, 0.7);
+      color: #94a3b8;
+    }
+    .badge-you {
+      background: linear-gradient(135deg, #0284c7, #0369a1);
+      color: #fff;
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 1px 6px;
+      border-radius: 4px;
+      margin-left: 4px;
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .badge-opp {
+      background: #334155;
+      color: #94a3b8;
+      font-size: 0.65rem;
+      font-weight: 600;
+      padding: 1px 6px;
+      border-radius: 4px;
+      margin-left: 4px;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .player-card.is-me {
+      border: 2px solid #38bdf8 !important;
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.35) !important;
+    }
   </style>
 </head>
 <body>
@@ -163,9 +217,9 @@
             <span class="player-name" id="name-p2">🟢 玩家 2 (客)</span>
             <span class="turn-badge">行动中</span>
           </div>
-          <div id="walls-wrapper-p2" style="display:none; font-size:0.75rem; margin-top:2px;">
-            余墙: <span id="walls-count-p2">10</span>
-            <div id="wall-bars-p2" style="display:flex; gap:2px; height:4px; margin-top:2px;"></div>
+          <div id="walls-wrapper-p2" style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; margin-top:3px;">
+            <span>余墙: <b id="walls-count-p2">10</b></span>
+            <div id="wall-bars-p2" style="display:flex; gap:2px; height:6px;"></div>
           </div>
         </div>
 
@@ -174,9 +228,9 @@
             <span class="player-name" id="name-p1">🔴 玩家 1 (主)</span>
             <span class="turn-badge">行动中</span>
           </div>
-          <div id="walls-wrapper-p1" style="display:none; font-size:0.75rem; margin-top:2px;">
-            余墙: <span id="walls-count-p1">10</span>
-            <div id="wall-bars-p1" style="display:flex; gap:2px; height:4px; margin-top:2px;"></div>
+          <div id="walls-wrapper-p1" style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; margin-top:3px;">
+            <span>余墙: <b id="walls-count-p1">10</b></span>
+            <div id="wall-bars-p1" style="display:flex; gap:2px; height:6px;"></div>
           </div>
         </div>
 
@@ -185,9 +239,9 @@
             <span class="player-name" id="name-p3">🔵 玩家 3 (西)</span>
             <span class="turn-badge">行动中</span>
           </div>
-          <div id="walls-wrapper-p3" style="display:none; font-size:0.75rem; margin-top:2px;">
-            余墙: <span id="walls-count-p3">5</span>
-            <div id="wall-bars-p3" style="display:flex; gap:2px; height:4px; margin-top:2px;"></div>
+          <div id="walls-wrapper-p3" style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; margin-top:3px;">
+            <span>余墙: <b id="walls-count-p3">5</b></span>
+            <div id="wall-bars-p3" style="display:flex; gap:2px; height:6px;"></div>
           </div>
         </div>
 
@@ -196,16 +250,22 @@
             <span class="player-name" id="name-p4">🟡 玩家 4 (东)</span>
             <span class="turn-badge">行动中</span>
           </div>
-          <div id="walls-wrapper-p4" style="display:none; font-size:0.75rem; margin-top:2px;">
-            余墙: <span id="walls-count-p4">5</span>
-            <div id="wall-bars-p4" style="display:flex; gap:2px; height:4px; margin-top:2px;"></div>
+          <div id="walls-wrapper-p4" style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; margin-top:3px;">
+            <span>余墙: <b id="walls-count-p4">5</b></span>
+            <div id="wall-bars-p4" style="display:flex; gap:2px; height:6px;"></div>
           </div>
         </div>
       </div>
 
-    <div id="quoridor-player-toggle" class="quoridor-mode-bar" style="display:flex;">
+      <div id="quoridor-player-toggle" class="quoridor-mode-bar" style="display:flex;">
         <button class="btn-q-mode active" id="btn-q-2p" onclick="setQuoridorPlayerCount(2)">👥 经典双人 (10板)</button>
         <button class="btn-q-mode" id="btn-q-4p" onclick="setQuoridorPlayerCount(4)">👥👥 四人大乱斗 (5板)</button>
+      </div>
+
+      <!-- 实时行动指引条 (身份与轮次动态解析) -->
+      <div id="quoridor-turn-hint" class="turn-hint-bar">
+        <span id="turn-hint-icon">🎯</span>
+        <span id="turn-hint-text">正在加载对局...</span>
       </div>
 
     <div class="stage-wrapper">
@@ -264,8 +324,9 @@
       if (STATE.gameMode === 'LOCAL') return true;
       if (STATE.gameMode === 'AI') return STATE.turn === 1;
       if (STATE.gameMode === 'ONLINE') {
-        if (STATE.online.myRole === 'host' && STATE.turn === 1) return true;
-        if (STATE.online.myRole === 'guest' && STATE.turn === 2) return true;
+        const isHost = (STATE.online.myRole === 'host');
+        if (isHost && STATE.turn === 1) return true;
+        if (!isHost && STATE.turn === 2) return true;
         return false;
       }
       return true;
@@ -276,21 +337,130 @@
       const cardP2 = document.getElementById('card-p2');
       const cardP3 = document.getElementById('card-p3');
       const cardP4 = document.getElementById('card-p4');
+
+      const isOnline = (STATE.gameMode === 'ONLINE');
+      const isHost = (STATE.online.myRole === 'host');
+
+      // 更新 P1 (红方·南) 卡片
       if (cardP1) {
         cardP1.classList.toggle('active-turn', STATE.turn === 1);
         const n1 = document.getElementById('name-p1');
-        if (n1) n1.innerHTML = '🔴 玩家 1 (主)' + (STATE.scores[1] !== undefined ? ' <small>('+STATE.scores[1]+')</small>' : '');
+        if (n1) {
+          if (isOnline) {
+            cardP1.classList.toggle('is-me', isHost);
+            n1.innerHTML = isHost ? 
+              '🔴 玩家 1 (房主·南) <span class="badge-you">👈 你 (红方)</span>' : 
+              '🔴 玩家 1 (房主·南) <span class="badge-opp">对手 (红方)</span>';
+          } else if (STATE.gameMode === 'AI') {
+            cardP1.classList.add('is-me');
+            n1.innerHTML = '🔴 玩家 1 (你) <span class="badge-you">👈 你</span>';
+          } else {
+            cardP1.classList.remove('is-me');
+            n1.innerHTML = '🔴 玩家 1 (南门)';
+          }
+          if (STATE.scores[1] !== undefined) n1.innerHTML += ` <small>(${STATE.scores[1]})</small>`;
+        }
       }
+
+      // 更新 P2 (绿方·北) 卡片
       if (cardP2) {
         cardP2.classList.toggle('active-turn', STATE.turn === 2);
         const n2 = document.getElementById('name-p2');
         if (n2) {
-          const p2Label = STATE.gameMode === 'AI' ? '🤖 电脑 (AI)' : (STATE.gameMode === 'ONLINE' ? '🟢 好友 (客)' : '🟢 玩家 2');
-          n2.innerHTML = p2Label + (STATE.scores[2] !== undefined ? ' <small>('+STATE.scores[2]+')</small>' : '');
+          if (isOnline) {
+            cardP2.classList.toggle('is-me', !isHost);
+            const guestTitle = STATE.online.opponentJoined ? '🟢 玩家 2 (客方·北)' : '🟢 玩家 2 (等待加入...)';
+            n2.innerHTML = isHost ? 
+              `${guestTitle} <span class="badge-opp">对手 (绿方)</span>` : 
+              '🟢 玩家 2 (客机·北) <span class="badge-you">👈 你 (绿方)</span>';
+          } else if (STATE.gameMode === 'AI') {
+            cardP2.classList.remove('is-me');
+            n2.innerHTML = '🤖 电脑 (AI)';
+          } else {
+            cardP2.classList.remove('is-me');
+            n2.innerHTML = '🟢 玩家 2 (北门)';
+          }
+          if (STATE.scores[2] !== undefined) n2.innerHTML += ` <small>(${STATE.scores[2]})</small>`;
         }
       }
+
       if (cardP3) cardP3.classList.toggle('active-turn', STATE.turn === 3);
       if (cardP4) cardP4.classList.toggle('active-turn', STATE.turn === 4);
+
+      // 同步挡板余量与指示条
+      const maxWalls = STATE.quoridor.playerCount === 4 ? 5 : 10;
+      const w1 = document.getElementById('walls-count-p1');
+      if (w1) w1.textContent = STATE.quoridor.p1.walls;
+      renderWallBars('wall-bars-p1', STATE.quoridor.p1.walls, maxWalls);
+
+      const w2 = document.getElementById('walls-count-p2');
+      if (w2) w2.textContent = STATE.quoridor.p2.walls;
+      renderWallBars('wall-bars-p2', STATE.quoridor.p2.walls, maxWalls);
+
+      if (STATE.quoridor.playerCount === 4) {
+        const w3 = document.getElementById('walls-count-p3');
+        if (w3) w3.textContent = STATE.quoridor.p3.walls;
+        renderWallBars('wall-bars-p3', STATE.quoridor.p3.walls, maxWalls);
+
+        const w4 = document.getElementById('walls-count-p4');
+        if (w4) w4.textContent = STATE.quoridor.p4.walls;
+        renderWallBars('wall-bars-p4', STATE.quoridor.p4.walls, maxWalls);
+      }
+
+      updateTurnHintBar();
+    }
+
+    function updateTurnHintBar() {
+      const hintBar = document.getElementById('quoridor-turn-hint');
+      const hintIcon = document.getElementById('turn-hint-icon');
+      const hintText = document.getElementById('turn-hint-text');
+      if (!hintBar || !hintIcon || !hintText) return;
+
+      if (STATE.winner !== null) {
+        hintBar.className = 'turn-hint-bar';
+        hintIcon.textContent = '🏆';
+        const winnerNames = { 1: '🔴 红方 (南门)', 2: '🟢 绿方 (北门)', 3: '🔵 蓝方 (西门)', 4: '🟡 黄方 (东门)' };
+        hintText.innerHTML = `对局结束！<b>${winnerNames[STATE.winner]}</b> 率先抵达终点线获胜！`;
+        return;
+      }
+
+      if (STATE.gameMode === 'ONLINE') {
+        const isHost = (STATE.online.myRole === 'host');
+        if (isHost && !STATE.online.opponentJoined) {
+          hintBar.className = 'turn-hint-bar';
+          hintIcon.textContent = '🔗';
+          hintText.innerHTML = `房间 <b>${STATE.online.roomId || '...'}</b> 已就绪！请点击【复制邀请链接】发送给好友加入对战`;
+          return;
+        }
+
+        const isMyTurn = checkIsMyTurn();
+        if (isMyTurn) {
+          hintBar.className = 'turn-hint-bar my-turn';
+          hintIcon.textContent = '👉';
+          const myColor = isHost ? '🔴 红方·南' : '🟢 绿方·北';
+          hintText.innerHTML = `<b>【轮到你行动 (${myColor})】</b> 请点击相邻高亮格移动，或点击下方挡板放置！`;
+        } else {
+          hintBar.className = 'turn-hint-bar opp-turn';
+          hintIcon.textContent = '⏳';
+          const oppColor = isHost ? '🟢 绿方客机' : '🔴 红方房主';
+          hintText.innerHTML = `正在等待对手 (<b>${oppColor}</b>) 思考行动，请稍候...`;
+        }
+      } else if (STATE.gameMode === 'AI') {
+        if (STATE.turn === 1) {
+          hintBar.className = 'turn-hint-bar my-turn';
+          hintIcon.textContent = '👉';
+          hintText.innerHTML = '<b>【你的回合 (🔴 红方)】</b> 请点击绿色高亮格走子，或放板阻截 AI！';
+        } else {
+          hintBar.className = 'turn-hint-bar opp-turn';
+          hintIcon.textContent = '🤖';
+          hintText.innerHTML = '电脑 (AI) 正在计算最短路径与拦截策略...';
+        }
+      } else {
+        hintBar.className = 'turn-hint-bar';
+        hintIcon.textContent = '🎲';
+        const turnColor = STATE.turn === 1 ? '🔴 玩家 1 (南)' : (STATE.turn === 2 ? '🟢 玩家 2 (北)' : (STATE.turn === 3 ? '🔵 玩家 3' : '🟡 玩家 4'));
+        hintText.innerHTML = `轮到 <b>${turnColor}</b> 行动`;
+      }
     }
 
     function switchGameMode(mode, doReset = true) {
@@ -300,15 +470,26 @@
       if (activeTab) activeTab.classList.add('active');
 
       const onlinePanel = document.getElementById('online-panel');
+      const pToggle = document.getElementById('quoridor-player-toggle');
+
       if (onlinePanel) {
         onlinePanel.style.display = mode === 'ONLINE' ? 'flex' : 'none';
         if (mode === 'ONLINE' && window.ONLINE_NETWORK) {
-          ONLINE_NETWORK.createRoom(STATE.currentGame);
+          setQuoridorPlayerCount(2, false);
+          if (pToggle) pToggle.style.display = 'none';
+
+          if (!ONLINE_NETWORK.state.roomId) {
+            const rid = ONLINE_NETWORK.createRoom('QUORIDOR');
+            STATE.online.roomId = rid;
+            STATE.online.myRole = 'host';
+          }
+        } else {
+          if (pToggle) pToggle.style.display = 'flex';
         }
       }
       updateScoreboard();
       if (doReset && typeof resetCurrentGame === 'function') {
-        resetCurrentGame();
+        resetCurrentGame(false);
       }
     }
 
@@ -316,6 +497,64 @@
       if (window.ONLINE_NETWORK) {
         window.ONLINE_NETWORK.sendAction(data);
       }
+    }
+
+    function initOnlineMultiplayer() {
+      if (!window.ONLINE_NETWORK) return;
+
+      ONLINE_NETWORK.setRoleChangeHandler((role) => {
+        STATE.online.myRole = role;
+        STATE.online.connected = true;
+        STATE.online.roomId = ONLINE_NETWORK.state.roomId;
+        updateScoreboard();
+        render2D();
+      });
+
+      ONLINE_NETWORK.setOpponentJoinedHandler((msg) => {
+        STATE.online.opponentJoined = true;
+        updateScoreboard();
+        sendOnlineAction({
+          type: 'QUORIDOR_SYNC',
+          playerCount: STATE.quoridor.playerCount,
+          turn: STATE.turn,
+          p1: STATE.quoridor.p1,
+          p2: STATE.quoridor.p2,
+          wallsH: Array.from(STATE.quoridor.wallsH),
+          wallsV: Array.from(STATE.quoridor.wallsV),
+          scores: STATE.scores,
+          winner: STATE.winner
+        });
+      });
+
+      ONLINE_NETWORK.setMessageHandler((msg) => {
+        if (!msg || !msg.type) return;
+
+        if (msg.type === 'QUORIDOR_MOVE') {
+          if (STATE.turn === msg.player) {
+            executeQuoridorMove(msg.r, msg.c, false);
+          }
+        } else if (msg.type === 'QUORIDOR_WALL') {
+          if (STATE.turn === msg.player) {
+            executeQuoridorWall(msg.wallType, msg.r, msg.c, false);
+          }
+        } else if (msg.type === 'QUORIDOR_SYNC') {
+          STATE.quoridor.playerCount = msg.playerCount || 2;
+          STATE.turn = msg.turn;
+          STATE.quoridor.p1 = msg.p1;
+          STATE.quoridor.p2 = msg.p2;
+          STATE.quoridor.wallsH = new Set(msg.wallsH || []);
+          STATE.quoridor.wallsV = new Set(msg.wallsV || []);
+          if (msg.scores) STATE.scores = msg.scores;
+          STATE.winner = msg.winner;
+          STATE.online.opponentJoined = true;
+          updateScoreboard();
+          render2D();
+          showToast('🤝 已完成对局全量数据同步！', 2000);
+        } else if (msg.type === 'QUORIDOR_RESTART') {
+          initQuoridor(false);
+          showToast('🔄 对方已重置棋局，新对决开始！', 2000);
+        }
+      });
     }
   
 
@@ -452,6 +691,34 @@
     function drawSphere2D(r, c, player) {
       const { x, y } = getCellPos(r, c);
       const cx = x + cellSize / 2, cy = y + cellSize / 2, radius = cellSize * 0.38;
+
+      const isMe = (STATE.gameMode === 'ONLINE') ? 
+        ((STATE.online.myRole === 'host' && player === 1) || (STATE.online.myRole === 'guest' && player === 2)) :
+        (STATE.gameMode === 'AI' && player === 1);
+
+      // 本机棋子高亮光环与标记
+      if (isMe) {
+        ctx2D.beginPath();
+        ctx2D.arc(cx, cy, radius + 5, 0, Math.PI * 2);
+        ctx2D.fillStyle = 'rgba(56, 189, 248, 0.3)';
+        ctx2D.fill();
+        ctx2D.strokeStyle = '#38bdf8';
+        ctx2D.lineWidth = 2.5;
+        ctx2D.stroke();
+      }
+
+      // 当前行动回合棋子外圈呼吸虚线环
+      if (STATE.turn === player && !STATE.winner) {
+        ctx2D.beginPath();
+        ctx2D.arc(cx, cy, radius + (isMe ? 8 : 4), 0, Math.PI * 2);
+        const ringColors = { 1: '#ff4757', 2: '#2ed573', 3: '#38bdf8', 4: '#eab308' };
+        ctx2D.strokeStyle = ringColors[player] || '#fff';
+        ctx2D.lineWidth = 2;
+        ctx2D.setLineDash([4, 3]);
+        ctx2D.stroke();
+        ctx2D.setLineDash([]);
+      }
+
       const grad = ctx2D.createRadialGradient(cx - radius * 0.3, cy - radius * 0.35, radius * 0.1, cx, cy, radius);
       if (player === 1) {
         grad.addColorStop(0, '#ff9fa8'); grad.addColorStop(0.3, '#ff4757'); grad.addColorStop(1, '#8b0015');
@@ -465,6 +732,18 @@
       ctx2D.beginPath(); ctx2D.arc(cx, cy, radius, 0, Math.PI * 2); ctx2D.fillStyle = grad; ctx2D.fill();
       ctx2D.beginPath(); ctx2D.arc(cx - radius * 0.25, cy - radius * 0.3, radius * 0.18, 0, Math.PI * 2);
       ctx2D.fillStyle = 'rgba(255, 255, 255, 0.4)'; ctx2D.fill();
+
+      // 在本机棋子中心绘制 "我" 标识，杜绝身份混淆
+      if (isMe) {
+        ctx2D.fillStyle = '#ffffff';
+        ctx2D.font = `bold ${Math.round(radius * 0.75)}px sans-serif`;
+        ctx2D.textAlign = 'center';
+        ctx2D.textBaseline = 'middle';
+        ctx2D.shadowColor = 'rgba(0,0,0,0.8)';
+        ctx2D.shadowBlur = 4;
+        ctx2D.fillText('我', cx, cy);
+        ctx2D.shadowBlur = 0;
+      }
     }
 
     function endTurn() {
@@ -662,11 +941,12 @@
       render2D();
     }
 
-    function executeQuoridorMove(r, c) {
+    function executeQuoridorMove(r, c, broadcast = true) {
+      const movingPlayer = STATE.turn;
       // 强约束合法性检查：坚决拦截任何越界瞬移
-      const validMoves = getValidPawnMoves(STATE.turn);
+      const validMoves = getValidPawnMoves(movingPlayer);
       if (!validMoves.some(m => m.r === r && m.c === c)) {
-        console.warn(`[Quoridor] 拦截非法瞬移: 玩家 ${STATE.turn} 试图移动至 (${r},${c})`);
+        console.warn(`[Quoridor] 拦截非法瞬移: 玩家 ${movingPlayer} 试图移动至 (${r},${c})`);
         showToast('⚠️ 只能向高亮的相邻合法格子移动，不可跨格瞬移！', 2000);
         return false;
       }
@@ -678,10 +958,10 @@
         3: STATE.quoridor.p3,
         4: STATE.quoridor.p4
       };
-      const cur = players[STATE.turn];
+      const cur = players[movingPlayer];
       const fromR = cur.r, fromC = cur.c;
       cur.r = r; cur.c = c;
-      STATE.quoridor.lastMove = { type: 'MOVE', player: STATE.turn, fromR, fromC, r, c };
+      STATE.quoridor.lastMove = { type: 'MOVE', player: movingPlayer, fromR, fromC, r, c };
 
       let winner = null;
       if (STATE.quoridor.p1.r === 0) winner = 1;
@@ -703,6 +983,10 @@
         endTurn();
       }
       render2D();
+
+      if (broadcast && STATE.gameMode === 'ONLINE') {
+        sendOnlineAction({ type: 'QUORIDOR_MOVE', player: movingPlayer, r, c });
+      }
     }
 
     // 2D 画布事件监听与精确坐标投射
@@ -753,7 +1037,9 @@
       canvas2D.addEventListener('click', (e) => {
         if (STATE.winner || STATE.animating) return;
         if (!checkIsMyTurn()) {
-          showToast('⏳ 对手正在思考中...');
+          const isHost = (STATE.online.myRole === 'host');
+          const oppLabel = isHost ? '🟢 玩家 2 (客方)' : '🔴 玩家 1 (房主)';
+          showToast(`⏳ 当前是 ${oppLabel} 的行动回合，请稍候...`, 1500);
           return;
         }
 
@@ -767,7 +1053,6 @@
                 const moves = getValidPawnMoves(STATE.turn);
                 if (moves.some(m => m.r === r && m.c === c)) {
                   executeQuoridorMove(r, c);
-                  if (STATE.gameMode === 'ONLINE') sendOnlineAction({ type: 'QUORIDOR_MOVE', r, c });
                 } else {
                   showToast('⚠️ 只能移动到高亮的相邻合法格子！', 1500);
                 }
@@ -787,7 +1072,6 @@
           if (cur && cur.walls > 0) {
             const wallType = STATE.quoridor.tool === 'WALL_H' ? 'H' : 'V';
             executeQuoridorWall(wallType, hp.r, hp.c);
-            if (STATE.gameMode === 'ONLINE') sendOnlineAction({ type: 'QUORIDOR_WALL', wallType, r: hp.r, c: hp.c });
           } else {
             showToast('⚠️ 挡板已耗尽，请切换为移动棋子！', 2000);
           }
@@ -795,7 +1079,8 @@
       });
     }
 
-    function executeQuoridorWall(type, r, c) {
+    function executeQuoridorWall(type, r, c, broadcast = true) {
+      const placingPlayer = STATE.turn;
       AUDIO.play('drop');
       if (type === 'H') STATE.quoridor.wallsH.add(`${r},${c}`);
       else STATE.quoridor.wallsV.add(`${r},${c}`);
@@ -805,12 +1090,16 @@
         3: STATE.quoridor.p3,
         4: STATE.quoridor.p4
       };
-      const cur = players[STATE.turn];
+      const cur = players[placingPlayer];
       cur.walls--;
-      STATE.quoridor.lastMove = { type: 'WALL', player: STATE.turn, wallType: type, r, c };
+      STATE.quoridor.lastMove = { type: 'WALL', player: placingPlayer, wallType: type, r, c };
       STATE.quoridor.hoverPos = null;
       endTurn();
       render2D();
+
+      if (broadcast && STATE.gameMode === 'ONLINE') {
+        sendOnlineAction({ type: 'QUORIDOR_WALL', player: placingPlayer, wallType: type, r, c });
+      }
     }
 
     function runQuoridorAI() {
@@ -838,8 +1127,11 @@
     // ==========================================================================
     
 
-    function resetCurrentGame() {
+    function resetCurrentGame(broadcast = true) {
       initQuoridor();
+      if (broadcast && STATE.gameMode === 'ONLINE') {
+        sendOnlineAction({ type: 'QUORIDOR_RESTART' });
+      }
     }
 
     function setQuoridorPlayerCount(count) {
@@ -858,6 +1150,21 @@
           <p><strong>轮替顺序：</strong>顺时针依次行动（🔴P1 -> 🔵P3 -> 🟢P2 -> 🟡P4）！</p>`, resetCurrentGame);
       setQuoridorPlayerCount(2);
       initQuoridor();
+      initOnlineMultiplayer();
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const roomParam = urlParams.get('room');
+      const modeParam = urlParams.get('mode');
+      if (roomParam) {
+        switchGameMode('ONLINE', false);
+        if (window.ONLINE_NETWORK) {
+          ONLINE_NETWORK.joinRoom(roomParam.trim(), 'QUORIDOR');
+          STATE.online.myRole = 'guest';
+          STATE.online.roomId = roomParam.trim();
+        }
+      } else if (modeParam === 'ONLINE') {
+        switchGameMode('ONLINE', false);
+      }
     });
     window.addEventListener('resize', resizeCanvas2D);
   </script>

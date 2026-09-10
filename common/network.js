@@ -23,7 +23,10 @@ window.ONLINE_NETWORK = (function() {
 
     state.roomId = roomId;
     state.myRole = role;
-    state.onMessageCallback = onMessage;
+    if (onMessage) state.onMessageCallback = onMessage;
+    if (typeof state.onRoleChange === 'function') {
+      state.onRoleChange(role);
+    }
 
     const roomElem = document.getElementById('display-room-id');
     if (roomElem) roomElem.textContent = roomId;
@@ -40,6 +43,7 @@ window.ONLINE_NETWORK = (function() {
 
     client.on('connect', () => {
       state.connected = true;
+      if (typeof state.onConnect === 'function') state.onConnect(roomId, role);
       const topic = `game_hall_v2/room/${roomId}`;
       client.subscribe(topic, () => {
         if (role === 'guest') {
@@ -60,7 +64,11 @@ window.ONLINE_NETWORK = (function() {
           if (state.myRole === 'host') {
             state.opponentJoined = true;
             if (window.showToast) window.showToast('🎉 好友已进入房间！对战正式开始！');
-            sendAction({ type: 'SYNC', game: currentGame });
+            if (typeof state.onOpponentJoined === 'function') {
+              state.onOpponentJoined(msg);
+            } else {
+              sendAction({ type: 'SYNC', game: currentGame });
+            }
           }
         }
         if (state.onMessageCallback) {
@@ -110,12 +118,28 @@ window.ONLINE_NETWORK = (function() {
     }
   }
 
+  function setMessageHandler(cb) {
+    state.onMessageCallback = cb;
+  }
+
+  function setRoleChangeHandler(cb) {
+    state.onRoleChange = cb;
+    if (state.myRole) cb(state.myRole);
+  }
+
+  function setOpponentJoinedHandler(cb) {
+    state.onOpponentJoined = cb;
+  }
+
   return {
     state,
     initMqtt,
     sendAction,
     createRoom,
     copyLink,
-    joinRoom
+    joinRoom,
+    setMessageHandler,
+    setRoleChangeHandler,
+    setOpponentJoinedHandler
   };
 })();
