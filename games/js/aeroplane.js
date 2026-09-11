@@ -1226,19 +1226,26 @@
       ctx.restore();
     }
 
-    document.getElementById('modal-confirm-btn').addEventListener('click', () => {
-      AUDIO.play('click');
-      document.getElementById('game-modal').classList.remove('show');
-      if (STATE.winner) resetCurrentGame();
-    });
+    const modalBtn = document.getElementById('modal-confirm-btn');
+    if (modalBtn) {
+      modalBtn.addEventListener('click', () => {
+        if (typeof AUDIO !== 'undefined' && AUDIO.play) AUDIO.play('click');
+        const m = document.getElementById('game-modal') || document.getElementById('modal');
+        if (m) m.classList.remove('show');
+        if (STATE.winner && typeof resetCurrentGame === 'function') resetCurrentGame();
+      });
+    }
 
-    document.getElementById('restart-btn').addEventListener('click', () => {
-      AUDIO.play('click');
-      resetCurrentGame();
-      if (STATE.gameMode === 'ONLINE' && STATE.online.roomId) {
-        sendOnlineAction({ type: 'RESTART' });
-      }
-    });
+    const restartBtn = document.getElementById('restart-btn');
+    if (restartBtn) {
+      restartBtn.addEventListener('click', () => {
+        if (typeof AUDIO !== 'undefined' && AUDIO.play) AUDIO.play('click');
+        if (typeof resetCurrentGame === 'function') resetCurrentGame();
+        if (STATE.gameMode === 'ONLINE' && STATE.online && STATE.online.roomId && typeof sendOnlineAction === 'function') {
+          sendOnlineAction({ type: 'RESTART' });
+        }
+      });
+    }
 
     window.addEventListener('resize', () => {
       if (STATE.currentView === 'GAME') {

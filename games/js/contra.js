@@ -1,16 +1,38 @@
     // ==========================================================================
-    // 12. 魂斗罗 (CONTRA: 丛林突袭) 核心物理与关卡引擎
+    // 12. 魂斗罗 (CONTRA: 丛林突袭·无限远征) 核心物理与无限生成引擎
     // ==========================================================================
     function initContraGame() {
       STATE.contra.lives = 3;
-      STATE.contra.weapon = 'NORMAL';
+      STATE.contra.weapon = 'NORMAL'; // 'NORMAL', 'S', 'M', 'L', 'F', 'C'
+      STATE.contra.shield = 0;        // 能量护盾剩余层数 (0~3)
+      STATE.contra.hasDrone = false;  // 战术僚机
+      STATE.contra.droneAngle = 0;
+      STATE.contra.hasBoots = false;  // 极速战靴
+      STATE.contra.bossCount = 0;     // 已消灭 BOSS 数
       STATE.contra.score = 0;
       STATE.contra.cameraX = 0;
+      STATE.contra.distance = 0;      // 行进米数
+
+      // 无限地图流式生成器状态
+      STATE.contra.genX = -100;
+      STATE.contra.nextBossX = 1400;  // 首个 BOSS 出现位置
       STATE.contra.bossActive = false;
-      STATE.contra.bossDefeated = false;
+      STATE.contra.bossLockX = null;  // BOSS 战锁定的镜头位置
+      STATE.contra.bossArenaX = null; // BOSS 战竞技场基准坐标
+      STATE.contra.boss = null;
+      STATE.contra.bossAlertTimer = 0;
+      STATE.contra.screenShake = 0;
+
+      STATE.contra.platforms = [];
+      STATE.contra.enemies = [];
+      STATE.contra.capsules = [];
+      STATE.contra.pickups = [];
+      STATE.contra.bullets = [];
+      STATE.contra.enemyBullets = [];
+      STATE.contra.particles = [];
 
       resizeContraCanvas();
-      buildContraLevel();
+      buildInitialContraMap();
       resetContraPlayer();
       setupContraInputs();
       updateContraHUD();
@@ -26,76 +48,242 @@
       c.height = window.innerWidth <= 480 ? 240 : 310;
     }
 
-    function buildContraLevel() {
+    // --- 1. 无限地图流式生成系统 ---
+    function buildInitialContraMap() {
       const H = window.innerWidth <= 480 ? 240 : 310;
-      // 关卡平台定义 (x, y, w, h, isGround)
-      STATE.contra.platforms = [
-        // 初始草地地面 (宽幅出生平台，稳固防跌落)
-        { x: -100, y: H - 40, w: 540, h: 40, ground: true },
-        // 高架钢桥 1
-        { x: 180, y: H - 110, w: 180, h: 14, ground: false },
-        { x: 260, y: H - 175, w: 160, h: 14, ground: false },
+      STATE.contra.genX = -100;
 
-        // 水洼河谷断桥
-        { x: 490, y: H - 40, w: 320, h: 40, ground: true },
-        { x: 450, y: H - 100, w: 140, h: 14, ground: false },
-        { x: 610, y: H - 140, w: 160, h: 14, ground: false },
-        { x: 530, y: H - 200, w: 180, h: 14, ground: false },
+      // 初始安全出生地与起步跑道
+      STATE.contra.platforms.push(
+        { x: -100, y: H - 40, w: 620, h: 40, ground: true },
+        { x: 200, y: H - 110, w: 180, h: 14, ground: false },
+        { x: 320, y: H - 175, w: 160, h: 14, ground: false }
+      );
 
-        // 中段钢架与巨岩
-        { x: 860, y: H - 40, w: 460, h: 40, ground: true },
-        { x: 920, y: H - 110, w: 180, h: 14, ground: false },
-        { x: 1040, y: H - 170, w: 200, h: 14, ground: false },
+      // 初始小兵与第一个武器胶囊
+      STATE.contra.enemies.push(
+        { type: 'runner', x: 380, y: H - 75, vx: -1.2, hp: 1 },
+        { type: 'runner', x: 540, y: H - 75, vx: -1.2, hp: 1 }
+      );
+      STATE.contra.capsules.push(
+        { x: 240, y: 75, vx: 1.8, t: 0, type: 'S', alive: true }
+      );
 
-        // 要塞门前高低坡
-        { x: 1370, y: H - 40, w: 360, h: 40, ground: true },
-        { x: 1420, y: H - 120, w: 160, h: 14, ground: false },
-        { x: 1540, y: H - 190, w: 180, h: 14, ground: false },
+      STATE.contra.genX = 520;
+      updateMapStream();
+    }
 
-        // Boss 要塞大厅平地
-        { x: 1760, y: H - 40, w: 550, h: 40, ground: true },
-        { x: 1780, y: H - 120, w: 120, h: 14, ground: false }
-      ];
+    function updateMapStream() {
+      const c = document.getElementById('contra-canvas');
+      const cW = c ? c.width : 480;
+      const H = c ? c.height : 310;
+      const lookAhead = STATE.contra.cameraX + cW + 900;
 
-      // 重置敌兵与飞行胶囊
-      STATE.contra.enemies = [
-        { type: 'runner', x: 360, y: H - 75, vx: -1.2, hp: 1 },
-        { type: 'runner', x: 550, y: H - 75, vx: -1.2, hp: 1 },
-        { type: 'sniper', x: 680, y: H - 175, shootTimer: 60, hp: 2 },
-        { type: 'turret', x: 980, y: H - 75, angle: Math.PI, shootTimer: 90, hp: 4 },
-        { type: 'runner', x: 1100, y: H - 75, vx: -1.3, hp: 1 },
-        { type: 'sniper', x: 1200, y: H - 205, shootTimer: 75, hp: 2 },
-        { type: 'turret', x: 1480, y: H - 75, angle: Math.PI, shootTimer: 80, hp: 4 },
-        { type: 'runner', x: 1620, y: H - 75, vx: -1.4, hp: 1 }
-      ];
+      while (STATE.contra.genX < lookAhead) {
+        // 判断是否到达 BOSS 生成节点
+        if (STATE.contra.genX >= STATE.contra.nextBossX && !STATE.contra.boss) {
+          generateBossArena(H);
+        } else {
+          generateRandomWildernessSegment(H);
+        }
+      }
+    }
 
-      STATE.contra.capsules = [
-        { x: 220, y: 75, vx: 1.8, t: 0, type: 'S', alive: true },
-        { x: 750, y: 65, vx: 1.8, t: 0, type: 'M', alive: true },
-        { x: 1300, y: 70, vx: 1.8, t: 0, type: 'L', alive: true }
-      ];
+    function generateBossArena(H) {
+      const c = document.getElementById('contra-canvas');
+      const cW = c ? c.width : 480;
+      const arenaX = STATE.contra.genX;
+      const arenaWidth = Math.max(720, cW + 220);
 
-      STATE.contra.pickups = [];
-      STATE.contra.bullets = [];
-      STATE.contra.enemyBullets = [];
-      STATE.contra.particles = [];
+      STATE.contra.bossArenaX = arenaX;
 
-      // 初始化 Boss
-      STATE.contra.boss = {
-        x: 1980, y: H - 200, w: 120, h: 160,
-        coreHp: 65, maxCoreHp: 65,
-        leftTurretHp: 20, rightTurretHp: 20,
-        sniperHp: 15,
-        shootTimer: 0,
-        defeated: false
-      };
+      // BOSS 战专属决斗平地擂台 (前后重叠延伸，杜绝断崖悬空)
+      STATE.contra.platforms.push(
+        { x: arenaX - 120, y: H - 40, w: arenaWidth + 240, h: 40, ground: true, isArena: true },
+        { x: arenaX + 50, y: H - 100, w: 120, h: 14, ground: false },
+        { x: arenaX + 160, y: H - 160, w: 120, h: 14, ground: false }
+      );
+
+      // 实例化随机 BOSS (确保位于视口锁定时右侧)
+      spawnRandomBoss(arenaX, H, cW);
+      STATE.contra.genX += arenaWidth;
+    }
+
+    function generateRandomWildernessSegment(H) {
+      const startX = STATE.contra.genX;
+      const segmentTypes = ['JUNGLE_HILLS', 'CANYON_BRIDGES', 'OUTPOST_BARRICADE', 'FLOATING_RUINS'];
+      const type = segmentTypes[Math.floor(Math.random() * segmentTypes.length)];
+      let segLength = 480 + Math.floor(Math.random() * 160);
+
+      const lvl = Math.min(6, 1 + Math.floor(startX / 2500));
+
+      if (type === 'JUNGLE_HILLS') {
+        // 丛林地表 + 悬空跳板
+        const gap = Math.random() < 0.35 ? 70 : 0;
+        const w1 = Math.floor((segLength - gap) * 0.55);
+        const w2 = segLength - gap - w1;
+
+        STATE.contra.platforms.push(
+          { x: startX, y: H - 40, w: w1, h: 40, ground: true },
+          { x: startX + 120, y: H - 110, w: 150, h: 14, ground: false }
+        );
+        if (gap > 0) {
+          STATE.contra.platforms.push(
+            { x: startX + w1 + gap, y: H - 40, w: w2, h: 40, ground: true },
+            { x: startX + w1 - 20, y: H - 130, w: 110, h: 14, ground: false }
+          );
+        } else {
+          STATE.contra.platforms.push(
+            { x: startX + w1, y: H - 40, w: w2, h: 40, ground: true },
+            { x: startX + 280, y: H - 170, w: 140, h: 14, ground: false }
+          );
+        }
+
+        // 刷新敌兵
+        STATE.contra.enemies.push(
+          { type: 'runner', x: startX + 320, y: H - 75, vx: -(1.2 + lvl * 0.1), hp: 1 },
+          { type: 'sniper', x: startX + 180, y: H - 130, shootTimer: 80 - lvl * 5, hp: 2 }
+        );
+      } else if (type === 'CANYON_BRIDGES') {
+        // 悬空多层钢架断桥
+        STATE.contra.platforms.push(
+          { x: startX, y: H - 40, w: 140, h: 40, ground: true },
+          { x: startX + 110, y: H - 100, w: 150, h: 14, ground: false },
+          { x: startX + 240, y: H - 160, w: 150, h: 14, ground: false },
+          { x: startX + 360, y: H - 110, w: 140, h: 14, ground: false },
+          { x: startX + segLength - 120, y: H - 40, w: 120, h: 40, ground: true }
+        );
+
+        STATE.contra.enemies.push(
+          { type: 'sniper', x: startX + 300, y: H - 180, shootTimer: 70 - lvl * 5, hp: 2 },
+          { type: 'turret', x: startX + 410, y: H - 130, angle: Math.PI, shootTimer: 90 - lvl * 6, hp: 3 }
+        );
+      } else if (type === 'OUTPOST_BARRICADE') {
+        // 要塞外围防御工事
+        STATE.contra.platforms.push(
+          { x: startX, y: H - 40, w: segLength, h: 40, ground: true },
+          { x: startX + 90, y: H - 110, w: 170, h: 14, ground: false },
+          { x: startX + 230, y: H - 180, w: 160, h: 14, ground: false }
+        );
+
+        STATE.contra.enemies.push(
+          { type: 'runner', x: startX + 280, y: H - 75, vx: -(1.3 + lvl * 0.1), hp: 1 },
+          { type: 'runner', x: startX + 420, y: H - 75, vx: -(1.4 + lvl * 0.1), hp: 1 },
+          { type: 'turret', x: startX + 320, y: H - 75, angle: Math.PI, shootTimer: 85 - lvl * 5, hp: 4 }
+        );
+      } else {
+        // FLOATING_RUINS 阶梯悬浮石阶
+        STATE.contra.platforms.push(
+          { x: startX, y: H - 40, w: 180, h: 40, ground: true },
+          { x: startX + 150, y: H - 90, w: 130, h: 14, ground: false },
+          { x: startX + 260, y: H - 150, w: 140, h: 14, ground: false },
+          { x: startX + 380, y: H - 90, w: 130, h: 14, ground: false },
+          { x: startX + segLength - 160, y: H - 40, w: 160, h: 40, ground: true }
+        );
+
+        STATE.contra.enemies.push(
+          { type: 'runner', x: startX + 350, y: H - 75, vx: -(1.2 + lvl * 0.1), hp: 1 },
+          { type: 'sniper', x: startX + 320, y: H - 170, shootTimer: 75 - lvl * 5, hp: 2 }
+        );
+      }
+
+      // 飞行胶囊刷新概率 (40%)
+      if (Math.random() < 0.45) {
+        const weaponPool = ['S', 'M', 'L', 'F', 'C'];
+        const wType = weaponPool[Math.floor(Math.random() * weaponPool.length)];
+        STATE.contra.capsules.push({
+          x: startX + 120,
+          y: 65 + Math.random() * 25,
+          vx: 1.8,
+          t: Math.random() * 5,
+          type: wType,
+          alive: true
+        });
+      }
+
+      STATE.contra.genX += segLength;
+    }
+
+    // --- 2. 随机多形态 BOSS 生成器 ---
+    function spawnRandomBoss(arenaX, H, cW, overrideType) {
+      const lvl = STATE.contra.bossCount + 1;
+      const types = ['core', 'mech', 'alien'];
+      const chosenType = overrideType || types[Math.floor(Math.random() * types.length)];
+      if (!cW) cW = 480;
+
+      let bossObj = null;
+
+      if (chosenType === 'core') {
+        // 要塞感应核心 BOSS (固定在视口右侧)
+        const maxHp = 50 + lvl * 22;
+        const w = 120;
+        const h = 150;
+        bossObj = {
+          type: 'core',
+          name: `要塞异形核心 Lv.${lvl}`,
+          x: arenaX + cW - w - 20,
+          y: H - 190,
+          w: w,
+          h: h,
+          hp: maxHp,
+          maxHp: maxHp,
+          leftTurretHp: 18 + lvl * 6,
+          rightTurretHp: 18 + lvl * 6,
+          shootTimer: 0,
+          defeated: false
+        };
+      } else if (chosenType === 'mech') {
+        // 巨型重装步行机甲 BOSS (在擂台右半区域巡逻)
+        const maxHp = 60 + lvl * 25;
+        const w = 110;
+        const h = 135;
+        const maxX = arenaX + cW - w - 20;
+        const minX = arenaX + 150;
+        bossObj = {
+          type: 'mech',
+          name: `巨型重装机甲 Lv.${lvl}`,
+          x: maxX,
+          y: H - 175,
+          w: w,
+          h: h,
+          hp: maxHp,
+          maxHp: maxHp,
+          vx: -1.0,
+          minX: minX,
+          maxX: maxX,
+          shootTimer: 0,
+          walkAnim: 0,
+          defeated: false
+        };
+      } else {
+        // 异形浮空战舰 BOSS (在右上方优雅巡弋浮动)
+        const maxHp = 50 + lvl * 20;
+        const w = 130;
+        const h = 90;
+        bossObj = {
+          type: 'alien',
+          name: `异形浮空战舰 Lv.${lvl}`,
+          x: arenaX + cW - w - 25,
+          baseY: H - 200,
+          y: H - 200,
+          w: w,
+          h: h,
+          hp: maxHp,
+          maxHp: maxHp,
+          floatT: 0,
+          shootTimer: 0,
+          defeated: false
+        };
+      }
+
+      STATE.contra.boss = bossObj;
     }
 
     function resetContraPlayer() {
       const H = window.innerWidth <= 480 ? 240 : 310;
       const p = STATE.contra.player;
       p.x = Math.max(50, STATE.contra.cameraX + 40);
-      p.y = H - 40 - 18; // 出生稳立于地表，绝不产生穿透摔死
+      p.y = H - 40 - 18;
       p.vx = 0;
       p.vy = 0;
       p.onGround = true;
@@ -103,21 +291,35 @@
       p.crouch = false;
       p.aimUp = false;
       p.jumpAngle = 0;
-      p.invincibleTime = 120; // 2秒无敌金身
+      p.invincibleTime = 120; // 2秒无敌保护
     }
 
     function updateContraHUD() {
       const lifeDisplay = document.getElementById('contra-life-display');
-      if (lifeDisplay) lifeDisplay.textContent = `🔴 P1: ${STATE.contra.lives}命`;
+      if (lifeDisplay) {
+        const dist = Math.floor(STATE.contra.player.x / 10);
+        lifeDisplay.textContent = `🔴 ${STATE.contra.lives}命 | 🚩${dist}m | 👑${STATE.contra.bossCount}`;
+      }
 
       const weaponMap = {
-        'NORMAL': 'GUN: [ 普通单发 ]',
-        'S': 'GUN: [ 🔴 S 弹·五向散射 ]',
-        'M': 'GUN: [ 🟡 M 机枪·极速突突 ]',
-        'L': 'GUN: [ 🔵 L 激光·高能穿透 ]'
+        'NORMAL': 'GUN:[普通]',
+        'S': 'GUN:[🔴S散弹]',
+        'M': 'GUN:[🟡M机枪]',
+        'L': 'GUN:[🔵L激光]',
+        'F': 'GUN:[🟣F烈焰]',
+        'C': 'GUN:[🟢C追踪]'
       };
+
+      const gearIcons = [];
+      if (STATE.contra.shield > 0) gearIcons.push(`🛡️×${STATE.contra.shield}`);
+      if (STATE.contra.hasDrone) gearIcons.push(`🛸僚机`);
+      if (STATE.contra.hasBoots) gearIcons.push(`⚡战靴`);
+
+      const gearStr = gearIcons.length > 0 ? ` ${gearIcons.join(' ')}` : '';
       const weaponDisplay = document.getElementById('contra-weapon-display');
-      if (weaponDisplay) weaponDisplay.textContent = weaponMap[STATE.contra.weapon] || 'GUN: [ 普通 ]';
+      if (weaponDisplay) {
+        weaponDisplay.textContent = (weaponMap[STATE.contra.weapon] || 'GUN:[普通]') + gearStr;
+      }
     }
 
     function activateKonami30Lives() {
@@ -146,16 +348,13 @@
       const konamiSeq = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'KeyB', 'KeyA'];
       let konamiIdx = 0;
 
-      // 键盘监听
       window.onkeydown = (e) => {
         if (STATE.currentGame !== 'CONTRA') return;
 
-        // 屏蔽浏览器方向键和空格键默认页面滚动
         if (['KeyA', 'ArrowLeft', 'KeyD', 'ArrowRight', 'KeyW', 'ArrowUp', 'KeyS', 'ArrowDown', 'Space'].includes(e.code)) {
           e.preventDefault();
         }
 
-        // 键盘 Konami 秘籍检测
         if (e.code === konamiSeq[konamiIdx]) {
           konamiIdx++;
           if (konamiIdx === konamiSeq.length) {
@@ -193,13 +392,12 @@
         if (['KeyK', 'KeyX'].includes(e.code)) keys.jump = false;
       };
 
-      // 移动端虚拟按键事件
       const bindTouch = (id, onDown, onUp) => {
         const el = document.getElementById(id);
         if (!el) return;
         const down = (e) => { e.preventDefault(); el.classList.add('active'); onDown(); };
         const up = (e) => { e.preventDefault(); el.classList.remove('active'); onUp(); };
-        el.onmousedown = down; el.onmouseup = up;
+        el.onmousedown = down; el.onmouseup = up; el.onmouseleave = up;
         el.ontouchstart = down; el.ontouchend = up;
         el.ontouchcancel = up;
       };
@@ -212,42 +410,41 @@
       bindTouch('btn-contra-fire', () => { fireContraPlayer(); keys.fire = true; }, () => { keys.fire = false; });
       bindTouch('btn-contra-jump', () => { jumpContraPlayer(); keys.jump = true; }, () => { keys.jump = false; });
 
-      // 鼠标/触屏点击画面直接开火
       const c = document.getElementById('contra-canvas');
       if (c && !c._pointerBound) {
         c._pointerBound = true;
         c.addEventListener('pointerdown', (e) => {
           if (STATE.currentGame !== 'CONTRA') return;
-          const rect = c.getBoundingClientRect();
-          const clickX = e.clientX - rect.left;
-          const p = STATE.contra.player;
-          p.facing = (clickX + STATE.contra.cameraX >= p.x) ? 1 : -1;
           fireContraPlayer();
         });
       }
     }
 
     function jumpContraPlayer() {
+      AUDIO.init();
       const p = STATE.contra.player;
       if (p.onGround) {
-        // 如果按住下键+跳跃，执行穿透跳板下落
         if (STATE.contra.keys.down) {
-          p.y += 8;
+          // 趴下按跳穿透薄平台
+          p.y += 18;
           p.onGround = false;
+          p.vy = 2;
         } else {
-          p.vy = -9.2;
+          // 跳跃高度支持极速战靴加成
+          const jumpPower = STATE.contra.hasBoots ? -10.2 : -9.0;
+          p.vy = jumpPower;
           p.onGround = false;
           AUDIO.play('contra_jump');
         }
       }
     }
 
+    // --- 3. 玩家开火系统 (支持全新 F 弹、C 追踪弹与僚机协同) ---
     function fireContraPlayer() {
       AUDIO.init();
       const p = STATE.contra.player;
       const keys = STATE.contra.keys;
 
-      // 判定 8 向射击角度
       let angle = 0;
       if (p.onGround && p.crouch) {
         angle = p.facing === 1 ? 0 : Math.PI;
@@ -265,18 +462,17 @@
 
       const spawnX = p.x + (p.facing === 1 ? 14 : -14);
       const spawnY = p.crouch ? p.y + 12 : p.y - 8;
-
       const weapon = STATE.contra.weapon;
 
       if (weapon === 'NORMAL') {
         AUDIO.play('contra_shoot');
         STATE.contra.bullets.push({
           x: spawnX, y: spawnY,
-          vx: Math.cos(angle) * 8.5, vy: Math.sin(angle) * 8.5,
+          vx: Math.cos(angle) * 8.8, vy: Math.sin(angle) * 8.8,
           color: '#f8fafc', r: 3, dmg: 1
         });
       } else if (weapon === 'S') {
-        // 5 向扇形散弹！
+        // 5 向扇形散射
         AUDIO.play('contra_spread');
         const fanOffsets = [-0.35, -0.18, 0, 0.18, 0.35];
         fanOffsets.forEach(offset => {
@@ -292,8 +488,8 @@
         AUDIO.play('contra_shoot');
         STATE.contra.bullets.push({
           x: spawnX, y: spawnY,
-          vx: Math.cos(angle) * 10, vy: Math.sin(angle) * 10,
-          color: '#fbbf24', r: 3.5, dmg: 1
+          vx: Math.cos(angle) * 10.5, vy: Math.sin(angle) * 10.5,
+          color: '#fbbf24', r: 3.5, dmg: 1.1
         });
       } else if (weapon === 'L') {
         // 高能贯穿激光
@@ -301,12 +497,50 @@
         STATE.contra.bullets.push({
           x: spawnX, y: spawnY,
           vx: Math.cos(angle) * 13, vy: Math.sin(angle) * 13,
-          color: '#38bdf8', r: 5, dmg: 3, piercing: true
+          color: '#38bdf8', r: 5, dmg: 3.5, piercing: true
+        });
+      } else if (weapon === 'F') {
+        // 🟣 F 弹: 烈焰螺旋弹 (双螺旋旋转火球 + 范围爆破)
+        AUDIO.play('contra_spread');
+        for (let sign = -1; sign <= 1; sign += 2) {
+          STATE.contra.bullets.push({
+            type: 'flame',
+            x: spawnX, y: spawnY,
+            vx: Math.cos(angle) * 7.5, vy: Math.sin(angle) * 7.5,
+            orbitAngle: sign * Math.PI / 2,
+            orbitSpeed: 0.25 * sign,
+            color: '#ec4899', r: 6, dmg: 2.2
+          });
+        }
+      } else if (weapon === 'C') {
+        // 🟢 C 弹: 智能微型追踪飞弹
+        AUDIO.play('contra_shoot');
+        const count = 2;
+        for (let i = 0; i < count; i++) {
+          const spreadA = angle + (i === 0 ? -0.25 : 0.25);
+          STATE.contra.bullets.push({
+            type: 'missile',
+            x: spawnX, y: spawnY,
+            vx: Math.cos(spreadA) * 6.5, vy: Math.sin(spreadA) * 6.5,
+            color: '#10b981', r: 4.5, dmg: 2.5,
+            homingTimer: 8
+          });
+        }
+      }
+
+      // 战术僚机协同开火
+      if (STATE.contra.hasDrone) {
+        const droneX = p.x + Math.cos(STATE.contra.droneAngle) * 22;
+        const droneY = p.y - 26 + Math.sin(STATE.contra.droneAngle) * 8;
+        STATE.contra.bullets.push({
+          x: droneX, y: droneY,
+          vx: Math.cos(angle) * 10, vy: Math.sin(angle) * 10,
+          color: '#60a5fa', r: 3.5, dmg: 1.2
         });
       }
     }
 
-    // --- 主循环与物理更新 ---
+    // --- 4. 主循环与物理更新引擎 ---
     function startContraLoop() {
       if (STATE.contra.animId) cancelAnimationFrame(STATE.contra.animId);
 
@@ -316,18 +550,22 @@
 
       function loop(now) {
         if (STATE.currentGame === 'CONTRA') {
-          if (!now) now = performance.now();
-          let elapsed = now - lastTime;
-          lastTime = now;
-          if (elapsed > 100) elapsed = 100;
-          accumulator += elapsed;
+          try {
+            if (!now) now = performance.now();
+            let elapsed = now - lastTime;
+            lastTime = now;
+            if (elapsed > 100) elapsed = 100;
+            accumulator += elapsed;
 
-          while (accumulator >= FIXED_STEP) {
-            updateContraPhysics();
-            accumulator -= FIXED_STEP;
+            while (accumulator >= FIXED_STEP) {
+              updateContraPhysics();
+              accumulator -= FIXED_STEP;
+            }
+
+            renderContra();
+          } catch (err) {
+            console.error('Contra loop error caught:', err);
           }
-
-          renderContra();
           STATE.contra.animId = requestAnimationFrame(loop);
         }
       }
@@ -337,38 +575,42 @@
     function updateContraPhysics() {
       const p = STATE.contra.player;
       const keys = STATE.contra.keys;
+      const c = document.getElementById('contra-canvas');
+      const cW = c ? c.width : 480;
+      const cH = c ? c.height : 310;
+      const H = cH;
 
-      // 连续开火支持 (按住开火键且武器为 M 连发)
-      if (keys.fire && (STATE.contra.weapon === 'M' || Math.random() < 0.15)) {
+      // 连续开火支持
+      if (keys.fire && (STATE.contra.weapon === 'M' || Math.random() < 0.12)) {
         fireContraPlayer();
       }
 
-      // 移动与朝向
+      // 移动速度 (极速战靴加成)
+      const moveSpeed = STATE.contra.hasBoots ? 3.6 : 2.6;
       p.crouch = keys.down && p.onGround;
       if (!p.crouch) {
-        if (keys.left) { p.vx = -2.6; p.facing = -1; }
-        else if (keys.right) { p.vx = 2.6; p.facing = 1; }
+        if (keys.left) { p.vx = -moveSpeed; p.facing = -1; }
+        else if (keys.right) { p.vx = moveSpeed; p.facing = 1; }
         else { p.vx = 0; }
       } else {
         p.vx = 0;
       }
 
-      // 重力加速度与终端速度保护
       p.vy = Math.min(p.vy + 0.44, 11);
       p.x += p.vx;
       p.y += p.vy;
 
-      // 跳跃空中翻滚动画
-      if (!p.onGround) {
-        p.jumpAngle += 0.35 * p.facing;
-      } else {
-        p.jumpAngle = 0;
-      }
+      if (!p.onGround) p.jumpAngle += 0.35 * p.facing;
+      else p.jumpAngle = 0;
 
-      // 无敌时间衰减
       if (p.invincibleTime > 0) p.invincibleTime--;
 
-      // 平台碰撞判定 (从上方落下吸附)
+      // 僚机轨道旋转
+      if (STATE.contra.hasDrone) {
+        STATE.contra.droneAngle = (STATE.contra.droneAngle + 0.08) % (Math.PI * 2);
+      }
+
+      // 平台碰撞判定
       p.onGround = false;
       const pHalfW = 10;
       const pFootY = p.y + 18;
@@ -383,73 +625,114 @@
         }
       });
 
-      // 坠坑死亡检测
-      const c = document.getElementById('contra-canvas');
-      const limitY = (c && c.height) ? c.height + 40 : 350;
+      // 坠坑死亡判定
+      const limitY = cH + 40;
       if (p.y > limitY) {
         killContraPlayer();
       }
 
-      // 摄像机横向推进行走（经典不能后退）
-      if (p.x - STATE.contra.cameraX > (c ? c.width * 0.45 : 200) && STATE.contra.cameraX < 1720) {
-        STATE.contra.cameraX = p.x - (c ? c.width * 0.45 : 200);
+      // 触发 BOSS 战遭遇判定：当玩家推进进入 BOSS 竞技场
+      if (STATE.contra.boss && !STATE.contra.boss.defeated && !STATE.contra.bossActive && STATE.contra.bossArenaX !== null) {
+        if (p.x >= STATE.contra.bossArenaX + cW * 0.35) {
+          STATE.contra.cameraX = STATE.contra.bossArenaX;
+          STATE.contra.bossLockX = STATE.contra.bossArenaX;
+          STATE.contra.bossActive = true;
+          STATE.contra.bossAlertTimer = 180; // 3秒突袭警报特效
+          AUDIO.play('contra_explode');
+          showToast(`🚨 警报！已遭遇强敌【${STATE.contra.boss.name}】！全力开火！`, 4000);
+        }
       }
-      if (p.x < STATE.contra.cameraX + 12) p.x = STATE.contra.cameraX + 12;
 
-      // 进入 Boss 战检测
-      if (STATE.contra.cameraX >= 1700 && !STATE.contra.bossActive) {
-        STATE.contra.bossActive = true;
-        showToast('🚨 警报！已抵达第一关基地防线要塞！集火轰爆中央感应核心！', 4000);
+      // 摄像机横向推进行走与 BOSS 战锁定
+      if (STATE.contra.bossActive && STATE.contra.bossLockX !== null) {
+        // 锁定在 BOSS 擂台内，玩家在当前屏幕范围内决战
+        const lockX = STATE.contra.bossLockX;
+        STATE.contra.cameraX = lockX;
+        if (p.x < lockX + 16) p.x = lockX + 16;
+        if (p.x > lockX + cW - 24) p.x = lockX + cW - 24;
+      } else {
+        // 自由无限推进
+        if (p.x - STATE.contra.cameraX > cW * 0.45) {
+          STATE.contra.cameraX = p.x - cW * 0.45;
+        }
+        if (p.x < STATE.contra.cameraX + 12) p.x = STATE.contra.cameraX + 12;
       }
 
-      // 1. 子弹更新与碰撞
+      if (STATE.contra.bossAlertTimer > 0) STATE.contra.bossAlertTimer--;
+      if (STATE.contra.screenShake > 0) STATE.contra.screenShake--;
+
+      // 动态无限地图扩展更新
+      updateMapStream();
+
+      // 1. 玩家子弹更新与追踪逻辑
       STATE.contra.bullets.forEach(b => {
-        b.x += b.vx; b.y += b.vy;
+        if (b.type === 'missile') {
+          b.homingTimer--;
+          if (b.homingTimer <= 0) {
+            // 索敌最近敌人或 BOSS
+            let target = null;
+            let minDist = 380;
+            if (STATE.contra.bossActive && STATE.contra.boss && !STATE.contra.boss.defeated) {
+              target = { x: STATE.contra.boss.x + STATE.contra.boss.w / 2, y: STATE.contra.boss.y + STATE.contra.boss.h / 2 };
+            } else {
+              STATE.contra.enemies.forEach(en => {
+                const dist = Math.hypot(en.x - b.x, en.y - b.y);
+                if (dist < minDist) { minDist = dist; target = en; }
+              });
+            }
+            if (target) {
+              const desiredAngle = Math.atan2(target.y - b.y, target.x - b.x);
+              const curAngle = Math.atan2(b.vy, b.vx);
+              let diff = desiredAngle - curAngle;
+              while (diff < -Math.PI) diff += Math.PI * 2;
+              while (diff > Math.PI) diff -= Math.PI * 2;
+              const newAngle = curAngle + diff * 0.12;
+              const spd = 7.5;
+              b.vx = Math.cos(newAngle) * spd;
+              b.vy = Math.sin(newAngle) * spd;
+            }
+          }
+        }
+        b.x += b.vx;
+        b.y += b.vy;
       });
-      // 出屏幕销毁
-      const cW = c ? c.width : 480;
-      const cH = c ? c.height : 310;
-      STATE.contra.bullets = STATE.contra.bullets.filter(b => b.x > STATE.contra.cameraX - 20 && b.x < STATE.contra.cameraX + cW + 20 && b.y > -20 && b.y < cH + 20);
 
-      // 敌方子弹更新
+      // 2. 敌方子弹更新
       STATE.contra.enemyBullets.forEach(eb => {
-        eb.x += eb.vx; eb.y += eb.vy;
-        // 击中主角
+        eb.x += eb.vx;
+        eb.y += eb.vy;
         if (p.invincibleTime <= 0 && Math.hypot(eb.x - p.x, eb.y - (p.crouch ? p.y + 10 : p.y)) < 16) {
           killContraPlayer();
         }
       });
-      STATE.contra.enemyBullets = STATE.contra.enemyBullets.filter(eb => eb.x > STATE.contra.cameraX - 50 && eb.x < STATE.contra.cameraX + cW + 50);
 
-      // 2. 敌兵更新与受击
+      // 3. 敌兵更新与受击检测
       STATE.contra.enemies.forEach(en => {
         if (en.type === 'runner') {
           en.x += en.vx;
-          // 触碰主角
           if (p.invincibleTime <= 0 && Math.hypot(en.x - p.x, en.y - p.y) < 20) {
             killContraPlayer();
           }
         } else if (en.type === 'sniper') {
           en.shootTimer--;
-          if (en.shootTimer <= 0 && Math.abs(en.x - p.x) < 320) {
+          if (en.shootTimer <= 0 && Math.abs(en.x - p.x) < 340) {
             en.shootTimer = 110;
             const a = Math.atan2(p.y - en.y, p.x - en.x);
             STATE.contra.enemyBullets.push({ x: en.x, y: en.y, vx: Math.cos(a) * 3.5, vy: Math.sin(a) * 3.5 });
           }
         } else if (en.type === 'turret') {
           en.shootTimer--;
-          if (en.shootTimer <= 0 && Math.abs(en.x - p.x) < 280) {
-            en.shootTimer = 130;
+          if (en.shootTimer <= 0 && Math.abs(en.x - p.x) < 300) {
+            en.shootTimer = 120;
             const a = Math.atan2(p.y - en.y, p.x - en.x);
             STATE.contra.enemyBullets.push({ x: en.x, y: en.y, vx: Math.cos(a) * 3.2, vy: Math.sin(a) * 3.2 });
           }
         }
 
-        // 子弹打击敌人
         STATE.contra.bullets.forEach(b => {
           if (Math.hypot(b.x - en.x, b.y - en.y) < 18) {
             en.hp -= b.dmg;
-            if (!b.piercing) b.y = -999; // 销毁子弹
+            if (!b.piercing) b.y = -999;
             if (en.hp <= 0) {
               AUDIO.play('contra_explode');
               STATE.contra.score += 100;
@@ -458,9 +741,8 @@
           }
         });
       });
-      STATE.contra.enemies = STATE.contra.enemies.filter(en => en.hp > 0 && en.x > STATE.contra.cameraX - 80);
 
-      // 3. 飞行胶囊
+      // 4. 飞行武器胶囊
       STATE.contra.capsules.forEach(cap => {
         if (!cap.alive) return;
         cap.t += 0.05;
@@ -472,85 +754,292 @@
             cap.alive = false;
             AUDIO.play('contra_explode');
             spawnExplosion(cap.x, cap.y);
-            // 掉落武器徽章
-            STATE.contra.pickups.push({ x: cap.x, y: cap.y, vy: -3, type: cap.type });
+            STATE.contra.pickups.push({
+              x: cap.x, y: cap.y, vy: -3,
+              type: cap.type, isArtifact: false,
+              label: cap.type, color: '#ef4444'
+            });
           }
         });
       });
 
-      // 4. 拾取物掉落
+      // 5. 装备战利品掉落物物理与拾取
       STATE.contra.pickups.forEach(pick => {
-        pick.vy += 0.2;
+        pick.vy = (pick.vy || 0) + 0.22;
         pick.y += pick.vy;
-        if (pick.y > cH - 50) { pick.y = cH - 50; pick.vy = 0; }
+        if (pick.vx) {
+          pick.x += pick.vx;
+          pick.vx *= 0.96;
+        }
+
+        // 地面吸附与弹性
+        if (pick.y > cH - 50) {
+          pick.y = cH - 50;
+          if (Math.abs(pick.vy) > 1) pick.vy = -pick.vy * 0.4;
+          else pick.vy = 0;
+        }
 
         if (Math.hypot(pick.x - p.x, pick.y - p.y) < 24) {
           AUDIO.play('contra_30');
-          STATE.contra.weapon = pick.type;
-          showToast(`🔫 拾取强力神兵: ${pick.type} 弹！`, 2000);
-          updateContraHUD();
-          pick.y = 999;
+          handlePickupItem(pick);
+          pick.y = 999; // 标记拾取销毁
         }
       });
-      STATE.contra.pickups = STATE.contra.pickups.filter(pick => pick.y < 500);
 
-      // 5. Boss 战逻辑
-      if (STATE.contra.bossActive && !STATE.contra.boss.defeated) {
+      // 6. 多形态 BOSS 行为引擎
+      if (STATE.contra.bossActive && STATE.contra.boss && !STATE.contra.boss.defeated) {
         const boss = STATE.contra.boss;
         boss.shootTimer++;
 
-        // 定时双管激光发射
-        if (boss.shootTimer % 90 === 0) {
-          if (boss.leftTurretHp > 0) {
-            STATE.contra.enemyBullets.push({ x: boss.x + 20, y: boss.y + 110, vx: -4.2, vy: 0 });
-          }
-          if (boss.rightTurretHp > 0) {
-            STATE.contra.enemyBullets.push({ x: boss.x + 70, y: boss.y + 110, vx: -3.8, vy: 1.2 });
-          }
-        }
-
-        // 子弹打击 Boss 部位
-        STATE.contra.bullets.forEach(b => {
-          // 左炮台
-          if (boss.leftTurretHp > 0 && Math.hypot(b.x - (boss.x + 20), b.y - (boss.y + 110)) < 22) {
-            boss.leftTurretHp -= b.dmg;
-            if (!b.piercing) b.y = -999;
-            if (boss.leftTurretHp <= 0) spawnExplosion(boss.x + 20, boss.y + 110);
-          }
-          // 右炮台
-          if (boss.rightTurretHp > 0 && Math.hypot(b.x - (boss.x + 70), b.y - (boss.y + 110)) < 22) {
-            boss.rightTurretHp -= b.dmg;
-            if (!b.piercing) b.y = -999;
-            if (boss.rightTurretHp <= 0) spawnExplosion(boss.x + 70, boss.y + 110);
-          }
-          // 中央核心
-          if (Math.hypot(b.x - (boss.x + 45), b.y - (boss.y + 60)) < 25) {
-            boss.coreHp -= b.dmg;
-            if (!b.piercing) b.y = -999;
-            if (boss.coreHp <= 0 && !boss.defeated) {
-              boss.defeated = true;
-              AUDIO.play('contra_explode');
-              for (let k = 0; k < 25; k++) {
-                setTimeout(() => {
-                  spawnExplosion(boss.x + Math.random() * 100, boss.y + Math.random() * 120);
-                }, k * 90);
-              }
-              setTimeout(() => {
-                showModal('通关大捷！', '<h3>🏆 MISSION ACCOMPLISHED!</h3><br><p>恭喜通关第一关【丛林突袭】！要塞核心已被彻底摧毁！</p>');
-              }, 2600);
+        if (boss.type === 'core') {
+          // 要塞核心攻击
+          if (boss.shootTimer % 80 === 0) {
+            if (boss.leftTurretHp > 0) {
+              STATE.contra.enemyBullets.push({ x: boss.x + 20, y: boss.y + 110, vx: -4.2, vy: 0 });
+            }
+            if (boss.rightTurretHp > 0) {
+              STATE.contra.enemyBullets.push({ x: boss.x + 70, y: boss.y + 110, vx: -3.8, vy: 1.0 });
             }
           }
-        });
+          if (boss.shootTimer % 130 === 0) {
+            // 中央核心爆发 3 向火球
+            for (let angleOff of [-0.25, 0, 0.25]) {
+              STATE.contra.enemyBullets.push({
+                x: boss.x + 45, y: boss.y + 60,
+                vx: -4.0 * Math.cos(angleOff), vy: 4.0 * Math.sin(angleOff)
+              });
+            }
+          }
+
+          // 核心受击 (机体与能量核双层判定)
+          STATE.contra.bullets.forEach(b => {
+            if (b.x > boss.x && b.x < boss.x + boss.w && b.y > boss.y && b.y < boss.y + boss.h) {
+              const isCrit = Math.hypot(b.x - (boss.x + 45), b.y - (boss.y + 60)) < 28;
+              boss.hp -= b.dmg * (isCrit ? 1.5 : 1.0);
+              if (!b.piercing) b.y = -999;
+              if (boss.hp <= 0 && !boss.defeated) triggerBossDefeat(boss);
+            }
+          });
+        } else if (boss.type === 'mech') {
+          // 步行机甲巡逻与震地攻击
+          boss.x += boss.vx;
+          boss.walkAnim += 0.12;
+          if (boss.x < boss.minX || boss.x > boss.maxX) {
+            boss.vx = -boss.vx;
+            STATE.contra.screenShake = 12; // 转身震地
+          }
+
+          // 加特林机枪扫射
+          if (boss.shootTimer % 75 < 20 && boss.shootTimer % 6 === 0) {
+            STATE.contra.enemyBullets.push({
+              x: boss.x - 10, y: boss.y + 70,
+              vx: -5.2, vy: (Math.random() - 0.5) * 0.8
+            });
+          }
+          // 高抛迫击炮弹
+          if (boss.shootTimer % 150 === 0) {
+            STATE.contra.enemyBullets.push({
+              x: boss.x + 30, y: boss.y + 10,
+              vx: -3.8, vy: -5.5, isMortar: true
+            });
+          }
+
+          // 机甲全域受击判定
+          STATE.contra.bullets.forEach(b => {
+            if (b.x > boss.x && b.x < boss.x + boss.w && b.y > boss.y && b.y < boss.y + boss.h) {
+              boss.hp -= b.dmg;
+              if (!b.piercing) b.y = -999;
+              if (boss.hp <= 0 && !boss.defeated) triggerBossDefeat(boss);
+            }
+          });
+        } else if (boss.type === 'alien') {
+          // 浮空母舰正弦悬浮
+          boss.floatT += 0.04;
+          boss.y = boss.baseY + Math.sin(boss.floatT) * 32;
+
+          // 定时下射扩散高能光束
+          if (boss.shootTimer % 90 === 0) {
+            for (let a of [-0.3, 0, 0.3]) {
+              STATE.contra.enemyBullets.push({
+                x: boss.x + 30, y: boss.y + 80,
+                vx: -3.6 + Math.sin(a) * 2, vy: 3.2
+              });
+            }
+          }
+          // 360° 六向等离子光球
+          if (boss.shootTimer % 180 === 0) {
+            for (let k = 0; k < 6; k++) {
+              const rad = (k * Math.PI) / 3;
+              STATE.contra.enemyBullets.push({
+                x: boss.x + boss.w / 2, y: boss.y + boss.h / 2,
+                vx: Math.cos(rad) * 3.4, vy: Math.sin(rad) * 3.4
+              });
+            }
+          }
+
+          STATE.contra.bullets.forEach(b => {
+            if (b.x > boss.x && b.x < boss.x + boss.w && b.y > boss.y && b.y < boss.y + boss.h) {
+              boss.hp -= b.dmg;
+              if (!b.piercing) b.y = -999;
+              if (boss.hp <= 0 && !boss.defeated) triggerBossDefeat(boss);
+            }
+          });
+        }
       }
 
-      // 粒子更新
+      // 7. 粒子衰减
       STATE.contra.particles.forEach(pt => {
         pt.x += pt.vx; pt.y += pt.vy; pt.life -= 0.03;
       });
       STATE.contra.particles = STATE.contra.particles.filter(pt => pt.life > 0);
+
+      // 8. 内存回收垃圾清理 (GC) - 保持 60 FPS
+      const minX = STATE.contra.cameraX - 350;
+      STATE.contra.platforms = STATE.contra.platforms.filter(plat => plat.x + plat.w > minX);
+      STATE.contra.enemies = STATE.contra.enemies.filter(en => en.hp > 0 && en.x > minX);
+      STATE.contra.capsules = STATE.contra.capsules.filter(cap => cap.alive && cap.x > minX);
+      STATE.contra.pickups = STATE.contra.pickups.filter(pick => pick.y < 500 && pick.x > minX);
+      STATE.contra.bullets = STATE.contra.bullets.filter(b => b.x > minX && b.x < STATE.contra.cameraX + cW + 40 && b.y > -30 && b.y < cH + 30);
+      STATE.contra.enemyBullets = STATE.contra.enemyBullets.filter(eb => eb.x > minX && eb.x < STATE.contra.cameraX + cW + 60 && eb.y < cH + 50);
+
+      updateContraHUD();
     }
 
+    // --- 5. BOSS 击溃大爆炸与神装爆破掉落 ---
+    function triggerBossDefeat(boss) {
+      if (!boss || boss.defeated) return;
+      boss.defeated = true;
+
+      try {
+        if (typeof AUDIO !== 'undefined' && AUDIO.play) AUDIO.play('contra_explode');
+
+        const bx = boss.x;
+        const by = boss.y;
+        const bw = boss.w || 100;
+        const bh = boss.h || 100;
+        const bName = boss.name || '巨兽 BOSS';
+
+        // 震撼连续多级爆炸
+        for (let k = 0; k < 30; k++) {
+          setTimeout(() => {
+            spawnExplosion(bx + Math.random() * bw, by + Math.random() * bh);
+          }, k * 70);
+        }
+
+        const lvl = STATE.contra.bossCount + 1;
+        STATE.contra.score += 3000 * lvl;
+        STATE.contra.bossCount++;
+
+        // 随机喷发 2~3 件装备与神兵！
+        setTimeout(() => {
+          try {
+            spawnBossLootDrops(bx, by, bw, bh);
+          } catch(e) {
+            console.error('Loot drop error:', e);
+          }
+          // 解除摄像机锁定，重置 BOSS 战状态，让玩家拾取神装后继续向无限深处挺进！
+          STATE.contra.bossActive = false;
+          STATE.contra.bossLockX = null;
+          STATE.contra.boss = null;
+          STATE.contra.bossArenaX = null;
+          STATE.contra.nextBossX = STATE.contra.player.x + 1400 + Math.random() * 400;
+          if (typeof showToast === 'function') showToast(`🏆 强敌【${bName}】已被彻底歼灭！神装掉落！向前冲刺！`, 4000);
+        }, 1800);
+      } catch (err) {
+        console.error('triggerBossDefeat error caught:', err);
+        // 保底解除锁定，确保绝对不卡死
+        STATE.contra.bossActive = false;
+        STATE.contra.bossLockX = null;
+        STATE.contra.boss = null;
+        STATE.contra.bossArenaX = null;
+      }
+    }
+
+    function spawnBossLootDrops(bx, by, bw, bh) {
+      const dropCount = 2 + Math.floor(Math.random() * 2); // 2~3件
+      const allDrops = [
+        { type: 'S', isArtifact: false, label: 'S 散弹', color: '#ef4444' },
+        { type: 'M', isArtifact: false, label: 'M 机枪', color: '#fbbf24' },
+        { type: 'L', isArtifact: false, label: 'L 激光', color: '#38bdf8' },
+        { type: 'F', isArtifact: false, label: 'F 烈焰', color: '#ec4899' },
+        { type: 'C', isArtifact: false, label: 'C 追踪', color: '#10b981' },
+        { type: 'SHIELD', isArtifact: true, label: '🛡️能量护盾', color: '#6366f1' },
+        { type: 'DRONE', isArtifact: true, label: '🛸战术僚机', color: '#06b6d4' },
+        { type: 'BOOTS', isArtifact: true, label: '⚡极速战靴', color: '#eab308' },
+        { type: 'HEART', isArtifact: true, label: '💖强化血清', color: '#f43f5e' }
+      ];
+
+      // 洗牌抽取
+      const shuffled = allDrops.sort(() => Math.random() - 0.5);
+      const centerX = (bx !== undefined ? bx : STATE.contra.player.x + 100) + (bw || 80) / 2;
+      const centerY = (by !== undefined ? by : STATE.contra.player.y - 40) + (bh || 80) / 2;
+      for (let i = 0; i < dropCount; i++) {
+        const item = shuffled[i];
+        const angle = -Math.PI / 2 + (i - (dropCount - 1) / 2) * 0.5;
+        const speed = 4.5 + Math.random() * 2.5;
+        STATE.contra.pickups.push({
+          x: centerX,
+          y: centerY,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          type: item.type,
+          isArtifact: item.isArtifact,
+          label: item.label,
+          color: item.color
+        });
+      }
+    }
+
+    // --- 6. 拾取物与神装赋予逻辑 ---
+    function handlePickupItem(pick) {
+      if (!pick.isArtifact) {
+        // 主武器切换
+        STATE.contra.weapon = pick.type;
+        const names = { 'S': '🔴 S 散弹', 'M': '🟡 M 机枪', 'L': '🔵 L 激光', 'F': '🟣 F 烈焰螺旋弹', 'C': '🟢 C 智能追踪弹' };
+        showToast(`🔫 装备主战神兵: ${names[pick.type] || pick.type}！`, 2500);
+      } else {
+        // 被动战术装备赋予
+        if (pick.type === 'SHIELD') {
+          STATE.contra.shield = Math.min(3, STATE.contra.shield + 2);
+          showToast(`🛡️ 获得【能量力场护盾】！可吸收 2 次致命攻击！`, 3000);
+        } else if (pick.type === 'DRONE') {
+          STATE.contra.hasDrone = true;
+          showToast(`🛸 启动【战术战斗僚机】！协同发射高能等离子光束！`, 3000);
+        } else if (pick.type === 'BOOTS') {
+          STATE.contra.hasBoots = true;
+          showToast(`⚡ 装备【极速战靴】！移动速度 +35%，跳跃高度强化！`, 3000);
+        } else if (pick.type === 'HEART') {
+          STATE.contra.lives += 1;
+          showToast(`💖 注射【强化血清】！生命值 +1！`, 2500);
+        }
+      }
+      updateContraHUD();
+    }
+
+    // --- 7. 主角伤害与终局战报结算 ---
     function killContraPlayer() {
+      // 能量护盾抵御检测
+      if (STATE.contra.shield > 0) {
+        STATE.contra.shield--;
+        STATE.contra.player.invincibleTime = 100; // 1.6 秒绝对保护
+        AUDIO.play('contra_30');
+
+        // 护盾爆碎粒子
+        for (let i = 0; i < 20; i++) {
+          STATE.contra.particles.push({
+            x: STATE.contra.player.x,
+            y: STATE.contra.player.y,
+            vx: (Math.random() - 0.5) * 7,
+            vy: (Math.random() - 0.5) * 7,
+            life: 1.0,
+            color: '#38bdf8'
+          });
+        }
+        showToast(`🛡️ 能量力场抵挡了致命创伤！剩余护盾: ${STATE.contra.shield} 层！`, 2000);
+        updateContraHUD();
+        return;
+      }
+
       AUDIO.play('contra_explode');
       spawnExplosion(STATE.contra.player.x, STATE.contra.player.y);
       STATE.contra.lives--;
@@ -558,8 +1047,16 @@
       updateContraHUD();
 
       if (STATE.contra.lives <= 0) {
+        STATE.winner = 2;
+        const dist = Math.floor(STATE.contra.player.x / 10);
         setTimeout(() => {
-          showModal('GAME OVER', '<h3>💀 阵亡！生命值耗尽！</h3><br><p>别灰心！点击右上角【⚡ 30条命秘籍】直接重出江湖！</p>');
+          showModal('💀 最终远征战报 (MISSION REPORT)', `
+            <h3>🎖️ 魂斗罗·终极极限远征</h3><br>
+            <p><strong>🏃 极限挺进距离：</strong><b style="color:#38bdf8; font-size:1.1rem;">${dist} 米</b></p><br>
+            <p><strong>👑 斩杀 BOSS 总数：</strong><b style="color:#fbbf24; font-size:1.1rem;">${STATE.contra.bossCount} 尊</b></p><br>
+            <p><strong>⭐ 最终战绩积分：</strong><b style="color:#ef4444; font-size:1.1rem;">${STATE.contra.score} 分</b></p><br>
+            <p>点击下方按钮随时再次重开，向更远未知战场挺进！</p>
+          `);
         }, 1000);
       } else {
         resetContraPlayer();
@@ -567,27 +1064,36 @@
     }
 
     function spawnExplosion(x, y) {
-      for (let i = 0; i < 14; i++) {
+      for (let i = 0; i < 16; i++) {
         STATE.contra.particles.push({
           x: x, y: y,
-          vx: (Math.random() - 0.5) * 6,
-          vy: (Math.random() - 0.5) * 6,
+          vx: (Math.random() - 0.5) * 6.5,
+          vy: (Math.random() - 0.5) * 6.5,
           life: 1.0,
           color: ['#ef4444', '#f59e0b', '#fbbf24', '#ffffff'][Math.floor(Math.random() * 4)]
         });
       }
     }
 
-    // --- Canvas 绘制 ---
+    // --- 8. Canvas 极致渲染引擎 ---
     function renderContra() {
       const c = document.getElementById('contra-canvas');
       if (!c) return;
       const ctx = c.getContext('2d');
       const camX = STATE.contra.cameraX;
 
+      // 屏幕震动偏移
+      let shakeOffsetX = 0, shakeOffsetY = 0;
+      if (STATE.contra.screenShake > 0) {
+        shakeOffsetX = (Math.random() - 0.5) * 6;
+        shakeOffsetY = (Math.random() - 0.5) * 6;
+      }
+
+      ctx.save();
+      ctx.translate(shakeOffsetX, shakeOffsetY);
       ctx.clearRect(0, 0, c.width, c.height);
 
-      // 远景夜空渐变 (深邃丛林夜幕)
+      // 1. 无限视差夜空背景
       const skyGrad = ctx.createLinearGradient(0, 0, 0, c.height);
       skyGrad.addColorStop(0, '#030712');
       skyGrad.addColorStop(0.5, '#0b132b');
@@ -595,69 +1101,72 @@
       ctx.fillStyle = skyGrad;
       ctx.fillRect(0, 0, c.width, c.height);
 
-      // 远景月亮与夜云光晕
+      // 远景月亮 (视差微动)
+      const moonX = ((c.width * 0.82 - camX * 0.05) % (c.width + 100) + c.width + 100) % (c.width + 100);
       ctx.fillStyle = 'rgba(254, 240, 138, 0.25)';
       ctx.beginPath();
-      ctx.arc(c.width * 0.82, 55, 36, 0, Math.PI * 2);
+      ctx.arc(moonX, 55, 36, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = '#fef08a';
       ctx.beginPath();
-      ctx.arc(c.width * 0.82, 55, 26, 0, Math.PI * 2);
+      ctx.arc(moonX, 55, 26, 0, Math.PI * 2);
       ctx.fill();
 
-      // 视差背景瀑布流水 (动态流动白浪)
+      // 无限视差瀑布流
       const flowT = (Date.now() * 0.008) % 30;
+      const waterX = ((200 - camX * 0.15) % 400 + 400) % 400;
       ctx.fillStyle = '#1e3a5f';
-      ctx.fillRect(140 - (camX * 0.15) % 300, 60, 35, c.height - 100);
+      ctx.fillRect(waterX, 60, 35, c.height - 100);
       ctx.fillStyle = 'rgba(255,255,255,0.45)';
       for (let fy = 60 + flowT; fy < c.height - 40; fy += 25) {
-        ctx.fillRect(142 - (camX * 0.15) % 300, fy, 31, 3);
+        ctx.fillRect(waterX + 2, fy, 31, 3);
       }
 
-      // 视差背景丛林树影 (双层视差)
+      // 无限循环丛林树影 (双层视差)
       ctx.fillStyle = '#062817';
-      for (let i = -1; i < 10; i++) {
-        const treeX = i * 120 - (camX * 0.2) % 120;
+      for (let i = -1; i < Math.ceil(c.width / 110) + 2; i++) {
+        const treeX = ((i * 110 - camX * 0.2) % (c.width + 110) + c.width + 110) % (c.width + 110) - 50;
         ctx.beginPath();
         ctx.moveTo(treeX, c.height);
-        ctx.lineTo(treeX + 60, c.height - 150);
-        ctx.lineTo(treeX + 120, c.height);
+        ctx.lineTo(treeX + 55, c.height - 150);
+        ctx.lineTo(treeX + 110, c.height);
         ctx.fill();
       }
 
       ctx.save();
       ctx.translate(-camX, 0);
 
-      // 绘制平台 (地面与钢架横梁)
+      // 2. 绘制平台 (地面、高架钢梁与 BOSS 擂台)
       STATE.contra.platforms.forEach(plat => {
         if (plat.ground) {
-          // 地表生机盎然的青苔与厚土
           const groundGrad = ctx.createLinearGradient(0, plat.y, 0, plat.y + plat.h);
-          groundGrad.addColorStop(0, '#15803d');
-          groundGrad.addColorStop(0.25, '#166534');
-          groundGrad.addColorStop(1, '#0f172a');
+          if (plat.isArena) {
+            // BOSS 竞技场醒目合金警戒网
+            groundGrad.addColorStop(0, '#991b1b');
+            groundGrad.addColorStop(0.3, '#334155');
+            groundGrad.addColorStop(1, '#0f172a');
+          } else {
+            groundGrad.addColorStop(0, '#15803d');
+            groundGrad.addColorStop(0.25, '#166534');
+            groundGrad.addColorStop(1, '#0f172a');
+          }
           ctx.fillStyle = groundGrad;
           ctx.fillRect(plat.x, plat.y, plat.w, plat.h);
 
-          // 草地顶层亮绿荧光条
-          ctx.fillStyle = '#4ade80';
+          // 草尖或警示灯条
+          ctx.fillStyle = plat.isArena ? '#ef4444' : '#4ade80';
           ctx.fillRect(plat.x, plat.y, plat.w, 4);
 
-          // 草尖装饰
-          ctx.fillStyle = '#86efac';
+          ctx.fillStyle = plat.isArena ? '#fca5a5' : '#86efac';
           for (let gx = plat.x + 4; gx < plat.x + plat.w - 4; gx += 14) {
             ctx.fillRect(gx, plat.y - 2, 4, 3);
           }
         } else {
-          // 红色警示与合金桁架钢梁
+          // 悬空钢架横梁
           ctx.fillStyle = '#334155';
           ctx.fillRect(plat.x, plat.y, plat.w, plat.h);
-
-          // 警示顶边缘
           ctx.fillStyle = '#ef4444';
           ctx.fillRect(plat.x, plat.y, plat.w, 3);
-
-          // 铆钉与钢架交叉线
           ctx.fillStyle = '#cbd5e1';
           for (let rx = plat.x + 8; rx < plat.x + plat.w; rx += 20) {
             ctx.fillRect(rx, plat.y + 4, 3, 3);
@@ -665,7 +1174,7 @@
         }
       });
 
-      // 绘制飞行胶囊
+      // 3. 飞行胶囊
       STATE.contra.capsules.forEach(cap => {
         if (!cap.alive) return;
         ctx.fillStyle = '#ef4444';
@@ -678,43 +1187,47 @@
         ctx.fill();
       });
 
-      // 绘制掉落徽章
+      // 4. 绘制掉落装备与战利品光球 (带华丽呼吸光晕)
       STATE.contra.pickups.forEach(pick => {
-        ctx.fillStyle = '#ef4444';
+        const glowPulse = 14 + Math.sin(Date.now() * 0.01) * 3;
+        ctx.save();
+        ctx.fillStyle = pick.color || '#fbbf24';
         ctx.beginPath();
-        ctx.arc(pick.x, pick.y, 12, 0, Math.PI * 2);
+        ctx.arc(pick.x, pick.y, glowPulse, 0, Math.PI * 2);
+        ctx.globalAlpha = 0.35;
+        ctx.fill();
+
+        ctx.globalAlpha = 1.0;
+        ctx.beginPath();
+        ctx.arc(pick.x, pick.y, 13, 0, Math.PI * 2);
         ctx.fill();
         ctx.lineWidth = 2;
         ctx.strokeStyle = '#ffffff';
         ctx.stroke();
 
         ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 12px monospace';
+        ctx.font = 'bold 11px monospace';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(pick.type, pick.x, pick.y + 1);
+        ctx.fillText(pick.type.length > 2 ? pick.type[0] : pick.type, pick.x, pick.y + 1);
+        ctx.restore();
       });
 
-      // 绘制敌人
+      // 5. 绘制野怪敌人
       STATE.contra.enemies.forEach(en => {
         if (en.type === 'runner') {
-          // 红衣奔跑兵
           ctx.fillStyle = '#ef4444';
           ctx.fillRect(en.x - 8, en.y - 16, 16, 26);
-          // 头盔
           ctx.fillStyle = '#991b1b';
           ctx.fillRect(en.x - 8, en.y - 20, 16, 6);
-          // 步枪
           ctx.fillStyle = '#000000';
           ctx.fillRect(en.x - 14, en.y - 4, 10, 4);
         } else if (en.type === 'sniper') {
-          // 狙击手
           ctx.fillStyle = '#3b82f6';
           ctx.fillRect(en.x - 10, en.y - 12, 20, 20);
           ctx.fillStyle = '#000000';
           ctx.fillRect(en.x - 18, en.y - 2, 14, 4);
         } else if (en.type === 'turret') {
-          // 半圆旋转地堡炮台
           ctx.fillStyle = '#334155';
           ctx.beginPath();
           ctx.arc(en.x, en.y, 16, Math.PI, 0);
@@ -728,35 +1241,34 @@
         }
       });
 
-      // 绘制要塞 Boss
-      if (STATE.contra.boss) {
+      // 6. 绘制多形态 BOSS
+      if (STATE.contra.boss && !STATE.contra.boss.defeated) {
         const boss = STATE.contra.boss;
-        // 要塞钢铁基座外壳
-        ctx.fillStyle = '#1e293b';
-        ctx.fillRect(boss.x, boss.y, boss.w, boss.h);
-        ctx.lineWidth = 4;
-        ctx.strokeStyle = '#ef4444';
-        ctx.strokeRect(boss.x, boss.y, boss.w, boss.h);
 
-        // 左双管炮
-        if (boss.leftTurretHp > 0) {
-          ctx.fillStyle = '#64748b';
-          ctx.fillRect(boss.x + 10, boss.y + 100, 26, 20);
-          ctx.fillStyle = '#ef4444';
-          ctx.fillRect(boss.x - 12, boss.y + 106, 22, 8);
-        }
+        if (boss.type === 'core') {
+          // 要塞核心
+          ctx.fillStyle = '#1e293b';
+          ctx.fillRect(boss.x, boss.y, boss.w, boss.h);
+          ctx.lineWidth = 4;
+          ctx.strokeStyle = '#ef4444';
+          ctx.strokeRect(boss.x, boss.y, boss.w, boss.h);
 
-        // 右双管炮
-        if (boss.rightTurretHp > 0) {
-          ctx.fillStyle = '#64748b';
-          ctx.fillRect(boss.x + 60, boss.y + 100, 26, 20);
-          ctx.fillStyle = '#ef4444';
-          ctx.fillRect(boss.x + 42, boss.y + 106, 18, 8);
-        }
+          // 左右双管火炮
+          if (boss.leftTurretHp > 0) {
+            ctx.fillStyle = '#64748b';
+            ctx.fillRect(boss.x + 10, boss.y + 100, 26, 20);
+            ctx.fillStyle = '#ef4444';
+            ctx.fillRect(boss.x - 12, boss.y + 106, 22, 8);
+          }
+          if (boss.rightTurretHp > 0) {
+            ctx.fillStyle = '#64748b';
+            ctx.fillRect(boss.x + 60, boss.y + 100, 26, 20);
+            ctx.fillStyle = '#ef4444';
+            ctx.fillRect(boss.x + 42, boss.y + 106, 18, 8);
+          }
 
-        // 中央红色感应核心 (不断脉冲跳动)
-        if (!boss.defeated) {
-          const pulse = 18 + Math.sin(Date.now() * 0.008) * 4;
+          // 脉冲能量核心
+          const pulse = 20 + Math.sin(Date.now() * 0.01) * 4;
           ctx.fillStyle = '#ef4444';
           ctx.beginPath();
           ctx.arc(boss.x + 45, boss.y + 60, pulse, 0, Math.PI * 2);
@@ -764,16 +1276,57 @@
           ctx.lineWidth = 3;
           ctx.strokeStyle = '#ffffff';
           ctx.stroke();
+        } else if (boss.type === 'mech') {
+          // 巨型机甲
+          const legSwing = Math.sin(boss.walkAnim) * 12;
+          ctx.fillStyle = '#475569';
+          // 左脚
+          ctx.fillRect(boss.x + 15 + legSwing, boss.y + 85, 24, 50);
+          // 右脚
+          ctx.fillRect(boss.x + 75 - legSwing, boss.y + 85, 24, 50);
 
-          // 核心血量槽
-          ctx.fillStyle = 'rgba(0,0,0,0.6)';
-          ctx.fillRect(boss.x + 10, boss.y + 10, 80, 8);
+          // 机甲主胸甲
+          ctx.fillStyle = '#334155';
+          ctx.fillRect(boss.x, boss.y + 15, boss.w, 75);
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = '#f59e0b';
+          ctx.strokeRect(boss.x, boss.y + 15, boss.w, 75);
+
+          // 加特林前置枪口
+          ctx.fillStyle = '#0f172a';
+          ctx.fillRect(boss.x - 22, boss.y + 55, 26, 14);
+
+          // 红色单目传感器
           ctx.fillStyle = '#ef4444';
-          ctx.fillRect(boss.x + 10, boss.y + 10, 80 * (boss.coreHp / boss.maxCoreHp), 8);
+          ctx.fillRect(boss.x + 18, boss.y + 30, 36, 10);
+        } else if (boss.type === 'alien') {
+          // 异形浮空舰
+          ctx.save();
+          ctx.translate(boss.x + boss.w / 2, boss.y + boss.h / 2);
+          ctx.fillStyle = '#1e1b4b';
+          ctx.beginPath();
+          ctx.ellipse(0, 0, boss.w / 2, boss.h / 2, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = '#818cf8';
+          ctx.stroke();
+
+          // 推进器荧光
+          ctx.fillStyle = '#38bdf8';
+          ctx.beginPath();
+          ctx.arc(boss.w / 2 - 10, 0, 10 + Math.sin(Date.now() * 0.02) * 3, 0, Math.PI * 2);
+          ctx.fill();
+
+          // 生物触须与能量舱
+          ctx.fillStyle = '#ec4899';
+          ctx.beginPath();
+          ctx.arc(-20, 0, 16, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
         }
       }
 
-      // 绘制粒子
+      // 7. 绘制粒子
       STATE.contra.particles.forEach(pt => {
         ctx.fillStyle = pt.color;
         ctx.beginPath();
@@ -781,7 +1334,7 @@
         ctx.fill();
       });
 
-      // 绘制玩家子弹
+      // 8. 绘制玩家子弹
       STATE.contra.bullets.forEach(b => {
         ctx.fillStyle = b.color;
         ctx.beginPath();
@@ -789,18 +1342,50 @@
         ctx.fill();
       });
 
-      // 绘制敌方子弹 (经典红火球)
+      // 9. 绘制敌方子弹
       STATE.contra.enemyBullets.forEach(eb => {
-        ctx.fillStyle = '#ef4444';
+        ctx.fillStyle = eb.isMortar ? '#f97316' : '#ef4444';
         ctx.beginPath();
-        ctx.arc(eb.x, eb.y, 4, 0, Math.PI * 2);
+        ctx.arc(eb.x, eb.y, eb.isMortar ? 6 : 4, 0, Math.PI * 2);
         ctx.fill();
       });
 
-      // 绘制主角比尔 (Bill) - 永不完全隐形
+      // 10. 绘制主角与装备视觉 (比尔)
       const p = STATE.contra.player;
 
-      // 无敌金身光环
+      // 战术僚机 (在角色上方轨道飞行)
+      if (STATE.contra.hasDrone) {
+        const droneX = p.x + Math.cos(STATE.contra.droneAngle) * 22;
+        const droneY = p.y - 26 + Math.sin(STATE.contra.droneAngle) * 8;
+        ctx.save();
+        ctx.fillStyle = '#06b6d4';
+        ctx.beginPath();
+        ctx.arc(droneX, droneY, 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        // 僚机机翼
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillRect(droneX - 9, droneY - 2, 18, 3);
+        ctx.restore();
+      }
+
+      // 能量力场护盾光罩
+      if (STATE.contra.shield > 0) {
+        ctx.save();
+        const shieldGlow = 25 + Math.sin(Date.now() * 0.008) * 3;
+        ctx.strokeStyle = '#60a5fa';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, shieldGlow, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.fillStyle = 'rgba(96, 165, 250, 0.2)';
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // 金身无敌光环
       if (p.invincibleTime > 0) {
         ctx.save();
         ctx.strokeStyle = '#fbbf24';
@@ -815,7 +1400,7 @@
       ctx.save();
       ctx.translate(p.x, p.y);
       if (p.invincibleTime > 0 && p.invincibleTime % 6 < 2) {
-        ctx.globalAlpha = 0.65; // 半透明闪烁，但永远清晰可见！
+        ctx.globalAlpha = 0.65;
       }
 
       if (!p.onGround) {
@@ -828,7 +1413,6 @@
         ctx.lineWidth = 2;
         ctx.strokeStyle = '#60a5fa';
         ctx.stroke();
-        // 翻滚红色头带残影
         ctx.fillStyle = '#ef4444';
         ctx.fillRect(-10, -3, 6, 6);
         ctx.fillStyle = '#ffffff';
@@ -837,39 +1421,32 @@
         // 趴下姿势
         ctx.fillStyle = '#2563eb';
         ctx.fillRect(p.facing === 1 ? -14 : -6, 4, 24, 12);
-        ctx.fillStyle = '#fecaca'; // 脸部
+        ctx.fillStyle = '#fed7aa';
         ctx.fillRect(p.facing === 1 ? 4 : -12, 4, 8, 8);
-        ctx.fillStyle = '#ef4444'; // 红色头带
+        ctx.fillStyle = '#ef4444';
         ctx.fillRect(p.facing === 1 ? 4 : -12, 3, 8, 3);
-        ctx.fillStyle = '#0f172a'; // 步枪
+        ctx.fillStyle = '#0f172a';
         ctx.fillRect(p.facing === 1 ? 10 : -20, 8, 14, 4);
       } else {
         // 站立 / 奔跑
-        // 头部与经典红头带
-        ctx.fillStyle = '#fed7aa'; // 肤色
+        ctx.fillStyle = '#fed7aa';
         ctx.fillRect(-6, -18, 12, 12);
-        // 金色短发
         ctx.fillStyle = '#f59e0b';
         ctx.fillRect(-6, -20, 12, 4);
-        // 红色头带
         ctx.fillStyle = '#ef4444';
         ctx.fillRect(-7, -15, 14, 3);
-        if (p.facing === -1) {
-          ctx.fillRect(5, -15, 7, 3); // 飘扬飘带
-        } else {
-          ctx.fillRect(-12, -15, 7, 3);
-        }
+        if (p.facing === -1) ctx.fillRect(5, -15, 7, 3);
+        else ctx.fillRect(-12, -15, 7, 3);
 
-        // 蓝色战术背心身躯
         ctx.fillStyle = '#2563eb';
         ctx.fillRect(-7, -6, 14, 14);
 
-        // 迷彩战术长裤
         ctx.fillStyle = '#1e293b';
         ctx.fillRect(-6, 8, 5, 10);
         ctx.fillRect(1, 8, 5, 10);
-        // 军靴
-        ctx.fillStyle = '#0f172a';
+
+        // 战靴颜色 (极速战靴为发光金/青色)
+        ctx.fillStyle = STATE.contra.hasBoots ? '#06b6d4' : '#0f172a';
         ctx.fillRect(-7, 16, 6, 3);
         ctx.fillRect(1, 16, 6, 3);
 
@@ -889,11 +1466,59 @@
       }
 
       ctx.restore();
-      ctx.restore();
+      ctx.restore(); // 恢复镜头偏移
+
+      // 11. 视口固定层：顶部专属 BOSS 宏伟血条与警报条
+      if (STATE.contra.bossActive && STATE.contra.boss && !STATE.contra.boss.defeated) {
+        const boss = STATE.contra.boss;
+        const barW = Math.min(270, c.width - 50);
+        const barX = (c.width - barW) / 2;
+        const barY = 46; // 避开顶部 HTML HUD，整洁居中展示
+        const pct = Math.max(0, boss.hp / boss.maxHp);
+
+        // 边框底板
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+        ctx.fillRect(barX - 4, barY - 14, barW + 8, 30);
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(barX - 4, barY - 14, barW + 8, 30);
+
+        // 标签
+        ctx.fillStyle = '#fef08a';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText(`👑 ${boss.name}`, barX, barY - 2);
+
+        ctx.textAlign = 'right';
+        ctx.fillText(`${Math.ceil(pct * 100)}%`, barX + barW, barY - 2);
+
+        // 血条槽
+        ctx.fillStyle = '#334155';
+        ctx.fillRect(barX, barY + 2, barW, 8);
+
+        const hpGrad = ctx.createLinearGradient(barX, 0, barX + barW, 0);
+        hpGrad.addColorStop(0, '#ef4444');
+        hpGrad.addColorStop(1, '#f59e0b');
+        ctx.fillStyle = hpGrad;
+        ctx.fillRect(barX, barY + 2, barW * pct, 8);
+      }
+
+      // BOSS 突袭警报横幅
+      if (STATE.contra.bossAlertTimer > 0) {
+        ctx.save();
+        ctx.fillStyle = (STATE.contra.bossAlertTimer % 20 < 10) ? 'rgba(239, 68, 68, 0.75)' : 'rgba(15, 23, 42, 0.75)';
+        ctx.fillRect(0, c.height / 2 - 24, c.width, 48);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 14px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('⚠️ 🚨 WARNING! BOSS APPROACHING! 巨兽突袭！ 🚨 ⚠️', c.width / 2, c.height / 2);
+        ctx.restore();
+      }
+
+      ctx.restore(); // 恢复震屏
     }
 
     function resetContraMatch() {
       initContraGame();
     }
-
-    // ==========================================================================

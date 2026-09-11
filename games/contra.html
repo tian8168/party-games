@@ -232,6 +232,7 @@
       <a href="../index.html" class="nav-back">🔙 返回大厅</a>
       <h2 class="game-title">🔫 魂斗罗 (Contra)</h2>
       <div class="header-actions">
+        <a href="contra_canvas.html" class="btn-icon" style="text-decoration:none; display:inline-flex; align-items:center; gap:4px; font-size:0.75rem; background:rgba(139,92,246,0.25); border:1px solid rgba(139,92,246,0.5); color:#c084fc; border-radius:6px; padding:4px 8px;">🚀 自研无限版</a>
         <button class="btn-icon" id="btn-sound-toggle">🔊</button>
         <button class="btn-icon" id="btn-rules-header">📖 操作</button>
         <button class="btn-icon" id="restart-btn" onclick="resetCurrentGame()">🔄 重置</button>
@@ -254,6 +255,9 @@
             <button class="btn-emu-play btn-emu-classic" onclick="startBundledGame('contra.nes')">
               🛡️ 启动 原版3条命模式
             </button>
+            <a href="contra_canvas.html" class="btn-emu-play" style="background: linear-gradient(135deg, #8b5cf6, #ec4899); border-color: #a855f7; text-decoration:none; box-shadow: 0 4px 18px rgba(139,92,246,0.4);">
+              🚀 启动 自研Canvas版 (无限大地图·随机BOSS·掉装备)
+            </a>
             <label class="btn-emu-play btn-emu-upload" style="margin:0;">
               📁 加载本地 .nes 文件
               <input type="file" id="rom-file-input" accept=".nes" style="display:none;" onchange="handleFileSelect(event)">
