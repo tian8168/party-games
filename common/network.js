@@ -32,9 +32,15 @@ window.ONLINE_NETWORK = (function() {
     if (roomElem) roomElem.textContent = roomId;
     const roleElem = document.getElementById('display-role-info');
     if (roleElem) {
-      roleElem.innerHTML = role === 'host' ? 
-        '你是 <b style="color:var(--p1-color)">🔴 房主 (红方)</b>' : 
-        '你是 <b style="color:var(--p2-color)">🟢 好友 (客方)</b>';
+      if (currentGame === 'GO') {
+        roleElem.innerHTML = role === 'host' ? 
+          '你是 <b style="color:#38bdf8">⚫ 房主 (执黑·先手)</b>' : 
+          '你是 <b style="color:#f8fafc">⚪ 好友 (执白·后手)</b>';
+      } else {
+        roleElem.innerHTML = role === 'host' ? 
+          '你是 <b style="color:var(--p1-color)">🔴 房主 (红方)</b>' : 
+          '你是 <b style="color:var(--p2-color)">🟢 好友 (客方)</b>';
+      }
     }
 
     if (window.showToast) window.showToast(`正在连接房间 ${roomId}...`);
@@ -102,11 +108,31 @@ window.ONLINE_NETWORK = (function() {
     const url = new URL(window.location.href);
     url.searchParams.set('room', state.roomId);
     url.searchParams.set('mode', 'ONLINE');
-    navigator.clipboard.writeText(url.toString()).then(() => {
-      if (window.showToast) window.showToast('📋 邀请链接已复制，发给微信/QQ好友即可！');
-    }).catch(() => {
-      if (window.showToast) window.showToast('复制失败，请手动分享房间号：' + state.roomId);
-    });
+    const textToCopy = url.toString();
+    const fallback = () => {
+      const ta = document.createElement('textarea');
+      ta.value = textToCopy;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      try {
+        document.execCommand('copy');
+        if (window.showToast) window.showToast('📋 邀请链接已复制，发给微信/QQ好友即可！');
+      } catch(e) {
+        if (window.showToast) window.showToast('请手动分享房间号：' + state.roomId);
+      }
+      ta.remove();
+    };
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        if (window.showToast) window.showToast('📋 邀请链接已复制，发给微信/QQ好友即可！');
+      }).catch(fallback);
+    } else {
+      fallback();
+    }
   }
 
   function joinRoom(roomId, currentGame) {

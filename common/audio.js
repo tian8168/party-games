@@ -35,16 +35,86 @@
             gain.gain.linearRampToValueAtTime(0.01, t + 0.05);
             osc.connect(gain); gain.connect(this.ctx.destination);
             osc.start(t); osc.stop(t + 0.05);
-          } else if (type === 'drop') {
-            const osc = this.ctx.createOscillator();
-            const gain = this.ctx.createGain();
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(320, t);
-            osc.frequency.exponentialRampToValueAtTime(110, t + 0.09);
-            gain.gain.setValueAtTime(0.25, t);
-            gain.gain.linearRampToValueAtTime(0.01, t + 0.09);
-            osc.connect(gain); gain.connect(this.ctx.destination);
-            osc.start(t); osc.stop(t + 0.09);
+          } else if (type === 'drop' || type === 'go_stone') { // 围棋落子物理拟真声 (云子/玛瑙/木质棋盘敲击)
+            const pitchVariation = (Math.random() - 0.5) * 35;
+            // 1. 高频清脆敲击瞬态 (Transient Contact Click)
+            const transientOsc = this.ctx.createOscillator();
+            const transientGain = this.ctx.createGain();
+            transientOsc.type = 'sine';
+            transientOsc.frequency.setValueAtTime(3600 + pitchVariation, t);
+            transientOsc.frequency.exponentialRampToValueAtTime(1400, t + 0.012);
+            transientGain.gain.setValueAtTime(0.45, t);
+            transientGain.gain.exponentialRampToValueAtTime(0.001, t + 0.015);
+            transientOsc.connect(transientGain);
+            transientGain.connect(this.ctx.destination);
+            transientOsc.start(t);
+            transientOsc.stop(t + 0.015);
+
+            // 1b. 高频微白噪打击爆破瞬态
+            const noiseBufSize = Math.floor(this.ctx.sampleRate * 0.015);
+            const noiseBuf = this.ctx.createBuffer(1, noiseBufSize, this.ctx.sampleRate);
+            const noiseData = noiseBuf.getChannelData(0);
+            for (let i = 0; i < noiseBufSize; i++) {
+              noiseData[i] = (Math.random() * 2 - 1) * Math.exp(-i / (noiseBufSize * 0.25));
+            }
+            const noiseSrc = this.ctx.createBufferSource();
+            noiseSrc.buffer = noiseBuf;
+            const noiseFilter = this.ctx.createBiquadFilter();
+            noiseFilter.type = 'highpass';
+            noiseFilter.frequency.setValueAtTime(2400, t);
+            const noiseGain = this.ctx.createGain();
+            noiseGain.gain.setValueAtTime(0.32, t);
+            noiseGain.gain.exponentialRampToValueAtTime(0.001, t + 0.015);
+            noiseSrc.connect(noiseFilter);
+            noiseFilter.connect(noiseGain);
+            noiseGain.connect(this.ctx.destination);
+            noiseSrc.start(t);
+
+            // 2. 榧木盘腔紧凑低频共鸣 (Wood Cavity Resonance)
+            const bodyOsc = this.ctx.createOscillator();
+            const bodyGain = this.ctx.createGain();
+            bodyOsc.type = 'triangle';
+            bodyOsc.frequency.setValueAtTime(480 + pitchVariation * 0.5, t);
+            bodyOsc.frequency.exponentialRampToValueAtTime(220, t + 0.07);
+            bodyGain.gain.setValueAtTime(0.38, t);
+            bodyGain.gain.exponentialRampToValueAtTime(0.001, t + 0.075);
+            bodyOsc.connect(bodyGain);
+            bodyGain.connect(this.ctx.destination);
+            bodyOsc.start(t);
+            bodyOsc.stop(t + 0.075);
+          } else if (type === 'go_capture') { // 围棋提子吃子声 (多子碰撞与浑厚盘体吸震)
+            // 提子第1声
+            const osc1 = this.ctx.createOscillator();
+            const gain1 = this.ctx.createGain();
+            osc1.type = 'sine';
+            osc1.frequency.setValueAtTime(2800, t);
+            osc1.frequency.exponentialRampToValueAtTime(900, t + 0.02);
+            gain1.gain.setValueAtTime(0.35, t);
+            gain1.gain.exponentialRampToValueAtTime(0.001, t + 0.02);
+            osc1.connect(gain1); gain1.connect(this.ctx.destination);
+            osc1.start(t); osc1.stop(t + 0.02);
+
+            // 提子第2声（错开 25ms 形成双子磕碰质感）
+            const osc2 = this.ctx.createOscillator();
+            const gain2 = this.ctx.createGain();
+            osc2.type = 'triangle';
+            osc2.frequency.setValueAtTime(2100, t + 0.025);
+            osc2.frequency.exponentialRampToValueAtTime(600, t + 0.055);
+            gain2.gain.setValueAtTime(0.3, t + 0.025);
+            gain2.gain.exponentialRampToValueAtTime(0.001, t + 0.055);
+            osc2.connect(gain2); gain2.connect(this.ctx.destination);
+            osc2.start(t + 0.025); osc2.stop(t + 0.055);
+
+            // 浑厚沉闷的低频盘体吸收声
+            const subOsc = this.ctx.createOscillator();
+            const subGain = this.ctx.createGain();
+            subOsc.type = 'sine';
+            subOsc.frequency.setValueAtTime(180, t);
+            subOsc.frequency.exponentialRampToValueAtTime(70, t + 0.12);
+            subGain.gain.setValueAtTime(0.45, t);
+            subGain.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+            subOsc.connect(subGain); subGain.connect(this.ctx.destination);
+            subOsc.start(t); subOsc.stop(t + 0.12);
           } else if (type === 'shot') { // 霰弹枪炸鸣
             const bufferSize = this.ctx.sampleRate * 0.35;
             const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
