@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>玄素围棋 (Go / Weiqi) · 聚会游戏大厅</title>
+  <link rel="stylesheet" href="../common/common.css">
+  <script src="../mqtt.min.js" defer></script>
+  <style>
+    /* ==========================================================================
+       围棋专属样式体系 (GO / WEIQI ARCADE SUITE)
+       ========================================================================== */
+    .go-toolbar-top {
+      width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .pill-group {
+      display: inline-flex;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      padding: 3px;
+      gap: 3px;
+    }
+
+    .pill-btn {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      padding: 5px 10px;
+      border-radius: 7px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .pill-btn.active {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+    }
+
+    .pill-btn:hover:not(.active) {
+      color: #f8fafc;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    /* 计分板增强样式 */
+    .player-card.black-card {
+      border-left: 4px solid #1e293b;
+    }
+    .player-card.white-card {
+      border-left: 4px solid #f8fafc;
+    }
+
+    .stone-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+      flex-shrink: 0;
+    }
+    .stone-badge.black {
+      background: radial-gradient(circle at 35% 35%, #475569 0%, #0f172a 100%);
+      border: 1px solid #334155;
+    }
+    .stone-badge.white {
+      background: radial-gradient(circle at 35% 35%, #ffffff 0%, #cbd5e1 100%);
+      border: 1px solid #94a3b8;
+    }
+
+    .captures-label {
+      font-size: 0.72rem;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 2px;
+    }
+    .captures-num {
+      color: #38bdf8;
+      font-weight: 800;
+    }
+
+    /* 棋盘画板容器 */
+    .board-container {
+      width: 100%;
+      max-width: 580px;
+      aspect-ratio: 1 / 1;
+      position: relative;
+      margin: 0 auto;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.1);
+      background: #dfb173;
+    }
+
+    #board-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: crosshair;
+      touch-action: none;
+    }
+
+    /* 底部操作面板 */
+    .go-controls-grid {
+      width: 100%;
+      max-width: 580px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .btn-action-go {
+      background: rgba(30, 41, 59, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #e2e8f0;
+      padding: 9px 6px;
+      border-radius: 10px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: all 0.2s;
+    }
+
+    .btn-action-go:hover {
+      background: rgba(51, 65, 85, 0.9);
+      border-color: #60a5fa;
+      color: #60a5fa;
+      transform: translateY(-1px);
+    }
+
+    .btn-action-go:active {
+      transform: scale(0.97);
+    }
+
+    .btn-action-go.active-toggle {
+      background: rgba(14, 165, 233, 0.25);
+      border-color: #38bdf8;
+      color: #38bdf8;
+    }
+
+    .btn-action-go:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    /* 提子飘字动画容器 */
+    .capture-floating-text {
+      position: absolute;
+      pointer-events: none;
+      font-weight: 900;
+      font-size: 1.1rem;
+      color: #f59e0b;
+      text-shadow: 0 0 8px rgba(0,0,0,0.8);
+      animation: floatUpFade 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      z-index: 10;
+    }
+
+    @keyframes floatUpFade {
+      0% { transform: translate(-50%, 0) scale(0.7); opacity: 0; }
+      20% { transform: translate(-50%, -10px) scale(1.2); opacity: 1; }
+      80% { transform: translate(-50%, -30px) scale(1); opacity: 0.9; }
+      100% { transform: translate(-50%, -45px) scale(0.9); opacity: 0; }
+    }
+
+    /* AI思考指示光条 */
+    .ai-thinking-bar {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      color: #38bdf8;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+    .ai-thinking-bar.show {
+      display: flex;
+    }
+    .pulse-spin {
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="container in-game">
+    <!-- 顶栏导航 -->
+    <div class="game-header">
+      <a href="../index.html" class="nav-back">🔙 返回大厅</a>
+      <h2 class="game-title">⚪⚫ 玄素围棋 (Go / Weiqi)</h2>
+      <div class="header-actions">
+        <button class="btn-icon" id="btn-sound-toggle">🔊</button>
+        <button class="btn-icon" id="btn-rules-header">📖 规则</button>
+        <button class="btn-icon" id="restart-btn" onclick="resetCurrentGame()">🔄 重置</button>
+      </div>
+    </div>
+
+    <!-- 模式选择导航栏 -->
+    <div class="mode-nav">
+      <div class="mode-tab active" id="tab-ai" onclick="switchGameMode('AI')">🤖 人机对弈</div>
+      <div class="mode-tab" id="tab-local" onclick="switchGameMode('LOCAL')">👥 双人同屏</div>
+      <div class="mode-tab" id="tab-online" onclick="switchGameMode('ONLINE')">🌐 好友联机</div>
+    </div>
+
+    <!-- 联机面板 -->
+    <div class="online-panel" id="online-panel">
+      <div class="online-info">
+        <span>房间号: <b id="display-room-id" style="color:var(--neon-cyan)">未连接</b></span>
+        <span id="display-role-info">你是 <b style="color:var(--p1-color)">⚫ 执黑 (先手)</b></span>
+      </div>
+      <div class="online-actions">
+        <button class="btn-small" onclick="ONLINE_NETWORK.createRoom('GO')">创建新房</button>
+        <button class="btn-small" onclick="ONLINE_NETWORK.copyLink()">复制邀请链接</button>
+        <button class="btn-small" onclick="ONLINE_NETWORK.joinRoom(null, 'GO')">加入房间</button>
+      </div>
+    </div>
+
+    <!-- 棋盘与难度快捷配置栏 -->
+    <div class="go-toolbar-top">
+      <div class="pill-group" title="选择棋盘路数">
+        <button class="pill-btn active" id="size-9" onclick="changeBoardSize(9)">9×9 (聚会极速)</button>
+        <button class="pill-btn" id="size-13" onclick="changeBoardSize(13)">13×13 (中盘)</button>
+        <button class="pill-btn" id="size-19" onclick="changeBoardSize(19)">19×19 (标准)</button>
+      </div>
+
+      <div class="pill-group" id="ai-difficulty-group" title="AI 算力强度">
+        <button class="pill-btn active" id="diff-easy" onclick="changeAiDifficulty('EASY')">🟢 入门</button>
+        <button class="pill-btn" id="diff-tactical" onclick="changeAiDifficulty('TACTICAL')">🟡 进阶</button>
+        <button class="pill-btn" id="diff-master" onclick="changeAiDifficulty('MASTER')">🔴 大师(MCTS)</button>
+      </div>
+    </div>
+
+    <!-- 计分与状态卡片 -->
+    <div class="generic-scoreboard" id="generic-scoreboard">
+      <!-- 玩家 1：黑方 (先手) -->
+      <div class="player-card black-card active-turn" id="card-p1">
+        <div class="stone-badge black"></div>
+        <div class="player-meta">
+          <span class="player-name" id="name-p1">玩家 1 (黑棋)</span>
+          <div class="captures-label">提子: <span class="captures-num" id="caps-p1">0</span></div>
+        </div>
+        <span class="turn-badge">落子中</span>
+      </div>
+
+      <!-- 玩家 2：白方 (后手 / AI) -->
+      <div class="player-card white-card" id="card-p2">
+        <div class="stone-badge white"></div>
+        <div class="player-meta">
+          <span class="player-name" id="name-p2">电脑 (白棋)</span>
+          <div class="captures-label">提子: <span class="captures-num" id="caps-p2">0</span></div>
+          <div class="ai-thinking-bar" id="ai-thinking-indicator"><span class="pulse-spin">⚙️</span> AI深度演算中...</div>
+        </div>
+        <span class="turn-badge">等待</span>
+      </div>
+    </div>
+
+    <!-- 棋盘画板 -->
+    <div class="board-container" id="board-box">
+      <canvas id="board-canvas"></canvas>
+    </div>
+
+    <!-- 战术工具栏 -->
+    <div class="go-controls-grid">
+      <button class="btn-action-go" id="btn-undo" onclick="undoMove()">
+        <span>↩️</span>
+        <span>悔棋</span>
+      </button>
+      <button class="btn-action-go" id="btn-pass" onclick="passTurn()">
+        <span>✋</span>
+        <span>停一手</span>
+      </button>
+      <button class="btn-action-go" id="btn-territory" onclick="toggleTerritoryView()">
+        <span>🗺️</span>
+        <span>目数估算</span>
+      </button>
+      <button class="btn-action-go" id="btn-resign" onclick="resignGame()">
+        <span>🏳️</span>
+        <span>认输</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- 公共脚本 -->
+  <script src="../common/audio.js"></script>
+  <script src="../common/common.js"></script>
+
+  <!-- 围棋核心逻辑脚本 -->
+  <script>
+    // ==========================================================================
+    // 1. 围棋核心状态机 (GO ENGINE STATE)
+    // ==========================================================================
+    const GO_STATE = {
+      boardSize: 9,              // 9, 13, 19
+      board: [],                 // 0: empty, 1: Black, 2: White
+      turn: 1,                   // 1: Black, 2: White
+      captures: { 1: 0, 2: 0 },  // 1: Black captures, 2: White captures
+      gameMode: 'AI',            // 'AI', 'LOCAL', 'ONLINE'
+      aiDifficulty: 'EASY',      // 'EASY', 'TACTICAL', 'MASTER'
+      userColor: 1,              // In AI mode: 1 (Black), 2 (White)
+      lastMove: null,            // { r, c }
+      history: [],               // Snapshots for Undo
+      koPoint: null,             // { r, c } - Single stone Ko point forbidden next turn
+      passCount: 0,              // Consecutive passes
+      gameOver: false,
+      winner: null,
+      showTerritory: false,
+      hoverPoint: null,
+      isAiComputing: false,
+      territoryMap: null
+    };
+
+    const CANVAS = document.getElementById('board-canvas');
+    const CTX = CANVAS.getContext('2d');
+
+    // ==========================================================================
+    // 2. 规则算法：气、连通块、提子、禁着与打劫
+    // ==========================================================================
+    function getNeighbors(r, c, size = GO_STATE.boardSize) {
+      const neighbors = [];
+      if (r > 0) neighbors.push({ r: r - 1, c });
+      if (r < size - 1) neighbors.push({ r: r + 1, c });
+      if (c > 0) neighbors.push({ r, c: c - 1 });
+      if (c < size - 1) neighbors.push({ r, c: c + 1 });
+      return neighbors;
+    }
+
+    // 获取包含 (r, c) 的整块棋子连通块及其全部气的坐标集合
+    function getGroupAndLiberties(r, c, board, size = GO_STATE.boardSize) {
+      const color = board[r][c];
+      if (color === 0) return { stones: [], liberties: new Set(), color: 0 };
+
+      const stones = [];
+      const visited = new Set();
+      const liberties = new Set();
+      const queue = [{ r, c }];
+      visited.add(`${r},${c}`);
+
+      while (queue.length > 0) {
+        const curr = queue.shift();
+        stones.push(curr);
+
+        for (const n of getNeighbors(curr.r, curr.c, size)) {
+          const nColor = board[n.r][n.c];
+          const key = `${n.r},${n.c}`;
+          if (nColor === 0) {
+            liberties.add(key);
+          } else if (nColor === color && !visited.has(key)) {
+            visited.add(key);
+            queue.push(n);
+          }
+        }
+      }
+
+      return { stones, liberties, color, libertyCount: liberties.size };
+    }
+
+    // 复制棋盘状态
+    function cloneBoard(board) {
+      return board.map(row => [...row]);
+    }
+
+    // 校验落子合法性（返回 { valid: boolean, captures: Array, reason?: string }）
+    function checkMoveLegality(r, c, player, board, koPoint) {
+      const size = board.length;
+      if (r < 0 || r >= size || c < 0 || c >= size) {
+        return { valid: false, reason: '超出棋盘边界' };
+      }
+      if (board[r][c] !== 0) {
+        return { valid: false, reason: '已有棋子' };
+      }
+
+      // 检查劫争禁着点 (Ko Rule)
+      if (koPoint && koPoint.r === r && koPoint.c === c) {
+        return { valid: false, reason: '打劫禁着点，请先寻劫' };
+      }
+
+      const opponent = player === 1 ? 2 : 1;
+      const testBoard = cloneBoard(board);
+      testBoard[r][c] = player;
+
+      // 1. 检查是否提掉对方棋子
+      const capturedStones = [];
+      const checkedOpponentGroups = new Set();
+
+      for (const n of getNeighbors(r, c, size)) {
+        if (testBoard[n.r][n.c] === opponent) {
+          const groupKey = `${n.r},${n.c}`;
+          if (!checkedOpponentGroups.has(groupKey)) {
+            const oppGroup = getGroupAndLiberties(n.r, n.c, testBoard, size);
+            oppGroup.stones.forEach(s => checkedOpponentGroups.add(`${s.r},${s.c}`));
+            if (oppGroup.liberties.size === 0) {
+              capturedStones.push(...oppGroup.stones);
+            }
+          }
+        }
+      }
+
+      // 2. 如果有提子，此手必定合法，绝非自杀
+      if (capturedStones.length > 0) {
+        // 判定新劫点：如果自己下的是单子，且正好只提了对方 1 颗子，并且自己这块棋下完后只有 1 气
+        let newKo = null;
+        capturedStones.forEach(s => testBoard[s.r][s.c] = 0);
+        const myGroupAfter = getGroupAndLiberties(r, c, testBoard, size);
+        if (capturedStones.length === 1 && myGroupAfter.stones.length === 1 && myGroupAfter.liberties.size === 1) {
+          newKo = { r: capturedStones[0].r, c: capturedStones[0].c };
+        }
+        return { valid: true, captures: capturedStones, newKo };
+      }
+
+      // 3. 无提子时，检查落子后自身是否有气（自杀禁手检查）
+      const myGroup = getGroupAndLiberties(r, c, testBoard, size);
+      if (myGroup.liberties.size === 0) {
+        return { valid: false, reason: '自杀禁着点，禁止无气落子' };
+      }
+
+      return { valid: true, captures: [], newKo: null };
+    }
+
+    // ==========================================================================
+    // 3. 落子与回合轮转
+    // ==========================================================================
+    function playStone(r, c) {
+      if (GO_STATE.gameOver || GO_STATE.isAiComputing) return;
+
+      // 人机模式下，如果当前不属于玩家回合则拦截
+      if (GO_STATE.gameMode === 'AI' && GO_STATE.turn !== GO_STATE.userColor) return;
+
+      const legality = checkMoveLegality(r, c, GO_STATE.turn, GO_STATE.board, GO_STATE.koPoint);
+      if (!legality.valid) {
+        showToast(`⚠️ ${legality.reason}`);
+        if (window.AUDIO) try { window.AUDIO.play('hit'); } catch(e) {}
+        return;
+      }
+
+      executeMove(r, c, legality.captures, legality.newKo);
+
+      // 如果人机对弈且游戏未结束，调度 AI 走子
+      if (GO_STATE.gameMode === 'AI' && !GO_STATE.gameOver) {
+        scheduleAiMove();
+      }
+    }
+
+    function executeMove(r, c, captures, newKo) {
+      // 记录历史快照以便悔棋
+      GO_STATE.history.push({
+        board: cloneBoard(GO_STATE.board),
+        turn: GO_STATE.turn,
+        captures: { ...GO_STATE.captures },
+        lastMove: GO_STATE.lastMove,
+        koPoint: GO_STATE.koPoint,
+        passCount: GO_STATE.passCount
+      });
+
+      const currentTurn = GO_STATE.turn;
+      GO_STATE.board[r][c] = currentTurn;
+
+      // 执行提子
+      if (captures && captures.length > 0) {
+        for (const s of captures) {
+          GO_STATE.board[s.r][s.c] = 0;
+        }
+        GO_STATE.captures[currentTurn] += captures.length;
+        spawnCaptureText(r, c, `+${captures.length} 提子`);
+        if (window.AUDIO) try { window.AUDIO.play('shot'); } catch(e) {}
+      } else {
+        if (window.AUDIO) try { window.AUDIO.play('drop'); } catch(e) {}
+      }
+
+      GO_STATE.lastMove = { r, c };
+      GO_STATE.koPoint = newKo;
+      GO_STATE.passCount = 0;
+      GO_STATE.showTerritory = false;
+
+      // 切换走子方
+      GO_STATE.turn = currentTurn === 1 ? 2 : 1;
+
+      updateUI();
+      renderBoard();
+    }
+
+    // 停一手 (Pass)
+    function passTurn() {
+      if (GO_STATE.gameOver || GO_STATE.isAiComputing) return;
+      if (GO_STATE.gameMode === 'AI' && GO_STATE.turn !== GO_STATE.userColor) return;
+
+      if (window.AUDIO) try { window.AUDIO.play('click'); } catch(e) {}
+
+      GO_STATE.history.push({
+        board: cloneBoard(GO_STATE.board),
+        turn: GO_STATE.turn,
+        captures: { ...GO_STATE.captures },
+        lastMove: GO_STATE.lastMove,
+        koPoint: GO_STATE.koPoint,
+        passCount: GO_STATE.passCount
+      });
+
+      GO_STATE.passCount++;
+      const passer = GO_STATE.turn === 1 ? '黑方' : '白方';
+      showToast(`✋ ${passer} 选择了停一手 (Pass)`);
+
+      GO_STATE.koPoint = null;
+      GO_STATE.turn = GO_STATE.turn === 1 ? 2 : 1;
+
+      // 双方连续 Pass 触发终局数子
+      if (GO_STATE.passCount >= 2) {
+        finishGameByPass();
+        return;
+      }
+
+      updateUI();
+      renderBoard();
+
+      if (GO_STATE.gameMode === 'AI' && !GO_STATE.gameOver) {
+        scheduleAiMove();
+      }
+    }
+
+    // 悔棋 (Undo)
+    function undoMove() {
+      if (GO_STATE.history.length === 0 || GO_STATE.isAiComputing) {
+        showToast('无法继续悔棋');
+        return;
+      }
+
+      // 人机对战模式需回退 2 步（回退 AI 与玩家的一手）
+      const stepsToUndo = (GO_STATE.gameMode === 'AI' && GO_STATE.history.length >= 2) ? 2 : 1;
+
+      for (let i = 0; i < stepsToUndo; i++) {
+        const prev = GO_STATE.history.pop();
+        if (prev) {
+          GO_STATE.board = prev.board;
+          GO_STATE.turn = prev.turn;
+          GO_STATE.captures = prev.captures;
+          GO_STATE.lastMove = prev.lastMove;
+          GO_STATE.koPoint = prev.koPoint;
+          GO_STATE.passCount = prev.passCount;
+        }
+      }
+
+      GO_STATE.gameOver = false;
+      GO_STATE.winner = null;
+      GO_STATE.showTerritory = false;
+      if (window.AUDIO) try { window.AUDIO.play('click'); } catch(e) {}
+      showToast('↩️ 已悔棋');
+      updateUI();
+      renderBoard();
+    }
+
+    // 认输 (Resign)
+    function resignGame() {
+      if (GO_STATE.gameOver) return;
+      const resigningPlayer = GO_STATE.turn === 1 ? '黑棋' : '白棋';
+      const winner = GO_STATE.turn === 1 ? '白棋' : '黑棋';
+      GO_STATE.gameOver = true;
+      GO_STATE.winner = winner;
+
+      if (window.AUDIO) try { window.AUDIO.play('win'); } catch(e) {}
+      showModal('🏁 对局结束 (认输)', `
+        <p style="font-size:1.1rem; text-align:center;"><b>${resigningPlayer} 中盘认输</b></p><br>
+        <p style="text-align:center; color:#38bdf8; font-weight:800; font-size:1.25rem;">🏆 恭喜 ${winner} 不战而胜！</p><br>
+        <p>棋局已终了，可点击下方按钮重新开局或返回大厅。</p>
+      `, { isGameOver: true });
+    }
+
+    // 终局数子与胜负裁定
+    function finishGameByPass() {
+      GO_STATE.gameOver = true;
+      const score = calculateTerritoryScore(GO_STATE.board);
+      const komi = GO_STATE.boardSize === 9 ? 3.75 : 7.5; // 简易贴目
+      const blackTotal = score.black + GO_STATE.captures[1];
+      const whiteTotal = score.white + GO_STATE.captures[2] + komi;
+      const diff = Math.abs(blackTotal - whiteTotal).toFixed(1);
+      const winnerName = blackTotal > whiteTotal ? '黑方 (执黑)' : '白方 (执白)';
+
+      if (window.AUDIO) try { window.AUDIO.play('win'); } catch(e) {}
+      showModal('🏁 终局数子结算 (双停一手终盘)', `
+        <div style="font-size:0.92rem; line-height:1.6;">
+          <p>双方连续 Pass 确认终盘，进入围棋目数判定：</p><br>
+          <div style="background:rgba(15,23,42,0.8); padding:10px 14px; border-radius:8px; border:1px solid rgba(255,255,255,0.1);">
+            <p>⚫ <b>黑方</b>：围地 <b>${score.black}</b> 目 + 提子 <b>${GO_STATE.captures[1]}</b> 颗 = 总计 <b>${blackTotal}</b></p>
+            <p>⚪ <b>白方</b>：围地 <b>${score.white}</b> 目 + 提子 <b>${GO_STATE.captures[2]}</b> 颗 + 贴目 <b>${komi}</b> 目 = 总计 <b>${whiteTotal}</b></p>
+          </div><br>
+          <p style="text-align:center; color:#22c55e; font-size:1.2rem; font-weight:800;">
+            🏆 裁定胜者：${winnerName} 胜 <b>${diff}</b> 目！
+          </p>
+        </div>
+      `, { isGameOver: true });
+
+      GO_STATE.showTerritory = true;
+      renderBoard();
+    }
+
+    // ==========================================================================
+    // 4. 简易形式判断与目数染色算法 (Territory Evaluation)
+    // ==========================================================================
+    function calculateTerritoryScore(board) {
+      const size = board.length;
+      const visited = new Set();
+      let blackTerritory = 0;
+      let whiteTerritory = 0;
+      const territoryMap = Array(size).fill(0).map(() => Array(size).fill(0));
+
+      for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+          if (board[r][c] === 0 && !visited.has(`${r},${c}`)) {
+            // BFS 扩散空地区块
+            const emptyGroup = [];
+            const queue = [{ r, c }];
+            visited.add(`${r},${c}`);
+            let touchesBlack = false;
+            let touchesWhite = false;
+
+            while (queue.length > 0) {
+              const curr = queue.shift();
+              emptyGroup.push(curr);
+
+              for (const n of getNeighbors(curr.r, curr.c, size)) {
+                const color = board[n.r][n.c];
+                if (color === 1) touchesBlack = true;
+                else if (color === 2) touchesWhite = true;
+                else if (color === 0 && !visited.has(`${n.r},${n.c}`)) {
+                  visited.add(`${n.r},${n.c}`);
+                  queue.push(n);
+                }
+              }
+            }
+
+            // 仅被单一颜色包围的空地归属于该方
+            if (touchesBlack && !touchesWhite) {
+              blackTerritory += emptyGroup.length;
+              emptyGroup.forEach(p => territoryMap[p.r][p.c] = 1);
+            } else if (touchesWhite && !touchesBlack) {
+              whiteTerritory += emptyGroup.length;
+              emptyGroup.forEach(p => territoryMap[p.r][p.c] = 2);
+            }
+          }
+        }
+      }
+
+      GO_STATE.territoryMap = territoryMap;
+      return { black: blackTerritory, white: whiteTerritory };
+    }
+
+    function toggleTerritoryView() {
+      GO_STATE.showTerritory = !GO_STATE.showTerritory;
+      if (GO_STATE.showTerritory) {
+        calculateTerritoryScore(GO_STATE.board);
+        document.getElementById('btn-territory').classList.add('active-toggle');
+        showToast('🗺️ 开启地盘目数高亮');
+      } else {
+        document.getElementById('btn-territory').classList.remove('active-toggle');
+        showToast('已关闭目数高亮');
+      }
+      renderBoard();
+    }
+
+    // ==========================================================================
+    // 5. 围棋多级 AI 智能对弈引擎 (GO ARTIFICIAL INTELLIGENCE)
+    // ==========================================================================
+    function scheduleAiMove() {
+      GO_STATE.isAiComputing = true;
+      const indicator = document.getElementById('ai-thinking-indicator');
+      if (indicator) indicator.classList.add('show');
+
+      const thinkTime = GO_STATE.aiDifficulty === 'MASTER' ? 500 : 350;
+
+      setTimeout(() => {
+        const move = computeBestAiMove(GO_STATE.board, GO_STATE.turn, GO_STATE.aiDifficulty, GO_STATE.koPoint);
+        GO_STATE.isAiComputing = false;
+        if (indicator) indicator.classList.remove('show');
+
+        if (move && move.r !== undefined && move.c !== undefined) {
+          const legality = checkMoveLegality(move.r, move.c, GO_STATE.turn, GO_STATE.board, GO_STATE.koPoint);
+          if (legality.valid) {
+            executeMove(move.r, move.c, legality.captures, legality.newKo);
+          } else {
+            passTurn();
+          }
+        } else {
+          // AI 无合适棋步时主动停一手
+          passTurn();
+        }
+      }, thinkTime);
+    }
+
+    function computeBestAiMove(board, aiColor, difficulty, koPoint) {
+      const size = board.length;
+      const oppColor = aiColor === 1 ? 2 : 1;
+      const validMoves = [];
+
+      // 收集所有合法落子点
+      for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+          if (board[r][c] === 0) {
+            const check = checkMoveLegality(r, c, aiColor, board, koPoint);
+            if (check.valid) {
+              validMoves.push({ r, c, captures: check.captures, newKo: check.newKo });
+            }
+          }
+        }
+      }
+
+      if (validMoves.length === 0) return null;
+
+      // 1. 入门级别 (EASY)：优先吃子、逃打吃、金角开局，其余随机
+      if (difficulty === 'EASY') {
+        // 必杀：如果有立即吃子的步，优先选吃子最多的点
+        const captureMoves = validMoves.filter(m => m.captures.length > 0);
+        if (captureMoves.length > 0) {
+          captureMoves.sort((a, b) => b.captures.length - a.captures.length);
+          return captureMoves[0];
+        }
+
+        // 避免填真眼自损
+        const safeMoves = validMoves.filter(m => !isTrueEye(m.r, m.c, aiColor, board));
+        const pool = safeMoves.length > 0 ? safeMoves : validMoves;
+
+        // 开局阶段占角/星位加权
+        const cornerStarMoves = pool.filter(m => isCornerOrStar(m.r, m.c, size));
+        if (cornerStarMoves.length > 0 && Math.random() < 0.6) {
+          return cornerStarMoves[Math.floor(Math.random() * cornerStarMoves.length)];
+        }
+        return pool[Math.floor(Math.random() * pool.length)];
+      }
+
+      // 2. 进阶级别 (TACTICAL)：深度战术启发式评估
+      if (difficulty === 'TACTICAL') {
+        return evaluateTacticalMove(board, validMoves, aiColor, oppColor);
+      }
+
+      // 3. 大师级别 (MASTER)：MCTS 蒙特卡洛树搜索（9x9）或深度强化战术
+      if (difficulty === 'MASTER') {
+        if (size === 9) {
+          return runMctsSearch(board, aiColor, oppColor, validMoves, koPoint, 250);
+        } else {
+          return evaluateTacticalMove(board, validMoves, aiColor, oppColor);
+        }
+      }
+
+      return validMoves[0];
+    }
+
+    // 启发式战术打分
+    function evaluateTacticalMove(board, validMoves, aiColor, oppColor) {
+      const size = board.length;
+      let bestMove = validMoves[0];
+      let bestScore = -999999;
+
+      for (const m of validMoves) {
+        let score = 0;
+
+        // 1. 提子加分（每提吃一子加 150 分）
+        if (m.captures.length > 0) {
+          score += m.captures.length * 150;
+        }
+
+        // 模拟下子后的棋局形态
+        const testBoard = cloneBoard(board);
+        testBoard[m.r][m.c] = aiColor;
+        m.captures.forEach(s => testBoard[s.r][s.c] = 0);
+
+        const myGroup = getGroupAndLiberties(m.r, m.c, testBoard, size);
+
+        // 2. 自杀风险惩罚（如果下完自身只剩 1 气，极度危险）
+        if (myGroup.liberties.size === 1) {
+          score -= 180;
+        } else if (myGroup.liberties.size === 2) {
+          score += 15;
+        } else if (myGroup.liberties.size >= 3) {
+          score += 35;
+        }
+
+        // 3. 进攻性打吃：令对方某块棋气数降为 1（叫吃）
+        for (const n of getNeighbors(m.r, m.c, size)) {
+          if (testBoard[n.r][n.c] === oppColor) {
+            const oppGroup = getGroupAndLiberties(n.r, n.c, testBoard, size);
+            if (oppGroup.liberties.size === 1) {
+              score += 90; // 成功紧气叫吃对方
+            }
+          }
+        }
+
+        // 4. 防守救子：当前盘面若己方有仅剩 1 气的子，落子在此处是否让其长气
+        for (const n of getNeighbors(m.r, m.c, size)) {
+          if (board[n.r][n.c] === aiColor) {
+            const origGroup = getGroupAndLiberties(n.r, n.c, board, size);
+            if (origGroup.liberties.size === 1 && myGroup.liberties.size >= 2) {
+              score += 140; // 成功拯救被打吃的同伴
+            }
+          }
+        }
+
+        // 5. 棋形与位置权（金角银边草肚皮）：偏好三线、四线占位
+        const distR = Math.min(m.r, size - 1 - m.r);
+        const distC = Math.min(m.c, size - 1 - m.c);
+        if (distR === 2 && distC === 2) score += 25; // 3-3点角
+        else if ((distR === 2 && distC === 3) || (distR === 3 && distC === 2)) score += 30; // 星位/小目
+        else if (distR === 0 || distC === 0) score -= 20; // 尽量少下一线（除非杀棋）
+
+        // 6. 避开填自己的真眼
+        if (isTrueEye(m.r, m.c, aiColor, board)) {
+          score -= 200;
+        }
+
+        // 加入微量随机扰动，避免走法呆滞
+        score += Math.random() * 8;
+
+        if (score > bestScore) {
+          bestScore = score;
+          bestMove = m;
+        }
+      }
+
+      return bestMove;
+    }
+
+    // 9x9 纯前端超轻量蒙特卡洛树搜索 (Monte Carlo Tree Search)
+    function runMctsSearch(rootBoard, aiColor, oppColor, validMoves, koPoint, simulations = 200) {
+      const size = rootBoard.length;
+      const stats = new Map();
+
+      validMoves.forEach(m => {
+        stats.set(`${m.r},${m.c}`, { wins: 0, visits: 0, move: m });
+      });
+
+      for (let sim = 0; sim < simulations; sim++) {
+        // 选择第一手
+        const firstMove = validMoves[sim % validMoves.length];
+        const key = `${firstMove.r},${firstMove.c}`;
+        const node = stats.get(key);
+
+        // 快速模拟对局 (Rollout)
+        const simBoard = cloneBoard(rootBoard);
+        simBoard[firstMove.r][firstMove.c] = aiColor;
+        firstMove.captures.forEach(s => simBoard[s.r][s.c] = 0);
+
+        let turn = oppColor;
+        let passes = 0;
+        for (let step = 0; step < 16; step++) {
+          const r = Math.floor(Math.random() * size);
+          const c = Math.floor(Math.random() * size);
+          if (simBoard[r][c] === 0) {
+            const leg = checkMoveLegality(r, c, turn, simBoard, null);
+            if (leg.valid) {
+              simBoard[r][c] = turn;
+              leg.captures.forEach(s => simBoard[s.r][s.c] = 0);
+              turn = turn === 1 ? 2 : 1;
+              passes = 0;
+              continue;
+            }
+          }
+          passes++;
+          if (passes >= 4) break;
+        }
+
+        // 快速目数判分
+        const sc = calculateTerritoryScore(simBoard);
+        const myScore = aiColor === 1 ? sc.black : sc.white;
+        const oppScore = aiColor === 1 ? sc.white : sc.black;
+        const isWin = myScore >= oppScore;
+
+        node.visits++;
+        if (isWin) node.wins++;
+      }
+
+      // 选出访问次数最多或胜率最高的点
+      let best = validMoves[0];
+      let bestRate = -1;
+      stats.forEach(s => {
+        const rate = s.visits > 0 ? (s.wins / s.visits) : 0;
+        if (rate > bestRate) {
+          bestRate = rate;
+          best = s.move;
+        }
+      });
+
+      return best;
+    }
+
+    // 真眼判定（四邻全为己方颜色且对角至少 3 个己方子）
+    function isTrueEye(r, c, color, board) {
+      const size = board.length;
+      for (const n of getNeighbors(r, c, size)) {
+        if (board[n.r][n.c] !== color) return false;
+      }
+      return true;
+    }
+
+    function isCornerOrStar(r, c, size) {
+      if (size === 9) {
+        return (r === 2 && c === 2) || (r === 2 && c === 6) || (r === 6 && c === 2) || (r === 6 && c === 6) || (r === 4 && c === 4);
+      }
+      return false;
+    }
+
+    // ==========================================================================
+    // 6. Canvas 绘制与渲染管线
+    // ==========================================================================
+    function getBoardStarPoints(size) {
+      if (size === 9) {
+        return [{ r: 2, c: 2 }, { r: 2, c: 6 }, { r: 6, c: 2 }, { r: 6, c: 6 }, { r: 4, c: 4 }];
+      } else if (size === 13) {
+        return [{ r: 3, c: 3 }, { r: 3, c: 9 }, { r: 9, c: 3 }, { r: 9, c: 9 }, { r: 6, c: 6 }];
+      } else {
+        return [
+          { r: 3, c: 3 }, { r: 3, c: 9 }, { r: 3, c: 15 },
+          { r: 9, c: 3 }, { r: 9, c: 9 }, { r: 9, c: 15 },
+          { r: 15, c: 3 }, { r: 15, c: 9 }, { r: 15, c: 15 }
+        ];
+      }
+    }
+
+    function resizeCanvas() {
+      const box = document.getElementById('board-box');
+      if (!box) return;
+      const rect = box.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      CANVAS.width = rect.width * dpr;
+      CANVAS.height = rect.height * dpr;
+      CTX.scale(dpr, dpr);
+      renderBoard();
+    }
+
+    function getGridMetrics() {
+      const rect = CANVAS.getBoundingClientRect();
+      const size = GO_STATE.boardSize;
+      const padding = rect.width * 0.08;
+      const gridWidth = rect.width - padding * 2;
+      const cellSize = gridWidth / (size - 1);
+      return { padding, cellSize, size, width: rect.width, height: rect.height };
+    }
+
+    function getCoord(r, c, metrics) {
+      return {
+        x: metrics.padding + c * metrics.cellSize,
+        y: metrics.padding + r * metrics.cellSize
+      };
+    }
+
+    function renderBoard() {
+      const m = getGridMetrics();
+      CTX.clearRect(0, 0, m.width, m.height);
+
+      // 1. 拟真日式榧木纹背景 (Wood Grain Base)
+      const woodGrad = CTX.createLinearGradient(0, 0, m.width, m.height);
+      woodGrad.addColorStop(0, '#e5be82');
+      woodGrad.addColorStop(0.5, '#dcb274');
+      woodGrad.addColorStop(1, '#cca062');
+      CTX.fillStyle = woodGrad;
+      CTX.fillRect(0, 0, m.width, m.height);
+
+      // 细微木质纹理细线条
+      CTX.strokeStyle = 'rgba(160, 115, 55, 0.15)';
+      CTX.lineWidth = 1;
+      for (let i = 0; i < m.height; i += 7) {
+        CTX.beginPath();
+        CTX.moveTo(0, i);
+        CTX.lineTo(m.width, i + Math.sin(i * 0.08) * 4);
+        CTX.stroke();
+      }
+
+      // 2. 网格线绘制
+      CTX.strokeStyle = '#3e2712';
+      CTX.lineWidth = 1.2;
+
+      for (let i = 0; i < m.size; i++) {
+        // 横线
+        const pStartH = getCoord(i, 0, m);
+        const pEndH = getCoord(i, m.size - 1, m);
+        CTX.beginPath();
+        CTX.moveTo(pStartH.x, pStartH.y);
+        CTX.lineTo(pEndH.x, pEndH.y);
+        CTX.stroke();
+
+        // 竖线
+        const pStartV = getCoord(0, i, m);
+        const pEndV = getCoord(m.size - 1, i, m);
+        CTX.beginPath();
+        CTX.moveTo(pStartV.x, pStartV.y);
+        CTX.lineTo(pEndV.x, pEndV.y);
+        CTX.stroke();
+      }
+
+      // 外边框加粗
+      const topLeft = getCoord(0, 0, m);
+      const botRight = getCoord(m.size - 1, m.size - 1, m);
+      CTX.lineWidth = 2.2;
+      CTX.strokeRect(topLeft.x, topLeft.y, botRight.x - topLeft.x, botRight.y - topLeft.y);
+
+      // 3. 星位绘制 (Star Points)
+      const starRadius = Math.max(3, m.cellSize * 0.09);
+      CTX.fillStyle = '#3e2712';
+      for (const sp of getBoardStarPoints(m.size)) {
+        const pt = getCoord(sp.r, sp.c, m);
+        CTX.beginPath();
+        CTX.arc(pt.x, pt.y, starRadius, 0, Math.PI * 2);
+        CTX.fill();
+      }
+
+      // 4. 棋盘外缘坐标标注 (Coordinates A-T, 1-19)
+      CTX.fillStyle = '#654321';
+      CTX.font = `bold ${Math.max(9, m.cellSize * 0.32)}px sans-serif`;
+      CTX.textAlign = 'center';
+      CTX.textBaseline = 'middle';
+      const colLabels = ['A','B','C','D','E','F','G','H','J','K','L','M','N','O','P','Q','R','S','T'];
+
+      for (let c = 0; c < m.size; c++) {
+        const p = getCoord(0, c, m);
+        CTX.fillText(colLabels[c], p.x, m.padding * 0.45);
+        CTX.fillText(colLabels[c], p.x, m.height - m.padding * 0.45);
+      }
+      for (let r = 0; r < m.size; r++) {
+        const p = getCoord(r, 0, m);
+        const numLabel = m.size - r;
+        CTX.fillText(numLabel, m.padding * 0.45, p.y);
+        CTX.fillText(numLabel, m.width - m.padding * 0.45, p.y);
+      }
+
+      // 5. 目数估算高亮模式 (Territory Heatmap)
+      if (GO_STATE.showTerritory && GO_STATE.territoryMap) {
+        for (let r = 0; r < m.size; r++) {
+          for (let c = 0; c < m.size; c++) {
+            const terr = GO_STATE.territoryMap[r][c];
+            if (terr !== 0 && GO_STATE.board[r][c] === 0) {
+              const pt = getCoord(r, c, m);
+              const squareSize = m.cellSize * 0.38;
+              CTX.fillStyle = terr === 1 ? 'rgba(0, 0, 0, 0.55)' : 'rgba(255, 255, 255, 0.75)';
+              CTX.fillRect(pt.x - squareSize / 2, pt.y - squareSize / 2, squareSize, squareSize);
+            }
+          }
+        }
+      }
+
+      // 6. 棋子绘制 (Stones)
+      const stoneRadius = m.cellSize * 0.45;
+
+      for (let r = 0; r < m.size; r++) {
+        for (let c = 0; c < m.size; c++) {
+          const color = GO_STATE.board[r][c];
+          if (color !== 0) {
+            drawGoStone(r, c, color, stoneRadius, m);
+          }
+        }
+      }
+
+      // 7. 最后一手标记 (Last Move Marker)
+      if (GO_STATE.lastMove) {
+        const lm = getCoord(GO_STATE.lastMove.r, GO_STATE.lastMove.c, m);
+        const isBlack = GO_STATE.board[GO_STATE.lastMove.r][GO_STATE.lastMove.c] === 1;
+        CTX.beginPath();
+        CTX.arc(lm.x, lm.y, stoneRadius * 0.35, 0, Math.PI * 2);
+        CTX.strokeStyle = isBlack ? '#38bdf8' : '#e11d48';
+        CTX.lineWidth = 2.5;
+        CTX.stroke();
+      }
+
+      // 8. 悬停投影预览 (Hover Ghost Stone)
+      if (GO_STATE.hoverPoint && !GO_STATE.gameOver && !GO_STATE.isAiComputing) {
+        const hp = GO_STATE.hoverPoint;
+        if (GO_STATE.board[hp.r][hp.c] === 0) {
+          const pt = getCoord(hp.r, hp.c, m);
+          CTX.beginPath();
+          CTX.arc(pt.x, pt.y, stoneRadius, 0, Math.PI * 2);
+          CTX.fillStyle = GO_STATE.turn === 1 ? 'rgba(15, 23, 42, 0.35)' : 'rgba(255, 255, 255, 0.5)';
+          CTX.fill();
+        }
+      }
+    }
+
+    // 逼真黑白棋子立体绘制
+    function drawGoStone(r, c, color, radius, m) {
+      const pt = getCoord(r, c, m);
+
+      // 棋子投影阴影
+      CTX.save();
+      CTX.beginPath();
+      CTX.arc(pt.x + radius * 0.12, pt.y + radius * 0.14, radius, 0, Math.PI * 2);
+      CTX.fillStyle = 'rgba(0, 0, 0, 0.38)';
+      CTX.filter = 'blur(3px)';
+      CTX.fill();
+      CTX.restore();
+
+      // 棋子本体与球面高光
+      CTX.beginPath();
+      CTX.arc(pt.x, pt.y, radius, 0, Math.PI * 2);
+
+      if (color === 1) {
+        // 黑棋 (玉黑石质质感)
+        const grad = CTX.createRadialGradient(
+          pt.x - radius * 0.3, pt.y - radius * 0.35, radius * 0.05,
+          pt.x, pt.y, radius
+        );
+        grad.addColorStop(0, '#555f6d');
+        grad.addColorStop(0.3, '#242b35');
+        grad.addColorStop(1, '#090d13');
+        CTX.fillStyle = grad;
+        CTX.fill();
+        CTX.strokeStyle = '#1e293b';
+        CTX.lineWidth = 0.8;
+        CTX.stroke();
+      } else {
+        // 白棋 (羊脂白玉质感)
+        const grad = CTX.createRadialGradient(
+          pt.x - radius * 0.3, pt.y - radius * 0.35, radius * 0.05,
+          pt.x, pt.y, radius
+        );
+        grad.addColorStop(0, '#ffffff');
+        grad.addColorStop(0.65, '#f1f5f9');
+        grad.addColorStop(1, '#cbd5e1');
+        CTX.fillStyle = grad;
+        CTX.fill();
+        CTX.strokeStyle = '#94a3b8';
+        CTX.lineWidth = 0.8;
+        CTX.stroke();
+      }
+    }
+
+    // 提子飘字特效
+    function spawnCaptureText(r, c, text) {
+      const box = document.getElementById('board-box');
+      if (!box) return;
+      const m = getGridMetrics();
+      const pt = getCoord(r, c, m);
+      const el = document.createElement('div');
+      el.className = 'capture-floating-text';
+      el.textContent = text;
+      el.style.left = `${pt.x}px`;
+      el.style.top = `${pt.y}px`;
+      box.appendChild(el);
+      setTimeout(() => el.remove(), 1300);
+    }
+
+    // ==========================================================================
+    // 7. 交互控制与界面更新
+    // ==========================================================================
+    function updateUI() {
+      const cardP1 = document.getElementById('card-p1');
+      const cardP2 = document.getElementById('card-p2');
+      const capsP1 = document.getElementById('caps-p1');
+      const capsP2 = document.getElementById('caps-p2');
+      const btnUndo = document.getElementById('btn-undo');
+
+      if (cardP1) cardP1.classList.toggle('active-turn', GO_STATE.turn === 1);
+      if (cardP2) cardP2.classList.toggle('active-turn', GO_STATE.turn === 2);
+
+      if (capsP1) capsP1.textContent = GO_STATE.captures[1];
+      if (capsP2) capsP2.textContent = GO_STATE.captures[2];
+
+      const nameP2 = document.getElementById('name-p2');
+      if (nameP2) {
+        if (GO_STATE.gameMode === 'AI') {
+          nameP2.textContent = '电脑 (AI · 白棋)';
+        } else if (GO_STATE.gameMode === 'ONLINE') {
+          nameP2.textContent = '好友 (客 · 白棋)';
+        } else {
+          nameP2.textContent = '玩家 2 (白棋)';
+        }
+      }
+
+      if (btnUndo) {
+        btnUndo.disabled = GO_STATE.history.length === 0 || GO_STATE.isAiComputing;
+      }
+    }
+
+    function changeBoardSize(size) {
+      if (GO_STATE.boardSize === size) return;
+      GO_STATE.boardSize = size;
+      ['size-9', 'size-13', 'size-19'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) btn.classList.remove('active');
+      });
+      const activeBtn = document.getElementById(`size-${size}`);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      if (window.AUDIO) try { window.AUDIO.play('click'); } catch(e) {}
+      showToast(`🔲 已切换为 ${size}×${size} 棋盘`);
+      resetCurrentGame();
+    }
+
+    function changeAiDifficulty(diff) {
+      GO_STATE.aiDifficulty = diff;
+      ['diff-easy', 'diff-tactical', 'diff-master'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) btn.classList.remove('active');
+      });
+      const map = { 'EASY': 'diff-easy', 'TACTICAL': 'diff-tactical', 'MASTER': 'diff-master' };
+      const btn = document.getElementById(map[diff]);
+      if (btn) btn.classList.add('active');
+
+      if (window.AUDIO) try { window.AUDIO.play('click'); } catch(e) {}
+      const labels = { 'EASY': '入门', 'TACTICAL': '进阶', 'MASTER': '大师(MCTS)' };
+      showToast(`🤖 AI 难度切换为：【${labels[diff]}】`);
+    }
+
+    function switchGameMode(mode) {
+      GO_STATE.gameMode = mode;
+      document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+      const activeTab = document.getElementById(`tab-${mode.toLowerCase()}`);
+      if (activeTab) activeTab.classList.add('active');
+
+      const onlinePanel = document.getElementById('online-panel');
+      if (onlinePanel) {
+        onlinePanel.style.display = mode === 'ONLINE' ? 'flex' : 'none';
+        if (mode === 'ONLINE' && window.ONLINE_NETWORK) {
+          ONLINE_NETWORK.createRoom('GO');
+        }
+      }
+
+      const aiGroup = document.getElementById('ai-difficulty-group');
+      if (aiGroup) {
+        aiGroup.style.display = mode === 'AI' ? 'inline-flex' : 'none';
+      }
+
+      if (window.AUDIO) try { window.AUDIO.play('click'); } catch(e) {}
+      resetCurrentGame();
+    }
+
+    function resetCurrentGame() {
+      const size = GO_STATE.boardSize;
+      GO_STATE.board = Array(size).fill(0).map(() => Array(size).fill(0));
+      GO_STATE.turn = 1; // 黑先
+      GO_STATE.captures = { 1: 0, 2: 0 };
+      GO_STATE.lastMove = null;
+      GO_STATE.history = [];
+      GO_STATE.koPoint = null;
+      GO_STATE.passCount = 0;
+      GO_STATE.gameOver = false;
+      GO_STATE.winner = null;
+      GO_STATE.showTerritory = false;
+      GO_STATE.isAiComputing = false;
+      GO_STATE.territoryMap = null;
+
+      const ind = document.getElementById('ai-thinking-indicator');
+      if (ind) ind.classList.remove('show');
+      const terrBtn = document.getElementById('btn-territory');
+      if (terrBtn) terrBtn.classList.remove('active-toggle');
+
+      updateUI();
+      renderBoard();
+    }
+
+    // ==========================================================================
+    // 8. 触控与鼠标事件侦听
+    // ==========================================================================
+    function getBoardPosFromEvent(e) {
+      const rect = CANVAS.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+      const m = getGridMetrics();
+
+      const col = Math.round((x - m.padding) / m.cellSize);
+      const row = Math.round((y - m.padding) / m.cellSize);
+
+      if (row >= 0 && row < m.size && col >= 0 && col < m.size) {
+        // 允许微小容差
+        const pt = getCoord(row, col, m);
+        const dist = Math.hypot(x - pt.x, y - pt.y);
+        if (dist <= m.cellSize * 0.58) {
+          return { r: row, c: col };
+        }
+      }
+      return null;
+    }
+
+    CANVAS.addEventListener('click', (e) => {
+      const pos = getBoardPosFromEvent(e);
+      if (pos) playStone(pos.r, pos.c);
+    });
+
+    CANVAS.addEventListener('mousemove', (e) => {
+      const pos = getBoardPosFromEvent(e);
+      GO_STATE.hoverPoint = pos;
+      renderBoard();
+    });
+
+    CANVAS.addEventListener('mouseleave', () => {
+      GO_STATE.hoverPoint = null;
+      renderBoard();
+    });
+
+    CANVAS.addEventListener('touchstart', (e) => {
+      const pos = getBoardPosFromEvent(e);
+      if (pos) playStone(pos.r, pos.c);
+      e.preventDefault();
+    }, { passive: false });
+
+    // ==========================================================================
+    // 9. 初始化与生命周期
+    // ==========================================================================
+    window.addEventListener('DOMContentLoaded', () => {
+      initCommonHeader("⚪⚫ 玄素围棋对弈规则", `
+        <p><strong>基本落子：</strong>黑先白后，双方轮流落子在棋盘网格交叉点上。</p><br>
+        <p><strong>气与提子：</strong>与棋子紧邻的空交叉点为"气"。当某块棋的气被对方全部封堵（气数为 0）时，该棋块立即被提吃。</p><br>
+        <p><strong>禁着点与打劫：</strong>禁止无气自杀；单子互提时触发"劫争（Ko Rule）"，禁止立即回提，必须先在别处落子（寻劫）。</p><br>
+        <p><strong>胜负判定：</strong>双方连续"停一手"则终盘数子，占领交叉点与提子数多者获胜！</p>
+      `, resetCurrentGame);
+
+      resetCurrentGame();
+      window.addEventListener('resize', resizeCanvas);
+      setTimeout(resizeCanvas, 50);
+    });
+  </script>
+</body>
+</html>

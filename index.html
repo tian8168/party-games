@@ -1400,6 +1400,95 @@
     </div>
   
 
+    <div class="game-card" data-cat="STRATEGY" data-players="2" onclick="enterGame('GO')">
+      <div class="card-cover-wrapper">
+        <div class="card-art-canvas">
+          
+  <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="goWood" cx="50%" cy="50%" r="60%">
+        <stop offset="0%" stop-color="#dfa868"/>
+        <stop offset="60%" stop-color="#c68a4c"/>
+        <stop offset="100%" stop-color="#935b24"/>
+      </radialGradient>
+      <radialGradient id="blackStoneGrad" cx="35%" cy="35%" r="65%">
+        <stop offset="0%" stop-color="#555"/>
+        <stop offset="40%" stop-color="#222"/>
+        <stop offset="100%" stop-color="#0a0a0a"/>
+      </radialGradient>
+      <radialGradient id="whiteStoneGrad" cx="30%" cy="30%" r="70%">
+        <stop offset="0%" stop-color="#ffffff"/>
+        <stop offset="60%" stop-color="#f0f0f0"/>
+        <stop offset="100%" stop-color="#cbd5e1"/>
+      </radialGradient>
+      <filter id="stoneShadow" x="-20%" y="-20%" width="150%" height="150%">
+        <feDropShadow dx="2" dy="3" stdDeviation="2.5" flood-color="#000000" flood-opacity="0.6"/>
+      </filter>
+      <filter id="goGlow">
+        <feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <rect width="320" height="180" fill="#0b1120"/>
+    <g transform="translate(160, 95) scale(1.05, 0.75) rotate(-6)">
+      <polygon points="-125,-75 125,-75 132,-68 132,78 -118,78 -125,71" fill="#5c3815" opacity="0.8"/>
+      <polygon points="-125,71 125,71 125,82 -125,82" fill="#78471c"/>
+      <rect x="-125" y="-75" width="250" height="146" rx="6" fill="url(#goWood)" stroke="#5c3815" stroke-width="1.5"/>
+      <g stroke="#613b14" stroke-width="1.2" opacity="0.85">
+        <line x1="-105" y1="-55" x2="105" y2="-55"/>
+        <line x1="-105" y1="-30" x2="105" y2="-30"/>
+        <line x1="-105" y1="-5" x2="105" y2="-5"/>
+        <line x1="-105" y1="20" x2="105" y2="20"/>
+        <line x1="-105" y1="45" x2="105" y2="45"/>
+        <line x1="-105" y1="-55" x2="-105" y2="45"/>
+        <line x1="-63" y1="-55" x2="-63" y2="45"/>
+        <line x1="-21" y1="-55" x2="-21" y2="45"/>
+        <line x1="21" y1="-55" x2="21" y2="45"/>
+        <line x1="63" y1="-55" x2="63" y2="45"/>
+        <line x1="105" y1="-55" x2="105" y2="45"/>
+      </g>
+      <circle cx="-63" cy="-30" r="2.5" fill="#45270b"/>
+      <circle cx="63" cy="-30" r="2.5" fill="#45270b"/>
+      <circle cx="-21" cy="-5" r="2.8" fill="#45270b"/>
+      <circle cx="-63" cy="20" r="2.5" fill="#45270b"/>
+      <circle cx="63" cy="20" r="2.5" fill="#45270b"/>
+      <circle cx="-63" cy="-30" r="16" fill="url(#blackStoneGrad)" filter="url(#stoneShadow)"/>
+      <circle cx="21" cy="-30" r="16" fill="url(#blackStoneGrad)" filter="url(#stoneShadow)"/>
+      <circle cx="-21" cy="20" r="16" fill="url(#blackStoneGrad)" filter="url(#stoneShadow)"/>
+      <circle cx="63" cy="20" r="16" fill="url(#blackStoneGrad)" filter="url(#stoneShadow)"/>
+      <circle cx="-21" cy="-5" r="16" fill="url(#whiteStoneGrad)" filter="url(#stoneShadow)"/>
+      <circle cx="-21" cy="-30" r="16" fill="url(#whiteStoneGrad)" filter="url(#stoneShadow)"/>
+      <circle cx="21" cy="-5" r="16" fill="url(#whiteStoneGrad)" filter="url(#stoneShadow)"/>
+      <circle cx="21" cy="-5" r="17" fill="none" stroke="#38bdf8" stroke-width="2.5" filter="url(#goGlow)" opacity="0.8"/>
+    </g>
+    <path d="M30,150 Q160,110 290,30" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="6 4" fill="none" opacity="0.4" filter="url(#goGlow)"/>
+  </svg>
+        </div>
+        <div class="cover-badges">
+          <span class="badge-pill players">👥 1-2人</span>
+          <span class="badge-pill tag-hot">⚪⚫ 千古黑白</span>
+        </div>
+        <div class="cover-overlay"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="title-group">
+            <div class="card-main-title">
+              <span>玄素围棋</span>
+              <span class="card-sub">THE GAME OF GO</span>
+            </div>
+            <div class="card-tagline">纵横十九路 · 气尽提子与多级AI对弈</div>
+          </div>
+          <div class="btn-play-action">开玩 ▶</div>
+        </div>
+        <div class="card-meta-chips">
+          <span class="meta-chip">⏱️ 3-15分钟</span>
+          <span class="meta-chip">烧脑 ⭐⭐⭐⭐</span>
+          <span class="meta-chip accent">9/13/19路 + 蒙特卡洛AI</span>
+        </div>
+      </div>
+    </div>
+  
+
     <div class="game-card" data-cat="REFLEX" data-players="4" onclick="enterGame('IAIDO')">
       <div class="card-cover-wrapper">
         <div class="card-art-canvas">
@@ -1758,6 +1847,7 @@
       'GRAVITY4': 'gravity4.html',
       'GRAVITY3D': 'gravity3d.html',
       'GRAVITY3D4': 'gravity3d4.html',
+      'GO': 'go.html',
       'IAIDO': 'iaido.html',
       'LIARSDICE': 'liarsdice.html',
       'SUMO': 'sumo.html',
@@ -1812,7 +1902,7 @@
 
     function randomPickGame() {
       if (window.AUDIO) window.AUDIO.play('drop');
-      const gameKeys = ['NES', 'CONTRA', 'QUORIDOR', 'AEROPLANE', 'HOCKEY', 'GRAVITY', 'GRAVITY4', 'GRAVITY3D', 'GRAVITY3D4', 'IAIDO', 'LIARSDICE', 'SUMO', 'TANK', 'STACK', 'TANKTROUBLE'];
+      const gameKeys = ['NES', 'CONTRA', 'QUORIDOR', 'AEROPLANE', 'HOCKEY', 'GRAVITY', 'GRAVITY4', 'GRAVITY3D', 'GRAVITY3D4', 'GO', 'IAIDO', 'LIARSDICE', 'SUMO', 'TANK', 'STACK', 'TANKTROUBLE'];
       const chosen = gameKeys[Math.floor(Math.random() * gameKeys.length)];
       const titles = {
         'NES': '🕹️ FC 怀旧街机厅 (800+ 经典原版)',
@@ -1824,6 +1914,7 @@
         'GRAVITY4': '🟡 重力四子棋',
         'GRAVITY3D': '🧊 3D 立体五子棋',
         'GRAVITY3D4': '💜 3D 立体四子棋',
+        'GO': '⚪⚫ 玄素围棋 (The Game of Go)',
         'IAIDO': '⚡ 拔刀居合斩',
         'LIARSDICE': '🎲 皇家大话骰',
         'SUMO': '🚗 物理飞车相扑',
@@ -1869,6 +1960,7 @@
           'GRAVITY4': '🟡 四子棋',
           'GRAVITY3D': '🧊 3D五子',
           'GRAVITY3D4': '💜 3D四子',
+          'GO': '⚪⚫ 玄素围棋',
           'IAIDO': '⚡ 居合斩',
           'LIARSDICE': '🎲 大话骰',
           'SUMO': '🚗 飞车相扑',
@@ -1947,7 +2039,7 @@
           if (window.AUDIO) window.AUDIO.play('click');
           showModal('🎮 聚会游戏大厅说明', `
             <p><strong>欢迎来到聚会游戏大厅！</strong></p><br>
-            <p>本平台包含 <b>15 款</b> 纯前端原生高画质对抗游戏，涵盖策略博弈、物理对抗、心理博弈与手速竞技四大类。</p><br>
+            <p>本平台包含 <b>16 款</b> 纯前端原生高画质对抗游戏，涵盖策略博弈、物理对抗、心理博弈与手速竞技四大类。</p><br>
             <p><strong>游戏独立化架构：</strong>每个游戏均拥有专属独立 HTML 页面，零依赖极速秒开，支持人机对弈、本地同屏与好友联机！</p><br>
             <p><strong>操作提示：</strong>点击任意游戏卡片即可直接进入游戏。在游戏内点击顶部的 <b>【◀ 返回大厅】</b> 可随时返回。</p>
           `);
