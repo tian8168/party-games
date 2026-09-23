@@ -107,7 +107,15 @@ scriptContent = scriptContent.replace(/function passTurn/g, 'globalThis.passTurn
 scriptContent = scriptContent.replace(/function scheduleAiMove/g, 'globalThis.scheduleAiMove = scheduleAiMove; function scheduleAiMove');
 scriptContent = scriptContent.replace(/function resetCurrentGame/g, 'globalThis.resetCurrentGame = resetCurrentGame; function resetCurrentGame');
 scriptContent = scriptContent.replace(/function resignGame/g, 'globalThis.resignGame = resignGame; function resignGame');
-scriptContent = scriptContent.replace(/function computeBestAiMove/g, 'globalThis.computeBestAiMove = computeBestAiMove; function computeBestAiMove');
+scriptContent = scriptContent.replace(/function evaluateGameSituation/g, 'globalThis.evaluateGameSituation = evaluateGameSituation; function evaluateGameSituation');
+scriptContent = scriptContent.replace(/function jumpToStep/g, 'globalThis.jumpToStep = jumpToStep; function jumpToStep');
+scriptContent = scriptContent.replace(/function stepFirstMove/g, 'globalThis.stepFirstMove = stepFirstMove; function stepFirstMove');
+scriptContent = scriptContent.replace(/function stepPrevMove/g, 'globalThis.stepPrevMove = stepPrevMove; function stepPrevMove');
+scriptContent = scriptContent.replace(/function stepNextMove/g, 'globalThis.stepNextMove = stepNextMove; function stepNextMove');
+scriptContent = scriptContent.replace(/function stepLatestMove/g, 'globalThis.stepLatestMove = stepLatestMove; function stepLatestMove');
+scriptContent = scriptContent.replace(/function getGridMetrics/g, 'globalThis.getGridMetrics = getGridMetrics; function getGridMetrics');
+scriptContent = scriptContent.replace(/function undoMove/g, 'globalThis.undoMove = undoMove; function undoMove');
+scriptContent = scriptContent.replace(/function playStone/g, 'globalThis.playStone = playStone; function playStone');
 
 vm.createContext(sandbox);
 vm.runInContext(scriptContent, sandbox);
@@ -268,6 +276,138 @@ sandbox.GO_STATE.boardSize = 19;
 sandbox.resetCurrentGame(false);
 assert(sandbox.GO_STATE.board.length === 19, '19x19 board successfully initialized with 19 rows');
 
+// 16. Grid Metrics & 1:1 Aspect Ratio Verification
+sandbox.GO_STATE.boardSize = 19;
+let metrics = sandbox.getGridMetrics();
+assert(metrics.side === 600, 'Metrics side matches canvas dimension');
+assert(metrics.padding === 25, '19x19 padding is correctly calculated (~0.042 * 600 = 25)');
+const spanRatio19 = (metrics.side - metrics.padding * 2) / metrics.side;
+assert(spanRatio19 >= 0.90 && spanRatio19 <= 0.94, `19x19 grid span ratio ${(spanRatio19 * 100).toFixed(1)}% is within 90%~94% area coverage`);
+assert(Math.abs(metrics.cellSize * 18 - (metrics.side - metrics.padding * 2)) < 0.001, '19x19 cells partition grid span evenly');
+
+sandbox.GO_STATE.boardSize = 13;
+metrics = sandbox.getGridMetrics();
+assert(metrics.padding === 29, '13x13 padding is correctly calculated (~0.048 * 600 = 29)');
+const spanRatio13 = (metrics.side - metrics.padding * 2) / metrics.side;
+assert(spanRatio13 >= 0.90 && spanRatio13 <= 0.94, `13x13 grid span ratio ${(spanRatio13 * 100).toFixed(1)}% is within 90%~94% area coverage`);
+
+sandbox.GO_STATE.boardSize = 9;
+metrics = sandbox.getGridMetrics();
+assert(metrics.padding === 31, '9x9 padding is correctly calculated (~0.052 * 600 = 31)');
+assert(metrics.offsetX === 0 && metrics.offsetY === 0, 'Grid is centered on square canvas without offset skew');
+
+// 17. Global Situation Judgment (evaluateGameSituation) with 7.5 Komi
+sandbox.resetCurrentGame(false);
+let situation = sandbox.evaluateGameSituation(sandbox.GO_STATE.board, sandbox.GO_STATE.captures, false);
+assert(situation.komi === 7.5, 'White komi is set to standard 7.5目');
+assert(situation.blackTotal === 0, 'Initial black total is 0');
+assert(situation.whiteTotal === 7.5, 'Initial white total includes 7.5 komi');
+assert(situation.diff === -7.5, 'Initial score diff is -7.5 (White leads by 7.5 komi)');
+assert(situation.leaderText.includes('白方领先 7.5 目'), 'Initial leader text announces White leading by 7.5目');
+assert(situation.blackPercent + situation.whitePercent === 100, 'Situation balance percentages sum to exactly 100%');
+
+// Situation evaluation with stones & captures
+sandbox.GO_STATE.board[0][1] = 1;
+sandbox.GO_STATE.board[1][0] = 1;
+sandbox.GO_STATE.board[1][1] = 1; // Black territory at (0,0)
+sandbox.GO_STATE.board[8][7] = 2;
+sandbox.GO_STATE.board[7][8] = 2;
+sandbox.GO_STATE.board[7][7] = 2; // White territory at (8,8)
+sandbox.GO_STATE.captures = { 1: 3, 2: 0 }; // Black captured 3 stones
+situation = sandbox.evaluateGameSituation(sandbox.GO_STATE.board, sandbox.GO_STATE.captures, false);
+// Black: 1 terr + 3 caps = 4
+// White: 1 terr + 0 caps + 7.5 komi = 8.5
+// diff = 4 - 8.5 = -4.5 (White leads by 4.5)
+assert(situation.blackTotal === 4, 'Black total is 4 (1 territory + 3 captures)');
+assert(situation.whiteTotal === 8.5, 'White total is 8.5 (1 territory + 7.5 komi)');
+assert(situation.diff === -4.5, 'Score diff is -4.5');
+assert(situation.leaderText.includes('白方领先 4.5 目'), 'Leader text states White leading by 4.5目');
+
+// Test Black leading situation
+sandbox.GO_STATE.captures = { 1: 10, 2: 0 }; // Black has 10 captures -> Black total = 11, White = 8.5 -> Black +2.5
+situation = sandbox.evaluateGameSituation(sandbox.GO_STATE.board, sandbox.GO_STATE.captures, false);
+assert(situation.diff === 2.5, 'Score diff is +2.5 when Black leads');
+assert(situation.leaderText.includes('黑方领先 2.5 目'), 'Leader text states Black leading by 2.5目');
+
+// 18. Move Timeline History & Navigation (jumpToStep, stepFirstMove, stepPrevMove, etc.)
+sandbox.resetCurrentGame(false);
+assert(sandbox.GO_STATE.moveHistory.length === 1, 'Initial moveHistory has 1 record (opening step 0)');
+assert(sandbox.GO_STATE.currentStep === 0, 'Initial currentStep is 0');
+
+// Execute 3 sequential moves in LOCAL mode
+sandbox.GO_STATE.gameMode = 'LOCAL';
+sandbox.executeMove(2, 2, [], null, false); // Step 1: Black plays (2,2)
+assert(sandbox.GO_STATE.moveHistory.length === 2, 'moveHistory has 2 entries after 1st move');
+assert(sandbox.GO_STATE.currentStep === 1, 'currentStep advances to 1');
+
+sandbox.executeMove(6, 6, [], null, false); // Step 2: White plays (6,6)
+assert(sandbox.GO_STATE.moveHistory.length === 3, 'moveHistory has 3 entries after 2nd move');
+assert(sandbox.GO_STATE.currentStep === 2, 'currentStep advances to 2');
+
+sandbox.executeMove(4, 4, [], null, false); // Step 3: Black plays (4,4)
+assert(sandbox.GO_STATE.moveHistory.length === 4, 'moveHistory has 4 entries after 3rd move');
+assert(sandbox.GO_STATE.currentStep === 3, 'currentStep advances to 3');
+assert(sandbox.GO_STATE.board[4][4] === 1, 'Board reflects step 3 state at (4,4)');
+
+// Jump to step 1
+sandbox.jumpToStep(1);
+assert(sandbox.GO_STATE.currentStep === 1, 'jumpToStep(1) successfully sets currentStep to 1');
+assert(sandbox.GO_STATE.board[2][2] === 1, 'Board at step 1 has Black at (2,2)');
+assert(sandbox.GO_STATE.board[6][6] === 0, 'Board at step 1 does not have stone at (6,6)');
+assert(sandbox.GO_STATE.board[4][4] === 0, 'Board at step 1 does not have stone at (4,4)');
+
+// Navigation button functions
+sandbox.stepFirstMove();
+assert(sandbox.GO_STATE.currentStep === 0, 'stepFirstMove() jumps back to opening (step 0)');
+assert(sandbox.GO_STATE.board[2][2] === 0, 'Board at step 0 is empty at (2,2)');
+
+sandbox.stepNextMove();
+assert(sandbox.GO_STATE.currentStep === 1, 'stepNextMove() advances from 0 to 1');
+assert(sandbox.GO_STATE.board[2][2] === 1, 'Board restored to step 1');
+
+sandbox.stepNextMove();
+assert(sandbox.GO_STATE.currentStep === 2, 'stepNextMove() advances from 1 to 2');
+assert(sandbox.GO_STATE.board[6][6] === 2, 'Board restored to step 2');
+
+sandbox.stepPrevMove();
+assert(sandbox.GO_STATE.currentStep === 1, 'stepPrevMove() steps back from 2 to 1');
+assert(sandbox.GO_STATE.board[6][6] === 0, 'Board restored to step 1 after prevMove');
+
+sandbox.stepLatestMove();
+assert(sandbox.GO_STATE.currentStep === 3, 'stepLatestMove() jumps directly to latest move (step 3)');
+assert(sandbox.GO_STATE.board[4][4] === 1, 'Board restored to step 3 after stepLatestMove');
+
+// 19. History Branching (Playing from historical step truncates subsequent moves)
+sandbox.jumpToStep(1); // Reviewing at step 1 (where Black played (2,2), now White's turn)
+assert(sandbox.GO_STATE.currentStep === 1, 'Positioned at step 1');
+// White plays (3,3) instead of old (6,6)
+sandbox.playStone(3, 3);
+assert(sandbox.GO_STATE.currentStep === 2, 'After branching move, currentStep is 2');
+assert(sandbox.GO_STATE.moveHistory.length === 3, 'moveHistory truncated to 3 entries (0, 1, new 2)');
+assert(sandbox.GO_STATE.board[3][3] === 2, 'New branch has White stone at (3,3)');
+assert(sandbox.GO_STATE.board[6][6] === 0, 'Old branch move (6,6) was pruned');
+assert(sandbox.GO_STATE.board[4][4] === 0, 'Old branch move (4,4) was pruned');
+
+// 20. UndoMove Integration with Timeline
+// In LOCAL mode, undoMove steps back 1 move and truncates history
+sandbox.undoMove();
+assert(sandbox.GO_STATE.currentStep === 1, 'undoMove in LOCAL mode steps back to step 1');
+assert(sandbox.GO_STATE.moveHistory.length === 2, 'moveHistory truncated to 2 entries after undo');
+assert(sandbox.GO_STATE.board[3][3] === 0, 'Stone at (3,3) was removed by undo');
+
+// In AI mode, undoMove steps back 2 moves (both AI and human move)
+sandbox.GO_STATE.gameMode = 'AI';
+sandbox.GO_STATE.userColor = 1;
+sandbox.resetCurrentGame(false);
+sandbox.executeMove(2, 2, [], null, false); // Step 1: Human
+sandbox.executeMove(6, 6, [], null, false); // Step 2: AI
+assert(sandbox.GO_STATE.currentStep === 2, 'Two moves played in AI mode');
+assert(sandbox.GO_STATE.moveHistory.length === 3, 'moveHistory has 3 entries in AI mode');
+sandbox.undoMove();
+assert(sandbox.GO_STATE.currentStep === 0, 'undoMove in AI mode steps back 2 moves to step 0');
+assert(sandbox.GO_STATE.moveHistory.length === 1, 'moveHistory truncated to 1 entry after AI undo');
+assert(sandbox.GO_STATE.board[2][2] === 0 && sandbox.GO_STATE.board[6][6] === 0, 'Both moves undone');
+
 // Reset to 9x9 for clean state
 sandbox.GO_STATE.boardSize = 9;
 sandbox.resetCurrentGame(false);
@@ -277,3 +417,4 @@ console.log(`Test Results: ${passed} passed, ${failed} failed`);
 console.log(`========================================\n`);
 
 process.exit(failed > 0 ? 1 : 0);
+

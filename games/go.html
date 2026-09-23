@@ -58,6 +58,7 @@
 
     .board-container {
       position: relative;
+      aspect-ratio: 1 / 1;
       border-radius: 14px;
       overflow: hidden;
       box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.8), 0 0 0 2px rgba(255, 255, 255, 0.12), inset 0 0 20px rgba(0, 0, 0, 0.25);
@@ -65,14 +66,21 @@
       touch-action: none;
       user-select: none;
       -webkit-user-select: none;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      max-width: 100%;
+      max-height: 100%;
     }
 
     #board-canvas {
       display: block;
-      width: 100%;
-      height: 100%;
+      aspect-ratio: 1 / 1;
       cursor: crosshair;
       touch-action: none;
+      max-width: 100%;
+      max-height: 100%;
     }
 
     /* 棋盘坐标 HUD 悬浮指示条 */
@@ -468,6 +476,278 @@
     }
 
     /* ==========================================================================
+       全局形势判断系统样式 (TERRITORY & SITUATION EVALUATION SUITE)
+       ========================================================================== */
+    .judgment-card {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 10px;
+      padding: 7px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    }
+
+    .judgment-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: #94a3b8;
+    }
+
+    .rules-komi-tag {
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 4px;
+      border: 1px solid rgba(56, 189, 248, 0.25);
+    }
+
+    .judgment-toggle-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.72rem;
+      color: #cbd5e1;
+      cursor: pointer;
+      user-select: none;
+      transition: color 0.2s;
+    }
+    .judgment-toggle-label:hover {
+      color: #38bdf8;
+    }
+    .judgment-toggle-label input[type="checkbox"] {
+      cursor: pointer;
+      accent-color: #0284c7;
+    }
+
+    .judgment-lead-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.86rem;
+      font-weight: 800;
+    }
+    .judgment-lead-text {
+      color: #38bdf8;
+      letter-spacing: 0.3px;
+    }
+    .judgment-status-tag {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.06);
+      padding: 1px 6px;
+      border-radius: 4px;
+    }
+
+    .judgment-bar-wrapper {
+      width: 100%;
+      height: 8px;
+      background: rgba(30, 41, 59, 0.9);
+      border-radius: 4px;
+      overflow: hidden;
+      display: flex;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+    }
+    .judgment-bar-black {
+      height: 100%;
+      background: linear-gradient(90deg, #090d16 0%, #334155 100%);
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .judgment-bar-white {
+      height: 100%;
+      background: linear-gradient(90deg, #94a3b8 0%, #f8fafc 100%);
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .judgment-bar-legend {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #94a3b8;
+      margin-top: -2px;
+    }
+
+    .judgment-detail-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.7rem;
+      color: #94a3b8;
+      gap: 4px;
+      padding-top: 2px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .judgment-detail-item b {
+      color: #f1f5f9;
+    }
+
+    /* ==========================================================================
+       手数导航与时间轴回溯模块样式 (MOVE TIMELINE & REPLAY SUITE)
+       ========================================================================== */
+    .timeline-card {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 7px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    }
+
+    .timeline-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: #94a3b8;
+    }
+    .step-count-badge {
+      color: #38bdf8;
+      font-weight: 800;
+      font-size: 0.78rem;
+    }
+    .history-badge {
+      background: #f59e0b;
+      color: #0f172a;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 0.66rem;
+      font-weight: 800;
+      animation: pulse 1.6s infinite;
+    }
+
+    .timeline-slider-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+      padding: 1px 0;
+    }
+    .go-slider {
+      flex: 1;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 6px;
+      border-radius: 3px;
+      background: rgba(51, 65, 85, 0.85);
+      outline: none;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .go-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #38bdf8;
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.8);
+      cursor: pointer;
+      transition: transform 0.1s, background 0.2s;
+    }
+    .go-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+      background: #7dd3fc;
+    }
+    .go-slider::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      border: none;
+      border-radius: 50%;
+      background: #38bdf8;
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.8);
+      cursor: pointer;
+    }
+    .go-slider:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .timeline-btn-group {
+      display: flex;
+      gap: 4px;
+      width: 100%;
+    }
+    .btn-timeline {
+      flex: 1;
+      padding: 5px 2px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      background: rgba(30, 41, 59, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 6px;
+      color: #e2e8f0;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .btn-timeline:hover:not(:disabled) {
+      background: #2563eb;
+      color: #ffffff;
+      border-color: #3b82f6;
+    }
+    .btn-timeline:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .btn-return-latest {
+      width: 100%;
+      padding: 5px 8px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #ffffff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+      transition: all 0.2s;
+    }
+    .btn-return-latest:hover {
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      transform: translateY(-1px);
+    }
+
+    /* 侧边栏整体重置与无横向滚动条约束 */
+    .go-side-panel {
+      box-sizing: border-box;
+      overflow-x: hidden;
+    }
+    .go-side-panel * {
+      box-sizing: border-box;
+    }
+    .go-side-panel::-webkit-scrollbar {
+      width: 5px;
+    }
+    .go-side-panel::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.4);
+      border-radius: 4px;
+    }
+    .go-side-panel::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.3);
+      border-radius: 4px;
+    }
+    .go-side-panel::-webkit-scrollbar-thumb:hover {
+      background: rgba(56, 189, 248, 0.5);
+    }
+
+    /* ==========================================================================
        自适应视口断点响应规则 (16:9 桌面宽屏与移动竖屏精修)
        ========================================================================== */
     /* 移动端 / 竖屏模式 (< 960px) */
@@ -486,6 +766,7 @@
         flex-direction: column;
         align-items: center;
         gap: 6px;
+        width: 100%;
       }
       .go-side-panel {
         display: contents;
@@ -494,6 +775,7 @@
         order: 1;
         max-width: 520px;
         gap: 6px;
+        width: 100%;
       }
       .player-card {
         padding: 6px 10px;
@@ -504,21 +786,37 @@
       .go-board-section {
         order: 2;
         width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
       .board-container {
-        width: min(calc(100vw - 16px), calc(100vh - 275px), 520px);
-        height: min(calc(100vw - 16px), calc(100vh - 275px), 520px);
+        aspect-ratio: 1 / 1;
+        width: min(calc(100vw - 16px), calc(100vh - 280px), 520px);
+        height: min(calc(100vw - 16px), calc(100vh - 280px), 520px);
         margin: 0 auto;
       }
-      .game-status-banner {
+      .judgment-card {
         order: 3;
+        max-width: 520px;
+        width: 100%;
+      }
+      .timeline-card {
+        order: 4;
+        max-width: 520px;
+        width: 100%;
+      }
+      .game-status-banner {
+        order: 5;
         max-width: 520px;
         padding: 6px 10px;
         font-size: 0.78rem;
+        width: 100%;
       }
       .go-controls-grid {
-        order: 4;
+        order: 6;
         max-width: 520px;
+        width: 100%;
         grid-template-columns: repeat(4, 1fr);
         gap: 6px;
       }
@@ -527,8 +825,9 @@
         font-size: 0.76rem;
       }
       .mode-nav {
-        order: 5;
+        order: 7;
         max-width: 520px;
+        width: 100%;
         padding: 4px;
       }
       .mode-tab {
@@ -536,13 +835,15 @@
         font-size: 0.75rem;
       }
       .online-panel {
-        order: 6;
+        order: 8;
         max-width: 520px;
+        width: 100%;
         padding: 8px 10px;
       }
       .go-toolbar-group {
-        order: 7;
+        order: 9;
         max-width: 520px;
+        width: 100%;
         padding: 5px 8px;
       }
     }
@@ -552,21 +853,25 @@
       .container.in-game {
         height: 100vh;
         max-height: 100vh;
-        padding: 8px 24px 12px;
+        padding: 6px 16px 8px;
         box-sizing: border-box;
         overflow: hidden;
       }
       .game-header {
         flex-shrink: 0;
         margin-bottom: 2px;
+        padding: 6px 14px;
       }
       .go-main-layout {
         flex-direction: row;
         align-items: center;
         justify-content: center;
-        gap: 24px;
+        gap: 16px;
         flex: 1;
         min-height: 0;
+        height: calc(100vh - 65px);
+        width: 100%;
+        box-sizing: border-box;
       }
       .go-board-section {
         flex: 1;
@@ -577,31 +882,38 @@
         justify-content: center;
       }
       .board-container {
-        width: min(calc(100vh - 90px), calc(100vw - 420px), 760px);
-        height: min(calc(100vh - 90px), calc(100vw - 420px), 760px);
+        aspect-ratio: 1 / 1;
+        width: min(calc(100vh - 75px), calc(100vw - 370px), 760px);
+        height: min(calc(100vh - 75px), calc(100vw - 370px), 760px);
+        max-width: 100%;
+        max-height: 100%;
       }
       .go-side-panel {
-        width: 360px;
+        width: 330px;
         flex-shrink: 0;
-        height: min(calc(100vh - 90px), 760px);
+        height: 100%;
+        max-height: min(calc(100vh - 75px), 760px);
         background: rgba(15, 23, 42, 0.75);
         border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 14px;
-        padding: 14px;
+        border-radius: 12px;
+        padding: 10px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
         overflow-y: auto;
+        overflow-x: hidden;
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 7px;
+        box-sizing: border-box;
       }
       .go-controls-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 8px;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 6px;
         margin-top: auto;
+        flex-shrink: 0;
       }
       .btn-action-go {
-        padding: 10px 8px;
-        font-size: 0.88rem;
+        padding: 8px 4px;
+        font-size: 0.8rem;
       }
     }
   </style>
@@ -659,9 +971,9 @@
         <div class="go-toolbar-group">
           <div class="toolbar-sublabel">棋盘路数</div>
           <div class="pill-group" title="选择棋盘路数">
-            <button class="pill-btn active" id="size-9" onclick="changeBoardSize(9)">9×9 (聚会极速)</button>
-            <button class="pill-btn" id="size-13" onclick="changeBoardSize(13)">13×13 (中盘)</button>
-            <button class="pill-btn" id="size-19" onclick="changeBoardSize(19)">19×19 (标准)</button>
+            <button class="pill-btn active" id="size-9" onclick="changeBoardSize(9)" title="9×9 极速对局">9×9</button>
+            <button class="pill-btn" id="size-13" onclick="changeBoardSize(13)" title="13×13 中盘对局">13×13</button>
+            <button class="pill-btn" id="size-19" onclick="changeBoardSize(19)" title="19×19 标准对局">19×19</button>
           </div>
         </div>
 
@@ -671,7 +983,7 @@
           <div class="pill-group" id="ai-difficulty-group" title="AI 算力强度">
             <button class="pill-btn active" id="diff-easy" onclick="changeAiDifficulty('EASY')">🟢 入门</button>
             <button class="pill-btn" id="diff-tactical" onclick="changeAiDifficulty('TACTICAL')">🟡 进阶</button>
-            <button class="pill-btn" id="diff-master" onclick="changeAiDifficulty('MASTER')">🔴 大师(MCTS)</button>
+            <button class="pill-btn" id="diff-master" onclick="changeAiDifficulty('MASTER')">🔴 大师</button>
           </div>
         </div>
 
@@ -699,6 +1011,59 @@
           </div>
         </div>
 
+        <!-- 全局形势判断系统面板 (Judgment Card) -->
+        <div class="judgment-card" id="judgment-card">
+          <div class="judgment-header">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span>⚖️ 形势判断</span>
+              <span class="rules-komi-tag">贴7.5目</span>
+            </div>
+            <label class="judgment-toggle-label" title="在棋盘上标记双方领地归属点">
+              <input type="checkbox" id="toggle-territory-check" onchange="toggleTerritoryView()">
+              <span>领地标记</span>
+            </label>
+          </div>
+          <div class="judgment-lead-row">
+            <span class="judgment-lead-text" id="judgment-lead-text">⚫ 黑方领先 0.0 目</span>
+            <span class="judgment-status-tag" id="judgment-status-tag">局势均势</span>
+          </div>
+          <div class="judgment-bar-wrapper">
+            <div class="judgment-bar-black" id="bar-black" style="width: 50%;"></div>
+            <div class="judgment-bar-white" id="bar-white" style="width: 50%;"></div>
+          </div>
+          <div class="judgment-bar-legend">
+            <span id="bar-black-label">⚫ 黑 50%</span>
+            <span id="bar-white-label">⚪ 白 50%</span>
+          </div>
+          <div class="judgment-detail-row">
+            <span class="judgment-detail-item" id="score-black-detail">黑: 地 0 + 提 0 = <b>0</b> 目</span>
+            <span class="judgment-detail-item" id="score-white-detail">白: 地 0 + 提 0 + 贴 7.5 = <b>7.5</b> 目</span>
+          </div>
+        </div>
+
+        <!-- 手数导航与时间轴滑动条模块 (Move Timeline Card) -->
+        <div class="timeline-card" id="timeline-card">
+          <div class="timeline-header">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span>⏱️ 棋谱手数</span>
+              <span class="history-badge" id="history-mode-badge" style="display:none;">回溯中</span>
+            </div>
+            <span class="step-count-badge" id="step-counter-text">当前：开局 (0手) / 共 0 手</span>
+          </div>
+          <div class="timeline-slider-wrapper">
+            <input type="range" id="move-slider" min="0" max="0" value="0" step="1" class="go-slider" oninput="onSliderInput(this.value)" disabled>
+          </div>
+          <div class="timeline-btn-group">
+            <button class="btn-timeline" id="btn-step-first" onclick="stepFirstMove()" title="回到开局 (第0手)" disabled>|◀ 开局</button>
+            <button class="btn-timeline" id="btn-step-prev" onclick="stepPrevMove()" title="后退一手" disabled>◀ 上一手</button>
+            <button class="btn-timeline" id="btn-step-next" onclick="stepNextMove()" title="前进一手" disabled>下一手 ▶</button>
+            <button class="btn-timeline" id="btn-step-latest" onclick="stepLatestMove()" title="前往最新手" disabled>▶| 最新手</button>
+          </div>
+          <button class="btn-return-latest" id="btn-return-latest" onclick="stepLatestMove()">
+            ⚡ 一键返回最新局面
+          </button>
+        </div>
+
         <!-- 当前对局状态条 -->
         <div class="game-status-banner" id="game-status-banner">
           <span class="status-icon" id="status-icon">⚫</span>
@@ -717,7 +1082,7 @@
           </button>
           <button class="btn-action-go" id="btn-territory" onclick="toggleTerritoryView()">
             <span>🗺️</span>
-            <span>目数估算</span>
+            <span>形势判断</span>
           </button>
           <button class="btn-action-go" id="btn-resign" onclick="resignGame()">
             <span>🏳️</span>
@@ -743,6 +1108,8 @@
       userColor: 1,              // In AI mode: 1 (Black), 2 (White)
       lastMove: null,            // { r, c }
       history: [],               // Snapshots for Undo
+      moveHistory: [],           // 完整棋谱手数时序序列 [ { step, board, turn, captures, lastMove, koPoint, passCount, desc } ]
+      currentStep: 0,            // 当前时间轴定位的手数 (0..moveHistory.length - 1)
       koPoint: null,             // { r, c } - Single stone Ko point forbidden next turn
       passCount: 0,              // Consecutive passes
       gameOver: false,
@@ -869,8 +1236,61 @@
     }
 
     // ==========================================================================
-    // 3. 落子与回合轮转
+    // 3. 落子与回合轮转及棋谱时间轴回溯 (MOVE EXECUTION & TIMELINE REPLAY)
     // ==========================================================================
+    function jumpToStep(step) {
+      if (!GO_STATE.moveHistory || GO_STATE.moveHistory.length === 0) return;
+      const maxStep = GO_STATE.moveHistory.length - 1;
+      const target = Math.max(0, Math.min(maxStep, step));
+      GO_STATE.currentStep = target;
+
+      const snapshot = GO_STATE.moveHistory[target];
+      if (snapshot) {
+        GO_STATE.board = cloneBoard(snapshot.board);
+        GO_STATE.turn = snapshot.turn;
+        GO_STATE.captures = { ...snapshot.captures };
+        GO_STATE.lastMove = snapshot.lastMove ? { ...snapshot.lastMove } : null;
+        GO_STATE.koPoint = snapshot.koPoint ? { ...snapshot.koPoint } : null;
+        GO_STATE.passCount = snapshot.passCount;
+      }
+
+      if (GO_STATE.showTerritory) {
+        calculateTerritoryScore(GO_STATE.board, true);
+      }
+
+      updateUI();
+      renderBoard();
+    }
+
+    function onSliderInput(val) {
+      const step = parseInt(val, 10);
+      if (!isNaN(step)) {
+        jumpToStep(step);
+      }
+    }
+
+    function stepFirstMove() {
+      jumpToStep(0);
+      if (window.AUDIO) try { window.AUDIO.play('click'); } catch(e) {}
+    }
+
+    function stepPrevMove() {
+      jumpToStep(GO_STATE.currentStep - 1);
+      if (window.AUDIO) try { window.AUDIO.play('click'); } catch(e) {}
+    }
+
+    function stepNextMove() {
+      jumpToStep(GO_STATE.currentStep + 1);
+      if (window.AUDIO) try { window.AUDIO.play('click'); } catch(e) {}
+    }
+
+    function stepLatestMove() {
+      if (GO_STATE.moveHistory && GO_STATE.moveHistory.length > 0) {
+        jumpToStep(GO_STATE.moveHistory.length - 1);
+        if (window.AUDIO) try { window.AUDIO.play('click'); } catch(e) {}
+      }
+    }
+
     function playStone(r, c) {
       if (GO_STATE.gameOver || GO_STATE.isAiComputing) return;
 
@@ -888,9 +1308,22 @@
           showToast('⏳ 当前是对方回合，请等待对方落子');
           return;
         }
+        // 联机模式下如果在回溯历史，提示并自动切换回最新手
+        if (GO_STATE.currentStep < GO_STATE.moveHistory.length - 1) {
+          jumpToStep(GO_STATE.moveHistory.length - 1);
+          showToast('⚠️ 联机对局已自动跳转至最新手');
+          return;
+        }
       } else if (GO_STATE.gameMode === 'AI') {
         // 人机模式下，如果当前不属于玩家回合则拦截
         if (GO_STATE.turn !== GO_STATE.userColor) return;
+      }
+
+      // 如果当前处于历史回溯状态 (currentStep < moveHistory.length - 1)，用户从该历史手重新落子：
+      // 按照规范：截断后续历史，从当前手分支展开新棋局！
+      if (GO_STATE.currentStep < GO_STATE.moveHistory.length - 1) {
+        GO_STATE.moveHistory = GO_STATE.moveHistory.slice(0, GO_STATE.currentStep + 1);
+        showToast(`⚡ 已从第 ${GO_STATE.currentStep} 手分支展开新棋局`);
       }
 
       const legality = checkMoveLegality(r, c, GO_STATE.turn, GO_STATE.board, GO_STATE.koPoint);
@@ -909,15 +1342,9 @@
     }
 
     function executeMove(r, c, captures, newKo, broadcast = true) {
-      // 记录历史快照以便悔棋
-      GO_STATE.history.push({
-        board: cloneBoard(GO_STATE.board),
-        turn: GO_STATE.turn,
-        captures: { ...GO_STATE.captures },
-        lastMove: GO_STATE.lastMove,
-        koPoint: GO_STATE.koPoint,
-        passCount: GO_STATE.passCount
-      });
+      if (GO_STATE.currentStep < GO_STATE.moveHistory.length - 1) {
+        GO_STATE.moveHistory = GO_STATE.moveHistory.slice(0, GO_STATE.currentStep + 1);
+      }
 
       const currentTurn = GO_STATE.turn;
       GO_STATE.board[r][c] = currentTurn;
@@ -942,6 +1369,35 @@
 
       const terrBtn = document.getElementById('btn-territory');
       if (terrBtn) terrBtn.classList.remove('active-toggle');
+      const terrToggle = document.getElementById('toggle-territory-check');
+      if (terrToggle) terrToggle.checked = false;
+
+      // 切换走子方
+      GO_STATE.turn = currentTurn === 1 ? 2 : 1;
+
+      // 记录到时间轴完整历史
+      const newStepNum = GO_STATE.moveHistory.length;
+      GO_STATE.moveHistory.push({
+        step: newStepNum,
+        board: cloneBoard(GO_STATE.board),
+        turn: GO_STATE.turn,
+        captures: { ...GO_STATE.captures },
+        lastMove: { r, c },
+        koPoint: newKo ? { ...newKo } : null,
+        passCount: 0,
+        desc: `${currentTurn === 1 ? '黑' : '白'}落子 ${getCoordName(r, c)}`
+      });
+      GO_STATE.currentStep = newStepNum;
+
+      // 兼容老 undo 历史
+      GO_STATE.history.push({
+        board: cloneBoard(GO_STATE.board),
+        turn: GO_STATE.turn,
+        captures: { ...GO_STATE.captures },
+        lastMove: { r, c },
+        koPoint: newKo ? { ...newKo } : null,
+        passCount: 0
+      });
 
       // 广播给联机对手
       if (broadcast && GO_STATE.gameMode === 'ONLINE') {
@@ -953,9 +1409,6 @@
           boardSize: GO_STATE.boardSize
         });
       }
-
-      // 切换走子方
-      GO_STATE.turn = currentTurn === 1 ? 2 : 1;
 
       updateUI();
       renderBoard();
@@ -975,6 +1428,10 @@
             showToast('⏳ 当前是对方回合');
             return;
           }
+          if (GO_STATE.currentStep < GO_STATE.moveHistory.length - 1) {
+            jumpToStep(GO_STATE.moveHistory.length - 1);
+            showToast('⚠️ 已跳转至最新手');
+          }
         } else if (GO_STATE.gameMode === 'AI') {
           if (GO_STATE.turn !== GO_STATE.userColor) {
             showToast('⏳ 当前是电脑回合');
@@ -983,16 +1440,11 @@
         }
       }
 
-      if (window.AUDIO) try { window.AUDIO.play('go_pass'); } catch(e) {}
+      if (GO_STATE.currentStep < GO_STATE.moveHistory.length - 1) {
+        GO_STATE.moveHistory = GO_STATE.moveHistory.slice(0, GO_STATE.currentStep + 1);
+      }
 
-      GO_STATE.history.push({
-        board: cloneBoard(GO_STATE.board),
-        turn: GO_STATE.turn,
-        captures: { ...GO_STATE.captures },
-        lastMove: GO_STATE.lastMove,
-        koPoint: GO_STATE.koPoint,
-        passCount: GO_STATE.passCount
-      });
+      if (window.AUDIO) try { window.AUDIO.play('go_pass'); } catch(e) {}
 
       const passerColor = GO_STATE.turn;
       GO_STATE.passCount++;
@@ -1001,6 +1453,29 @@
 
       GO_STATE.koPoint = null;
       GO_STATE.turn = passerColor === 1 ? 2 : 1;
+
+      // 记录到时间轴完整历史
+      const newStepNum = GO_STATE.moveHistory.length;
+      GO_STATE.moveHistory.push({
+        step: newStepNum,
+        board: cloneBoard(GO_STATE.board),
+        turn: GO_STATE.turn,
+        captures: { ...GO_STATE.captures },
+        lastMove: null,
+        koPoint: null,
+        passCount: GO_STATE.passCount,
+        desc: `${passer} 停一手`
+      });
+      GO_STATE.currentStep = newStepNum;
+
+      GO_STATE.history.push({
+        board: cloneBoard(GO_STATE.board),
+        turn: GO_STATE.turn,
+        captures: { ...GO_STATE.captures },
+        lastMove: null,
+        koPoint: null,
+        passCount: GO_STATE.passCount
+      });
 
       if (broadcast && GO_STATE.gameMode === 'ONLINE') {
         sendOnlineAction({
@@ -1030,34 +1505,33 @@
         showToast('⚠️ 好友联机模式禁止悔棋');
         return;
       }
-      if (GO_STATE.history.length === 0 || GO_STATE.isAiComputing || GO_STATE.gameOver) {
-        showToast('无法继续悔棋');
+      if (GO_STATE.isAiComputing || GO_STATE.gameOver) {
+        showToast('当前无法悔棋');
+        return;
+      }
+      if (GO_STATE.currentStep <= 0) {
+        showToast('已经是开局，无法继续悔棋');
         return;
       }
 
       // 人机对战模式需回退 2 步（回退 AI 与玩家的一手）
-      const stepsToUndo = (GO_STATE.gameMode === 'AI' && GO_STATE.history.length >= 2) ? 2 : 1;
+      const stepsToUndo = (GO_STATE.gameMode === 'AI' && GO_STATE.currentStep >= 2) ? 2 : 1;
+      const targetStep = Math.max(0, GO_STATE.currentStep - stepsToUndo);
 
-      for (let i = 0; i < stepsToUndo; i++) {
-        const prev = GO_STATE.history.pop();
-        if (prev) {
-          GO_STATE.board = prev.board;
-          GO_STATE.turn = prev.turn;
-          GO_STATE.captures = prev.captures;
-          GO_STATE.lastMove = prev.lastMove;
-          GO_STATE.koPoint = prev.koPoint;
-          GO_STATE.passCount = prev.passCount;
-        }
-      }
+      // 截断历史，彻底回退
+      GO_STATE.moveHistory = GO_STATE.moveHistory.slice(0, targetStep + 1);
+      jumpToStep(targetStep);
 
       GO_STATE.gameOver = false;
       GO_STATE.winner = null;
       GO_STATE.showTerritory = false;
       const terrBtn = document.getElementById('btn-territory');
       if (terrBtn) terrBtn.classList.remove('active-toggle');
+      const terrToggle = document.getElementById('toggle-territory-check');
+      if (terrToggle) terrToggle.checked = false;
 
       if (window.AUDIO) try { window.AUDIO.play('click'); } catch(e) {}
-      showToast('↩️ 已悔棋');
+      showToast(`↩️ 已悔棋至第 ${targetStep} 手`);
       updateUI();
       renderBoard();
     }
@@ -1187,16 +1661,78 @@
       return { black: blackTerritory, white: whiteTerritory, territoryMap };
     }
 
+    // 全局形势判断与胜率天平实时演算算法
+    function evaluateGameSituation(board = GO_STATE.board, captures = GO_STATE.captures, saveToGlobal = false) {
+      const size = board.length;
+      const territory = calculateTerritoryScore(board, saveToGlobal);
+      const blackTerritory = territory.black;
+      const whiteTerritory = territory.white;
+      const blackCaps = captures ? (captures[1] || 0) : 0;
+      const whiteCaps = captures ? (captures[2] || 0) : 0;
+      const komi = 7.5; // 白棋贴 7.5 目消除和棋
+
+      const blackTotal = blackTerritory + blackCaps;
+      const whiteTotal = whiteTerritory + whiteCaps + komi;
+      const diff = blackTotal - whiteTotal; // 正数表示黑领先，负数表示白领先
+      const leadPoints = Math.abs(diff);
+
+      let leaderText = '';
+      let leaderColor = '';
+      let statusTag = '';
+
+      if (Math.abs(diff) < 0.1) {
+        leaderText = '双方均势 (平局)';
+        leaderColor = '#94a3b8';
+        statusTag = '势均力敌';
+      } else if (diff > 0) {
+        leaderText = `⚫ 黑方领先 ${leadPoints.toFixed(1)} 目`;
+        leaderColor = '#38bdf8';
+        statusTag = leadPoints < 4 ? '黑微弱领先' : (leadPoints < 12 ? '黑方优势' : '黑方胜势');
+      } else {
+        leaderText = `⚪ 白方领先 ${leadPoints.toFixed(1)} 目`;
+        leaderColor = '#f43f5e';
+        statusTag = leadPoints < 4 ? '白微弱领先' : (leadPoints < 12 ? '白方优势' : '白方胜势');
+      }
+
+      // 天平百分比映射：以棋盘容量为基准推导胜率感
+      const capacity = (size * size) * 0.45;
+      const shift = Math.max(-42, Math.min(42, (diff / Math.max(10, capacity)) * 50));
+      const blackPercent = Math.round(50 + shift);
+      const whitePercent = 100 - blackPercent;
+
+      return {
+        blackTerritory,
+        whiteTerritory,
+        blackCaps,
+        whiteCaps,
+        komi,
+        blackTotal,
+        whiteTotal,
+        diff,
+        leadPoints,
+        leaderText,
+        leaderColor,
+        statusTag,
+        blackPercent,
+        whitePercent,
+        territoryMap: territory.territoryMap
+      };
+    }
+
     function toggleTerritoryView() {
       GO_STATE.showTerritory = !GO_STATE.showTerritory;
       const terrBtn = document.getElementById('btn-territory');
+      const terrToggle = document.getElementById('toggle-territory-check');
+
       if (GO_STATE.showTerritory) {
         calculateTerritoryScore(GO_STATE.board, true);
         if (terrBtn) terrBtn.classList.add('active-toggle');
-        showToast('🗺️ 开启地盘目数高亮');
+        if (terrToggle) terrToggle.checked = true;
+        showToast('🗺️ 开启地盘领地归属标记');
       } else {
         if (terrBtn) terrBtn.classList.remove('active-toggle');
-        showToast('已关闭目数高亮');
+        if (terrToggle) terrToggle.checked = false;
+        showToast('已关闭领地标记');
       }
       renderBoard();
     }
@@ -1458,32 +1994,34 @@
       if (!box) return;
       const rect = box.getBoundingClientRect();
       const dpr = window.devicePixelRatio || 1;
-      const w = Math.round(rect.width);
-      const h = Math.round(rect.height);
-      if (w <= 0 || h <= 0) return;
+      const side = Math.floor(Math.min(rect.width, rect.height));
+      if (side <= 0) return;
 
-      CANVAS.width = Math.round(w * dpr);
-      CANVAS.height = Math.round(h * dpr);
+      CANVAS.width = Math.round(side * dpr);
+      CANVAS.height = Math.round(side * dpr);
+      CANVAS.style.width = side + 'px';
+      CANVAS.style.height = side + 'px';
       CTX.setTransform(dpr, 0, 0, dpr, 0, 0);
       renderBoard();
     }
 
     function getGridMetrics() {
       const rect = CANVAS.getBoundingClientRect();
-      const w = rect.width;
-      const h = rect.height;
-      const side = Math.min(w, h);
+      const side = Math.floor(Math.min(rect.width, rect.height));
       const size = GO_STATE.boardSize;
 
-      // 根据路数微调边距比例，保证四周边注清晰
-      const padRatio = size === 19 ? 0.055 : (size === 13 ? 0.065 : 0.075);
-      const padding = side * padRatio;
+      // 紧凑边距：网格自身占满棋盘画布面积的 90%~94%
+      // 19x19: padRatio 0.042 -> 边距 4.2% * 2 = 8.4% -> 网格跨度 91.6%
+      // 13x13: padRatio 0.048 -> 网格跨度 90.4%
+      // 9x9:   padRatio 0.052 -> 网格跨度 89.6%
+      const padRatio = size === 19 ? 0.042 : (size === 13 ? 0.048 : 0.052);
+      const padding = Math.round(side * padRatio);
       const gridSpan = side - padding * 2;
       const cellSize = gridSpan / (size - 1);
-      const offsetX = (w - side) / 2;
-      const offsetY = (h - side) / 2;
+      const offsetX = (rect.width - side) / 2;
+      const offsetY = (rect.height - side) / 2;
 
-      return { padding, cellSize, size, width: w, height: h, side, offsetX, offsetY };
+      return { padding, cellSize, size, width: rect.width, height: rect.height, side, offsetX, offsetY };
     }
 
     function getCoord(r, c, metrics) {
@@ -1515,7 +2053,7 @@
         CTX.stroke();
       }
 
-      // 2. 网格线绘制
+      // 2. 网格线绘制 (严格 1:1 正方形格子)
       CTX.strokeStyle = '#3e2712';
       CTX.lineWidth = 1.2;
 
@@ -1544,7 +2082,7 @@
       CTX.strokeRect(topLeft.x, topLeft.y, botRight.x - topLeft.x, botRight.y - topLeft.y);
 
       // 3. 星位绘制 (Star Points)
-      const starRadius = Math.max(3, m.cellSize * 0.095);
+      const starRadius = Math.max(2.6, m.cellSize * 0.088);
       CTX.fillStyle = '#3e2712';
       for (const sp of getBoardStarPoints(m.size)) {
         const pt = getCoord(sp.r, sp.c, m);
@@ -1555,7 +2093,7 @@
 
       // 4. 棋盘外缘坐标标注 (Coordinates A-T, 1-19)
       CTX.fillStyle = '#5a3818';
-      CTX.font = `bold ${Math.max(9, m.cellSize * 0.32)}px sans-serif`;
+      CTX.font = `bold ${Math.max(9, m.cellSize * 0.28)}px sans-serif`;
       CTX.textAlign = 'center';
       CTX.textBaseline = 'middle';
       const colLabels = ['A','B','C','D','E','F','G','H','J','K','L','M','N','O','P','Q','R','S','T'];
@@ -1563,33 +2101,52 @@
       for (let c = 0; c < m.size; c++) {
         const p = getCoord(0, c, m);
         const label = colLabels[c];
-        CTX.fillText(label, p.x, m.offsetY + m.padding * 0.44);
-        CTX.fillText(label, p.x, m.offsetY + m.side - m.padding * 0.44);
+        CTX.fillText(label, p.x, m.offsetY + m.padding * 0.48);
+        CTX.fillText(label, p.x, m.offsetY + m.side - m.padding * 0.48);
       }
       for (let r = 0; r < m.size; r++) {
         const p = getCoord(r, 0, m);
         const numLabel = m.size - r;
-        CTX.fillText(numLabel, m.offsetX + m.padding * 0.44, p.y);
-        CTX.fillText(numLabel, m.offsetX + m.side - m.padding * 0.44, p.y);
+        CTX.fillText(numLabel, m.offsetX + m.padding * 0.48, p.y);
+        CTX.fillText(numLabel, m.offsetX + m.side - m.padding * 0.48, p.y);
       }
 
-      // 5. 目数估算高亮模式 (Territory Heatmap)
+      // 5. 形势判断领地归属点标记 (Territory Heatmap Markers)
       if (GO_STATE.showTerritory && GO_STATE.territoryMap) {
         for (let r = 0; r < m.size; r++) {
           for (let c = 0; c < m.size; c++) {
             const terr = GO_STATE.territoryMap[r][c];
             if (terr !== 0 && GO_STATE.board[r][c] === 0) {
               const pt = getCoord(r, c, m);
-              const squareSize = m.cellSize * 0.42;
-              CTX.fillStyle = terr === 1 ? 'rgba(0, 0, 0, 0.58)' : 'rgba(255, 255, 255, 0.78)';
-              CTX.fillRect(pt.x - squareSize / 2, pt.y - squareSize / 2, squareSize, squareSize);
+              const markerRadius = m.cellSize * 0.22;
+              CTX.save();
+              if (terr === 1) {
+                // 黑棋领地点：深色半透明圆点带浅蓝光晕
+                CTX.fillStyle = 'rgba(15, 23, 42, 0.78)';
+                CTX.strokeStyle = '#38bdf8';
+                CTX.lineWidth = 1.3;
+                CTX.beginPath();
+                CTX.arc(pt.x, pt.y, markerRadius, 0, Math.PI * 2);
+                CTX.fill();
+                CTX.stroke();
+              } else if (terr === 2) {
+                // 白棋领地点：亮白半透明圆点带深色轮廓
+                CTX.fillStyle = 'rgba(255, 255, 255, 0.85)';
+                CTX.strokeStyle = '#1e293b';
+                CTX.lineWidth = 1.3;
+                CTX.beginPath();
+                CTX.arc(pt.x, pt.y, markerRadius, 0, Math.PI * 2);
+                CTX.fill();
+                CTX.stroke();
+              }
+              CTX.restore();
             }
           }
         }
       }
 
       // 6. 棋子绘制 (Stones)
-      const stoneRadius = m.cellSize * 0.45;
+      const stoneRadius = m.cellSize * 0.47;
 
       for (let r = 0; r < m.size; r++) {
         for (let c = 0; c < m.size; c++) {
@@ -1605,9 +2162,9 @@
         const lm = getCoord(GO_STATE.lastMove.r, GO_STATE.lastMove.c, m);
         const isBlack = GO_STATE.board[GO_STATE.lastMove.r][GO_STATE.lastMove.c] === 1;
         CTX.beginPath();
-        CTX.arc(lm.x, lm.y, stoneRadius * 0.36, 0, Math.PI * 2);
+        CTX.arc(lm.x, lm.y, stoneRadius * 0.35, 0, Math.PI * 2);
         CTX.strokeStyle = isBlack ? '#38bdf8' : '#e11d48';
-        CTX.lineWidth = 2.4;
+        CTX.lineWidth = 2.2;
         CTX.stroke();
       }
 
@@ -1942,10 +2499,17 @@
       }
 
       // 状态横幅更新
+      const totalMoves = Math.max(0, (GO_STATE.moveHistory ? GO_STATE.moveHistory.length - 1 : 0));
+      const cur = GO_STATE.currentStep || 0;
+      const isReviewingHistory = cur < totalMoves;
+
       if (statusIcon && statusText) {
         if (GO_STATE.gameOver) {
           statusIcon.textContent = '🏁';
           statusText.textContent = `对局已结束 · ${GO_STATE.winner ? GO_STATE.winner + '胜出' : '终盘裁定'}`;
+        } else if (isReviewingHistory) {
+          statusIcon.textContent = '⏱️';
+          statusText.textContent = `[棋谱回溯] 检视第 ${cur} 手局面 (落子可从此手分支)`;
         } else if (GO_STATE.gameMode === 'ONLINE') {
           if (!GO_STATE.online.opponentJoined) {
             statusIcon.textContent = '⏳';
@@ -1971,8 +2535,70 @@
         }
       }
 
+      // 实时全局形势判断面板更新
+      const evalRes = evaluateGameSituation(GO_STATE.board, GO_STATE.captures, false);
+      const leadEl = document.getElementById('judgment-lead-text');
+      const tagEl = document.getElementById('judgment-status-tag');
+      const barBlack = document.getElementById('bar-black');
+      const barWhite = document.getElementById('bar-white');
+      const barBlackLabel = document.getElementById('bar-black-label');
+      const barWhiteLabel = document.getElementById('bar-white-label');
+      const scoreBlackDetail = document.getElementById('score-black-detail');
+      const scoreWhiteDetail = document.getElementById('score-white-detail');
+      const toggleCheck = document.getElementById('toggle-territory-check');
+
+      if (leadEl) {
+        leadEl.textContent = evalRes.leaderText;
+        leadEl.style.color = evalRes.leaderColor;
+      }
+      if (tagEl) {
+        tagEl.textContent = evalRes.statusTag;
+      }
+      if (barBlack) barBlack.style.width = evalRes.blackPercent + '%';
+      if (barWhite) barWhite.style.width = evalRes.whitePercent + '%';
+      if (barBlackLabel) barBlackLabel.textContent = `⚫ 黑 ${evalRes.blackPercent}%`;
+      if (barWhiteLabel) barWhiteLabel.textContent = `⚪ 白 ${evalRes.whitePercent}%`;
+      if (scoreBlackDetail) {
+        scoreBlackDetail.innerHTML = `黑: 地 ${evalRes.blackTerritory} + 提 ${evalRes.blackCaps} = <b>${evalRes.blackTotal}</b> 目`;
+      }
+      if (scoreWhiteDetail) {
+        scoreWhiteDetail.innerHTML = `白: 地 ${evalRes.whiteTerritory} + 提 ${evalRes.whiteCaps} + 贴 7.5 = <b>${evalRes.whiteTotal.toFixed(1)}</b> 目`;
+      }
+      if (toggleCheck) {
+        toggleCheck.checked = GO_STATE.showTerritory;
+      }
+
+      // 手数时间轴与回溯控制组件更新
+      const counterText = document.getElementById('step-counter-text');
+      const histBadge = document.getElementById('history-mode-badge');
+      const btnReturnLatest = document.getElementById('btn-return-latest');
+      const moveSlider = document.getElementById('move-slider');
+      const btnStepFirst = document.getElementById('btn-step-first');
+      const btnStepPrev = document.getElementById('btn-step-prev');
+      const btnStepNext = document.getElementById('btn-step-next');
+      const btnStepLatest = document.getElementById('btn-step-latest');
+
+      if (counterText) {
+        counterText.textContent = cur === 0 ? `当前：开局 (0手) / 共 ${totalMoves} 手` : `当前：第 ${cur} 手 / 共 ${totalMoves} 手`;
+      }
+      if (histBadge) {
+        histBadge.style.display = isReviewingHistory ? 'inline-block' : 'none';
+      }
+      if (btnReturnLatest) {
+        btnReturnLatest.style.display = isReviewingHistory ? 'flex' : 'none';
+      }
+      if (moveSlider) {
+        moveSlider.max = totalMoves;
+        moveSlider.value = cur;
+        moveSlider.disabled = (totalMoves === 0);
+      }
+      if (btnStepFirst) btnStepFirst.disabled = (cur <= 0);
+      if (btnStepPrev) btnStepPrev.disabled = (cur <= 0);
+      if (btnStepNext) btnStepNext.disabled = (cur >= totalMoves);
+      if (btnStepLatest) btnStepLatest.disabled = (cur >= totalMoves);
+
       if (btnUndo) {
-        btnUndo.disabled = GO_STATE.gameMode === 'ONLINE' || GO_STATE.history.length === 0 || GO_STATE.isAiComputing || GO_STATE.gameOver;
+        btnUndo.disabled = GO_STATE.gameMode === 'ONLINE' || cur <= 0 || GO_STATE.isAiComputing || GO_STATE.gameOver;
       }
     }
 
@@ -2013,7 +2639,7 @@
       if (btn) btn.classList.add('active');
 
       if (window.AUDIO) try { window.AUDIO.play('click'); } catch(e) {}
-      const labels = { 'EASY': '入门', 'TACTICAL': '进阶', 'MASTER': '大师(MCTS)' };
+      const labels = { 'EASY': '入门', 'TACTICAL': '进阶', 'MASTER': '大师' };
       showToast(`🤖 AI 难度切换为：【${labels[diff]}】`);
     }
 
@@ -2064,10 +2690,25 @@
       GO_STATE.territoryMap = null;
       GO_STATE.hoverPoint = null;
 
+      // 重置棋谱时序时间轴序列 (第0步为初始空盘)
+      GO_STATE.moveHistory = [{
+        step: 0,
+        board: cloneBoard(GO_STATE.board),
+        turn: 1,
+        captures: { 1: 0, 2: 0 },
+        lastMove: null,
+        koPoint: null,
+        passCount: 0,
+        desc: '开局'
+      }];
+      GO_STATE.currentStep = 0;
+
       const ind = document.getElementById('ai-thinking-indicator');
       if (ind) ind.classList.remove('show');
       const terrBtn = document.getElementById('btn-territory');
       if (terrBtn) terrBtn.classList.remove('active-toggle');
+      const terrToggle = document.getElementById('toggle-territory-check');
+      if (terrToggle) terrToggle.checked = false;
 
       if (broadcast && GO_STATE.gameMode === 'ONLINE') {
         sendOnlineAction({
@@ -2192,7 +2833,9 @@
           koPoint: GO_STATE.koPoint,
           passCount: GO_STATE.passCount,
           gameOver: GO_STATE.gameOver,
-          lastMove: GO_STATE.lastMove
+          lastMove: GO_STATE.lastMove,
+          moveHistory: GO_STATE.moveHistory,
+          currentStep: GO_STATE.currentStep
         });
       });
 
@@ -2239,7 +2882,9 @@
               koPoint: GO_STATE.koPoint,
               passCount: GO_STATE.passCount,
               gameOver: GO_STATE.gameOver,
-              lastMove: GO_STATE.lastMove
+              lastMove: GO_STATE.lastMove,
+              moveHistory: GO_STATE.moveHistory,
+              currentStep: GO_STATE.currentStep
             });
             updateUI();
             renderBoard();
@@ -2256,6 +2901,22 @@
           GO_STATE.passCount = msg.passCount || 0;
           GO_STATE.gameOver = !!msg.gameOver;
           GO_STATE.lastMove = msg.lastMove;
+          if (msg.moveHistory && msg.moveHistory.length > 0) {
+            GO_STATE.moveHistory = msg.moveHistory;
+            GO_STATE.currentStep = (msg.currentStep !== undefined) ? msg.currentStep : (msg.moveHistory.length - 1);
+          } else {
+            GO_STATE.moveHistory = [{
+              step: 0,
+              board: cloneBoard(msg.board),
+              turn: msg.turn,
+              captures: { ...msg.captures },
+              lastMove: msg.lastMove,
+              koPoint: msg.koPoint,
+              passCount: msg.passCount || 0,
+              desc: '开局'
+            }];
+            GO_STATE.currentStep = 0;
+          }
           GO_STATE.online.opponentJoined = true;
 
           const dot = document.getElementById('online-dot');
@@ -2302,6 +2963,15 @@
       }
 
       window.addEventListener('resize', resizeCanvas);
+      if (typeof ResizeObserver !== 'undefined') {
+        const boardSec = document.querySelector('.go-board-section');
+        if (boardSec) {
+          const ro = new ResizeObserver(() => {
+            resizeCanvas();
+          });
+          ro.observe(boardSec);
+        }
+      }
       setTimeout(resizeCanvas, 60);
     });
   </script>
