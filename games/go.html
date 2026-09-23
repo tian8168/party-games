@@ -508,12 +508,19 @@
       border: 1px solid rgba(56, 189, 248, 0.3);
       border-radius: 8px;
       padding: 5px 8px;
-      display: flex;
+      display: flex !important;
       flex-direction: column;
       gap: 3px;
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
       box-sizing: border-box;
       min-width: 0;
+      flex-shrink: 0;
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .judgment-card.active-mode {
+      border-color: #38bdf8;
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.4), inset 0 0 8px rgba(56, 189, 248, 0.15);
     }
 
     .judgment-header {
@@ -851,6 +858,8 @@
         order: 3;
         max-width: 520px;
         width: 100%;
+        display: flex !important;
+        flex-shrink: 0;
       }
       .timeline-card {
         order: 4;
@@ -1144,7 +1153,7 @@
             <span>✋</span>
             <span>停一手</span>
           </button>
-          <button class="btn-action-go" id="btn-territory" onclick="toggleTerritoryView()">
+          <button class="btn-action-go" id="btn-situation" data-alias="btn-territory" onclick="toggleTerritoryView()" title="查看全局形势判断与盘面目数染色">
             <span>🗺️</span>
             <span>形势判断</span>
           </button>
@@ -1436,8 +1445,10 @@
       GO_STATE.showTerritory = false;
       GO_STATE.hoverPoint = null; // 清除悬停瞄准，避免落子后在原位画出红色禁止警告
 
-      const terrBtn = document.getElementById('btn-territory');
-      if (terrBtn) terrBtn.classList.remove('active-toggle');
+      const btnSit = document.getElementById('btn-situation');
+      const btnTerr = document.getElementById('btn-territory');
+      if (btnSit) btnSit.classList.remove('active-toggle');
+      if (btnTerr) btnTerr.classList.remove('active-toggle');
       const terrToggle = document.getElementById('toggle-territory-check');
       if (terrToggle) terrToggle.checked = false;
 
@@ -1597,8 +1608,10 @@
       GO_STATE.gameOver = false;
       GO_STATE.winner = null;
       GO_STATE.showTerritory = false;
-      const terrBtn = document.getElementById('btn-territory');
-      if (terrBtn) terrBtn.classList.remove('active-toggle');
+      const btnSit = document.getElementById('btn-situation');
+      const btnTerr = document.getElementById('btn-territory');
+      if (btnSit) btnSit.classList.remove('active-toggle');
+      if (btnTerr) btnTerr.classList.remove('active-toggle');
       const terrToggle = document.getElementById('toggle-territory-check');
       if (terrToggle) terrToggle.checked = false;
 
@@ -1689,8 +1702,12 @@
       `, { isGameOver: true });
 
       GO_STATE.showTerritory = true;
-      const terrBtn = document.getElementById('btn-territory');
-      if (terrBtn) terrBtn.classList.add('active-toggle');
+      const btnSit = document.getElementById('btn-situation');
+      const btnTerr = document.getElementById('btn-territory');
+      if (btnSit) btnSit.classList.add('active-toggle');
+      if (btnTerr) btnTerr.classList.add('active-toggle');
+      const terrToggle = document.getElementById('toggle-territory-check');
+      if (terrToggle) terrToggle.checked = true;
       updateUI();
       renderBoard();
     }
@@ -1805,20 +1822,89 @@
       };
     }
 
+    function evaluateSituation(board = GO_STATE.board, captures = GO_STATE.captures, saveToGlobal = false) {
+      return evaluateGameSituation(board, captures, saveToGlobal);
+    }
+
+    function updateSituationUI(evalRes) {
+      if (!evalRes) {
+        evalRes = evaluateSituation(GO_STATE.board, GO_STATE.captures, !!GO_STATE.showTerritory);
+      }
+      const cardEl = document.getElementById('judgment-card');
+      const leadEl = document.getElementById('judgment-lead-text');
+      const tagEl = document.getElementById('judgment-status-tag');
+      const barBlack = document.getElementById('bar-black');
+      const barWhite = document.getElementById('bar-white');
+      const barBlackLabel = document.getElementById('bar-black-label');
+      const barWhiteLabel = document.getElementById('bar-white-label');
+      const scoreBlackDetail = document.getElementById('score-black-detail');
+      const scoreWhiteDetail = document.getElementById('score-white-detail');
+      const toggleCheck = document.getElementById('toggle-territory-check');
+      const btnSit = document.getElementById('btn-situation');
+      const btnTerr = document.getElementById('btn-territory');
+
+      if (cardEl) {
+        cardEl.style.display = 'flex';
+        cardEl.classList.toggle('active-mode', !!GO_STATE.showTerritory);
+      }
+      if (leadEl) {
+        leadEl.textContent = evalRes.leaderText;
+        leadEl.style.color = evalRes.leaderColor;
+      }
+      if (tagEl) {
+        tagEl.textContent = evalRes.statusTag;
+      }
+      if (barBlack) barBlack.style.width = evalRes.blackPercent + '%';
+      if (barWhite) barWhite.style.width = evalRes.whitePercent + '%';
+      if (barBlackLabel) barBlackLabel.textContent = `⚫ 黑 ${evalRes.blackPercent}%`;
+      if (barWhiteLabel) barWhiteLabel.textContent = `⚪ 白 ${evalRes.whitePercent}%`;
+      if (scoreBlackDetail) {
+        scoreBlackDetail.innerHTML = `黑: 地 ${evalRes.blackTerritory} + 提 ${evalRes.blackCaps} = <b>${evalRes.blackTotal}</b> 目`;
+      }
+      if (scoreWhiteDetail) {
+        scoreWhiteDetail.innerHTML = `白: 地 ${evalRes.whiteTerritory} + 提 ${evalRes.whiteCaps} + 贴 7.5 = <b>${evalRes.whiteTotal.toFixed(1)}</b> 目`;
+      }
+      if (toggleCheck) {
+        toggleCheck.checked = !!GO_STATE.showTerritory;
+      }
+      if (btnSit) {
+        btnSit.classList.toggle('active-toggle', !!GO_STATE.showTerritory);
+      }
+      if (btnTerr) {
+        btnTerr.classList.toggle('active-toggle', !!GO_STATE.showTerritory);
+      }
+      return evalRes;
+    }
+
     function toggleTerritoryView() {
       GO_STATE.showTerritory = !GO_STATE.showTerritory;
-      const terrBtn = document.getElementById('btn-territory');
+      const btnSit = document.getElementById('btn-situation');
+      const btnTerr = document.getElementById('btn-territory');
       const terrToggle = document.getElementById('toggle-territory-check');
 
       if (GO_STATE.showTerritory) {
-        calculateTerritoryScore(GO_STATE.board, true);
-        if (terrBtn) terrBtn.classList.add('active-toggle');
+        const evalRes = evaluateSituation(GO_STATE.board, GO_STATE.captures, true);
+        if (btnSit) btnSit.classList.add('active-toggle');
+        if (btnTerr) btnTerr.classList.add('active-toggle');
         if (terrToggle) terrToggle.checked = true;
-        showToast('🗺️ 开启地盘领地归属标记');
+        updateSituationUI(evalRes);
+
+        if (evalRes.blackTerritory === 0 && evalRes.whiteTerritory === 0) {
+          showToast(`🗺️ 形势判断：${evalRes.leaderText} (${evalRes.statusTag}) · 尚未形成封闭领地`, 2500);
+        } else {
+          showToast(`🗺️ 形势判断：${evalRes.leaderText} (黑地 ${evalRes.blackTerritory}目 / 白地 ${evalRes.whiteTerritory}目)`, 2500);
+        }
+
+        const card = document.getElementById('judgment-card');
+        if (card && typeof window !== 'undefined' && window.innerWidth < 960) {
+          try { card.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch(e) {}
+        }
       } else {
-        if (terrBtn) terrBtn.classList.remove('active-toggle');
+        if (btnSit) btnSit.classList.remove('active-toggle');
+        if (btnTerr) btnTerr.classList.remove('active-toggle');
         if (terrToggle) terrToggle.checked = false;
-        showToast('已关闭领地标记');
+        updateSituationUI();
+        showToast('已关闭形势判断与领地目数染色', 1200);
       }
       renderBoard();
     }
@@ -2225,33 +2311,45 @@
         CTX.fillText(numLabel, m.offsetX + m.side - m.padding * 0.48, p.y);
       }
 
-      // 5. 形势判断领地归属点标记 (Territory Heatmap Markers)
+      // 5. 形势判断领地归属点标记与目数染色图层 (Territory Heatmap & Dyeing Overlay)
       if (GO_STATE.showTerritory && GO_STATE.territoryMap) {
+        const half = m.cellSize / 2;
+        const sqSize = Math.max(5, m.cellSize * 0.28);
+
         for (let r = 0; r < m.size; r++) {
           for (let c = 0; c < m.size; c++) {
             const terr = GO_STATE.territoryMap[r][c];
             if (terr !== 0 && GO_STATE.board[r][c] === 0) {
               const pt = getCoord(r, c, m);
-              const markerRadius = m.cellSize * 0.22;
               CTX.save();
               if (terr === 1) {
-                // 黑棋领地点：深色半透明圆点带浅蓝光晕
-                CTX.fillStyle = 'rgba(15, 23, 42, 0.78)';
+                // 黑棋领地网格半透高亮底色 (Cell Dyeing)
+                CTX.fillStyle = 'rgba(14, 165, 233, 0.25)';
+                CTX.fillRect(pt.x - half + 1, pt.y - half + 1, m.cellSize - 2, m.cellSize - 2);
+                CTX.strokeStyle = 'rgba(56, 189, 248, 0.45)';
+                CTX.lineWidth = 1;
+                CTX.strokeRect(pt.x - half + 1, pt.y - half + 1, m.cellSize - 2, m.cellSize - 2);
+
+                // 黑棋目数实体方块标章 (Territory Marker Square)
+                CTX.fillStyle = '#090d16';
+                CTX.fillRect(pt.x - sqSize / 2, pt.y - sqSize / 2, sqSize, sqSize);
                 CTX.strokeStyle = '#38bdf8';
                 CTX.lineWidth = 1.3;
-                CTX.beginPath();
-                CTX.arc(pt.x, pt.y, markerRadius, 0, Math.PI * 2);
-                CTX.fill();
-                CTX.stroke();
+                CTX.strokeRect(pt.x - sqSize / 2, pt.y - sqSize / 2, sqSize, sqSize);
               } else if (terr === 2) {
-                // 白棋领地点：亮白半透明圆点带深色轮廓
-                CTX.fillStyle = 'rgba(255, 255, 255, 0.85)';
-                CTX.strokeStyle = '#1e293b';
+                // 白棋领地网格半透高亮底色 (Cell Dyeing)
+                CTX.fillStyle = 'rgba(255, 255, 255, 0.32)';
+                CTX.fillRect(pt.x - half + 1, pt.y - half + 1, m.cellSize - 2, m.cellSize - 2);
+                CTX.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+                CTX.lineWidth = 1;
+                CTX.strokeRect(pt.x - half + 1, pt.y - half + 1, m.cellSize - 2, m.cellSize - 2);
+
+                // 白棋目数实体方块标章 (Territory Marker Square)
+                CTX.fillStyle = '#ffffff';
+                CTX.fillRect(pt.x - sqSize / 2, pt.y - sqSize / 2, sqSize, sqSize);
+                CTX.strokeStyle = '#475569';
                 CTX.lineWidth = 1.3;
-                CTX.beginPath();
-                CTX.arc(pt.x, pt.y, markerRadius, 0, Math.PI * 2);
-                CTX.fill();
-                CTX.stroke();
+                CTX.strokeRect(pt.x - sqSize / 2, pt.y - sqSize / 2, sqSize, sqSize);
               }
               CTX.restore();
             }
@@ -2650,37 +2748,7 @@
       }
 
       // 实时全局形势判断面板更新
-      const evalRes = evaluateGameSituation(GO_STATE.board, GO_STATE.captures, false);
-      const leadEl = document.getElementById('judgment-lead-text');
-      const tagEl = document.getElementById('judgment-status-tag');
-      const barBlack = document.getElementById('bar-black');
-      const barWhite = document.getElementById('bar-white');
-      const barBlackLabel = document.getElementById('bar-black-label');
-      const barWhiteLabel = document.getElementById('bar-white-label');
-      const scoreBlackDetail = document.getElementById('score-black-detail');
-      const scoreWhiteDetail = document.getElementById('score-white-detail');
-      const toggleCheck = document.getElementById('toggle-territory-check');
-
-      if (leadEl) {
-        leadEl.textContent = evalRes.leaderText;
-        leadEl.style.color = evalRes.leaderColor;
-      }
-      if (tagEl) {
-        tagEl.textContent = evalRes.statusTag;
-      }
-      if (barBlack) barBlack.style.width = evalRes.blackPercent + '%';
-      if (barWhite) barWhite.style.width = evalRes.whitePercent + '%';
-      if (barBlackLabel) barBlackLabel.textContent = `⚫ 黑 ${evalRes.blackPercent}%`;
-      if (barWhiteLabel) barWhiteLabel.textContent = `⚪ 白 ${evalRes.whitePercent}%`;
-      if (scoreBlackDetail) {
-        scoreBlackDetail.innerHTML = `黑: 地 ${evalRes.blackTerritory} + 提 ${evalRes.blackCaps} = <b>${evalRes.blackTotal}</b> 目`;
-      }
-      if (scoreWhiteDetail) {
-        scoreWhiteDetail.innerHTML = `白: 地 ${evalRes.whiteTerritory} + 提 ${evalRes.whiteCaps} + 贴 7.5 = <b>${evalRes.whiteTotal.toFixed(1)}</b> 目`;
-      }
-      if (toggleCheck) {
-        toggleCheck.checked = GO_STATE.showTerritory;
-      }
+      updateSituationUI();
 
       // 手数时间轴与回溯控制组件更新
       const counterText = document.getElementById('step-counter-text');
@@ -2824,10 +2892,10 @@
       }];
       GO_STATE.currentStep = 0;
 
-      const ind = document.getElementById('ai-thinking-indicator');
-      if (ind) ind.classList.remove('show');
-      const terrBtn = document.getElementById('btn-territory');
-      if (terrBtn) terrBtn.classList.remove('active-toggle');
+      const btnSit = document.getElementById('btn-situation');
+      const btnTerr = document.getElementById('btn-territory');
+      if (btnSit) btnSit.classList.remove('active-toggle');
+      if (btnTerr) btnTerr.classList.remove('active-toggle');
       const terrToggle = document.getElementById('toggle-territory-check');
       if (terrToggle) terrToggle.checked = false;
 
@@ -2839,7 +2907,12 @@
       }
 
       updateUI();
+      updateSituationUI();
       renderBoard();
+    }
+
+    function initGame(broadcast = true) {
+      return resetCurrentGame(broadcast);
     }
 
     // ==========================================================================
@@ -3090,6 +3163,8 @@
         resetCurrentGame();
       }
 
+      updateSituationUI();
+
       window.addEventListener('resize', resizeCanvas);
       if (typeof ResizeObserver !== 'undefined') {
         const boardSec = document.querySelector('.go-board-section');
@@ -3102,6 +3177,21 @@
       }
       setTimeout(resizeCanvas, 60);
     });
+
+    if (typeof window !== 'undefined') {
+      window.evaluateSituation = evaluateSituation;
+      window.evaluateGameSituation = evaluateGameSituation;
+      window.updateSituationUI = updateSituationUI;
+      window.initGame = initGame;
+      window.toggleTerritoryView = toggleTerritoryView;
+    }
+    if (typeof globalThis !== 'undefined') {
+      globalThis.evaluateSituation = evaluateSituation;
+      globalThis.evaluateGameSituation = evaluateGameSituation;
+      globalThis.updateSituationUI = updateSituationUI;
+      globalThis.initGame = initGame;
+      globalThis.toggleTerritoryView = toggleTerritoryView;
+    }
   </script>
 </body>
 </html>

@@ -117,6 +117,11 @@ scriptContent = scriptContent.replace(/function getGridMetrics/g, 'globalThis.ge
 scriptContent = scriptContent.replace(/function undoMove/g, 'globalThis.undoMove = undoMove; function undoMove');
 scriptContent = scriptContent.replace(/function playStone/g, 'globalThis.playStone = playStone; function playStone');
 scriptContent = scriptContent.replace(/function finishGameByPass/g, 'globalThis.finishGameByPass = finishGameByPass; function finishGameByPass');
+scriptContent = scriptContent.replace(/function evaluateSituation/g, 'globalThis.evaluateSituation = evaluateSituation; function evaluateSituation');
+scriptContent = scriptContent.replace(/function updateSituationUI/g, 'globalThis.updateSituationUI = updateSituationUI; function updateSituationUI');
+scriptContent = scriptContent.replace(/function initGame/g, 'globalThis.initGame = initGame; function initGame');
+scriptContent = scriptContent.replace(/function toggleTerritoryView/g, 'globalThis.toggleTerritoryView = toggleTerritoryView; function toggleTerritoryView');
+scriptContent = scriptContent.replace(/function renderBoard/g, 'globalThis.renderBoard = renderBoard; function renderBoard');
 scriptContent = scriptContent.replace(/function clearPendingAiMove/g, 'globalThis.clearPendingAiMove = clearPendingAiMove; function clearPendingAiMove');
 scriptContent = scriptContent.replace(/function initOnlineMultiplayer/g, 'globalThis.initOnlineMultiplayer = initOnlineMultiplayer; function initOnlineMultiplayer');
 
@@ -499,6 +504,66 @@ assert(modalContent.includes('7.5'), 'finishGameByPass uses 7.5 komi on 19x19 bo
 // Reset to 9x9 for clean state
 sandbox.GO_STATE.boardSize = 9;
 sandbox.resetCurrentGame(false);
+
+// 23. Situation Judgment System Rigorous Verification
+assert(typeof sandbox.evaluateSituation === 'function', 'evaluateSituation function exists');
+assert(typeof sandbox.updateSituationUI === 'function', 'updateSituationUI function exists');
+assert(typeof sandbox.initGame === 'function', 'initGame function exists');
+assert(typeof sandbox.toggleTerritoryView === 'function', 'toggleTerritoryView function exists');
+
+// Verify evaluateSituation returns identical result to evaluateGameSituation
+sandbox.GO_STATE.board[0][1] = 1;
+sandbox.GO_STATE.board[1][0] = 1;
+sandbox.GO_STATE.board[1][1] = 1;
+sandbox.GO_STATE.board[8][7] = 2;
+sandbox.GO_STATE.board[7][8] = 2;
+sandbox.GO_STATE.board[7][7] = 2;
+const evalSit = sandbox.evaluateSituation(sandbox.GO_STATE.board, sandbox.GO_STATE.captures, false);
+const evalGameSit = sandbox.evaluateGameSituation(sandbox.GO_STATE.board, sandbox.GO_STATE.captures, false);
+assert(evalSit.diff === evalGameSit.diff, 'evaluateSituation diff matches evaluateGameSituation');
+assert(evalSit.blackTerritory === 1, 'evaluateSituation correctly identifies Black territory');
+assert(evalSit.whiteTerritory === 1, 'evaluateSituation correctly identifies White territory');
+assert(evalSit.leaderText === evalGameSit.leaderText, 'evaluateSituation leaderText matches');
+
+// Test updateSituationUI updates all target DOM nodes
+const cardEl = getOrCreateElement('judgment-card');
+const leadEl = getOrCreateElement('judgment-lead-text');
+const tagEl = getOrCreateElement('judgment-status-tag');
+const barB = getOrCreateElement('bar-black');
+const barW = getOrCreateElement('bar-white');
+const btnSit = getOrCreateElement('btn-situation');
+const btnTerrLegacy = getOrCreateElement('btn-territory');
+const toggleTerrCheck = getOrCreateElement('toggle-territory-check');
+
+sandbox.GO_STATE.showTerritory = true;
+sandbox.updateSituationUI(evalSit);
+assert(cardEl.classList.contains('active-mode'), 'updateSituationUI sets active-mode on judgment-card when showTerritory is true');
+assert(leadEl.textContent.includes('目'), 'judgment-lead-text content updated with points lead');
+assert(tagEl.textContent.length > 0, 'judgment-status-tag text updated');
+assert(barB.style.width === evalSit.blackPercent + '%', 'bar-black width updated to percentage');
+assert(barW.style.width === evalSit.whitePercent + '%', 'bar-white width updated to percentage');
+assert(btnSit.classList.contains('active-toggle'), 'btn-situation receives active-toggle class');
+assert(btnTerrLegacy.classList.contains('active-toggle'), 'legacy btn-territory receives active-toggle class');
+assert(toggleTerrCheck.checked === true, 'toggle-territory-check set to true');
+
+// Test toggleTerritoryView()
+sandbox.GO_STATE.showTerritory = false;
+sandbox.toggleTerritoryView();
+assert(sandbox.GO_STATE.showTerritory === true, 'toggleTerritoryView toggles showTerritory to true');
+assert(btnSit.classList.contains('active-toggle'), 'toggleTerritoryView activates btn-situation');
+assert(btnTerrLegacy.classList.contains('active-toggle'), 'toggleTerritoryView activates legacy btn-territory');
+
+sandbox.toggleTerritoryView();
+assert(sandbox.GO_STATE.showTerritory === false, 'toggleTerritoryView toggles showTerritory back to false');
+assert(!btnSit.classList.contains('active-toggle'), 'toggleTerritoryView removes active-toggle from btn-situation');
+assert(!btnTerrLegacy.classList.contains('active-toggle'), 'toggleTerritoryView removes active-toggle from legacy btn-territory');
+
+// Test initGame()
+sandbox.GO_STATE.turn = 2;
+sandbox.initGame(false);
+assert(sandbox.GO_STATE.turn === 1, 'initGame resets turn to Black (1)');
+assert(sandbox.GO_STATE.board[0][1] === 0, 'initGame resets board');
+assert(sandbox.GO_STATE.showTerritory === false, 'initGame resets showTerritory to false');
 
 console.log(`\n========================================`);
 console.log(`Test Results: ${passed} passed, ${failed} failed`);
