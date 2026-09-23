@@ -472,22 +472,78 @@
        ========================================================================== */
     /* 移动端 / 竖屏模式 (< 960px) */
     @media (max-width: 959px) {
+      .container.in-game {
+        padding: 6px 8px 16px;
+        gap: 6px;
+      }
+      .game-header {
+        padding: 6px 12px;
+      }
+      .game-header h2 {
+        font-size: 1.05rem;
+      }
       .go-main-layout {
         flex-direction: column;
         align-items: center;
-        gap: 8px;
-      }
-      .board-container {
-        width: min(calc(100vw - 20px), calc(100vh - 350px), 520px);
-        height: min(calc(100vw - 20px), calc(100vh - 350px), 520px);
-        margin: 2px auto;
+        gap: 6px;
       }
       .go-side-panel {
+        display: contents;
+      }
+      .generic-scoreboard {
+        order: 1;
         max-width: 520px;
-        gap: 8px;
+        gap: 6px;
+      }
+      .player-card {
+        padding: 6px 10px;
+      }
+      .player-name {
+        font-size: 0.78rem;
+      }
+      .go-board-section {
+        order: 2;
+        width: 100%;
+      }
+      .board-container {
+        width: min(calc(100vw - 16px), calc(100vh - 275px), 520px);
+        height: min(calc(100vw - 16px), calc(100vh - 275px), 520px);
+        margin: 0 auto;
+      }
+      .game-status-banner {
+        order: 3;
+        max-width: 520px;
+        padding: 6px 10px;
+        font-size: 0.78rem;
       }
       .go-controls-grid {
+        order: 4;
+        max-width: 520px;
         grid-template-columns: repeat(4, 1fr);
+        gap: 6px;
+      }
+      .btn-action-go {
+        padding: 7px 4px;
+        font-size: 0.76rem;
+      }
+      .mode-nav {
+        order: 5;
+        max-width: 520px;
+        padding: 4px;
+      }
+      .mode-tab {
+        padding: 5px 8px;
+        font-size: 0.75rem;
+      }
+      .online-panel {
+        order: 6;
+        max-width: 520px;
+        padding: 8px 10px;
+      }
+      .go-toolbar-group {
+        order: 7;
+        max-width: 520px;
+        padding: 5px 8px;
       }
     }
 
@@ -508,7 +564,7 @@
         flex-direction: row;
         align-items: center;
         justify-content: center;
-        gap: 28px;
+        gap: 24px;
         flex: 1;
         min-height: 0;
       }
@@ -521,24 +577,27 @@
         justify-content: center;
       }
       .board-container {
-        width: min(calc(100vh - 100px), calc(100vw - 440px), 760px);
-        height: min(calc(100vh - 100px), calc(100vw - 440px), 760px);
+        width: min(calc(100vh - 90px), calc(100vw - 420px), 760px);
+        height: min(calc(100vh - 90px), calc(100vw - 420px), 760px);
       }
       .go-side-panel {
         width: 360px;
         flex-shrink: 0;
-        height: min(calc(100vh - 100px), 760px);
-        background: rgba(15, 23, 42, 0.7);
+        height: min(calc(100vh - 90px), 760px);
+        background: rgba(15, 23, 42, 0.75);
         border: 1px solid rgba(255, 255, 255, 0.08);
         border-radius: 14px;
         padding: 14px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
         overflow-y: auto;
-        justify-content: space-between;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
       }
       .go-controls-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 8px;
+        margin-top: auto;
       }
       .btn-action-go {
         padding: 10px 8px;
@@ -676,7 +735,7 @@
     // ==========================================================================
     const GO_STATE = {
       boardSize: 9,              // 9, 13, 19
-      board: [],                 // 0: empty, 1: Black, 2: White
+      board: Array(9).fill(0).map(() => Array(9).fill(0)), // 0: empty, 1: Black, 2: White
       turn: 1,                   // 1: Black, 2: White
       captures: { 1: 0, 2: 0 },  // 1: Black captures, 2: White captures
       gameMode: 'AI',            // 'AI', 'LOCAL', 'ONLINE'
@@ -837,14 +896,14 @@
       const legality = checkMoveLegality(r, c, GO_STATE.turn, GO_STATE.board, GO_STATE.koPoint);
       if (!legality.valid) {
         showToast(`⚠️ ${legality.reason}`);
-        if (window.AUDIO) try { window.AUDIO.play('blank'); } catch(e) {}
+        if (window.AUDIO) try { window.AUDIO.play('go_invalid'); } catch(e) {}
         return;
       }
 
       executeMove(r, c, legality.captures, legality.newKo, true);
 
       // 如果人机对弈且游戏未结束，调度 AI 走子
-      if (GO_STATE.gameMode === 'AI' && !GO_STATE.gameOver) {
+      if (GO_STATE.gameMode === 'AI' && !GO_STATE.gameOver && GO_STATE.turn !== GO_STATE.userColor) {
         scheduleAiMove();
       }
     }
@@ -879,6 +938,10 @@
       GO_STATE.koPoint = newKo;
       GO_STATE.passCount = 0;
       GO_STATE.showTerritory = false;
+      GO_STATE.hoverPoint = null; // 清除悬停瞄准，避免落子后在原位画出红色禁止警告
+
+      const terrBtn = document.getElementById('btn-territory');
+      if (terrBtn) terrBtn.classList.remove('active-toggle');
 
       // 广播给联机对手
       if (broadcast && GO_STATE.gameMode === 'ONLINE') {
@@ -899,23 +962,28 @@
     }
 
     // 停一手 (Pass)
-    function passTurn(broadcast = true) {
+    function passTurn(broadcast = true, isUser = true) {
       if (GO_STATE.gameOver || GO_STATE.isAiComputing) return;
 
-      if (GO_STATE.gameMode === 'ONLINE' && broadcast) {
-        if (!GO_STATE.online.opponentJoined) {
-          showToast('⏳ 请等待好友进入房间');
-          return;
+      if (isUser) {
+        if (GO_STATE.gameMode === 'ONLINE' && broadcast) {
+          if (!GO_STATE.online.opponentJoined) {
+            showToast('⏳ 请等待好友进入房间');
+            return;
+          }
+          if (GO_STATE.turn !== GO_STATE.online.myColor) {
+            showToast('⏳ 当前是对方回合');
+            return;
+          }
+        } else if (GO_STATE.gameMode === 'AI') {
+          if (GO_STATE.turn !== GO_STATE.userColor) {
+            showToast('⏳ 当前是电脑回合');
+            return;
+          }
         }
-        if (GO_STATE.turn !== GO_STATE.online.myColor) {
-          showToast('⏳ 当前是对方回合');
-          return;
-        }
-      } else if (GO_STATE.gameMode === 'AI') {
-        if (GO_STATE.turn !== GO_STATE.userColor) return;
       }
 
-      if (window.AUDIO) try { window.AUDIO.play('click'); } catch(e) {}
+      if (window.AUDIO) try { window.AUDIO.play('go_pass'); } catch(e) {}
 
       GO_STATE.history.push({
         board: cloneBoard(GO_STATE.board),
@@ -950,7 +1018,8 @@
       updateUI();
       renderBoard();
 
-      if (GO_STATE.gameMode === 'AI' && !GO_STATE.gameOver) {
+      // 仅当切换后轮到 AI 时调度
+      if (GO_STATE.gameMode === 'AI' && !GO_STATE.gameOver && GO_STATE.turn !== GO_STATE.userColor) {
         scheduleAiMove();
       }
     }
@@ -984,6 +1053,9 @@
       GO_STATE.gameOver = false;
       GO_STATE.winner = null;
       GO_STATE.showTerritory = false;
+      const terrBtn = document.getElementById('btn-territory');
+      if (terrBtn) terrBtn.classList.remove('active-toggle');
+
       if (window.AUDIO) try { window.AUDIO.play('click'); } catch(e) {}
       showToast('↩️ 已悔棋');
       updateUI();
@@ -998,7 +1070,15 @@
         if (!confirm('确定要认输吗？本局将裁定对方获胜。')) return;
       }
 
-      const resigningColor = (broadcast && GO_STATE.gameMode === 'ONLINE') ? GO_STATE.online.myColor : GO_STATE.turn;
+      let resigningColor;
+      if (GO_STATE.gameMode === 'ONLINE') {
+        resigningColor = broadcast ? GO_STATE.online.myColor : (GO_STATE.online.myColor === 1 ? 2 : 1);
+      } else if (GO_STATE.gameMode === 'AI') {
+        resigningColor = GO_STATE.userColor; // AI模式下始终为人类玩家认输
+      } else {
+        resigningColor = GO_STATE.turn; // 本地双人对弈下当前回合方认输
+      }
+
       const resigningPlayer = resigningColor === 1 ? '黑棋' : '白棋';
       const winner = resigningColor === 1 ? '白棋' : '黑棋';
 
@@ -1026,8 +1106,8 @@
     // 终局数子与胜负裁定
     function finishGameByPass() {
       GO_STATE.gameOver = true;
-      const score = calculateTerritoryScore(GO_STATE.board);
-      const komi = GO_STATE.boardSize === 9 ? 3.75 : 7.5; // 简易贴目
+      const score = calculateTerritoryScore(GO_STATE.board, true);
+      const komi = GO_STATE.boardSize === 9 ? 6.5 : 7.5; // 标准半目贴目消除和棋
       const blackTotal = score.black + GO_STATE.captures[1];
       const whiteTotal = score.white + GO_STATE.captures[2] + komi;
       const diff = Math.abs(blackTotal - whiteTotal).toFixed(1);
@@ -1039,8 +1119,8 @@
         <div style="font-size:0.92rem; line-height:1.6;">
           <p>双方连续 Pass 确认终盘，进入围棋目数判定：</p><br>
           <div style="background:rgba(15,23,42,0.8); padding:10px 14px; border-radius:8px; border:1px solid rgba(255,255,255,0.1);">
-            <p>⚫ <b>黑方</b>：围地 <b>${score.black}</b> 目 + 提子 <b>${GO_STATE.captures[1]}</b> 颗 = 总计 <b>${blackTotal}</b></p>
-            <p>⚪ <b>白方</b>：围地 <b>${score.white}</b> 目 + 提子 <b>${GO_STATE.captures[2]}</b> 颗 + 贴目 <b>${komi}</b> 目 = 总计 <b>${whiteTotal}</b></p>
+            <p>⚫ <b>黑方</b>：围地 <b>${score.black}</b> 目 + 提子 <b>${GO_STATE.captures[1]}</b> 颗 = 总计 <b>${blackTotal}</b> 目</p>
+            <p>⚪ <b>白方</b>：围地 <b>${score.white}</b> 目 + 提子 <b>${GO_STATE.captures[2]}</b> 颗 + 贴目 <b>${komi}</b> 目 = 总计 <b>${whiteTotal}</b> 目</p>
           </div><br>
           <p style="text-align:center; color:#22c55e; font-size:1.2rem; font-weight:800;">
             🏆 裁定胜者：${winnerName} 胜 <b>${diff}</b> 目！
@@ -1058,7 +1138,7 @@
     // ==========================================================================
     // 4. 形式判断与目数染色算法 (Territory Evaluation)
     // ==========================================================================
-    function calculateTerritoryScore(board) {
+    function calculateTerritoryScore(board, saveToGlobal = false) {
       const size = board.length;
       const visited = new Set();
       let blackTerritory = 0;
@@ -1101,15 +1181,17 @@
         }
       }
 
-      GO_STATE.territoryMap = territoryMap;
-      return { black: blackTerritory, white: whiteTerritory };
+      if (saveToGlobal) {
+        GO_STATE.territoryMap = territoryMap;
+      }
+      return { black: blackTerritory, white: whiteTerritory, territoryMap };
     }
 
     function toggleTerritoryView() {
       GO_STATE.showTerritory = !GO_STATE.showTerritory;
       const terrBtn = document.getElementById('btn-territory');
       if (GO_STATE.showTerritory) {
-        calculateTerritoryScore(GO_STATE.board);
+        calculateTerritoryScore(GO_STATE.board, true);
         if (terrBtn) terrBtn.classList.add('active-toggle');
         showToast('🗺️ 开启地盘目数高亮');
       } else {
@@ -1139,10 +1221,10 @@
           if (legality.valid) {
             executeMove(move.r, move.c, legality.captures, legality.newKo, true);
           } else {
-            passTurn();
+            passTurn(true, false);
           }
         } else {
-          passTurn();
+          passTurn(true, false);
         }
       }, thinkTime);
     }
@@ -1298,7 +1380,7 @@
           if (passes >= 4) break;
         }
 
-        const sc = calculateTerritoryScore(simBoard);
+        const sc = calculateTerritoryScore(simBoard, false);
         const myScore = aiColor === 1 ? sc.black : sc.white;
         const oppScore = aiColor === 1 ? sc.white : sc.black;
         const isWin = myScore >= oppScore;
@@ -1376,14 +1458,12 @@
       if (!box) return;
       const rect = box.getBoundingClientRect();
       const dpr = window.devicePixelRatio || 1;
-      const w = Math.floor(rect.width);
-      const h = Math.floor(rect.height);
+      const w = Math.round(rect.width);
+      const h = Math.round(rect.height);
       if (w <= 0 || h <= 0) return;
 
-      CANVAS.width = w * dpr;
-      CANVAS.height = h * dpr;
-      CANVAS.style.width = w + 'px';
-      CANVAS.style.height = h + 'px';
+      CANVAS.width = Math.round(w * dpr);
+      CANVAS.height = Math.round(h * dpr);
       CTX.setTransform(dpr, 0, 0, dpr, 0, 0);
       renderBoard();
     }
@@ -1713,10 +1793,19 @@
       const hud = document.getElementById('board-coord-hud');
       if (!hud) return;
       if (GO_STATE.hoverPoint && !GO_STATE.gameOver) {
-        hud.textContent = getCoordName(GO_STATE.hoverPoint.r, GO_STATE.hoverPoint.c);
+        const { r, c } = GO_STATE.hoverPoint;
+        const coord = getCoordName(r, c);
+        const check = checkMoveLegality(r, c, GO_STATE.turn, GO_STATE.board, GO_STATE.koPoint);
+        if (!check.valid) {
+          hud.innerHTML = `<span style="color:#f87171">⛔ ${coord} (${check.reason || '禁着点'})</span>`;
+        } else if (check.captures && check.captures.length > 0) {
+          hud.innerHTML = `<span style="color:#f59e0b">⚔️ ${coord} (提吃 ${check.captures.length} 子)</span>`;
+        } else {
+          hud.innerHTML = `<span style="color:#38bdf8">🎯 ${coord}</span>`;
+        }
         hud.classList.add('visible');
       } else if (GO_STATE.lastMove) {
-        hud.textContent = `最后一手: ${getCoordName(GO_STATE.lastMove.r, GO_STATE.lastMove.c)}`;
+        hud.innerHTML = `<span style="color:#94a3b8">最后一手: <b style="color:#f8fafc">${getCoordName(GO_STATE.lastMove.r, GO_STATE.lastMove.c)}</b></span>`;
         hud.classList.add('visible');
       } else {
         hud.classList.remove('visible');
@@ -1805,6 +1894,7 @@
       if (Date.now() - touchHandledTimestamp < 600) return;
       const pos = getBoardPosFromEvent(e);
       if (pos) {
+        GO_STATE.hoverPoint = null;
         playStone(pos.r, pos.c);
       }
     });
@@ -1927,7 +2017,7 @@
       showToast(`🤖 AI 难度切换为：【${labels[diff]}】`);
     }
 
-    function switchGameMode(mode) {
+    function switchGameMode(mode, autoCreateRoom = true) {
       GO_STATE.gameMode = mode;
       document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
       const activeTab = document.getElementById(`tab-${mode.toLowerCase()}`);
@@ -1944,11 +2034,12 @@
       }
 
       if (mode === 'ONLINE') {
-        if (window.ONLINE_NETWORK) {
+        if (window.ONLINE_NETWORK && autoCreateRoom) {
           if (!ONLINE_NETWORK.state.roomId) {
             ONLINE_NETWORK.createRoom('GO');
             GO_STATE.online.myRole = 'host';
             GO_STATE.online.myColor = 1;
+            GO_STATE.online.opponentJoined = false;
           }
         }
       }
@@ -2048,9 +2139,10 @@
         return;
       }
       closeModal();
-      switchGameMode('ONLINE');
+      switchGameMode('ONLINE', false);
       if (window.ONLINE_NETWORK) {
         ONLINE_NETWORK.joinRoom(code, 'GO');
+        GO_STATE.online.roomId = code;
         GO_STATE.online.myRole = 'guest';
         GO_STATE.online.myColor = 2; // 客方执白
       }
@@ -2069,6 +2161,11 @@
         const statusText = document.getElementById('online-status-text');
         if (dot) dot.className = 'online-dot ' + (GO_STATE.online.opponentJoined ? 'connected' : 'waiting');
         if (statusText) statusText.textContent = GO_STATE.online.opponentJoined ? '对战就绪' : '等待好友加入';
+
+        if (role === 'guest') {
+          // 客方进房后主动发送请求同步消息，确保房主即时全量推送盘面
+          sendOnlineAction({ type: 'GO_REQUEST_SYNC' });
+        }
 
         updateUI();
         renderBoard();
@@ -2103,8 +2200,10 @@
         if (!msg || !msg.type) return;
 
         if (msg.type === 'GO_MOVE') {
-          if (GO_STATE.boardSize !== msg.boardSize) {
-            changeBoardSize(msg.boardSize, false);
+          if (msg.boardSize && msg.boardSize !== GO_STATE.boardSize) {
+            GO_STATE.boardSize = msg.boardSize;
+            updateBoardSizePill(msg.boardSize);
+            resizeCanvas();
           }
           if (GO_STATE.turn === msg.player) {
             const check = checkMoveLegality(msg.r, msg.c, msg.player, GO_STATE.board, GO_STATE.koPoint);
@@ -2116,16 +2215,35 @@
           }
         } else if (msg.type === 'GO_PASS') {
           if (GO_STATE.turn === msg.player) {
-            passTurn(false);
+            passTurn(false, false);
           }
         } else if (msg.type === 'GO_RESIGN') {
           resignGame(false);
         } else if (msg.type === 'GO_RESTART') {
           if (msg.boardSize && msg.boardSize !== GO_STATE.boardSize) {
-            changeBoardSize(msg.boardSize, false);
+            GO_STATE.boardSize = msg.boardSize;
+            updateBoardSizePill(msg.boardSize);
+            resizeCanvas();
           }
           resetCurrentGame(false);
           showToast('🔄 对方重置了棋盘，新对局开始！');
+        } else if (msg.type === 'GO_REQUEST_SYNC') {
+          if (GO_STATE.online.myRole === 'host') {
+            GO_STATE.online.opponentJoined = true;
+            sendOnlineAction({
+              type: 'GO_SYNC',
+              boardSize: GO_STATE.boardSize,
+              board: GO_STATE.board,
+              turn: GO_STATE.turn,
+              captures: GO_STATE.captures,
+              koPoint: GO_STATE.koPoint,
+              passCount: GO_STATE.passCount,
+              gameOver: GO_STATE.gameOver,
+              lastMove: GO_STATE.lastMove
+            });
+            updateUI();
+            renderBoard();
+          }
         } else if (msg.type === 'GO_SYNC') {
           if (msg.boardSize && msg.boardSize !== GO_STATE.boardSize) {
             GO_STATE.boardSize = msg.boardSize;
@@ -2170,7 +2288,7 @@
       const modeParam = urlParams.get('mode');
 
       if (roomParam) {
-        switchGameMode('ONLINE');
+        switchGameMode('ONLINE', false);
         if (window.ONLINE_NETWORK) {
           ONLINE_NETWORK.joinRoom(roomParam.trim(), 'GO');
           GO_STATE.online.roomId = roomParam.trim();
@@ -2178,7 +2296,7 @@
           GO_STATE.online.myColor = 2; // Guest is White
         }
       } else if (modeParam === 'ONLINE') {
-        switchGameMode('ONLINE');
+        switchGameMode('ONLINE', true);
       } else {
         resetCurrentGame();
       }

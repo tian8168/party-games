@@ -115,6 +115,26 @@
             subGain.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
             subOsc.connect(subGain); subGain.connect(this.ctx.destination);
             subOsc.start(t); subOsc.stop(t + 0.12);
+          } else if (type === 'go_pass') { // 停一手（棋子归盒入盅木质滑动声）
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(320, t);
+            osc.frequency.exponentialRampToValueAtTime(180, t + 0.08);
+            gain.gain.setValueAtTime(0.22, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.09);
+            osc.connect(gain); gain.connect(this.ctx.destination);
+            osc.start(t); osc.stop(t + 0.09);
+          } else if (type === 'go_invalid') { // 禁着/非法落子（闷钝木质触阻反馈）
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(160, t);
+            osc.frequency.exponentialRampToValueAtTime(75, t + 0.06);
+            gain.gain.setValueAtTime(0.28, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.065);
+            osc.connect(gain); gain.connect(this.ctx.destination);
+            osc.start(t); osc.stop(t + 0.065);
           } else if (type === 'shot') { // 霰弹枪炸鸣
             const bufferSize = this.ctx.sampleRate * 0.35;
             const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
