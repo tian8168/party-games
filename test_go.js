@@ -116,6 +116,9 @@ scriptContent = scriptContent.replace(/function stepLatestMove/g, 'globalThis.st
 scriptContent = scriptContent.replace(/function getGridMetrics/g, 'globalThis.getGridMetrics = getGridMetrics; function getGridMetrics');
 scriptContent = scriptContent.replace(/function undoMove/g, 'globalThis.undoMove = undoMove; function undoMove');
 scriptContent = scriptContent.replace(/function playStone/g, 'globalThis.playStone = playStone; function playStone');
+scriptContent = scriptContent.replace(/function finishGameByPass/g, 'globalThis.finishGameByPass = finishGameByPass; function finishGameByPass');
+scriptContent = scriptContent.replace(/function clearPendingAiMove/g, 'globalThis.clearPendingAiMove = clearPendingAiMove; function clearPendingAiMove');
+scriptContent = scriptContent.replace(/function initOnlineMultiplayer/g, 'globalThis.initOnlineMultiplayer = initOnlineMultiplayer; function initOnlineMultiplayer');
 
 vm.createContext(sandbox);
 vm.runInContext(scriptContent, sandbox);
@@ -222,6 +225,7 @@ sandbox.GO_STATE.isAiComputing = false;
 sandbox.GO_STATE.gameOver = false;
 sandbox.GO_STATE.passCount = 0;
 
+const originalScheduleAiMove = sandbox.scheduleAiMove;
 let aiScheduled = false;
 sandbox.scheduleAiMove = () => { aiScheduled = true; };
 // AI passes: isUser = false
@@ -234,6 +238,7 @@ aiScheduled = false;
 sandbox.passTurn(false, true); // Human passes: isUser = true
 assert(sandbox.GO_STATE.passCount === 2, 'Consecutive passes count reaches 2');
 assert(sandbox.GO_STATE.gameOver === true, 'Consecutive passes triggers gameOver');
+sandbox.scheduleAiMove = originalScheduleAiMove;
 
 // 9. AI Resign Bug Check
 sandbox.GO_STATE.gameOver = false;
@@ -408,6 +413,89 @@ assert(sandbox.GO_STATE.currentStep === 0, 'undoMove in AI mode steps back 2 mov
 assert(sandbox.GO_STATE.moveHistory.length === 1, 'moveHistory truncated to 1 entry after AI undo');
 assert(sandbox.GO_STATE.board[2][2] === 0 && sandbox.GO_STATE.board[6][6] === 0, 'Both moves undone');
 
+// 21. Illegal move during historical review does NOT truncate subsequent moves
+sandbox.resetCurrentGame(false);
+sandbox.GO_STATE.gameMode = 'LOCAL';
+sandbox.executeMove(2, 2, [], null, false); // Step 1: Black
+sandbox.executeMove(3, 3, [], null, false); // Step 2: White
+sandbox.executeMove(4, 4, [], null, false); // Step 3: Black
+sandbox.executeMove(5, 5, [], null, false); // Step 4: White
+assert(sandbox.GO_STATE.moveHistory.length === 5, 'History has 5 snapshots (0..4)');
+sandbox.jumpToStep(1); // Reviewing step 1
+assert(sandbox.GO_STATE.currentStep === 1, 'Reviewing step 1');
+// Attempt illegal move on occupied position (2,2)
+sandbox.playStone(2, 2);
+assert(sandbox.GO_STATE.moveHistory.length === 5, 'Illegal move did NOT destroy subsequent history steps (still 5)');
+assert(sandbox.GO_STATE.currentStep === 1, 'Still at step 1 after illegal move attempt');
+sandbox.jumpToStep(4);
+assert(sandbox.GO_STATE.board[5][5] === 2, 'Subsequent move at (5,5) still intact');
+
+// 22. AI computation cancellation on reset and game switch
+sandbox.resetCurrentGame(false);
+sandbox.GO_STATE.gameMode = 'AI';
+sandbox.GO_STATE.isAiComputing = true;
+assert(sandbox.GO_STATE.isAiComputing === true, 'isAiComputing is active');
+sandbox.clearPendingAiMove();
+assert(sandbox.GO_STATE.isAiComputing === false, 'clearPendingAiMove cancels isAiComputing');
+sandbox.scheduleAiMove();
+assert(sandbox.GO_STATE.isAiComputing === true, 'scheduleAiMove marks AI computing');
+sandbox.resetCurrentGame(false);
+assert(sandbox.GO_STATE.isAiComputing === false, 'resetCurrentGame cancels in-flight AI move');
+
+// 23. GameOver state preservation in timeline and restored state
+sandbox.resetCurrentGame(false);
+sandbox.executeMove(0, 0, [], null, false); // Step 1
+sandbox.executeMove(1, 1, [], null, false); // Step 2
+sandbox.resignGame(false); // Resign at Step 2
+assert(sandbox.GO_STATE.gameOver === true, 'Game is over after resign');
+const finalWinner = sandbox.GO_STATE.winner;
+sandbox.jumpToStep(1);
+assert(sandbox.GO_STATE.gameOver === false, 'Step 1 snapshot was not gameOver');
+sandbox.jumpToStep(2);
+assert(sandbox.GO_STATE.gameOver === true, 'Returning to final step restores gameOver === true');
+assert(sandbox.GO_STATE.winner === finalWinner, 'Returning to final step restores winner');
+
+// 24. Online multiplayer: receiving move while reviewing history jumps to latest move first
+sandbox.resetCurrentGame(false);
+sandbox.GO_STATE.gameMode = 'ONLINE';
+sandbox.GO_STATE.online.connected = true;
+sandbox.GO_STATE.online.opponentJoined = true;
+sandbox.GO_STATE.online.myRole = 'host';
+sandbox.GO_STATE.online.myColor = 1; // Black
+// Host plays step 1
+sandbox.executeMove(2, 2, [], null, false);
+// Host reviews step 0 (opening)
+sandbox.jumpToStep(0);
+assert(sandbox.GO_STATE.currentStep === 0, 'Host is reviewing step 0');
+// Opponent (White, 2) plays step 2 at (3,3)
+let onlineMsgHandler;
+sandbox.ONLINE_NETWORK.setMessageHandler = (fn) => { onlineMsgHandler = fn; };
+sandbox.initOnlineMultiplayer();
+onlineMsgHandler({
+  type: 'GO_MOVE',
+  r: 3,
+  c: 3,
+  player: 2,
+  boardSize: 9
+});
+assert(sandbox.GO_STATE.currentStep === 2, 'Receiving opponent move restored viewport to latest move (step 2)');
+assert(sandbox.GO_STATE.moveHistory.length === 3, 'moveHistory preserved step 1 and added step 2 (length 3)');
+assert(sandbox.GO_STATE.board[2][2] === 1, 'Step 1 black stone at (2,2) was NOT wiped');
+assert(sandbox.GO_STATE.board[3][3] === 2, 'Step 2 white stone at (3,3) was placed');
+
+// 25. Consistent 7.5 Komi across all game sizes in finishGameByPass
+sandbox.resetCurrentGame(false);
+sandbox.GO_STATE.boardSize = 9;
+sandbox.finishGameByPass();
+let modalContent = '';
+sandbox.showModal = (title, content) => { modalContent = content; };
+sandbox.finishGameByPass();
+assert(modalContent.includes('7.5'), 'finishGameByPass uses 7.5 komi on 9x9 board');
+sandbox.GO_STATE.boardSize = 19;
+sandbox.resetCurrentGame(false);
+sandbox.finishGameByPass();
+assert(modalContent.includes('7.5'), 'finishGameByPass uses 7.5 komi on 19x19 board');
+
 // Reset to 9x9 for clean state
 sandbox.GO_STATE.boardSize = 9;
 sandbox.resetCurrentGame(false);
@@ -417,4 +505,5 @@ console.log(`Test Results: ${passed} passed, ${failed} failed`);
 console.log(`========================================\n`);
 
 process.exit(failed > 0 ? 1 : 0);
+
 

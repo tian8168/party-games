@@ -15,6 +15,8 @@
        ========================================================================== */
     body {
       overflow-x: hidden;
+      margin: 0;
+      padding: 0;
     }
 
     .container.in-game {
@@ -23,8 +25,9 @@
       margin: 0 auto;
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      padding: 8px 12px 20px;
+      gap: 8px;
+      padding: 6px 12px 16px;
+      box-sizing: border-box;
     }
 
     /* 顶栏定制 */
@@ -33,7 +36,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 8px 16px;
+      padding: 6px 14px;
       border-radius: 12px;
     }
 
@@ -42,8 +45,10 @@
       display: flex;
       flex-direction: column;
       width: 100%;
-      gap: 12px;
+      gap: 10px;
       align-items: center;
+      min-width: 0;
+      box-sizing: border-box;
     }
 
     /* 棋盘画板区域 */
@@ -54,6 +59,7 @@
       align-items: center;
       justify-content: center;
       position: relative;
+      min-width: 0;
     }
 
     .board-container {
@@ -61,7 +67,7 @@
       aspect-ratio: 1 / 1;
       border-radius: 14px;
       overflow: hidden;
-      box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.8), 0 0 0 2px rgba(255, 255, 255, 0.12), inset 0 0 20px rgba(0, 0, 0, 0.25);
+      box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.8), 0 0 0 2px rgba(255, 255, 255, 0.12), inset 0 0 20px rgba(0, 0, 0, 0.25);
       background: #dfb173;
       touch-action: none;
       user-select: none;
@@ -113,30 +119,35 @@
       width: 100%;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 7px;
+      box-sizing: border-box;
+      min-width: 0;
     }
 
     /* 模式选择导航栏 */
     .mode-nav {
       display: flex;
       width: 100%;
-      gap: 6px;
+      gap: 4px;
       background: rgba(15, 23, 42, 0.85);
-      padding: 5px;
-      border-radius: 10px;
+      padding: 3px;
+      border-radius: 8px;
       border: 1px solid rgba(255, 255, 255, 0.1);
+      box-sizing: border-box;
     }
 
     .mode-tab {
       flex: 1;
       text-align: center;
-      padding: 7px 10px;
-      border-radius: 7px;
-      font-size: 0.82rem;
+      padding: 5px 6px;
+      border-radius: 6px;
+      font-size: 0.78rem;
       font-weight: 700;
       cursor: pointer;
       color: #94a3b8;
       transition: all 0.2s ease;
+      white-space: nowrap;
+      min-width: 0;
     }
 
     .mode-tab.active {
@@ -149,28 +160,29 @@
     .online-panel {
       display: none;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
       background: rgba(15, 23, 42, 0.85);
       border: 1px solid rgba(56, 189, 248, 0.35);
-      padding: 10px 14px;
-      border-radius: 10px;
+      padding: 8px 10px;
+      border-radius: 8px;
       animation: fadeIn 0.25s ease;
+      box-sizing: border-box;
     }
 
     .online-info {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.84rem;
+      font-size: 0.8rem;
       flex-wrap: wrap;
-      gap: 6px;
+      gap: 4px;
     }
 
     .online-status-row {
       display: flex;
       align-items: center;
       gap: 6px;
-      font-size: 0.78rem;
+      font-size: 0.75rem;
       color: #94a3b8;
     }
 
@@ -193,15 +205,15 @@
 
     .online-actions {
       display: flex;
-      gap: 8px;
+      gap: 6px;
       flex-wrap: wrap;
     }
 
     .btn-small {
-      padding: 6px 12px;
-      font-size: 0.8rem;
+      padding: 5px 10px;
+      font-size: 0.76rem;
       font-weight: 700;
-      border-radius: 7px;
+      border-radius: 6px;
       border: 1px solid rgba(255, 255, 255, 0.15);
       cursor: pointer;
       background: rgba(30, 41, 59, 0.9);
@@ -220,15 +232,16 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 8px;
+      gap: 6px;
       background: rgba(15, 23, 42, 0.7);
-      padding: 6px 10px;
-      border-radius: 9px;
+      padding: 4px 8px;
+      border-radius: 8px;
       border: 1px solid rgba(255, 255, 255, 0.08);
+      box-sizing: border-box;
     }
 
     .toolbar-sublabel {
-      font-size: 0.76rem;
+      font-size: 0.74rem;
       font-weight: 700;
       color: #94a3b8;
       white-space: nowrap;
@@ -238,7 +251,7 @@
       display: inline-flex;
       background: rgba(30, 41, 59, 0.7);
       border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 8px;
+      border-radius: 7px;
       padding: 2px;
       gap: 2px;
     }
@@ -247,9 +260,9 @@
       background: transparent;
       border: none;
       color: #94a3b8;
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-size: 0.74rem;
+      padding: 3px 7px;
+      border-radius: 5px;
+      font-size: 0.72rem;
       font-weight: 700;
       cursor: pointer;
       transition: all 0.2s;
@@ -270,40 +283,43 @@
     /* 计分板增强样式 */
     .generic-scoreboard {
       display: flex;
-      gap: 8px;
+      gap: 6px;
       width: 100%;
+      box-sizing: border-box;
     }
 
     .player-card {
       flex: 1;
       background: rgba(15, 23, 42, 0.8);
       border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 10px;
-      padding: 8px 12px;
+      border-radius: 8px;
+      padding: 5px 8px;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 2px;
       position: relative;
       transition: all 0.25s ease;
+      min-width: 0;
+      box-sizing: border-box;
     }
 
     .player-card.black-card {
-      border-left: 4px solid #475569;
+      border-left: 3px solid #475569;
     }
     .player-card.white-card {
-      border-left: 4px solid #f8fafc;
+      border-left: 3px solid #f8fafc;
     }
 
     .player-card.active-turn {
       border-color: #38bdf8;
-      box-shadow: 0 0 16px rgba(56, 189, 248, 0.35);
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.35);
       background: rgba(20, 32, 54, 0.9);
     }
 
     .player-header-row {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       justify-content: space-between;
     }
 
@@ -311,8 +327,8 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 20px;
-      height: 20px;
+      width: 16px;
+      height: 16px;
       border-radius: 50%;
       box-shadow: 0 2px 5px rgba(0,0,0,0.5);
       flex-shrink: 0;
@@ -327,24 +343,26 @@
     }
 
     .player-name {
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       font-weight: 700;
       color: #f1f5f9;
       flex: 1;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      min-width: 0;
     }
 
     .turn-badge {
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       font-weight: 700;
-      padding: 2px 7px;
-      border-radius: 6px;
+      padding: 1px 6px;
+      border-radius: 5px;
       background: rgba(255, 255, 255, 0.08);
       color: #64748b;
       opacity: 0.6;
       transition: all 0.2s;
+      flex-shrink: 0;
     }
 
     .active-turn .turn-badge {
@@ -355,7 +373,7 @@
     }
 
     .captures-label {
-      font-size: 0.74rem;
+      font-size: 0.72rem;
       color: #94a3b8;
       display: flex;
       align-items: center;
@@ -364,17 +382,17 @@
     .captures-num {
       color: #38bdf8;
       font-weight: 800;
-      font-size: 0.88rem;
+      font-size: 0.84rem;
     }
 
     .ai-thinking-bar {
       display: none;
       align-items: center;
-      gap: 6px;
-      font-size: 0.72rem;
+      gap: 5px;
+      font-size: 0.7rem;
       color: #38bdf8;
       font-weight: 700;
-      margin-top: 2px;
+      margin-top: 1px;
     }
     .ai-thinking-bar.show {
       display: flex;
@@ -389,23 +407,27 @@
       width: 100%;
       background: rgba(15, 23, 42, 0.85);
       border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 9px;
-      padding: 7px 12px;
+      border-radius: 8px;
+      padding: 5px 10px;
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 0.82rem;
+      gap: 6px;
+      font-size: 0.78rem;
       font-weight: 600;
       color: #e2e8f0;
+      box-sizing: border-box;
+      min-width: 0;
     }
     .status-icon {
-      font-size: 0.95rem;
+      font-size: 0.9rem;
+      flex-shrink: 0;
     }
     .status-text {
       flex: 1;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      min-width: 0;
     }
 
     /* 底部操作面板 */
@@ -413,24 +435,27 @@
       width: 100%;
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
+      gap: 5px;
+      box-sizing: border-box;
     }
 
     .btn-action-go {
       background: rgba(30, 41, 59, 0.85);
       border: 1px solid rgba(255, 255, 255, 0.12);
       color: #e2e8f0;
-      padding: 9px 6px;
-      border-radius: 9px;
-      font-size: 0.82rem;
+      padding: 6px 3px;
+      border-radius: 8px;
+      font-size: 0.76rem;
       font-weight: 700;
       cursor: pointer;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 4px;
+      gap: 2px;
       transition: all 0.2s;
+      min-width: 0;
+      box-sizing: border-box;
     }
 
     .btn-action-go:hover:not(:disabled) {
@@ -481,19 +506,21 @@
     .judgment-card {
       background: rgba(15, 23, 42, 0.85);
       border: 1px solid rgba(56, 189, 248, 0.3);
-      border-radius: 10px;
-      padding: 7px 10px;
+      border-radius: 8px;
+      padding: 5px 8px;
       display: flex;
       flex-direction: column;
-      gap: 5px;
+      gap: 3px;
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+      box-sizing: border-box;
+      min-width: 0;
     }
 
     .judgment-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      font-size: 0.76rem;
+      font-size: 0.74rem;
       font-weight: 700;
       color: #94a3b8;
     }
@@ -501,9 +528,9 @@
     .rules-komi-tag {
       background: rgba(56, 189, 248, 0.15);
       color: #38bdf8;
-      font-size: 0.68rem;
+      font-size: 0.66rem;
       font-weight: 700;
-      padding: 1px 6px;
+      padding: 1px 5px;
       border-radius: 4px;
       border: 1px solid rgba(56, 189, 248, 0.25);
     }
@@ -512,7 +539,7 @@
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       color: #cbd5e1;
       cursor: pointer;
       user-select: none;
@@ -524,37 +551,44 @@
     .judgment-toggle-label input[type="checkbox"] {
       cursor: pointer;
       accent-color: #0284c7;
+      margin: 0;
     }
 
     .judgment-lead-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      font-size: 0.86rem;
+      font-size: 0.82rem;
       font-weight: 800;
     }
     .judgment-lead-text {
       color: #38bdf8;
-      letter-spacing: 0.3px;
+      letter-spacing: 0.2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
     }
     .judgment-status-tag {
-      font-size: 0.72rem;
+      font-size: 0.68rem;
       font-weight: 700;
       color: #94a3b8;
       background: rgba(255, 255, 255, 0.06);
-      padding: 1px 6px;
+      padding: 1px 5px;
       border-radius: 4px;
+      flex-shrink: 0;
     }
 
     .judgment-bar-wrapper {
       width: 100%;
-      height: 8px;
+      height: 6px;
       background: rgba(30, 41, 59, 0.9);
-      border-radius: 4px;
+      border-radius: 3px;
       overflow: hidden;
       display: flex;
       border: 1px solid rgba(255, 255, 255, 0.12);
       box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+      box-sizing: border-box;
     }
     .judgment-bar-black {
       height: 100%;
@@ -570,20 +604,28 @@
     .judgment-bar-legend {
       display: flex;
       justify-content: space-between;
-      font-size: 0.68rem;
+      font-size: 0.66rem;
       font-weight: 700;
       color: #94a3b8;
-      margin-top: -2px;
+      margin-top: -1px;
     }
 
     .judgment-detail-row {
       display: flex;
       justify-content: space-between;
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       color: #94a3b8;
       gap: 4px;
-      padding-top: 2px;
+      padding-top: 1px;
       border-top: 1px solid rgba(255, 255, 255, 0.05);
+      flex-wrap: nowrap;
+      overflow: hidden;
+    }
+    .judgment-detail-item {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
     }
     .judgment-detail-item b {
       color: #f1f5f9;
@@ -595,33 +637,36 @@
     .timeline-card {
       background: rgba(15, 23, 42, 0.85);
       border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 10px;
-      padding: 7px 10px;
+      border-radius: 8px;
+      padding: 5px 8px;
       display: flex;
       flex-direction: column;
-      gap: 5px;
+      gap: 3px;
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+      box-sizing: border-box;
+      min-width: 0;
     }
 
     .timeline-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      font-size: 0.76rem;
+      font-size: 0.74rem;
       font-weight: 700;
       color: #94a3b8;
     }
     .step-count-badge {
       color: #38bdf8;
       font-weight: 800;
-      font-size: 0.78rem;
+      font-size: 0.76rem;
+      white-space: nowrap;
     }
     .history-badge {
       background: #f59e0b;
       color: #0f172a;
-      padding: 1px 6px;
+      padding: 1px 5px;
       border-radius: 4px;
-      font-size: 0.66rem;
+      font-size: 0.64rem;
       font-weight: 800;
       animation: pulse 1.6s infinite;
     }
@@ -632,12 +677,13 @@
       gap: 6px;
       width: 100%;
       padding: 1px 0;
+      box-sizing: border-box;
     }
     .go-slider {
       flex: 1;
       -webkit-appearance: none;
       appearance: none;
-      height: 6px;
+      height: 5px;
       border-radius: 3px;
       background: rgba(51, 65, 85, 0.85);
       outline: none;
@@ -647,8 +693,8 @@
     .go-slider::-webkit-slider-thumb {
       -webkit-appearance: none;
       appearance: none;
-      width: 16px;
-      height: 16px;
+      width: 15px;
+      height: 15px;
       border-radius: 50%;
       background: #38bdf8;
       box-shadow: 0 0 8px rgba(56, 189, 248, 0.8);
@@ -660,8 +706,8 @@
       background: #7dd3fc;
     }
     .go-slider::-moz-range-thumb {
-      width: 16px;
-      height: 16px;
+      width: 15px;
+      height: 15px;
       border: none;
       border-radius: 50%;
       background: #38bdf8;
@@ -675,13 +721,15 @@
 
     .timeline-btn-group {
       display: flex;
-      gap: 4px;
+      gap: 3px;
       width: 100%;
+      box-sizing: border-box;
     }
     .btn-timeline {
       flex: 1;
-      padding: 5px 2px;
-      font-size: 0.72rem;
+      min-width: 0;
+      padding: 4px 1px;
+      font-size: 0.71rem;
       font-weight: 700;
       background: rgba(30, 41, 59, 0.85);
       border: 1px solid rgba(255, 255, 255, 0.12);
@@ -691,6 +739,7 @@
       text-align: center;
       transition: all 0.15s ease;
       white-space: nowrap;
+      box-sizing: border-box;
     }
     .btn-timeline:hover:not(:disabled) {
       background: #2563eb;
@@ -704,8 +753,8 @@
 
     .btn-return-latest {
       width: 100%;
-      padding: 5px 8px;
-      font-size: 0.74rem;
+      padding: 4px 6px;
+      font-size: 0.72rem;
       font-weight: 700;
       background: linear-gradient(135deg, #f59e0b, #d97706);
       color: #ffffff;
@@ -718,6 +767,7 @@
       gap: 4px;
       box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
       transition: all 0.2s;
+      box-sizing: border-box;
     }
     .btn-return-latest:hover {
       background: linear-gradient(135deg, #fbbf24, #f59e0b);
@@ -728,6 +778,7 @@
     .go-side-panel {
       box-sizing: border-box;
       overflow-x: hidden;
+      scrollbar-width: thin;
     }
     .go-side-panel * {
       box-sizing: border-box;
@@ -778,7 +829,7 @@
         width: 100%;
       }
       .player-card {
-        padding: 6px 10px;
+        padding: 5px 8px;
       }
       .player-name {
         font-size: 0.78rem;
@@ -809,7 +860,7 @@
       .game-status-banner {
         order: 5;
         max-width: 520px;
-        padding: 6px 10px;
+        padding: 5px 10px;
         font-size: 0.78rem;
         width: 100%;
       }
@@ -818,102 +869,115 @@
         max-width: 520px;
         width: 100%;
         grid-template-columns: repeat(4, 1fr);
-        gap: 6px;
+        gap: 5px;
       }
       .btn-action-go {
-        padding: 7px 4px;
+        padding: 6px 3px;
         font-size: 0.76rem;
       }
       .mode-nav {
         order: 7;
         max-width: 520px;
         width: 100%;
-        padding: 4px;
+        padding: 3px;
       }
       .mode-tab {
-        padding: 5px 8px;
+        padding: 5px 6px;
         font-size: 0.75rem;
       }
       .online-panel {
         order: 8;
         max-width: 520px;
         width: 100%;
-        padding: 8px 10px;
+        padding: 6px 8px;
       }
       .go-toolbar-group {
         order: 9;
         max-width: 520px;
         width: 100%;
-        padding: 5px 8px;
+        padding: 4px 8px;
       }
     }
 
     /* 16:9 宽屏与大桌面模式 (>= 960px) */
     @media (min-width: 960px) {
+      body {
+        overflow: hidden;
+      }
       .container.in-game {
         height: 100vh;
         max-height: 100vh;
-        padding: 6px 16px 8px;
+        padding: 4px 14px 6px;
         box-sizing: border-box;
         overflow: hidden;
+        gap: 4px;
       }
       .game-header {
         flex-shrink: 0;
-        margin-bottom: 2px;
-        padding: 6px 14px;
+        margin-bottom: 0;
+        padding: 4px 12px;
+        min-height: 36px;
       }
       .go-main-layout {
         flex-direction: row;
         align-items: center;
         justify-content: center;
-        gap: 16px;
+        gap: 12px;
         flex: 1;
         min-height: 0;
-        height: calc(100vh - 65px);
+        min-width: 0;
+        height: calc(100vh - 50px);
         width: 100%;
         box-sizing: border-box;
+        overflow: hidden;
       }
       .go-board-section {
         flex: 1;
         height: 100%;
         min-height: 0;
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+      }
+      .board-container {
+        aspect-ratio: 1 / 1;
+        max-width: 100%;
+        max-height: 100%;
+        box-sizing: border-box;
         display: flex;
         align-items: center;
         justify-content: center;
       }
-      .board-container {
-        aspect-ratio: 1 / 1;
-        width: min(calc(100vh - 75px), calc(100vw - 370px), 760px);
-        height: min(calc(100vh - 75px), calc(100vw - 370px), 760px);
-        max-width: 100%;
-        max-height: 100%;
-      }
       .go-side-panel {
-        width: 330px;
+        width: 320px;
         flex-shrink: 0;
         height: 100%;
-        max-height: min(calc(100vh - 75px), 760px);
+        max-height: 100%;
         background: rgba(15, 23, 42, 0.75);
         border: 1px solid rgba(255, 255, 255, 0.08);
         border-radius: 12px;
-        padding: 10px;
+        padding: 8px 10px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
         overflow-y: auto;
         overflow-x: hidden;
         display: flex;
         flex-direction: column;
-        gap: 7px;
+        gap: 5px;
         box-sizing: border-box;
+        scrollbar-width: thin;
       }
       .go-controls-grid {
         grid-template-columns: repeat(4, 1fr);
-        gap: 6px;
+        gap: 4px;
         margin-top: auto;
         flex-shrink: 0;
       }
       .btn-action-go {
-        padding: 8px 4px;
-        font-size: 0.8rem;
+        padding: 6px 3px;
+        font-size: 0.76rem;
       }
     }
   </style>
@@ -1054,7 +1118,7 @@
             <input type="range" id="move-slider" min="0" max="0" value="0" step="1" class="go-slider" oninput="onSliderInput(this.value)" disabled>
           </div>
           <div class="timeline-btn-group">
-            <button class="btn-timeline" id="btn-step-first" onclick="stepFirstMove()" title="回到开局 (第0手)" disabled>|◀ 开局</button>
+            <button class="btn-timeline" id="btn-step-first" onclick="stepFirstMove()" title="回到第一手 / 开局" disabled>|◀ 第一手</button>
             <button class="btn-timeline" id="btn-step-prev" onclick="stepPrevMove()" title="后退一手" disabled>◀ 上一手</button>
             <button class="btn-timeline" id="btn-step-next" onclick="stepNextMove()" title="前进一手" disabled>下一手 ▶</button>
             <button class="btn-timeline" id="btn-step-latest" onclick="stepLatestMove()" title="前往最新手" disabled>▶| 最新手</button>
@@ -1240,6 +1304,7 @@
     // ==========================================================================
     function jumpToStep(step) {
       if (!GO_STATE.moveHistory || GO_STATE.moveHistory.length === 0) return;
+      if (GO_STATE.isAiComputing) return; // 禁止在AI计算中跳转导致状态混乱
       const maxStep = GO_STATE.moveHistory.length - 1;
       const target = Math.max(0, Math.min(maxStep, step));
       GO_STATE.currentStep = target;
@@ -1251,7 +1316,9 @@
         GO_STATE.captures = { ...snapshot.captures };
         GO_STATE.lastMove = snapshot.lastMove ? { ...snapshot.lastMove } : null;
         GO_STATE.koPoint = snapshot.koPoint ? { ...snapshot.koPoint } : null;
-        GO_STATE.passCount = snapshot.passCount;
+        GO_STATE.passCount = snapshot.passCount || 0;
+        GO_STATE.gameOver = !!snapshot.gameOver;
+        GO_STATE.winner = snapshot.winner || null;
       }
 
       if (GO_STATE.showTerritory) {
@@ -1319,18 +1386,18 @@
         if (GO_STATE.turn !== GO_STATE.userColor) return;
       }
 
-      // 如果当前处于历史回溯状态 (currentStep < moveHistory.length - 1)，用户从该历史手重新落子：
-      // 按照规范：截断后续历史，从当前手分支展开新棋局！
-      if (GO_STATE.currentStep < GO_STATE.moveHistory.length - 1) {
-        GO_STATE.moveHistory = GO_STATE.moveHistory.slice(0, GO_STATE.currentStep + 1);
-        showToast(`⚡ 已从第 ${GO_STATE.currentStep} 手分支展开新棋局`);
-      }
-
+      // 先校验落子合法性，绝对不可在非法落子时错误截断后续历史！
       const legality = checkMoveLegality(r, c, GO_STATE.turn, GO_STATE.board, GO_STATE.koPoint);
       if (!legality.valid) {
         showToast(`⚠️ ${legality.reason}`);
         if (window.AUDIO) try { window.AUDIO.play('go_invalid'); } catch(e) {}
         return;
+      }
+
+      // 合法落子：如果处于历史回溯中，截断后续历史展开新分支
+      if (GO_STATE.currentStep < GO_STATE.moveHistory.length - 1) {
+        GO_STATE.moveHistory = GO_STATE.moveHistory.slice(0, GO_STATE.currentStep + 1);
+        showToast(`⚡ 已从第 ${GO_STATE.currentStep} 手分支展开新棋局`);
       }
 
       executeMove(r, c, legality.captures, legality.newKo, true);
@@ -1348,6 +1415,8 @@
 
       const currentTurn = GO_STATE.turn;
       GO_STATE.board[r][c] = currentTurn;
+      GO_STATE.gameOver = false;
+      GO_STATE.winner = null;
 
       // 执行提子
       if (captures && captures.length > 0) {
@@ -1385,6 +1454,8 @@
         lastMove: { r, c },
         koPoint: newKo ? { ...newKo } : null,
         passCount: 0,
+        gameOver: false,
+        winner: null,
         desc: `${currentTurn === 1 ? '黑' : '白'}落子 ${getCoordName(r, c)}`
       });
       GO_STATE.currentStep = newStepNum;
@@ -1501,6 +1572,7 @@
 
     // 悔棋 (Undo)
     function undoMove() {
+      clearPendingAiMove();
       if (GO_STATE.gameMode === 'ONLINE') {
         showToast('⚠️ 好友联机模式禁止悔棋');
         return;
@@ -1539,6 +1611,7 @@
     // 认输 (Resign)
     function resignGame(broadcast = true) {
       if (GO_STATE.gameOver) return;
+      clearPendingAiMove();
 
       if (GO_STATE.gameMode === 'ONLINE' && broadcast) {
         if (!confirm('确定要认输吗？本局将裁定对方获胜。')) return;
@@ -1558,6 +1631,12 @@
 
       GO_STATE.gameOver = true;
       GO_STATE.winner = winner;
+
+      if (GO_STATE.moveHistory && GO_STATE.moveHistory.length > 0) {
+        const lastSnap = GO_STATE.moveHistory[GO_STATE.moveHistory.length - 1];
+        lastSnap.gameOver = true;
+        lastSnap.winner = winner;
+      }
 
       if (broadcast && GO_STATE.gameMode === 'ONLINE') {
         sendOnlineAction({
@@ -1579,14 +1658,21 @@
 
     // 终局数子与胜负裁定
     function finishGameByPass() {
+      clearPendingAiMove();
       GO_STATE.gameOver = true;
       const score = calculateTerritoryScore(GO_STATE.board, true);
-      const komi = GO_STATE.boardSize === 9 ? 6.5 : 7.5; // 标准半目贴目消除和棋
+      const komi = 7.5; // 白棋标准贴 7.5 目消除和棋
       const blackTotal = score.black + GO_STATE.captures[1];
       const whiteTotal = score.white + GO_STATE.captures[2] + komi;
       const diff = Math.abs(blackTotal - whiteTotal).toFixed(1);
       const winnerName = blackTotal > whiteTotal ? '黑方 (执黑)' : '白方 (执白)';
       GO_STATE.winner = winnerName;
+
+      if (GO_STATE.moveHistory && GO_STATE.moveHistory.length > 0) {
+        const lastSnap = GO_STATE.moveHistory[GO_STATE.moveHistory.length - 1];
+        lastSnap.gameOver = true;
+        lastSnap.winner = winnerName;
+      }
 
       if (window.AUDIO) try { window.AUDIO.play('win'); } catch(e) {}
       showModal('🏁 终局数子结算 (双停一手终盘)', `
@@ -1740,14 +1826,29 @@
     // ==========================================================================
     // 5. 围棋多级 AI 智能对弈引擎 (GO ARTIFICIAL INTELLIGENCE)
     // ==========================================================================
+    let aiMoveTimeoutId = null;
+
+    function clearPendingAiMove() {
+      if (aiMoveTimeoutId) {
+        clearTimeout(aiMoveTimeoutId);
+        aiMoveTimeoutId = null;
+      }
+      GO_STATE.isAiComputing = false;
+      const indicator = document.getElementById('ai-thinking-indicator');
+      if (indicator) indicator.classList.remove('show');
+    }
+
     function scheduleAiMove() {
+      clearPendingAiMove();
       GO_STATE.isAiComputing = true;
       const indicator = document.getElementById('ai-thinking-indicator');
       if (indicator) indicator.classList.add('show');
+      updateUI();
 
       const thinkTime = GO_STATE.aiDifficulty === 'MASTER' ? 500 : 350;
 
-      setTimeout(() => {
+      aiMoveTimeoutId = setTimeout(() => {
+        aiMoveTimeoutId = null;
         const move = computeBestAiMove(GO_STATE.board, GO_STATE.turn, GO_STATE.aiDifficulty, GO_STATE.koPoint);
         GO_STATE.isAiComputing = false;
         if (indicator) indicator.classList.remove('show');
@@ -1991,12 +2092,25 @@
 
     function resizeCanvas() {
       const box = document.getElementById('board-box');
-      if (!box) return;
-      const rect = box.getBoundingClientRect();
-      const dpr = window.devicePixelRatio || 1;
-      const side = Math.floor(Math.min(rect.width, rect.height));
-      if (side <= 0) return;
+      if (!box || !CANVAS) return;
+      const section = (typeof document !== 'undefined' && document.querySelector) ? document.querySelector('.go-board-section') : null;
+      const rect = section ? section.getBoundingClientRect() : box.getBoundingClientRect();
+      const dpr = (typeof window !== 'undefined' && window.devicePixelRatio) ? window.devicePixelRatio : 1;
 
+      let side;
+      if (typeof window !== 'undefined' && window.innerWidth < 960) {
+        const availW = Math.min((window.innerWidth || 400) - 16, 520);
+        const availH = Math.min((window.innerHeight || 700) - 240, 520);
+        side = Math.floor(Math.min(availW, availH));
+      } else {
+        const availW = rect.width > 0 ? (rect.width - 8) : 600;
+        const availH = rect.height > 0 ? (rect.height - 8) : 600;
+        side = Math.floor(Math.min(availW, availH, 760));
+      }
+      if (side <= 0) side = 400;
+
+      box.style.width = side + 'px';
+      box.style.height = side + 'px';
       CANVAS.width = Math.round(side * dpr);
       CANVAS.height = Math.round(side * dpr);
       CANVAS.style.width = side + 'px';
@@ -2577,6 +2691,7 @@
       const btnStepPrev = document.getElementById('btn-step-prev');
       const btnStepNext = document.getElementById('btn-step-next');
       const btnStepLatest = document.getElementById('btn-step-latest');
+      const isComputing = !!GO_STATE.isAiComputing;
 
       if (counterText) {
         counterText.textContent = cur === 0 ? `当前：开局 (0手) / 共 ${totalMoves} 手` : `当前：第 ${cur} 手 / 共 ${totalMoves} 手`;
@@ -2586,24 +2701,26 @@
       }
       if (btnReturnLatest) {
         btnReturnLatest.style.display = isReviewingHistory ? 'flex' : 'none';
+        btnReturnLatest.disabled = isComputing;
       }
       if (moveSlider) {
         moveSlider.max = totalMoves;
         moveSlider.value = cur;
-        moveSlider.disabled = (totalMoves === 0);
+        moveSlider.disabled = (totalMoves === 0 || isComputing);
       }
-      if (btnStepFirst) btnStepFirst.disabled = (cur <= 0);
-      if (btnStepPrev) btnStepPrev.disabled = (cur <= 0);
-      if (btnStepNext) btnStepNext.disabled = (cur >= totalMoves);
-      if (btnStepLatest) btnStepLatest.disabled = (cur >= totalMoves);
+      if (btnStepFirst) btnStepFirst.disabled = (cur <= 0 || isComputing);
+      if (btnStepPrev) btnStepPrev.disabled = (cur <= 0 || isComputing);
+      if (btnStepNext) btnStepNext.disabled = (cur >= totalMoves || isComputing);
+      if (btnStepLatest) btnStepLatest.disabled = (cur >= totalMoves || isComputing);
 
       if (btnUndo) {
-        btnUndo.disabled = GO_STATE.gameMode === 'ONLINE' || cur <= 0 || GO_STATE.isAiComputing || GO_STATE.gameOver;
+        btnUndo.disabled = GO_STATE.gameMode === 'ONLINE' || cur <= 0 || isComputing || GO_STATE.gameOver;
       }
     }
 
     function changeBoardSize(size, broadcast = true) {
       if (GO_STATE.boardSize === size) return;
+      clearPendingAiMove();
       if (GO_STATE.gameMode === 'ONLINE' && broadcast) {
         if (GO_STATE.online.myRole !== 'host') {
           showToast('⚠️ 联机模式下仅房主有权更改棋盘尺寸');
@@ -2644,6 +2761,7 @@
     }
 
     function switchGameMode(mode, autoCreateRoom = true) {
+      clearPendingAiMove();
       GO_STATE.gameMode = mode;
       document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
       const activeTab = document.getElementById(`tab-${mode.toLowerCase()}`);
@@ -2675,6 +2793,7 @@
     }
 
     function resetCurrentGame(broadcast = true) {
+      clearPendingAiMove();
       const size = GO_STATE.boardSize;
       GO_STATE.board = Array(size).fill(0).map(() => Array(size).fill(0));
       GO_STATE.turn = 1; // 黑先
@@ -2699,6 +2818,8 @@
         lastMove: null,
         koPoint: null,
         passCount: 0,
+        gameOver: false,
+        winner: null,
         desc: '开局'
       }];
       GO_STATE.currentStep = 0;
@@ -2843,6 +2964,10 @@
         if (!msg || !msg.type) return;
 
         if (msg.type === 'GO_MOVE') {
+          // 若当前正在回溯查看历史局面，先自动恢复至最新盘面，避免落子到历史步造成全网状态脱节与破坏
+          if (GO_STATE.moveHistory && GO_STATE.moveHistory.length > 0 && GO_STATE.currentStep < GO_STATE.moveHistory.length - 1) {
+            jumpToStep(GO_STATE.moveHistory.length - 1);
+          }
           if (msg.boardSize && msg.boardSize !== GO_STATE.boardSize) {
             GO_STATE.boardSize = msg.boardSize;
             updateBoardSizePill(msg.boardSize);
@@ -2857,6 +2982,9 @@
             }
           }
         } else if (msg.type === 'GO_PASS') {
+          if (GO_STATE.moveHistory && GO_STATE.moveHistory.length > 0 && GO_STATE.currentStep < GO_STATE.moveHistory.length - 1) {
+            jumpToStep(GO_STATE.moveHistory.length - 1);
+          }
           if (GO_STATE.turn === msg.player) {
             passTurn(false, false);
           }
