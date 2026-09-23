@@ -565,10 +565,55 @@ assert(sandbox.GO_STATE.turn === 1, 'initGame resets turn to Black (1)');
 assert(sandbox.GO_STATE.board[0][1] === 0, 'initGame resets board');
 assert(sandbox.GO_STATE.showTerritory === false, 'initGame resets showTerritory to false');
 
+// 24. Single-Stone & Empty Board Territory Integrity (Anti-Hallucination)
+sandbox.initGame(false);
+const emptyScore = sandbox.calculateTerritoryScore(sandbox.GO_STATE.board, false);
+assert(emptyScore.black === 0 && emptyScore.white === 0, 'Empty board has 0 territory for both Black and White');
+
+// Place 1 Black stone on empty 9x9 board (move 1)
+sandbox.GO_STATE.board[2][2] = 1;
+const singleStoneScore = sandbox.calculateTerritoryScore(sandbox.GO_STATE.board, false);
+assert(singleStoneScore.black === 0, '1 Black stone on open board does NOT claim 80 empty points as territory');
+assert(singleStoneScore.white === 0, 'White has 0 territory when White has no stones');
+
+const singleStoneEval = sandbox.evaluateSituation(sandbox.GO_STATE.board, { 1: 0, 2: 0 }, false);
+assert(singleStoneEval.blackTerritory === 0, 'evaluateSituation on 1-stone board correctly evaluates Black territory as 0');
+assert(singleStoneEval.whiteTerritory === 0, 'evaluateSituation on 1-stone board correctly evaluates White territory as 0');
+assert(singleStoneEval.diff === -7.5, 'evaluateSituation score diff reflects White leading by 7.5 komi rather than fake Black lead');
+
+// 25. updateSituationUI territoryMap Sync on External evalRes
+sandbox.initGame(false);
+sandbox.GO_STATE.board[0][1] = 1;
+sandbox.GO_STATE.board[1][0] = 1;
+sandbox.GO_STATE.board[1][1] = 1;
+sandbox.GO_STATE.board[8][7] = 2;
+sandbox.GO_STATE.board[7][8] = 2;
+sandbox.GO_STATE.board[7][7] = 2;
+const extEval = sandbox.evaluateSituation(sandbox.GO_STATE.board, sandbox.GO_STATE.captures, false);
+assert(sandbox.GO_STATE.territoryMap === null, 'territoryMap remains null before updateSituationUI');
+sandbox.GO_STATE.showTerritory = true;
+sandbox.updateSituationUI(extEval);
+assert(sandbox.GO_STATE.territoryMap !== null, 'updateSituationUI correctly syncs territoryMap to global state when showTerritory is true');
+assert(sandbox.GO_STATE.territoryMap[0][0] === 1, 'territoryMap contains correct Black territory point at (0,0)');
+
+// 26. Global Exports Verification
+assert(typeof sandbox.calculateTerritoryScore === 'function', 'calculateTerritoryScore is exported to global scope');
+assert(typeof sandbox.resetCurrentGame === 'function', 'resetCurrentGame is exported to global scope');
+
+// 27. Canvas Render Coordinate Clamping Safety
+let renderThrew = false;
+try {
+  sandbox.renderBoard();
+} catch(e) {
+  renderThrew = true;
+}
+assert(!renderThrew, 'renderBoard executes cleanly with clamped territory overlay without throwing exceptions');
+
 console.log(`\n========================================`);
 console.log(`Test Results: ${passed} passed, ${failed} failed`);
 console.log(`========================================\n`);
 
 process.exit(failed > 0 ? 1 : 0);
+
 
 

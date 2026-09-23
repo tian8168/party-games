@@ -588,23 +588,24 @@
 
     .judgment-bar-wrapper {
       width: 100%;
-      height: 6px;
-      background: rgba(30, 41, 59, 0.9);
-      border-radius: 3px;
+      height: 8px;
+      background: #1e293b;
+      border-radius: 4px;
       overflow: hidden;
       display: flex;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
       box-sizing: border-box;
+      position: relative;
     }
     .judgment-bar-black {
       height: 100%;
-      background: linear-gradient(90deg, #090d16 0%, #334155 100%);
+      background: linear-gradient(90deg, #090d16 0%, #1e293b 60%, #38bdf8 100%);
       transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .judgment-bar-white {
       height: 100%;
-      background: linear-gradient(90deg, #94a3b8 0%, #f8fafc 100%);
+      background: linear-gradient(90deg, #cbd5e1 0%, #ffffff 100%);
       transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
@@ -614,7 +615,7 @@
       font-size: 0.66rem;
       font-weight: 700;
       color: #94a3b8;
-      margin-top: -1px;
+      margin-top: 1px;
     }
 
     .judgment-detail-row {
@@ -623,15 +624,13 @@
       font-size: 0.68rem;
       color: #94a3b8;
       gap: 4px;
-      padding-top: 1px;
-      border-top: 1px solid rgba(255, 255, 255, 0.05);
-      flex-wrap: nowrap;
-      overflow: hidden;
+      padding-top: 2px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      flex-wrap: wrap;
+      min-width: 0;
     }
     .judgment-detail-item {
       white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
       min-width: 0;
     }
     .judgment-detail-item b {
@@ -1722,6 +1721,23 @@
       let whiteTerritory = 0;
       const territoryMap = Array(size).fill(0).map(() => Array(size).fill(0));
 
+      // 盘面完整性校验：围棋中若某一方尚未落子，空盘绝非任何一方的封闭领地
+      let hasBlack = false;
+      let hasWhite = false;
+      for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+          if (board[r][c] === 1) hasBlack = true;
+          else if (board[r][c] === 2) hasWhite = true;
+        }
+      }
+
+      if (!hasBlack || !hasWhite) {
+        if (saveToGlobal) {
+          GO_STATE.territoryMap = territoryMap;
+        }
+        return { black: 0, white: 0, territoryMap };
+      }
+
       for (let r = 0; r < size; r++) {
         for (let c = 0; c < size; c++) {
           if (board[r][c] === 0 && !visited.has(`${r},${c}`)) {
@@ -1829,6 +1845,9 @@
     function updateSituationUI(evalRes) {
       if (!evalRes) {
         evalRes = evaluateSituation(GO_STATE.board, GO_STATE.captures, !!GO_STATE.showTerritory);
+      }
+      if (evalRes && evalRes.territoryMap && GO_STATE.showTerritory) {
+        GO_STATE.territoryMap = evalRes.territoryMap;
       }
       const cardEl = document.getElementById('judgment-card');
       const leadEl = document.getElementById('judgment-lead-text');
@@ -2315,7 +2334,44 @@
       if (GO_STATE.showTerritory && GO_STATE.territoryMap) {
         const half = m.cellSize / 2;
         const sqSize = Math.max(5, m.cellSize * 0.28);
+        const topLeft = getCoord(0, 0, m);
+        const botRight = getCoord(m.size - 1, m.size - 1, m);
 
+        // 网格染色层：严格钳位在棋盘网格边界内，避免染色边缘外溢至外围字母坐标
+        for (let r = 0; r < m.size; r++) {
+          for (let c = 0; c < m.size; c++) {
+            const terr = GO_STATE.territoryMap[r][c];
+            if (terr !== 0 && GO_STATE.board[r][c] === 0) {
+              const pt = getCoord(r, c, m);
+              const cellX = Math.max(topLeft.x, pt.x - half);
+              const cellY = Math.max(topLeft.y, pt.y - half);
+              const cellMaxX = Math.min(botRight.x, pt.x + half);
+              const cellMaxY = Math.min(botRight.y, pt.y + half);
+              const cellW = cellMaxX - cellX;
+              const cellH = cellMaxY - cellY;
+
+              CTX.save();
+              if (terr === 1) {
+                // 黑棋领地网格半透高亮底色 (Cell Dyeing)
+                CTX.fillStyle = 'rgba(14, 165, 233, 0.25)';
+                CTX.fillRect(cellX, cellY, cellW, cellH);
+                CTX.strokeStyle = 'rgba(56, 189, 248, 0.45)';
+                CTX.lineWidth = 1;
+                CTX.strokeRect(cellX, cellY, cellW, cellH);
+              } else if (terr === 2) {
+                // 白棋领地网格半透高亮底色 (Cell Dyeing)
+                CTX.fillStyle = 'rgba(255, 255, 255, 0.32)';
+                CTX.fillRect(cellX, cellY, cellW, cellH);
+                CTX.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+                CTX.lineWidth = 1;
+                CTX.strokeRect(cellX, cellY, cellW, cellH);
+              }
+              CTX.restore();
+            }
+          }
+        }
+
+        // 目数实体方块标章 (Territory Marker Square)
         for (let r = 0; r < m.size; r++) {
           for (let c = 0; c < m.size; c++) {
             const terr = GO_STATE.territoryMap[r][c];
@@ -2323,28 +2379,12 @@
               const pt = getCoord(r, c, m);
               CTX.save();
               if (terr === 1) {
-                // 黑棋领地网格半透高亮底色 (Cell Dyeing)
-                CTX.fillStyle = 'rgba(14, 165, 233, 0.25)';
-                CTX.fillRect(pt.x - half + 1, pt.y - half + 1, m.cellSize - 2, m.cellSize - 2);
-                CTX.strokeStyle = 'rgba(56, 189, 248, 0.45)';
-                CTX.lineWidth = 1;
-                CTX.strokeRect(pt.x - half + 1, pt.y - half + 1, m.cellSize - 2, m.cellSize - 2);
-
-                // 黑棋目数实体方块标章 (Territory Marker Square)
                 CTX.fillStyle = '#090d16';
                 CTX.fillRect(pt.x - sqSize / 2, pt.y - sqSize / 2, sqSize, sqSize);
                 CTX.strokeStyle = '#38bdf8';
                 CTX.lineWidth = 1.3;
                 CTX.strokeRect(pt.x - sqSize / 2, pt.y - sqSize / 2, sqSize, sqSize);
               } else if (terr === 2) {
-                // 白棋领地网格半透高亮底色 (Cell Dyeing)
-                CTX.fillStyle = 'rgba(255, 255, 255, 0.32)';
-                CTX.fillRect(pt.x - half + 1, pt.y - half + 1, m.cellSize - 2, m.cellSize - 2);
-                CTX.strokeStyle = 'rgba(255, 255, 255, 0.6)';
-                CTX.lineWidth = 1;
-                CTX.strokeRect(pt.x - half + 1, pt.y - half + 1, m.cellSize - 2, m.cellSize - 2);
-
-                // 白棋目数实体方块标章 (Territory Marker Square)
                 CTX.fillStyle = '#ffffff';
                 CTX.fillRect(pt.x - sqSize / 2, pt.y - sqSize / 2, sqSize, sqSize);
                 CTX.strokeStyle = '#475569';
@@ -3181,15 +3221,19 @@
     if (typeof window !== 'undefined') {
       window.evaluateSituation = evaluateSituation;
       window.evaluateGameSituation = evaluateGameSituation;
+      window.calculateTerritoryScore = calculateTerritoryScore;
       window.updateSituationUI = updateSituationUI;
       window.initGame = initGame;
+      window.resetCurrentGame = resetCurrentGame;
       window.toggleTerritoryView = toggleTerritoryView;
     }
     if (typeof globalThis !== 'undefined') {
       globalThis.evaluateSituation = evaluateSituation;
       globalThis.evaluateGameSituation = evaluateGameSituation;
+      globalThis.calculateTerritoryScore = calculateTerritoryScore;
       globalThis.updateSituationUI = updateSituationUI;
       globalThis.initGame = initGame;
+      globalThis.resetCurrentGame = resetCurrentGame;
       globalThis.toggleTerritoryView = toggleTerritoryView;
     }
   </script>
