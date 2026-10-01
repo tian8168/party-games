@@ -1,0 +1,48 @@
+# Cloudflare Pages Custom Headers Configuration
+
+# Service Worker - Never cache sw.js so updates are immediate
+/sw.js
+  Cache-Control: no-cache, no-store, must-revalidate
+  Service-Worker-Allowed: /
+
+# Web App Manifest
+/manifest.json
+  Content-Type: application/manifest+json; charset=utf-8
+  Cache-Control: public, max-age=3600
+
+# WebAssembly & Libretro Cores - Long-term immutable caching
+/*.wasm
+  Content-Type: application/wasm
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=31536000, immutable
+
+/games/cores/*.zip
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=31536000, immutable
+
+/games/roms/*.nes
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=31536000, immutable
+
+/games/roms/roms_index.json
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=86400
+
+# Kaya Go - Enable native Cross-Origin-Isolation (SharedArrayBuffer) for KataGo multi-threaded AI
+/games/kaya/*
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Embedder-Policy: require-corp
+  Access-Control-Allow-Origin: *
+
+/games/kaya/static/wasm/*
+  Content-Type: application/wasm
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=31536000, immutable
+
+/games/kaya/wasm/*
+  Content-Type: application/wasm
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=31536000, immutable
+
+/games/kaya/sw.js
+  Cache-Control: no-cache, no-store, must-revalidate

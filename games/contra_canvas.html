@@ -320,7 +320,7 @@
           this.arcTo(x + w, y, x + w, y + h, r);
           this.arcTo(x + w, y + h, x, y + h, r);
           this.arcTo(x, y + h, x, y, r);
-          this.arcTo(x, y + x, y, r);
+          this.arcTo(x, y, x + w, y, r);
           this.closePath();
           return this;
         };

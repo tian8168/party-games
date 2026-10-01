@@ -278,7 +278,11 @@
       if (onlinePanel) {
         onlinePanel.style.display = mode === 'ONLINE' ? 'flex' : 'none';
         if (mode === 'ONLINE' && window.ONLINE_NETWORK) {
-          ONLINE_NETWORK.createRoom(STATE.currentGame);
+          if (!ONLINE_NETWORK.state.roomId) {
+            const rid = ONLINE_NETWORK.createRoom(STATE.currentGame);
+            STATE.online.roomId = rid;
+            STATE.online.myRole = 'host';
+          }
         }
       }
       updateScoreboard();
@@ -291,6 +295,55 @@
       if (window.ONLINE_NETWORK) {
         window.ONLINE_NETWORK.sendAction(data);
       }
+    }
+
+    function initOnlineMultiplayer() {
+      if (!window.ONLINE_NETWORK) return;
+
+      ONLINE_NETWORK.setRoleChangeHandler((role) => {
+        STATE.online.myRole = role;
+        STATE.online.connected = true;
+        STATE.online.roomId = ONLINE_NETWORK.state.roomId;
+        STATE.online.opponentJoined = (role === 'guest');
+        updateScoreboard();
+        render2D();
+      });
+
+      ONLINE_NETWORK.setOpponentJoinedHandler((msg) => {
+        STATE.online.opponentJoined = true;
+        updateScoreboard();
+        showToast('🎉 好友已进入房间！对战正式开始，你执红先行！', 3000);
+        sendOnlineAction({
+          type: 'GRAVITY4_SYNC',
+          board: STATE.gravity4.board,
+          turn: STATE.turn,
+          scores: STATE.scores,
+          winner: STATE.winner
+        });
+      });
+
+      ONLINE_NETWORK.setMessageHandler((msg) => {
+        if (!msg || !msg.type) return;
+
+        if (msg.type === 'GRAVITY4_DROP') {
+          const targetRow = getGravity4LandingRow(msg.col);
+          if (targetRow !== -1) {
+            executeGravity4Drop(msg.col, targetRow, msg.player || STATE.turn, false);
+          }
+        } else if (msg.type === 'GRAVITY4_SYNC') {
+          if (msg.board) STATE.gravity4.board = msg.board;
+          if (msg.turn) STATE.turn = msg.turn;
+          if (msg.scores) STATE.scores = msg.scores;
+          if (msg.winner !== undefined) STATE.winner = msg.winner;
+          STATE.online.opponentJoined = true;
+          updateScoreboard();
+          render2D();
+          showToast('🤝 已完成对局数据同步！', 2000);
+        } else if (msg.type === 'RESTART') {
+          initGravity4();
+          showToast('🔄 对方已重置棋局，新对决开始！', 2000);
+        }
+      });
     }
   
 
@@ -390,7 +443,7 @@
           }
 
           if (isLocalAction && STATE.gameMode === 'ONLINE') {
-            sendOnlineAction({ type: 'GRAVITY4_DROP', col });
+            sendOnlineAction({ type: 'GRAVITY4_DROP', col, player });
           }
           render2D();
         } else {
@@ -563,6 +616,9 @@
 
     function resetCurrentGame() {
       initGravity4();
+      if (STATE.gameMode === 'ONLINE') {
+        sendOnlineAction({ type: 'RESTART' });
+      }
     }
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -570,6 +626,22 @@
           <p><strong>胜利目标：</strong>率先在横向、纵向或对角线连成 <b>4 颗连续同色棋子</b> 者获胜！</p><br>
           <p><strong>核心博弈：</strong>经典博弈名局！每一步都是攻防兼备，比五子棋更快节奏！</p>`, resetCurrentGame);
       initGravity4();
+      initOnlineMultiplayer();
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const roomParam = urlParams.get('room');
+      const modeParam = urlParams.get('mode');
+      if (roomParam) {
+        if (window.ONLINE_NETWORK) {
+          ONLINE_NETWORK.joinRoom(roomParam.trim(), STATE.currentGame);
+          STATE.online.myRole = 'guest';
+          STATE.online.roomId = roomParam.trim();
+          STATE.online.opponentJoined = true;
+        }
+        switchGameMode('ONLINE', false);
+      } else if (modeParam === 'ONLINE') {
+        switchGameMode('ONLINE', false);
+      }
     });
     window.addEventListener('resize', resizeCanvas2D);
   </script>

@@ -62,7 +62,7 @@ function handleModalRestart() {
 
 function handleModalReturnLobby() {
   closeModal();
-  window.location.href = '../index.html';
+  window.location.href = window.location.pathname.includes('/games/') ? '../index.html' : './index.html';
 }
 
 function showModal(title, bodyHtml, options = {}) {
@@ -165,7 +165,7 @@ window.initCommonHeader = initCommonHeader;
 if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
   window.addEventListener('load', () => {
     const swPath = window.location.pathname.includes('/games/') ? '../sw.js' : './sw.js';
-    navigator.serviceWorker.register(swPath).then((reg) => {
+    navigator.serviceWorker.register(swPath, { scope: '/' }).then((reg) => {
       console.log('[PWA] Service Worker registered with scope:', reg.scope);
     }).catch((err) => {
       console.warn('[PWA] Service Worker registration failed:', err);

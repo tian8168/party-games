@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>挡板竞速 (Barrier Race) · 聚会游戏大厅</title>
+  <link rel="stylesheet" href="../common/common.css">
+  <script src="../mqtt.min.js" defer></script>
+  <style>
+    :root {
+      --br-p1: #ef4444;
+      --br-p1-light: #fca5a5;
+      --br-p1-glow: rgba(239, 68, 68, 0.5);
+      --br-p2: #3b82f6;
+      --br-p2-light: #93c5fd;
+      --br-p2-glow: rgba(59, 130, 246, 0.5);
+      --br-board-bg: #f0f4e8;
+      --br-grid: #c8d4b8;
+      --br-finish: #86efac;
+    }
+
+    .toolbar-br {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 6px;
+      margin-top: 10px;
+    }
+    .tool-btn {
+      background: #1e293b;
+      border: 1px solid #3b4c68;
+      color: var(--text-main, #e2e8f0);
+      padding: 7px 6px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tool-btn.active {
+      background: #334155;
+      border-color: #60a5fa;
+      color: #93c5fd;
+      box-shadow: 0 0 10px rgba(96, 165, 250, 0.4);
+    }
+
+    .turn-hint-bar {
+      width: 100%;
+      padding: 8px 12px;
+      border-radius: 8px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #f8fafc;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      margin: 4px 0 6px;
+      transition: all 0.3s ease;
+    }
+    .turn-hint-bar.my-turn {
+      border-color: #2ed573;
+      background: rgba(46, 213, 115, 0.15);
+      color: #7bed9f;
+      box-shadow: 0 0 14px rgba(46, 213, 115, 0.3);
+    }
+    .turn-hint-bar.opp-turn {
+      border-color: #475569;
+      background: rgba(30, 41, 59, 0.7);
+      color: #94a3b8;
+    }
+
+    .player-card {
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(8px);
+      border: 2px solid transparent;
+      border-radius: 10px;
+      padding: 7px 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s;
+    }
+    .player-card.active-turn {
+      box-shadow: 0 4px 18px rgba(0,0,0,0.4);
+    }
+    .player-card.p1.active-turn {
+      border-color: var(--br-p1);
+      box-shadow: 0 0 12px var(--br-p1-glow);
+    }
+    .player-card.p2.active-turn {
+      border-color: var(--br-p2);
+      box-shadow: 0 0 12px var(--br-p2-glow);
+    }
+    .player-card.is-me {
+      border: 2px solid #38bdf8 !important;
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.35) !important;
+    }
+    .player-avatar {
+      width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+      box-shadow: inset -2px -2px 4px rgba(0,0,0,0.5), inset 2px 2px 4px rgba(255,255,255,0.4);
+    }
+    .p1 .player-avatar { background: radial-gradient(circle at 35% 35%, #fca5a5, var(--br-p1) 70%, #991b1b); }
+    .p2 .player-avatar { background: radial-gradient(circle at 35% 35%, #93c5fd, var(--br-p2) 70%, #1e40af); }
+    .player-info { flex: 1; min-width: 0; }
+    .player-name { font-size: 0.8rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .player-subinfo { font-size: 0.7rem; color: var(--text-muted); margin-top: 1px; }
+    .wall-bars { display: flex; gap: 2px; margin-top: 2px; }
+    .wall-pip { width: 5px; height: 7px; border-radius: 1px; }
+    .wall-pip.p1-pip { background: var(--br-p1); }
+    .wall-pip.p2-pip { background: var(--br-p2); }
+    .wall-pip.used { background: #475569; opacity: 0.3; }
+    .badge-you {
+      background: linear-gradient(135deg, #0284c7, #0369a1);
+      color: #fff; font-size: 0.65rem; font-weight: 800;
+      padding: 1px 6px; border-radius: 4px; margin-left: 4px;
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
+      display: inline-block; vertical-align: middle;
+    }
+    .badge-opp {
+      background: #334155; color: #94a3b8;
+      font-size: 0.65rem; font-weight: 600;
+      padding: 1px 6px; border-radius: 4px; margin-left: 4px;
+      display: inline-block; vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+  <div class="container in-game">
+    <div class="game-header">
+      <a href="../index.html" class="nav-back">🔙 返回大厅</a>
+      <h2 class="game-title">🏁 挡板竞速 (Barrier Race)</h2>
+      <div class="header-actions">
+        <button class="btn-icon" id="btn-sound-toggle">🔊</button>
+        <button class="btn-icon" id="btn-rules-header">📖 规则</button>
+        <button class="btn-icon" id="restart-btn">🔄 重置</button>
+      </div>
+    </div>
+
+    <div class="mode-nav">
+      <div class="mode-tab active" id="tab-ai" onclick="switchGameMode('AI')">🤖 人机对弈</div>
+      <div class="mode-tab" id="tab-local" onclick="switchGameMode('LOCAL')">👥 双人同屏</div>
+      <div class="mode-tab" id="tab-online" onclick="switchGameMode('ONLINE')">🌐 好友联机</div>
+    </div>
+
+    <div class="online-panel" id="online-panel">
+      <div class="online-info">
+        <span>房间号: <b id="display-room-id" style="color:var(--neon-cyan)">未连接</b></span>
+        <span id="display-role-info">你是 <b style="color:var(--br-p1)">🔴 房主</b></span>
+      </div>
+      <div class="online-actions">
+        <button class="btn-small" onclick="ONLINE_NETWORK.createRoom('BARRIERRACE')">创建新房</button>
+        <button class="btn-small" onclick="ONLINE_NETWORK.copyLink()">复制邀请链接</button>
+        <button class="btn-small" onclick="ONLINE_NETWORK.joinRoom(null, 'BARRIERRACE')">加入房间</button>
+      </div>
+    </div>
+
+    <div class="generic-scoreboard" id="generic-scoreboard">
+      <div class="player-card p1 active-turn" id="card-p1">
+        <div class="player-avatar"></div>
+        <div class="player-info">
+          <div class="player-name" id="name-p1">🔴 玩家 1</div>
+          <div class="player-subinfo">
+            余墙: <b id="walls-count-p1">8</b>
+            <div id="wall-bars-p1" style="display:inline-flex; gap:2px; margin-left:4px;"></div>
+          </div>
+        </div>
+      </div>
+      <div class="player-card p2" id="card-p2">
+        <div class="player-avatar"></div>
+        <div class="player-info">
+          <div class="player-name" id="name-p2">🔵 玩家 2</div>
+          <div class="player-subinfo">
+            余墙: <b id="walls-count-p2">8</b>
+            <div id="wall-bars-p2" style="display:inline-flex; gap:2px; margin-left:4px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="br-turn-hint" class="turn-hint-bar">
+      <span id="turn-hint-icon">🎯</span>
+      <span id="turn-hint-text">正在加载对局...</span>
+    </div>
+
+    <div class="stage-wrapper">
+      <canvas id="board-canvas"></canvas>
+    </div>
+
+    <div class="toolbar-br" id="toolbar-br">
+      <button class="tool-btn active" id="tool-move" onclick="setTool('MOVE')">
+        <span>🚶 移动棋子</span>
+      </button>
+      <button class="tool-btn" id="tool-wall-h" onclick="setTool('WALL_H')">
+        <span>━ 横向挡板</span>
+      </button>
+      <button class="tool-btn" id="tool-wall-v" onclick="setTool('WALL_V')">
+        <span>┃ 纵向挡板</span>
+      </button>
+    </div>
+  </div>
+
+  <script src="../common/audio.js"></script>
+  <script src="../common/common.js"></script>
+  <script src="../common/network.js"></script>
+  <script>
+    // =========================================================================
+    // 🏁 挡板竞速 (Barrier Race) — 同向竞速 + 分色挡板阻截
+    // 规则：双方均从底部出发，率先抵达顶部 FINISH 线者获胜。
+    //       每回合可选择：移动一步（上下左右）或 放置一块己方颜色挡板。
+    //       挡板对双方均有阻挡效果。每人初始 8 块挡板。
+    //       棋盘 9×9 格，FINISH 线 = 第 0 行。
+    // =========================================================================
+
+    const ROWS = 9, COLS = 9;
+    const MAX_WALLS = 8;
+
+    const STATE = {
+      currentView: 'GAME',
+      currentGame: 'BARRIERRACE',
+      gameMode: 'AI',
+      turn: 1,
+      winner: null,
+      animating: false,
+      scores: { 1: 0, 2: 0 },
+      online: {
+        connected: false,
+        roomId: null,
+        myRole: 'host',
+        opponentJoined: false
+      },
+      br: {
+        p1: { r: 8, c: 3, walls: MAX_WALLS },
+        p2: { r: 8, c: 5, walls: MAX_WALLS },
+        wallsH: new Map(),  // key: "r,c" -> player (1 or 2)
+        wallsV: new Map(),  // key: "r,c" -> player (1 or 2)
+        tool: 'MOVE',
+        hoverPos: null,
+        lastMove: null
+      }
+    };
+
+    // =========================================================================
+    // 回合判定
+    // =========================================================================
+    function checkIsMyTurn() {
+      if (STATE.gameMode === 'LOCAL') return true;
+      if (STATE.gameMode === 'AI') return STATE.turn === 1;
+      if (STATE.gameMode === 'ONLINE') {
+        const isHost = (STATE.online.myRole === 'host');
+        return (isHost && STATE.turn === 1) || (!isHost && STATE.turn === 2);
+      }
+      return true;
+    }
+
+    // =========================================================================
+    // 记分板与轮次提示
+    // =========================================================================
+    function updateScoreboard() {
+      const cardP1 = document.getElementById('card-p1');
+      const cardP2 = document.getElementById('card-p2');
+      const isOnline = (STATE.gameMode === 'ONLINE');
+      const isHost = (STATE.online.myRole === 'host');
+
+      if (cardP1) {
+        cardP1.classList.toggle('active-turn', STATE.turn === 1);
+        const n1 = document.getElementById('name-p1');
+        if (n1) {
+          if (isOnline) {
+            cardP1.classList.toggle('is-me', isHost);
+            n1.innerHTML = isHost ?
+              '🔴 玩家 1 (房主) <span class="badge-you">👈 你</span>' :
+              '🔴 玩家 1 (房主) <span class="badge-opp">对手</span>';
+          } else if (STATE.gameMode === 'AI') {
+            cardP1.classList.add('is-me');
+            n1.innerHTML = '🔴 玩家 1 <span class="badge-you">👈 你</span>';
+          } else {
+            cardP1.classList.remove('is-me');
+            n1.innerHTML = '🔴 玩家 1';
+          }
+        }
+      }
+      if (cardP2) {
+        cardP2.classList.toggle('active-turn', STATE.turn === 2);
+        const n2 = document.getElementById('name-p2');
+        if (n2) {
+          if (isOnline) {
+            cardP2.classList.toggle('is-me', !isHost);
+            n2.innerHTML = !isHost ?
+              '🔵 玩家 2 (客方) <span class="badge-you">👈 你</span>' :
+              '🔵 玩家 2 (客方) <span class="badge-opp">对手</span>';
+          } else if (STATE.gameMode === 'AI') {
+            cardP2.classList.remove('is-me');
+            n2.innerHTML = '🤖 电脑 (AI)';
+          } else {
+            cardP2.classList.remove('is-me');
+            n2.innerHTML = '🔵 玩家 2';
+          }
+        }
+      }
+
+      const w1 = document.getElementById('walls-count-p1');
+      if (w1) w1.textContent = STATE.br.p1.walls;
+      renderWallBars('wall-bars-p1', STATE.br.p1.walls, MAX_WALLS, 1);
+      const w2 = document.getElementById('walls-count-p2');
+      if (w2) w2.textContent = STATE.br.p2.walls;
+      renderWallBars('wall-bars-p2', STATE.br.p2.walls, MAX_WALLS, 2);
+
+      updateTurnHintBar();
+    }
+
+    function renderWallBars(elemId, count, max, player) {
+      const el = document.getElementById(elemId);
+      if (!el) return;
+      el.innerHTML = '';
+      for (let i = 0; i < max; i++) {
+        const pip = document.createElement('div');
+        pip.className = 'wall-pip' + (i < count ? (' p' + player + '-pip') : ' used');
+        el.appendChild(pip);
+      }
+    }
+
+    function updateTurnHintBar() {
+      const bar = document.getElementById('br-turn-hint');
+      const icon = document.getElementById('turn-hint-icon');
+      const text = document.getElementById('turn-hint-text');
+      if (!bar || !icon || !text) return;
+
+      if (STATE.winner !== null) {
+        bar.className = 'turn-hint-bar';
+        icon.textContent = '🏆';
+        const names = { 1: '🔴 红方', 2: '🔵 蓝方' };
+        text.innerHTML = `对局结束！<b>${names[STATE.winner]}</b> 率先冲过 FINISH 线获胜！`;
+        return;
+      }
+
+      if (STATE.gameMode === 'ONLINE') {
+        const isHost = (STATE.online.myRole === 'host');
+        if (isHost && !STATE.online.opponentJoined) {
+          bar.className = 'turn-hint-bar';
+          icon.textContent = '🔗';
+          text.innerHTML = `房间 <b>${STATE.online.roomId || '...'}</b> 已就绪！请点击【复制邀请链接】发送给好友`;
+          return;
+        }
+        if (checkIsMyTurn()) {
+          bar.className = 'turn-hint-bar my-turn';
+          icon.textContent = '👉';
+          const myColor = isHost ? '🔴 红方' : '🔵 蓝方';
+          text.innerHTML = `<b>【轮到你行动 (${myColor})】</b> 移动棋子或放置挡板！`;
+        } else {
+          bar.className = 'turn-hint-bar opp-turn';
+          icon.textContent = '⏳';
+          text.innerHTML = '正在等待对手思考行动，请稍候...';
+        }
+      } else if (STATE.gameMode === 'AI') {
+        if (STATE.turn === 1) {
+          bar.className = 'turn-hint-bar my-turn';
+          icon.textContent = '👉';
+          text.innerHTML = '<b>【你的回合 (🔴 红方)】</b> 向 FINISH 线推进，或放板阻截 AI！';
+        } else {
+          bar.className = 'turn-hint-bar opp-turn';
+          icon.textContent = '🤖';
+          text.innerHTML = '电脑 (AI) 正在计算最佳路线...';
+        }
+      } else {
+        bar.className = 'turn-hint-bar';
+        icon.textContent = '🎲';
+        const c = STATE.turn === 1 ? '🔴 玩家 1' : '🔵 玩家 2';
+        text.innerHTML = `轮到 <b>${c}</b> 行动`;
+      }
+    }
+
+    // =========================================================================
+    // 模式切换
+    // =========================================================================
+    function switchGameMode(mode, doReset = true) {
+      STATE.gameMode = mode;
+      document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+      const tab = document.getElementById('tab-' + mode.toLowerCase());
+      if (tab) tab.classList.add('active');
+
+      const panel = document.getElementById('online-panel');
+      if (panel) {
+        panel.style.display = mode === 'ONLINE' ? 'flex' : 'none';
+        if (mode === 'ONLINE' && window.ONLINE_NETWORK && !ONLINE_NETWORK.state.roomId) {
+          const rid = ONLINE_NETWORK.createRoom('BARRIERRACE');
+          STATE.online.roomId = rid;
+          STATE.online.myRole = 'host';
+        }
+      }
+      updateScoreboard();
+      if (doReset) resetGame(false);
+    }
+
+    function sendOnlineAction(data) {
+      if (window.ONLINE_NETWORK) ONLINE_NETWORK.sendAction(data);
+    }
+
+    // =========================================================================
+    // 联机初始化
+    // =========================================================================
+    function initOnlineMultiplayer() {
+      if (!window.ONLINE_NETWORK) return;
+
+      ONLINE_NETWORK.setRoleChangeHandler((role) => {
+        STATE.online.myRole = role;
+        STATE.online.connected = true;
+        STATE.online.roomId = ONLINE_NETWORK.state.roomId;
+        updateScoreboard();
+        render();
+      });
+
+      ONLINE_NETWORK.setOpponentJoinedHandler((msg) => {
+        STATE.online.opponentJoined = true;
+        updateScoreboard();
+        sendOnlineAction({
+          type: 'BR_SYNC',
+          turn: STATE.turn,
+          p1: STATE.br.p1,
+          p2: STATE.br.p2,
+          wallsH: Array.from(STATE.br.wallsH.entries()),
+          wallsV: Array.from(STATE.br.wallsV.entries()),
+          scores: STATE.scores,
+          winner: STATE.winner
+        });
+      });
+
+      ONLINE_NETWORK.setMessageHandler((msg) => {
+        if (!msg || !msg.type) return;
+        if (msg.type === 'BR_MOVE') {
+          if (STATE.turn === msg.player) {
+            executeMove(msg.r, msg.c, false);
+          }
+        } else if (msg.type === 'BR_WALL') {
+          if (STATE.turn === msg.player) {
+            executeWall(msg.wallType, msg.r, msg.c, false);
+          }
+        } else if (msg.type === 'BR_SYNC') {
+          STATE.turn = msg.turn;
+          STATE.br.p1 = msg.p1;
+          STATE.br.p2 = msg.p2;
+          STATE.br.wallsH = new Map(msg.wallsH || []);
+          STATE.br.wallsV = new Map(msg.wallsV || []);
+          if (msg.scores) STATE.scores = msg.scores;
+          STATE.winner = msg.winner;
+          STATE.online.opponentJoined = true;
+          updateScoreboard();
+          render();
+          showToast('🤝 已完成对局数据同步！', 2000);
+        } else if (msg.type === 'BR_RESTART') {
+          initGame(false);
+          showToast('🔄 对方已重置，新对局开始！', 2000);
+        }
+      });
+    }
+
+    // =========================================================================
+    // Canvas 渲染
+    // =========================================================================
+    const canvas = document.getElementById('board-canvas');
+    const ctx = canvas ? canvas.getContext('2d') : null;
+    let cellSize = 0, groove = 0, pad = 0;
+
+    function resizeCanvas() {
+      if (!canvas || !ctx) return;
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      const sz = Math.min(rect.width, rect.height > 50 ? rect.height : rect.width);
+      canvas.width = sz * dpr;
+      canvas.height = sz * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+
+      groove = sz / (COLS * 4.5 + (COLS - 1));
+      cellSize = groove * 4.5;
+      pad = groove / 2;
+      render();
+    }
+
+    function cellPos(r, c) {
+      return { x: pad + c * (cellSize + groove), y: pad + r * (cellSize + groove) };
+    }
+    function intersectionPos(r, c) {
+      return { x: pad + (c + 1) * cellSize + c * groove, y: pad + (r + 1) * cellSize + r * groove };
+    }
+
+    function render() {
+      if (!canvas || !ctx) return;
+      const w = canvas.getBoundingClientRect().width;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // 棋盘底色（浅色牛皮纸风格）
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          const { x, y } = cellPos(r, c);
+          let bg;
+          if (r === 0) {
+            bg = 'rgba(134, 239, 174, 0.35)'; // FINISH 行高亮
+          } else {
+            bg = (r + c) % 2 === 0 ? '#e8ecd8' : '#dde3cc';
+          }
+          ctx.fillStyle = bg;
+          ctx.beginPath();
+          ctx.roundRect(x, y, cellSize, cellSize, 4);
+          ctx.fill();
+          ctx.strokeStyle = '#b8c4a0';
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+      }
+
+      // FINISH 标记
+      const finishY = cellPos(0, 0).y - pad * 0.3;
+      ctx.fillStyle = '#16a34a';
+      ctx.font = `bold ${Math.max(10, cellSize * 0.28)}px sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      const boardMid = pad + COLS * (cellSize + groove) / 2;
+      ctx.fillText('🏁 F I N I S H 🏁', boardMid, finishY);
+
+      // 合法移动高亮
+      const isMyTurn = checkIsMyTurn();
+      if (!STATE.winner && STATE.br.tool === 'MOVE' && isMyTurn) {
+        const moves = getValidMoves(STATE.turn);
+        const moveColor = STATE.turn === 1 ? 'rgba(239, 68, 68, 0.5)' : 'rgba(59, 130, 246, 0.5)';
+        for (const m of moves) {
+          const { x, y } = cellPos(m.r, m.c);
+          ctx.beginPath();
+          ctx.arc(x + cellSize / 2, y + cellSize / 2, cellSize * 0.18, 0, Math.PI * 2);
+          ctx.fillStyle = moveColor;
+          ctx.fill();
+          ctx.strokeStyle = '#fff';
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+        }
+      }
+
+      // 挡板渲染（分色）
+      const wallLen = cellSize * 2 + groove;
+      const wallThick = groove;
+
+      for (const [key, owner] of STATE.br.wallsH) {
+        const [r, c] = key.split(',').map(Number);
+        const { x, y } = intersectionPos(r, c);
+        ctx.fillStyle = owner === 1 ? '#ef4444' : '#3b82f6';
+        ctx.beginPath();
+        ctx.roundRect(x - cellSize, y, wallLen, wallThick, 3);
+        ctx.fill();
+        ctx.strokeStyle = owner === 1 ? '#fca5a5' : '#93c5fd';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+      for (const [key, owner] of STATE.br.wallsV) {
+        const [r, c] = key.split(',').map(Number);
+        const { x, y } = intersectionPos(r, c);
+        ctx.fillStyle = owner === 1 ? '#ef4444' : '#3b82f6';
+        ctx.beginPath();
+        ctx.roundRect(x, y - cellSize, wallThick, wallLen, 3);
+        ctx.fill();
+        ctx.strokeStyle = owner === 1 ? '#fca5a5' : '#93c5fd';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+
+      // 挡板预览
+      if (STATE.br.hoverPos && !STATE.winner && isMyTurn) {
+        const hp = STATE.br.hoverPos;
+        const { x, y } = intersectionPos(hp.r, hp.c);
+        ctx.fillStyle = hp.valid ? 'rgba(46, 213, 115, 0.6)' : 'rgba(255, 71, 87, 0.6)';
+        if (hp.type === 'wallH') {
+          ctx.beginPath(); ctx.roundRect(x - cellSize, y, wallLen, wallThick, 3); ctx.fill();
+        } else {
+          ctx.beginPath(); ctx.roundRect(x, y - cellSize, wallThick, wallLen, 3); ctx.fill();
+        }
+      }
+
+      // 棋子
+      drawPiece(STATE.br.p1.r, STATE.br.p1.c, 1);
+      drawPiece(STATE.br.p2.r, STATE.br.p2.c, 2);
+    }
+
+    function drawPiece(r, c, player) {
+      const { x, y } = cellPos(r, c);
+      const cx = x + cellSize / 2, cy = y + cellSize / 2, radius = cellSize * 0.38;
+
+      const isMe = (STATE.gameMode === 'ONLINE') ?
+        ((STATE.online.myRole === 'host' && player === 1) || (STATE.online.myRole === 'guest' && player === 2)) :
+        (STATE.gameMode === 'AI' && player === 1);
+
+      // 本机棋子光环
+      if (isMe) {
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius + 5, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.3)';
+        ctx.fill();
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+      }
+
+      // 当前行动回合呼吸虚线环
+      if (STATE.turn === player && !STATE.winner) {
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius + (isMe ? 8 : 4), 0, Math.PI * 2);
+        ctx.strokeStyle = player === 1 ? '#ef4444' : '#3b82f6';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([4, 3]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      // 球体渐变
+      const grad = ctx.createRadialGradient(cx - radius * 0.3, cy - radius * 0.35, radius * 0.1, cx, cy, radius);
+      if (player === 1) {
+        grad.addColorStop(0, '#fca5a5'); grad.addColorStop(0.3, '#ef4444'); grad.addColorStop(1, '#7f1d1d');
+      } else {
+        grad.addColorStop(0, '#93c5fd'); grad.addColorStop(0.3, '#3b82f6'); grad.addColorStop(1, '#1e3a5f');
+      }
+      ctx.beginPath(); ctx.arc(cx, cy, radius, 0, Math.PI * 2); ctx.fillStyle = grad; ctx.fill();
+      // 高光
+      ctx.beginPath(); ctx.arc(cx - radius * 0.25, cy - radius * 0.3, radius * 0.18, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.45)'; ctx.fill();
+
+      // 本机棋子标识
+      if (isMe) {
+        ctx.fillStyle = '#ffffff';
+        ctx.font = `bold ${Math.round(radius * 0.75)}px sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.shadowColor = 'rgba(0,0,0,0.8)';
+        ctx.shadowBlur = 4;
+        ctx.fillText('我', cx, cy);
+        ctx.shadowBlur = 0;
+      }
+    }
+
+    // =========================================================================
+    // 移动 & 挡板逻辑
+    // =========================================================================
+    function isBlocked(r1, c1, r2, c2) {
+      const wallsH = STATE.br.wallsH;
+      const wallsV = STATE.br.wallsV;
+      if (r1 === r2) {
+        const minC = Math.min(c1, c2);
+        if (wallsV.has(`${r1},${minC}`) || wallsV.has(`${r1 - 1},${minC}`)) return true;
+      } else if (c1 === c2) {
+        const minR = Math.min(r1, r2);
+        if (wallsH.has(`${minR},${c1}`) || wallsH.has(`${minR},${c1 - 1}`)) return true;
+      }
+      return false;
+    }
+
+    function getValidMoves(player) {
+      const cur = player === 1 ? STATE.br.p1 : STATE.br.p2;
+      const opp = player === 1 ? STATE.br.p2 : STATE.br.p1;
+      const moves = [];
+      const dirs = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+
+      for (const [dr, dc] of dirs) {
+        const nr = cur.r + dr, nc = cur.c + dc;
+        if (nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS) continue;
+        if (isBlocked(cur.r, cur.c, nr, nc)) continue;
+
+        // 如果目标格有对手棋子 → 跳跃
+        if (nr === opp.r && nc === opp.c) {
+          const jr = nr + dr, jc = nc + dc;
+          // 直线跳跃
+          if (jr >= 0 && jr < ROWS && jc >= 0 && jc < COLS && !isBlocked(nr, nc, jr, jc)) {
+            moves.push({ r: jr, c: jc });
+          } else {
+            // 侧向跳跃
+            for (const [sr, sc] of dirs) {
+              if (sr === -dr && sc === -dc) continue;
+              if (sr === dr && sc === dc) continue;
+              const lr = nr + sr, lc = nc + sc;
+              if (lr >= 0 && lr < ROWS && lc >= 0 && lc < COLS && !isBlocked(nr, nc, lr, lc)) {
+                if (!(lr === cur.r && lc === cur.c)) {
+                  moves.push({ r: lr, c: lc });
+                }
+              }
+            }
+          }
+          continue;
+        }
+        moves.push({ r: nr, c: nc });
+      }
+      return moves;
+    }
+
+    function hasPath(startR, startC, targetRow, wallsH, wallsV) {
+      const visited = new Set();
+      const queue = [[startR, startC]];
+      visited.add(`${startR},${startC}`);
+      const dirs = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+
+      while (queue.length > 0) {
+        const [r, c] = queue.shift();
+        if (r === targetRow) return true;
+        for (const [dr, dc] of dirs) {
+          const nr = r + dr, nc = c + dc;
+          if (nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS) continue;
+          const key = `${nr},${nc}`;
+          if (visited.has(key)) continue;
+          // 检查挡板阻挡
+          if (r === nr) {
+            const minC = Math.min(c, nc);
+            if (wallsV.has(`${r},${minC}`) || wallsV.has(`${r - 1},${minC}`)) continue;
+          } else {
+            const minR = Math.min(r, nr);
+            if (wallsH.has(`${minR},${c}`) || wallsH.has(`${minR},${c - 1}`)) continue;
+          }
+          visited.add(key);
+          queue.push([nr, nc]);
+        }
+      }
+      return false;
+    }
+
+    function canPlaceWall(type, r, c) {
+      if (r < 0 || r >= ROWS - 1 || c < 0 || c >= COLS - 1) return false;
+      const wallsH = STATE.br.wallsH;
+      const wallsV = STATE.br.wallsV;
+      const key = `${r},${c}`;
+
+      // 交叉冲突
+      if (type === 'H' && wallsV.has(key)) return false;
+      if (type === 'V' && wallsH.has(key)) return false;
+
+      // 同方向重叠
+      if (type === 'H') {
+        if (wallsH.has(key) || wallsH.has(`${r},${c - 1}`) || wallsH.has(`${r},${c + 1}`)) return false;
+      } else {
+        if (wallsV.has(key) || wallsV.has(`${r - 1},${c}`) || wallsV.has(`${r + 1},${c}`)) return false;
+      }
+
+      // 放置后检查路径 —— 双方都必须仍有通路到 FINISH (row 0)
+      const testH = new Map(wallsH);
+      const testV = new Map(wallsV);
+      if (type === 'H') testH.set(key, STATE.turn);
+      else testV.set(key, STATE.turn);
+
+      if (!hasPath(STATE.br.p1.r, STATE.br.p1.c, 0, testH, testV)) return false;
+      if (!hasPath(STATE.br.p2.r, STATE.br.p2.c, 0, testH, testV)) return false;
+
+      return true;
+    }
+
+    // =========================================================================
+    // 执行动作
+    // =========================================================================
+    function executeMove(r, c, broadcast = true) {
+      const player = STATE.turn;
+      const valid = getValidMoves(player);
+      if (!valid.some(m => m.r === r && m.c === c)) {
+        showToast('⚠️ 只能移动到高亮的相邻合法格子！', 2000);
+        return false;
+      }
+
+      AUDIO.play('drop');
+      const cur = player === 1 ? STATE.br.p1 : STATE.br.p2;
+      cur.r = r; cur.c = c;
+      STATE.br.lastMove = { type: 'MOVE', player, r, c };
+
+      // 胜负检测：到达第 0 行 (FINISH)
+      if (r === 0) {
+        AUDIO.play('win');
+        STATE.winner = player;
+        STATE.scores[player]++;
+        const names = { 1: '🔴 红方', 2: '🔵 蓝方' };
+        showModal('🏁 游戏结束', `<strong>${names[player]} 率先冲过 FINISH 线，斩获胜利！</strong>`);
+      } else {
+        endTurn();
+      }
+      render();
+
+      if (broadcast && STATE.gameMode === 'ONLINE') {
+        sendOnlineAction({ type: 'BR_MOVE', player, r, c });
+      }
+      return true;
+    }
+
+    function executeWall(type, r, c, broadcast = true) {
+      const player = STATE.turn;
+      AUDIO.play('drop');
+      const key = `${r},${c}`;
+      if (type === 'H') STATE.br.wallsH.set(key, player);
+      else STATE.br.wallsV.set(key, player);
+
+      const cur = player === 1 ? STATE.br.p1 : STATE.br.p2;
+      cur.walls--;
+      STATE.br.lastMove = { type: 'WALL', player, wallType: type, r, c };
+      STATE.br.hoverPos = null;
+      endTurn();
+      render();
+
+      if (broadcast && STATE.gameMode === 'ONLINE') {
+        sendOnlineAction({ type: 'BR_WALL', player, wallType: type, r, c });
+      }
+    }
+
+    function endTurn() {
+      STATE.turn = STATE.turn === 1 ? 2 : 1;
+      updateScoreboard();
+
+      if (!STATE.winner && STATE.gameMode === 'AI' && STATE.turn === 2) {
+        STATE.animating = true;
+        setTimeout(() => {
+          runAI();
+          STATE.animating = false;
+          render();
+        }, 400);
+      }
+    }
+
+    // =========================================================================
+    // AI（BFS 最短路径 + 放板阻截）
+    // =========================================================================
+    function getShortestDist(r, c, targetRow) {
+      const visited = new Set();
+      const queue = [[r, c, 0]];
+      visited.add(`${r},${c}`);
+      const dirs = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+
+      while (queue.length > 0) {
+        const [cr, cc, d] = queue.shift();
+        if (cr === targetRow) return d;
+        for (const [dr, dc] of dirs) {
+          const nr = cr + dr, nc = cc + dc;
+          if (nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS) continue;
+          const key = `${nr},${nc}`;
+          if (visited.has(key)) continue;
+          if (isBlocked(cr, cc, nr, nc)) continue;
+          visited.add(key);
+          queue.push([nr, nc, d + 1]);
+        }
+      }
+      return 999;
+    }
+
+    function runAI() {
+      if (STATE.winner) return;
+
+      const myDist = getShortestDist(STATE.br.p2.r, STATE.br.p2.c, 0);
+      const oppDist = getShortestDist(STATE.br.p1.r, STATE.br.p1.c, 0);
+
+      // 策略：如果对手距离更近且我有墙，尝试放板阻截
+      if (oppDist < myDist && STATE.br.p2.walls > 0 && Math.random() < 0.6) {
+        const bestWall = findBestBlockingWall();
+        if (bestWall) {
+          executeWall(bestWall.type, bestWall.r, bestWall.c);
+          return;
+        }
+      }
+
+      // 否则移动
+      const moves = getValidMoves(2);
+      if (moves.length > 0) {
+        moves.sort((a, b) => getShortestDist(a.r, a.c, 0) - getShortestDist(b.r, b.c, 0));
+        executeMove(moves[0].r, moves[0].c);
+      }
+    }
+
+    function findBestBlockingWall() {
+      const curOppDist = getShortestDist(STATE.br.p1.r, STATE.br.p1.c, 0);
+      let best = null, bestIncrease = 0;
+
+      // 在对手当前位置附近搜索最佳挡板
+      const searchR = STATE.br.p1.r;
+      const searchC = STATE.br.p1.c;
+
+      for (let dr = -2; dr <= 1; dr++) {
+        for (let dc = -2; dc <= 1; dc++) {
+          const r = searchR + dr, c = searchC + dc;
+          for (const type of ['H', 'V']) {
+            if (!canPlaceWall(type, r, c)) continue;
+
+            // 模拟放置
+            const key = `${r},${c}`;
+            const map = type === 'H' ? STATE.br.wallsH : STATE.br.wallsV;
+            map.set(key, 2);
+
+            const newOppDist = getShortestDist(STATE.br.p1.r, STATE.br.p1.c, 0);
+            const myNewDist = getShortestDist(STATE.br.p2.r, STATE.br.p2.c, 0);
+
+            map.delete(key);
+
+            const increase = newOppDist - curOppDist;
+            // 只选择不会大幅增加自身路程的挡板
+            if (increase > bestIncrease && myNewDist < 999) {
+              bestIncrease = increase;
+              best = { type, r, c };
+            }
+          }
+        }
+      }
+      return bestIncrease >= 2 ? best : null;
+    }
+
+    // =========================================================================
+    // 工具切换
+    // =========================================================================
+    function setTool(tool) {
+      AUDIO.play('click');
+      STATE.br.tool = tool;
+      document.getElementById('tool-move').classList.toggle('active', tool === 'MOVE');
+      document.getElementById('tool-wall-h').classList.toggle('active', tool === 'WALL_H');
+      document.getElementById('tool-wall-v').classList.toggle('active', tool === 'WALL_V');
+      STATE.br.hoverPos = null;
+      render();
+    }
+
+    // =========================================================================
+    // 画布事件
+    // =========================================================================
+    function getPointerCoord(e) {
+      if (!canvas) return { px: 0, py: 0 };
+      const rect = canvas.getBoundingClientRect();
+      const clientX = (e.touches && e.touches.length > 0) ? e.touches[0].clientX : e.clientX;
+      const clientY = (e.touches && e.touches.length > 0) ? e.touches[0].clientY : e.clientY;
+      return { px: clientX - rect.left, py: clientY - rect.top };
+    }
+
+    if (canvas) {
+      canvas.addEventListener('pointermove', (e) => {
+        if (STATE.winner || STATE.animating) return;
+        if (!checkIsMyTurn()) return;
+        const { px, py } = getPointerCoord(e);
+
+        if (STATE.br.tool === 'MOVE') {
+          STATE.br.hoverPos = null;
+        } else {
+          let best = null, minDist = Infinity;
+          for (let r = 0; r < ROWS - 1; r++) {
+            for (let c = 0; c < COLS - 1; c++) {
+              const { x, y } = intersectionPos(r, c);
+              const d = Math.hypot(px - x, py - y);
+              if (d < minDist && d < cellSize * 0.9) {
+                minDist = d;
+                best = { r, c };
+              }
+            }
+          }
+          if (best) {
+            const wallType = STATE.br.tool === 'WALL_H' ? 'H' : 'V';
+            const valid = canPlaceWall(wallType, best.r, best.c);
+            STATE.br.hoverPos = { r: best.r, c: best.c, type: wallType === 'H' ? 'wallH' : 'wallV', valid };
+          } else {
+            STATE.br.hoverPos = null;
+          }
+        }
+        render();
+      });
+
+      canvas.addEventListener('pointerleave', () => {
+        STATE.br.hoverPos = null;
+        render();
+      });
+
+      canvas.addEventListener('click', (e) => {
+        if (STATE.winner || STATE.animating) return;
+        if (!checkIsMyTurn()) {
+          showToast('⏳ 当前是对手的行动回合，请稍候...', 1500);
+          return;
+        }
+
+        const { px, py } = getPointerCoord(e);
+
+        if (STATE.br.tool === 'MOVE') {
+          for (let r = 0; r < ROWS; r++) {
+            for (let c = 0; c < COLS; c++) {
+              const { x, y } = cellPos(r, c);
+              if (px >= x && px <= x + cellSize && py >= y && py <= y + cellSize) {
+                const moves = getValidMoves(STATE.turn);
+                if (moves.some(m => m.r === r && m.c === c)) {
+                  executeMove(r, c);
+                } else {
+                  showToast('⚠️ 只能移动到高亮的相邻合法格子！', 1500);
+                }
+                return;
+              }
+            }
+          }
+        } else if (STATE.br.hoverPos && STATE.br.hoverPos.valid) {
+          const hp = STATE.br.hoverPos;
+          const cur = STATE.turn === 1 ? STATE.br.p1 : STATE.br.p2;
+          if (cur.walls > 0) {
+            const wallType = STATE.br.tool === 'WALL_H' ? 'H' : 'V';
+            executeWall(wallType, hp.r, hp.c);
+          } else {
+            showToast('⚠️ 挡板已耗尽，请切换为移动棋子！', 2000);
+          }
+        }
+      });
+    }
+
+    // =========================================================================
+    // 初始化 & 重置
+    // =========================================================================
+    function initGame() {
+      STATE.winner = null;
+      STATE.turn = 1;
+      STATE.animating = false;
+      STATE.br.p1 = { r: 8, c: 3, walls: MAX_WALLS };
+      STATE.br.p2 = { r: 8, c: 5, walls: MAX_WALLS };
+      STATE.br.wallsH = new Map();
+      STATE.br.wallsV = new Map();
+      STATE.br.hoverPos = null;
+      STATE.br.lastMove = null;
+      setTool('MOVE');
+      updateScoreboard();
+      resizeCanvas();
+      render();
+    }
+
+    function resetGame(broadcast = true) {
+      initGame();
+      if (broadcast && STATE.gameMode === 'ONLINE') {
+        sendOnlineAction({ type: 'BR_RESTART' });
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initCommonHeader("挡板竞速 (Barrier Race) 规则", `<p><strong>胜利目标：</strong>双方均从棋盘底部出发，率先抵达顶部 FINISH 线者获胜！</p><br>
+        <p><strong>每回合操作：</strong>移动一步（上下左右）或 放置一块己方颜色挡板（横/竖）。</p><br>
+        <p><strong>挡板规则：</strong>每人初始 8 块挡板，挡板对双方均有阻挡效果。放板后必须确保双方仍有通路到终点！</p><br>
+        <p><strong>跳跃规则：</strong>面对邻格棋子可跳过；若正向受阻可侧向斜跳！</p>`, resetGame);
+      initGame();
+      initOnlineMultiplayer();
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const roomParam = urlParams.get('room');
+      const modeParam = urlParams.get('mode');
+      if (roomParam) {
+        switchGameMode('ONLINE', false);
+        if (window.ONLINE_NETWORK) {
+          ONLINE_NETWORK.joinRoom(roomParam.trim(), 'BARRIERRACE');
+          STATE.online.myRole = 'guest';
+          STATE.online.roomId = roomParam.trim();
+        }
+      } else if (modeParam === 'ONLINE') {
+        switchGameMode('ONLINE', false);
+      }
+    });
+    window.addEventListener('resize', resizeCanvas);
+  </script>
+</body>
+</html>

@@ -224,7 +224,11 @@
       if (onlinePanel) {
         onlinePanel.style.display = mode === 'ONLINE' ? 'flex' : 'none';
         if (mode === 'ONLINE' && window.ONLINE_NETWORK) {
-          ONLINE_NETWORK.createRoom(STATE.currentGame);
+          if (!ONLINE_NETWORK.state.roomId) {
+            const rid = ONLINE_NETWORK.createRoom(STATE.currentGame);
+            STATE.online.roomId = rid;
+            STATE.online.myRole = 'host';
+          }
         }
       }
       updateScoreboard();
@@ -237,6 +241,55 @@
       if (window.ONLINE_NETWORK) {
         window.ONLINE_NETWORK.sendAction(data);
       }
+    }
+
+    function initOnlineMultiplayer() {
+      if (!window.ONLINE_NETWORK) return;
+
+      ONLINE_NETWORK.setRoleChangeHandler((role) => {
+        STATE.online.myRole = role;
+        STATE.online.connected = true;
+        STATE.online.roomId = ONLINE_NETWORK.state.roomId;
+        STATE.online.opponentJoined = (role === 'guest');
+        updateScoreboard();
+        update3DScene();
+      });
+
+      ONLINE_NETWORK.setOpponentJoinedHandler((msg) => {
+        STATE.online.opponentJoined = true;
+        updateScoreboard();
+        showToast('🎉 好友已进入房间！对战正式开始，你执红先行！', 3000);
+        sendOnlineAction({
+          type: 'GRAVITY3D4_SYNC',
+          board: STATE.gravity3d4.board,
+          turn: STATE.turn,
+          scores: STATE.scores,
+          winner: STATE.winner
+        });
+      });
+
+      ONLINE_NETWORK.setMessageHandler((msg) => {
+        if (!msg || !msg.type) return;
+
+        if (msg.type === 'GRAVITY3D4_DROP' || msg.type === 'GRAVITY3D_DROP') {
+          const targetY = get3D4LandingHeight(msg.x, msg.z);
+          if (targetY !== -1) {
+            execute3DDrop(msg.x, msg.z, targetY, msg.player || STATE.turn, false);
+          }
+        } else if (msg.type === 'GRAVITY3D4_SYNC' || msg.type === 'GRAVITY3D_SYNC') {
+          if (msg.board) STATE.gravity3d4.board = msg.board;
+          if (msg.turn) STATE.turn = msg.turn;
+          if (msg.scores) STATE.scores = msg.scores;
+          if (msg.winner !== undefined) STATE.winner = msg.winner;
+          STATE.online.opponentJoined = true;
+          updateScoreboard();
+          update3DScene();
+          showToast('🤝 已完成对局数据同步！', 2000);
+        } else if (msg.type === 'RESTART') {
+          initGravity3D4();
+          showToast('🔄 对方已重置棋局，新对决开始！', 2000);
+        }
+      });
     }
   
 
@@ -438,7 +491,7 @@
             }
 
             if (isLocalAction && STATE.gameMode === 'ONLINE') {
-              sendOnlineAction({ type: is4P ? 'GRAVITY3D4_DROP' : 'GRAVITY3D_DROP', x, z });
+              sendOnlineAction({ type: is4P ? 'GRAVITY3D4_DROP' : 'GRAVITY3D_DROP', x, z, player });
             }
 
             update3DScene();
@@ -920,6 +973,9 @@
 
     function resetCurrentGame() {
       initGravity3D4();
+      if (STATE.gameMode === 'ONLINE') {
+        sendOnlineAction({ type: 'RESTART' });
+      }
     }
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -928,6 +984,22 @@
           <p><strong>视角操作：</strong>拖拽旋转视角，点击立柱落子。比 3D 五子棋更快节奏，超高烧脑指数！</p>`, resetCurrentGame);
       STATE.currentGame = 'GRAVITY3D4';
       initGravity3D4();
+      initOnlineMultiplayer();
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const roomParam = urlParams.get('room');
+      const modeParam = urlParams.get('mode');
+      if (roomParam) {
+        if (window.ONLINE_NETWORK) {
+          ONLINE_NETWORK.joinRoom(roomParam.trim(), STATE.currentGame);
+          STATE.online.myRole = 'guest';
+          STATE.online.roomId = roomParam.trim();
+          STATE.online.opponentJoined = true;
+        }
+        switchGameMode('ONLINE', false);
+      } else if (modeParam === 'ONLINE') {
+        switchGameMode('ONLINE', false);
+      }
     });
     window.addEventListener('resize', () => {
       if (typeof resize3D === 'function') resize3D();

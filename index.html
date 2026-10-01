@@ -681,8 +681,8 @@
         <div class="category-pill active" onclick="filterLobby('ALL')">全部 (17)</div>
         <div class="category-pill" onclick="filterLobby('4PLAYER')">👥👥 4人混战 (7)</div>
         <div class="category-pill" onclick="filterLobby('STRATEGY')">🧠 策略博弈 (8)</div>
-        <div class="category-pill" onclick="filterLobby('MIND')">🔫 心理欺诈 (2)</div>
-        <div class="category-pill" onclick="filterLobby('PHYSICS')">⚡ 物理对抗 (5)</div>
+        <div class="category-pill" onclick="filterLobby('MIND')">🔫 心理博弈 (1)</div>
+        <div class="category-pill" onclick="filterLobby('PHYSICS')">⚡ 物理对抗 (6)</div>
         <div class="category-pill" onclick="filterLobby('REFLEX')">⚡ 极限手速 (2)</div>
       </div>
 
@@ -815,7 +815,7 @@
           <span class="meta-chip">⏱️ 3-5分钟</span>
           <span class="meta-chip">难度 ⭐⭐⭐</span>
           <span class="meta-chip accent">S散弹 / 30命秘籍</span>
-          <span class="meta-chip" style="background:rgba(139,92,246,0.2);color:#c084fc;border-color:rgba(139,92,246,0.4);" onclick="event.stopPropagation(); window.location.href='games/contra_canvas.html'">🚀 无限远征版</span>
+          <span class="meta-chip" style="background:rgba(139,92,246,0.2);color:#c084fc;border-color:rgba(139,92,246,0.4);" onclick="event.stopPropagation(); launchGame('CONTRA_CANVAS', event);">🚀 无限远征版</span>
         </div>
       </div>
     </div>
@@ -2066,7 +2066,9 @@
         bar.style.display = 'flex';
         list.innerHTML = '';
         const titles = {
+          'NES': '🕹️ FC街机',
           'CONTRA': '💥 魂斗罗',
+          'CONTRA_CANVAS': '💥 魂斗罗远征',
           'QUORIDOR': '🧱 步步为营',
           'AEROPLANE': '✈️ 飞行棋',
           'HOCKEY': '🏒 空气冰球',

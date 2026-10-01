@@ -493,8 +493,12 @@
 
     function toggleSound() {
       const on = AUDIO.toggle();
-      document.getElementById('btn-sound-toggle').textContent = on ? '🔊' : '🔇';
-      showToast(on ? '🔊 音效已开启' : '🔇 音效已静音');
+      const btn = document.getElementById('btn-sound-toggle');
+      if (btn) btn.textContent = on ? '🔊' : '🔇';
+      if (typeof showToast === 'function') {
+        showToast(on ? '🔊 音效已开启' : '🔇 音效已静音');
+      }
+      return on;
     }
 
 

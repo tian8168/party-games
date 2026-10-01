@@ -1,12 +1,12 @@
 /**
  * ⚡ 聚会游戏大厅 · Service Worker 离线持久化与缓存总线 (PWA Cache Bus)
  * 策略规范：
- * 1. HTML 导航请求：Network-First (有网优先拉取最新更新，离线秒级回退缓存)
- * 2. 静态资产 (CSS/JS/Icons/WASM/ROMs)：Cache-First (0ms 瞬时命中，后台增量更新)
+ * 1. HTML 导航请求：Network-First (有网优先拉取最新更新，断网秒级回退缓存)
+ * 2. 静态资产 (CSS/JS/Icons/WASM/ROMs/3D)：Cache-First (0ms 瞬时命中，后台增量更新)
  * 3. 动态信令 (WebSocket/MQTT)：直连放行
  */
 
-const CACHE_NAME = 'party-arcade-v1.6';
+const CACHE_NAME = 'party-arcade-v1.8';
 
 const APP_SHELL = [
   './',
@@ -20,6 +20,8 @@ const APP_SHELL = [
   './common/audio.js',
   './common/network.js',
   './mqtt.min.js',
+  './three.min.js',
+  './OrbitControls.js',
   './games/go.html',
   './games/kaya.html',
   './games/kaya/index.html',
@@ -37,7 +39,9 @@ const APP_SHELL = [
   './games/liarsdice.html',
   './games/stack.html',
   './games/contra.html',
+  './games/contra_canvas.html',
   './games/nes.html',
+  './games/js/contra.js',
   './games/js/jsnes.min.js',
   './games/js/nostalgist.umd.js',
   './games/js/nes_netplay.js',
@@ -51,27 +55,31 @@ const APP_SHELL = [
   './games/cores/gambatte_libretro.zip'
 ];
 
-// --- 1. 安装阶段 (Pre-caching App Shell) ---
+// --- 1. 安装阶段 (Resilient Pre-caching App Shell) ---
 self.addEventListener('install', (event) => {
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('[SW] Pre-caching App Shell assets...');
-      return cache.addAll(APP_SHELL).catch(err => {
-        console.warn('[SW] Some precache assets failed:', err);
-      });
+      console.log('[SW] Pre-caching App Shell assets with resilient loader...');
+      return Promise.all(
+        APP_SHELL.map((url) =>
+          cache.add(url).catch((err) => {
+            console.warn('[SW] Precache item failed (continuing gracefully):', url, err);
+          })
+        )
+      );
     })
   );
 });
 
-// --- 2. 激活阶段 (Clean up old caches) ---
+// --- 2. 激活阶段 (Clean up old arcade caches, preserve Kaya models/offline caches) ---
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
         keys.map((key) => {
-          if (key !== CACHE_NAME) {
-            console.log('[SW] Purging outdated cache:', key);
+          if (key.startsWith('party-arcade-') && key !== CACHE_NAME) {
+            console.log('[SW] Purging outdated arcade cache:', key);
             return caches.delete(key);
           }
         })
@@ -85,10 +93,13 @@ self.addEventListener('fetch', (event) => {
   const request = event.request;
   const url = new URL(request.url);
 
-  // 忽略非 GET 请求及 WebSocket/MQTT 信令协议
+  // 忽略非 GET 请求、非 HTTP 协议 (如 chrome-extension:) 及 WebSocket/MQTT 信令协议
   if (request.method !== 'GET') return;
-  if (url.protocol === 'ws:' || url.protocol === 'wss:') return;
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') return;
   if (url.hostname.includes('emqx.io')) return;
+
+  // Kaya 现代围棋拥有独立 Service Worker 与 WASM/COEP 隔离策略，由其自身作用域接管
+  if (url.pathname.startsWith('/games/kaya/')) return;
 
   // 策略 A: HTML 页面采用 Network-First (网络优先，断网回退缓存)
   if (request.mode === 'navigate' || (request.headers.get('accept') && request.headers.get('accept').includes('text/html'))) {
@@ -102,23 +113,24 @@ self.addEventListener('fetch', (event) => {
           return response;
         })
         .catch(() => {
-          return caches.match(request).then((cached) => {
+          return caches.match(request, { ignoreSearch: true }).then((cached) => {
             if (cached) return cached;
-            return caches.match('./index.html');
+            return caches.match('./index.html', { ignoreSearch: true });
           });
         })
     );
     return;
   }
 
-  // 策略 B: 静态资源与二进制镜像采用 Cache-First (缓存优先，后台自动补全)
+  // 策略 B: 静态资源与二进制镜像采用 Cache-First (缓存优先，后台增量更新)
   event.respondWith(
-    caches.match(request).then((cachedResponse) => {
+    caches.match(request, { ignoreSearch: true }).then((cachedResponse) => {
       if (cachedResponse) {
         // 异步后台校验更新 (Stale-While-Revalidate)
         fetch(request).then((networkResponse) => {
           if (networkResponse && networkResponse.status === 200) {
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, networkResponse));
+            const clone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
           }
         }).catch(() => {});
         return cachedResponse;
