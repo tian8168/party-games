@@ -1,7 +1,35 @@
     // ==========================================================================
     // 12. 魂斗罗 (CONTRA: 丛林突袭·无限远征) 核心物理与无限生成引擎
     // ==========================================================================
+    function safePlaySound(type, ...args) {
+      try {
+        if (typeof window !== 'undefined' && window.AUDIO && window.AUDIO.play) {
+          window.AUDIO.play(type, ...args);
+        } else if (typeof AUDIO !== 'undefined' && AUDIO && AUDIO.play) {
+          AUDIO.play(type, ...args);
+        }
+      } catch (e) {}
+    }
+
+    function safeInitAudio() {
+      try {
+        if (typeof window !== 'undefined' && window.AUDIO && window.AUDIO.init) {
+          window.AUDIO.init();
+        } else if (typeof AUDIO !== 'undefined' && AUDIO && AUDIO.init) {
+          AUDIO.init();
+        }
+      } catch (e) {}
+    }
+
     function initContraGame() {
+      // 清除未完成的倒计时与战后动效定时器，杜绝重开幽灵污染
+      if (STATE.contra.pendingTimers) {
+        STATE.contra.pendingTimers.forEach(id => clearTimeout(id));
+      }
+      STATE.contra.pendingTimers = [];
+
+      STATE.contra.isGameOver = false;
+      STATE.contra.keys = { up: false, down: false, left: false, right: false, fire: false, jump: false };
       STATE.contra.lives = 3;
       STATE.contra.weapon = 'NORMAL'; // 'NORMAL', 'S', 'M', 'L', 'F', 'C'
       STATE.contra.shield = 0;        // 能量护盾剩余层数 (0~3)
@@ -30,6 +58,30 @@
       STATE.contra.bullets = [];
       STATE.contra.enemyBullets = [];
       STATE.contra.particles = [];
+
+      const H = window.innerWidth <= 480 ? 240 : 310;
+      STATE.contra.player = {
+        x: 50,
+        y: H - 40 - 18,
+        vx: 0,
+        vy: 0,
+        w: 20,
+        h: 36,
+        onGround: true,
+        currentPlatform: null,
+        facing: 1,
+        crouch: false,
+        aimUp: false,
+        invincibleTime: 120,
+        animFrame: 0,
+        jumpAngle: 0,
+        shootCooldown: 0,
+        _lastDist: 0
+      };
+
+      if (typeof window !== 'undefined') {
+        window.currentRestartFn = resetContraMatch;
+      }
 
       resizeContraCanvas();
       buildInitialContraMap();
@@ -281,16 +333,52 @@
 
     function resetContraPlayer() {
       const H = window.innerWidth <= 480 ? 240 : 310;
+      if (!STATE.contra.player) {
+        STATE.contra.player = {
+          x: 50, y: H - 40 - 18, vx: 0, vy: 0,
+          w: 20, h: 36, onGround: true, currentPlatform: null,
+          facing: 1, crouch: false, aimUp: false,
+          invincibleTime: 120, animFrame: 0, jumpAngle: 0,
+          shootCooldown: 0, _lastDist: 0
+        };
+      }
       const p = STATE.contra.player;
-      p.x = Math.max(50, STATE.contra.cameraX + 40);
-      p.y = H - 40 - 18;
+      const c = document.getElementById('contra-canvas');
+      const cW = c ? c.width : 480;
+      const camX = STATE.contra.cameraX || 0;
+
+      // 智能安全平台搜寻 (彻底杜绝深渊复活反复掉坑陷阱)
+      let safePlat = null;
+      const minSafeX = camX + 20;
+      const maxSafeX = camX + cW - 40;
+
+      // 1. 优先在当前视口范围内搜寻能够平稳落地的平台
+      const candidates = (STATE.contra.platforms || []).filter(plat => plat.x + plat.w > minSafeX && plat.x < maxSafeX);
+      safePlat = candidates.find(plat => plat.ground && plat.x + plat.w >= minSafeX + 40);
+      if (!safePlat) {
+        safePlat = candidates[0];
+      }
+
+      // 2. 如果视口内没有平台，紧急保底生成一块坚固安全地基
+      if (!safePlat) {
+        safePlat = { x: camX + 20, y: H - 40, w: 220, h: 40, ground: true };
+        STATE.contra.platforms.push(safePlat);
+      }
+
+      const targetX = Math.max(safePlat.x + 20, Math.min(safePlat.x + safePlat.w / 2, safePlat.x + safePlat.w - 20));
+      p.x = Math.max(50, targetX);
+      p.y = safePlat.y - 18;
       p.vx = 0;
       p.vy = 0;
+      p.w = 20;
+      p.h = 36;
       p.onGround = true;
+      p.currentPlatform = safePlat;
       p.facing = 1;
       p.crouch = false;
       p.aimUp = false;
       p.jumpAngle = 0;
+      p.animFrame = 0;
       p.invincibleTime = 120; // 2秒无敌保护
     }
 
@@ -323,9 +411,9 @@
     }
 
     function activateKonami30Lives() {
-      AUDIO.init();
+      safeInitAudio();
       STATE.contra.lives = 30;
-      AUDIO.play('contra_30');
+      safePlaySound('contra_30');
       updateContraHUD();
       showToast('⚡【上上下下左右左右BA】秘籍触发！获得 30 条命！', 3000);
 
@@ -369,11 +457,15 @@
         if (['KeyD', 'ArrowRight'].includes(e.code)) keys.right = true;
         if (['KeyW', 'ArrowUp'].includes(e.code)) keys.up = true;
         if (['KeyS', 'ArrowDown'].includes(e.code)) keys.down = true;
-        if (['KeyJ', 'KeyZ', 'Space'].includes(e.code)) {
-          if (!keys.fire) fireContraPlayer();
+        if (['KeyJ', 'KeyZ', 'Space', 'KeyU'].includes(e.code)) {
+          if (!keys.fire) {
+            fireContraPlayer();
+            const rate = (STATE.contra.weapon === 'M') ? 7 : (['S', 'F', 'C'].includes(STATE.contra.weapon) ? 12 : 14);
+            if (STATE.contra.player) STATE.contra.player.shootCooldown = rate;
+          }
           keys.fire = true;
         }
-        if (['KeyK', 'KeyX'].includes(e.code)) {
+        if (['KeyK', 'KeyX', 'KeyI'].includes(e.code)) {
           if (!keys.jump) jumpContraPlayer();
           keys.jump = true;
         }
@@ -388,27 +480,187 @@
         if (['KeyD', 'ArrowRight'].includes(e.code)) keys.right = false;
         if (['KeyW', 'ArrowUp'].includes(e.code)) keys.up = false;
         if (['KeyS', 'ArrowDown'].includes(e.code)) keys.down = false;
-        if (['KeyJ', 'KeyZ', 'Space'].includes(e.code)) keys.fire = false;
-        if (['KeyK', 'KeyX'].includes(e.code)) keys.jump = false;
+        if (['KeyJ', 'KeyZ', 'Space', 'KeyU'].includes(e.code)) keys.fire = false;
+        if (['KeyK', 'KeyX', 'KeyI'].includes(e.code)) keys.jump = false;
       };
 
-      const bindTouch = (id, onDown, onUp) => {
+      // 虚拟摇杆/十字键支持滑动操控 (Touch slide & tap)
+      const dpadArea = document.querySelector('.contra-dpad');
+      if (dpadArea && !dpadArea._touchBound) {
+        dpadArea._touchBound = true;
+        let dpadTouchId = null;
+
+        const updateDpadFromTouch = (touch) => {
+          const rect = dpadArea.getBoundingClientRect();
+          const cx = rect.left + rect.width / 2;
+          const cy = rect.top + rect.height / 2;
+          const dx = touch.clientX - cx;
+          const dy = touch.clientY - cy;
+          const dist = Math.hypot(dx, dy);
+
+          const deadZone = 12;
+          const leftBtn = document.getElementById('btn-dpad-left');
+          const rightBtn = document.getElementById('btn-dpad-right');
+          const upBtn = document.getElementById('btn-dpad-up');
+          const downBtn = document.getElementById('btn-dpad-down');
+
+          if (dist < deadZone) {
+            keys.left = false;
+            keys.right = false;
+            keys.up = false;
+            keys.down = false;
+          } else {
+            if (dx < -14) {
+              keys.left = true;
+              keys.right = false;
+            } else if (dx > 14) {
+              keys.right = true;
+              keys.left = false;
+            } else {
+              keys.left = false;
+              keys.right = false;
+            }
+
+            if (dy < -14) {
+              keys.up = true;
+              keys.down = false;
+            } else if (dy > 14) {
+              keys.down = true;
+              keys.up = false;
+            } else {
+              keys.up = false;
+              keys.down = false;
+            }
+          }
+
+          if (leftBtn) leftBtn.classList.toggle('active', keys.left);
+          if (rightBtn) rightBtn.classList.toggle('active', keys.right);
+          if (upBtn) upBtn.classList.toggle('active', keys.up);
+          if (downBtn) downBtn.classList.toggle('active', keys.down);
+        };
+
+        const resetDpad = () => {
+          dpadTouchId = null;
+          keys.left = false;
+          keys.right = false;
+          keys.up = false;
+          keys.down = false;
+          ['btn-dpad-left', 'btn-dpad-right', 'btn-dpad-up', 'btn-dpad-down'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.classList.remove('active');
+          });
+        };
+
+        dpadArea.addEventListener('touchstart', (e) => {
+          e.preventDefault();
+          if (dpadTouchId === null && e.changedTouches.length > 0) {
+            const touch = e.changedTouches[0];
+            dpadTouchId = touch.identifier;
+            updateDpadFromTouch(touch);
+          }
+        }, { passive: false });
+
+        dpadArea.addEventListener('touchmove', (e) => {
+          e.preventDefault();
+          for (let i = 0; i < e.changedTouches.length; i++) {
+            if (e.changedTouches[i].identifier === dpadTouchId) {
+              updateDpadFromTouch(e.changedTouches[i]);
+              break;
+            }
+          }
+        }, { passive: false });
+
+        dpadArea.addEventListener('touchend', (e) => {
+          e.preventDefault();
+          for (let i = 0; i < e.changedTouches.length; i++) {
+            if (e.changedTouches[i].identifier === dpadTouchId) {
+              resetDpad();
+              break;
+            }
+          }
+        }, { passive: false });
+
+        dpadArea.addEventListener('touchcancel', (e) => {
+          e.preventDefault();
+          resetDpad();
+        }, { passive: false });
+      }
+
+      // 桌面鼠标单键点击兼容
+      const bindMouseBtn = (id, onDown, onUp) => {
         const el = document.getElementById(id);
-        if (!el) return;
-        const down = (e) => { e.preventDefault(); el.classList.add('active'); onDown(); };
-        const up = (e) => { e.preventDefault(); el.classList.remove('active'); onUp(); };
-        el.onmousedown = down; el.onmouseup = up; el.onmouseleave = up;
-        el.ontouchstart = down; el.ontouchend = up;
-        el.ontouchcancel = up;
+        if (!el || el._mouseBound) return;
+        el._mouseBound = true;
+        el.addEventListener('mousedown', (e) => {
+          e.preventDefault();
+          el.classList.add('active');
+          onDown();
+        });
+        const up = () => {
+          el.classList.remove('active');
+          onUp();
+        };
+        el.addEventListener('mouseup', up);
+        el.addEventListener('mouseleave', up);
       };
 
-      bindTouch('btn-dpad-left',  () => { keys.left = true; }, () => { keys.left = false; });
-      bindTouch('btn-dpad-right', () => { keys.right = true; }, () => { keys.right = false; });
-      bindTouch('btn-dpad-up',    () => { keys.up = true; }, () => { keys.up = false; });
-      bindTouch('btn-dpad-down',  () => { keys.down = true; }, () => { keys.down = false; });
+      bindMouseBtn('btn-dpad-left',  () => { keys.left = true; }, () => { keys.left = false; });
+      bindMouseBtn('btn-dpad-right', () => { keys.right = true; }, () => { keys.right = false; });
+      bindMouseBtn('btn-dpad-up',    () => { keys.up = true; }, () => { keys.up = false; });
+      bindMouseBtn('btn-dpad-down',  () => { keys.down = true; }, () => { keys.down = false; });
 
-      bindTouch('btn-contra-fire', () => { fireContraPlayer(); keys.fire = true; }, () => { keys.fire = false; });
-      bindTouch('btn-contra-jump', () => { jumpContraPlayer(); keys.jump = true; }, () => { keys.jump = false; });
+      // 开火与跳跃独立多点触控与按键绑定
+      const bindActionBtn = (id, onDown, onUp) => {
+        const el = document.getElementById(id);
+        if (!el || el._bound) return;
+        el._bound = true;
+        let touchId = null;
+
+        el.addEventListener('touchstart', (e) => {
+          e.preventDefault();
+          if (touchId === null && e.changedTouches.length > 0) {
+            touchId = e.changedTouches[0].identifier;
+            el.classList.add('active');
+            onDown();
+          }
+        }, { passive: false });
+
+        const endTouch = (e) => {
+          e.preventDefault();
+          for (let i = 0; i < e.changedTouches.length; i++) {
+            if (e.changedTouches[i].identifier === touchId) {
+              touchId = null;
+              el.classList.remove('active');
+              onUp();
+              break;
+            }
+          }
+        };
+        el.addEventListener('touchend', endTouch, { passive: false });
+        el.addEventListener('touchcancel', endTouch, { passive: false });
+
+        el.addEventListener('mousedown', (e) => {
+          e.preventDefault();
+          el.classList.add('active');
+          onDown();
+        });
+        const mouseUp = () => {
+          el.classList.remove('active');
+          onUp();
+        };
+        el.addEventListener('mouseup', mouseUp);
+        el.addEventListener('mouseleave', mouseUp);
+      };
+
+      bindActionBtn('btn-contra-fire', () => {
+        if (!keys.fire) {
+          fireContraPlayer();
+          const rate = (STATE.contra.weapon === 'M') ? 7 : (['S', 'F', 'C'].includes(STATE.contra.weapon) ? 12 : 14);
+          if (STATE.contra.player) STATE.contra.player.shootCooldown = rate;
+        }
+        keys.fire = true;
+      }, () => { keys.fire = false; });
+      bindActionBtn('btn-contra-jump', () => { jumpContraPlayer(); keys.jump = true; }, () => { keys.jump = false; });
 
       const c = document.getElementById('contra-canvas');
       if (c && !c._pointerBound) {
@@ -418,31 +670,49 @@
           fireContraPlayer();
         });
       }
+
+      if (!window._contraResizeBound) {
+        window._contraResizeBound = true;
+        window.addEventListener('resize', resizeContraCanvas);
+      }
     }
 
     function jumpContraPlayer() {
-      AUDIO.init();
+      safeInitAudio();
       const p = STATE.contra.player;
+      if (!p) return;
       if (p.onGround) {
         if (STATE.contra.keys.down) {
-          // 趴下按跳穿透薄平台
-          p.y += 18;
-          p.onGround = false;
-          p.vy = 2;
+          // 趴下按跳穿透薄平台：仅限高架薄平台 (!plat.ground)！
+          // 严禁在坚固主地面 (plat.ground === true) 穿透掉出世界自杀！
+          if (p.currentPlatform && !p.currentPlatform.ground) {
+            p.y += 18;
+            p.onGround = false;
+            p.currentPlatform = null;
+            p.vy = 2;
+          } else {
+            // 主地面趴下时按跳：正常弹跳起身跃起
+            const jumpPower = STATE.contra.hasBoots ? -10.2 : -9.0;
+            p.vy = jumpPower;
+            p.onGround = false;
+            p.crouch = false;
+            safePlaySound('contra_jump');
+          }
         } else {
           // 跳跃高度支持极速战靴加成
           const jumpPower = STATE.contra.hasBoots ? -10.2 : -9.0;
           p.vy = jumpPower;
           p.onGround = false;
-          AUDIO.play('contra_jump');
+          safePlaySound('contra_jump');
         }
       }
     }
 
     // --- 3. 玩家开火系统 (支持全新 F 弹、C 追踪弹与僚机协同) ---
     function fireContraPlayer() {
-      AUDIO.init();
+      safeInitAudio();
       const p = STATE.contra.player;
+      if (!p) return;
       const keys = STATE.contra.keys;
 
       let angle = 0;
@@ -465,7 +735,7 @@
       const weapon = STATE.contra.weapon;
 
       if (weapon === 'NORMAL') {
-        AUDIO.play('contra_shoot');
+        safePlaySound('contra_shoot');
         STATE.contra.bullets.push({
           x: spawnX, y: spawnY,
           vx: Math.cos(angle) * 8.8, vy: Math.sin(angle) * 8.8,
@@ -473,7 +743,7 @@
         });
       } else if (weapon === 'S') {
         // 5 向扇形散射
-        AUDIO.play('contra_spread');
+        safePlaySound('contra_spread');
         const fanOffsets = [-0.35, -0.18, 0, 0.18, 0.35];
         fanOffsets.forEach(offset => {
           const a = angle + offset;
@@ -485,7 +755,7 @@
         });
       } else if (weapon === 'M') {
         // 极速重机枪
-        AUDIO.play('contra_shoot');
+        safePlaySound('contra_shoot');
         STATE.contra.bullets.push({
           x: spawnX, y: spawnY,
           vx: Math.cos(angle) * 10.5, vy: Math.sin(angle) * 10.5,
@@ -493,7 +763,7 @@
         });
       } else if (weapon === 'L') {
         // 高能贯穿激光
-        AUDIO.play('contra_shoot');
+        safePlaySound('contra_shoot');
         STATE.contra.bullets.push({
           x: spawnX, y: spawnY,
           vx: Math.cos(angle) * 13, vy: Math.sin(angle) * 13,
@@ -501,7 +771,7 @@
         });
       } else if (weapon === 'F') {
         // 🟣 F 弹: 烈焰螺旋弹 (双螺旋旋转火球 + 范围爆破)
-        AUDIO.play('contra_spread');
+        safePlaySound('contra_spread');
         for (let sign = -1; sign <= 1; sign += 2) {
           STATE.contra.bullets.push({
             type: 'flame',
@@ -514,7 +784,7 @@
         }
       } else if (weapon === 'C') {
         // 🟢 C 弹: 智能微型追踪飞弹
-        AUDIO.play('contra_shoot');
+        safePlaySound('contra_shoot');
         const count = 2;
         for (let i = 0; i < count; i++) {
           const spreadA = angle + (i === 0 ? -0.25 : 0.25);
@@ -573,6 +843,8 @@
     }
 
     function updateContraPhysics() {
+      if (STATE.contra.isGameOver) return;
+
       const p = STATE.contra.player;
       const keys = STATE.contra.keys;
       const c = document.getElementById('contra-canvas');
@@ -580,9 +852,13 @@
       const cH = c ? c.height : 310;
       const H = cH;
 
-      // 连续开火支持
-      if (keys.fire && (STATE.contra.weapon === 'M' || Math.random() < 0.12)) {
+      // 连续开火支持 (根据武器类型平滑自控射速)
+      if (typeof p.shootCooldown === 'undefined') p.shootCooldown = 0;
+      if (p.shootCooldown > 0) p.shootCooldown--;
+      if (keys.fire && p.shootCooldown <= 0) {
         fireContraPlayer();
+        const rate = (STATE.contra.weapon === 'M') ? 7 : (['S', 'F', 'C'].includes(STATE.contra.weapon) ? 12 : 14);
+        p.shootCooldown = rate;
       }
 
       // 移动速度 (极速战靴加成)
@@ -612,6 +888,7 @@
 
       // 平台碰撞判定
       p.onGround = false;
+      p.currentPlatform = null;
       const pHalfW = 10;
       const pFootY = p.y + 18;
 
@@ -621,6 +898,7 @@
             p.y = plat.y - 18;
             p.vy = 0;
             p.onGround = true;
+            p.currentPlatform = plat;
           }
         }
       });
@@ -629,6 +907,7 @@
       const limitY = cH + 40;
       if (p.y > limitY) {
         killContraPlayer();
+        return;
       }
 
       // 触发 BOSS 战遭遇判定：当玩家推进进入 BOSS 竞技场
@@ -638,7 +917,7 @@
           STATE.contra.bossLockX = STATE.contra.bossArenaX;
           STATE.contra.bossActive = true;
           STATE.contra.bossAlertTimer = 180; // 3秒突袭警报特效
-          AUDIO.play('contra_explode');
+          safePlaySound('contra_explode');
           showToast(`🚨 警报！已遭遇强敌【${STATE.contra.boss.name}】！全力开火！`, 4000);
         }
       }
@@ -656,6 +935,13 @@
           STATE.contra.cameraX = p.x - cW * 0.45;
         }
         if (p.x < STATE.contra.cameraX + 12) p.x = STATE.contra.cameraX + 12;
+      }
+
+      // 行进米数实时更新至 HUD 状态栏
+      const currentDist = Math.max(0, Math.floor(p.x / 10));
+      if (currentDist !== p._lastDist) {
+        p._lastDist = currentDist;
+        updateContraHUD();
       }
 
       if (STATE.contra.bossAlertTimer > 0) STATE.contra.bossAlertTimer--;
@@ -734,7 +1020,7 @@
             en.hp -= b.dmg;
             if (!b.piercing) b.y = -999;
             if (en.hp <= 0) {
-              AUDIO.play('contra_explode');
+              safePlaySound('contra_explode');
               STATE.contra.score += 100;
               spawnExplosion(en.x, en.y);
             }
@@ -752,7 +1038,7 @@
         STATE.contra.bullets.forEach(b => {
           if (Math.hypot(b.x - cap.x, b.y - cap.y) < 18) {
             cap.alive = false;
-            AUDIO.play('contra_explode');
+            safePlaySound('contra_explode');
             spawnExplosion(cap.x, cap.y);
             STATE.contra.pickups.push({
               x: cap.x, y: cap.y, vy: -3,
@@ -780,7 +1066,7 @@
         }
 
         if (Math.hypot(pick.x - p.x, pick.y - p.y) < 24) {
-          AUDIO.play('contra_30');
+          safePlaySound('contra_30');
           handlePickupItem(pick);
           pick.y = 999; // 标记拾取销毁
         }
@@ -895,9 +1181,10 @@
 
       // 8. 内存回收垃圾清理 (GC) - 保持 60 FPS
       const minX = STATE.contra.cameraX - 350;
+      const maxX = STATE.contra.cameraX + cW + 600;
       STATE.contra.platforms = STATE.contra.platforms.filter(plat => plat.x + plat.w > minX);
       STATE.contra.enemies = STATE.contra.enemies.filter(en => en.hp > 0 && en.x > minX);
-      STATE.contra.capsules = STATE.contra.capsules.filter(cap => cap.alive && cap.x > minX);
+      STATE.contra.capsules = STATE.contra.capsules.filter(cap => cap.alive && cap.x > minX && cap.x < maxX);
       STATE.contra.pickups = STATE.contra.pickups.filter(pick => pick.y < 500 && pick.x > minX);
       STATE.contra.bullets = STATE.contra.bullets.filter(b => b.x > minX && b.x < STATE.contra.cameraX + cW + 40 && b.y > -30 && b.y < cH + 30);
       STATE.contra.enemyBullets = STATE.contra.enemyBullets.filter(eb => eb.x > minX && eb.x < STATE.contra.cameraX + cW + 60 && eb.y < cH + 50);
@@ -911,7 +1198,7 @@
       boss.defeated = true;
 
       try {
-        if (typeof AUDIO !== 'undefined' && AUDIO.play) AUDIO.play('contra_explode');
+        safePlaySound('contra_explode');
 
         const bx = boss.x;
         const by = boss.y;
@@ -921,9 +1208,11 @@
 
         // 震撼连续多级爆炸
         for (let k = 0; k < 30; k++) {
-          setTimeout(() => {
+          const tid = setTimeout(() => {
             spawnExplosion(bx + Math.random() * bw, by + Math.random() * bh);
           }, k * 70);
+          if (!STATE.contra.pendingTimers) STATE.contra.pendingTimers = [];
+          STATE.contra.pendingTimers.push(tid);
         }
 
         const lvl = STATE.contra.bossCount + 1;
@@ -931,7 +1220,7 @@
         STATE.contra.bossCount++;
 
         // 随机喷发 2~3 件装备与神兵！
-        setTimeout(() => {
+        const lootTid = setTimeout(() => {
           try {
             spawnBossLootDrops(bx, by, bw, bh);
           } catch(e) {
@@ -945,6 +1234,8 @@
           STATE.contra.nextBossX = STATE.contra.player.x + 1400 + Math.random() * 400;
           if (typeof showToast === 'function') showToast(`🏆 强敌【${bName}】已被彻底歼灭！神装掉落！向前冲刺！`, 4000);
         }, 1800);
+        if (!STATE.contra.pendingTimers) STATE.contra.pendingTimers = [];
+        STATE.contra.pendingTimers.push(lootTid);
       } catch (err) {
         console.error('triggerBossDefeat error caught:', err);
         // 保底解除锁定，确保绝对不卡死
@@ -1018,11 +1309,13 @@
 
     // --- 7. 主角伤害与终局战报结算 ---
     function killContraPlayer() {
+      if (STATE.contra.isGameOver) return;
+
       // 能量护盾抵御检测
       if (STATE.contra.shield > 0) {
         STATE.contra.shield--;
-        STATE.contra.player.invincibleTime = 100; // 1.6 秒绝对保护
-        AUDIO.play('contra_30');
+        if (STATE.contra.player) STATE.contra.player.invincibleTime = 100; // 1.6 秒绝对保护
+        safePlaySound('contra_30');
 
         // 护盾爆碎粒子
         for (let i = 0; i < 20; i++) {
@@ -1040,16 +1333,24 @@
         return;
       }
 
-      AUDIO.play('contra_explode');
-      spawnExplosion(STATE.contra.player.x, STATE.contra.player.y);
+      safePlaySound('contra_explode');
+      if (STATE.contra.player) {
+        spawnExplosion(STATE.contra.player.x, STATE.contra.player.y);
+      }
       STATE.contra.lives--;
       STATE.contra.weapon = 'NORMAL';
       updateContraHUD();
 
       if (STATE.contra.lives <= 0) {
+        STATE.contra.lives = 0;
+        STATE.contra.isGameOver = true;
         STATE.winner = 2;
-        const dist = Math.floor(STATE.contra.player.x / 10);
-        setTimeout(() => {
+        if (STATE.contra.player) {
+          STATE.contra.player.vx = 0;
+          STATE.contra.player.vy = 0;
+        }
+        const dist = Math.floor((STATE.contra.player ? STATE.contra.player.x : 0) / 10);
+        const tid = setTimeout(() => {
           showModal('💀 最终远征战报 (MISSION REPORT)', `
             <h3>🎖️ 魂斗罗·终极极限远征</h3><br>
             <p><strong>🏃 极限挺进距离：</strong><b style="color:#38bdf8; font-size:1.1rem;">${dist} 米</b></p><br>
@@ -1058,6 +1359,8 @@
             <p>点击下方按钮随时再次重开，向更远未知战场挺进！</p>
           `);
         }, 1000);
+        if (!STATE.contra.pendingTimers) STATE.contra.pendingTimers = [];
+        STATE.contra.pendingTimers.push(tid);
       } else {
         resetContraPlayer();
       }

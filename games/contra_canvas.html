@@ -12,6 +12,77 @@
   <link rel="icon" type="image/svg+xml" href="../icons/icon.svg">
   <link rel="stylesheet" href="../common/common.css">
   <style>
+    .game-header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      white-space: nowrap;
+    }
+    .nav-back, .game-title, .header-actions {
+      white-space: nowrap;
+    }
+    .game-title {
+      font-size: 1.15rem;
+      margin: 0;
+      color: #fff;
+      font-weight: 800;
+    }
+    .btn-fc-switch {
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(37, 99, 235, 0.25) !important;
+      border: 1px solid rgba(59, 130, 246, 0.5) !important;
+      color: #93c5fd !important;
+    }
+    .btn-cheat {
+      background: linear-gradient(135deg, #ec4899, #8b5cf6) !important;
+      border: 1px solid #f472b6 !important;
+      color: #fff !important;
+      font-weight: 700 !important;
+    }
+    @media (max-width: 640px) {
+      .game-header {
+        padding: 4px 2px 6px;
+        gap: 6px;
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .header-left {
+        width: 100%;
+        justify-content: space-between;
+      }
+      .game-title {
+        font-size: 0.95rem;
+      }
+      .nav-back {
+        padding: 4px 8px;
+        font-size: 0.78rem;
+      }
+      .header-actions {
+        width: 100%;
+        gap: 4px;
+        display: flex;
+        justify-content: space-between;
+      }
+      .header-actions .btn-icon {
+        padding: 4px 4px;
+        font-size: 0.74rem;
+        flex: 1;
+        justify-content: center;
+        text-align: center;
+      }
+    }
+
     .stage-wrapper {
       max-width: 540px !important;
       width: 100% !important;
@@ -19,17 +90,19 @@
       background: transparent;
       box-shadow: none;
       border: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
     }
 
     #contra-stage {
       width: 100%;
-      max-width: 520px;
-      margin: 0 auto;
       position: relative;
       background: #020617;
       border-radius: 16px;
       border: 2px solid #ef4444;
-      box-shadow: 0 0 30px rgba(239, 68, 68, 0.35);
+      box-shadow: 0 0 24px rgba(239, 68, 68, 0.35);
       overflow: hidden;
       display: flex;
       flex-direction: column;
@@ -50,8 +123,8 @@
     .contra-hud-top {
       position: absolute;
       top: 6px;
-      left: 8px;
-      right: 8px;
+      left: 10px;
+      right: 10px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -65,7 +138,7 @@
     .contra-life-badge {
       color: #ef4444;
       font-size: 0.95rem;
-      letter-spacing: 1px;
+      letter-spacing: 0.5px;
     }
 
     .contra-weapon-badge {
@@ -77,24 +150,6 @@
       font-size: 0.78rem;
     }
 
-    .btn-konami-secret {
-      pointer-events: auto;
-      background: linear-gradient(135deg, #ec4899, #8b5cf6);
-      border: 1px solid #f472b6;
-      color: #fff;
-      font-size: 0.72rem;
-      font-weight: 800;
-      padding: 3px 8px;
-      border-radius: 6px;
-      cursor: pointer;
-      box-shadow: 0 0 10px rgba(236, 72, 153, 0.5);
-      transition: all 0.2s;
-    }
-    .btn-konami-secret:active {
-      transform: scale(0.92);
-      filter: brightness(1.2);
-    }
-
     /* 移动端专属双区虚拟手柄 */
     .contra-touch-controls {
       width: 100%;
@@ -103,7 +158,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 8px 14px;
+      padding: 8px 16px;
       position: relative;
       box-sizing: border-box;
       touch-action: none;
@@ -114,6 +169,7 @@
       width: 124px;
       height: 124px;
       position: relative;
+      touch-action: none;
     }
 
     .dpad-btn {
@@ -131,23 +187,25 @@
       user-select: none;
       -webkit-user-select: none;
       touch-action: none;
+      transition: background 0.08s, border-color 0.08s;
     }
     .dpad-btn:active, .dpad-btn.active {
-      background: #3b82f6;
-      border-color: #60a5fa;
+      background: #3b82f6 !important;
+      border-color: #60a5fa !important;
       box-shadow: 0 0 10px rgba(59, 130, 246, 0.6);
     }
     .dpad-up    { top: 0px; left: 42px; width: 40px; height: 40px; }
     .dpad-down  { bottom: 0px; left: 42px; width: 40px; height: 40px; }
     .dpad-left  { top: 42px; left: 0px; width: 40px; height: 40px; }
     .dpad-right { top: 42px; right: 0px; width: 40px; height: 40px; }
-    .dpad-center{ top: 42px; left: 42px; width: 40px; height: 40px; background:#0f172a; border-radius:4px; border:none; }
+    .dpad-center{ top: 42px; left: 42px; width: 40px; height: 40px; background:#0f172a; border-radius:4px; border:none; pointer-events:none; }
 
     /* 右侧跳跃与开火按键 */
     .contra-actions-pad {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 16px;
+      touch-action: none;
     }
 
     .btn-contra-circle {
@@ -166,7 +224,7 @@
       -webkit-user-select: none;
       touch-action: none;
       box-shadow: 0 4px 12px rgba(0,0,0,0.6);
-      transition: all 0.1s;
+      transition: all 0.08s;
     }
     .btn-contra-circle:active, .btn-contra-circle.active {
       transform: scale(0.92);
@@ -194,17 +252,19 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       padding: 6px 10px;
       background: rgba(15, 23, 42, 0.95);
       border-top: 1px solid rgba(255, 255, 255, 0.08);
       font-size: 0.72rem;
       color: #94a3b8;
       flex-wrap: wrap;
+      text-align: center;
     }
     .contra-desktop-hints b {
       color: #38bdf8;
     }
+
     @media (max-width: 480px) {
       #contra-canvas {
         height: 240px;
@@ -226,46 +286,44 @@
         height: 48px;
         font-size: 1.05rem;
       }
+      .contra-actions-pad {
+        gap: 10px;
+      }
+      .contra-desktop-hints {
+        font-size: 0.68rem;
+        gap: 6px;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container in-game">
-    <!-- 顶部导航 -->
-    <header class="app-header">
-      <div class="brand-title" onclick="window.location.href='../index.html'">
-        <span>🎮 聚会游戏大厅</span>
-        <span class="badge">返回大厅</span>
+    <!-- 统一标准游戏导航栏 (无重复、零错位) -->
+    <div class="game-header">
+      <div class="header-left">
+        <a href="../index.html" class="nav-back">🔙 大厅</a>
+        <h2 class="game-title">💥 魂斗罗: 无限远征</h2>
       </div>
-      <div class="header-tools">
-        <a href="contra.html" class="btn-icon" style="text-decoration:none; display:inline-flex; align-items:center; gap:4px; font-size:0.75rem; background:rgba(37,99,235,0.25); border:1px solid rgba(37,99,235,0.5); color:#93c5fd; border-radius:6px; padding:4px 8px;">🕹️ 切换至FC原版模拟器</a>
+      <div class="header-actions">
+        <a href="contra.html" class="btn-icon btn-fc-switch">🕹️ FC原版</a>
+        <button class="btn-icon btn-cheat" id="btn-cheat-header" onclick="activateKonami30Lives()" title="注入经典30命秘籍">⚡ 30命</button>
         <button class="btn-icon" id="btn-sound-toggle" onclick="toggleSound()">🔊</button>
         <button class="btn-icon" id="btn-rules-header" onclick="showCurrentRules()">❓ 规则</button>
-        <button class="btn-icon" onclick="resetContraMatch()">🔄 重开</button>
+        <button class="btn-icon" id="restart-btn" onclick="resetContraMatch()">🔄 重开</button>
       </div>
-    </header>
-
-    <!-- 游戏导航栏 -->
-    <div class="game-nav-bar">
-      <button class="btn-back-lobby" onclick="window.location.href='../index.html'">
-        <span>◀ 返回大厅</span>
-      </button>
-      <div class="current-game-badge" id="current-game-title">💥 魂斗罗 (自研无限远征版)</div>
-      <button class="btn-cheat-badge" onclick="activateKonami30Lives()" style="background:linear-gradient(135deg,#ec4899,#8b5cf6); border:1px solid #f472b6; color:#fff; font-weight:800; border-radius:8px; padding:4px 10px; cursor:pointer;">⚡ 30条命秘籍</button>
     </div>
 
     <!-- 舞台主容器 -->
     <div class="stage-wrapper">
       <div id="contra-stage">
         <div class="contra-hud-top">
-          <div class="contra-life-badge" id="contra-life-display">🔴 P1: 3命</div>
-          <div class="contra-weapon-badge" id="contra-weapon-display">GUN: [ 普通单发 ]</div>
-          <button class="btn-konami-secret" onclick="activateKonami30Lives()">⚡ 30条命秘籍</button>
+          <div class="contra-life-badge" id="contra-life-display">🔴 3命 | 🚩0m | 👑0</div>
+          <div class="contra-weapon-badge" id="contra-weapon-display">GUN: [普通]</div>
         </div>
         <canvas id="contra-canvas"></canvas>
         <div class="contra-touch-controls">
           <!-- 8向十字方向键 -->
-          <div class="contra-dpad">
+          <div class="contra-dpad" id="contra-dpad-area">
             <div class="dpad-btn dpad-up" id="btn-dpad-up">▲</div>
             <div class="dpad-btn dpad-down" id="btn-dpad-down">▼</div>
             <div class="dpad-btn dpad-left" id="btn-dpad-left">◀</div>
@@ -287,8 +345,8 @@
         <!-- 键盘键位指引 -->
         <div class="contra-desktop-hints">
           <span>⌨️ <b>WASD / 方向键</b> 移动与8向瞄准</span>
-          <span><b>J / 空格</b> 开火</span>
-          <span><b>K</b> 跳跃</span>
+          <span><b>J / 空格 / U</b> 开火</span>
+          <span><b>K / I</b> 跳跃</span>
           <span><b>S / ▼</b> 趴下躲子弹</span>
           <span>🖱️ <b>点击画面</b> 极速开火</span>
         </div>
@@ -296,148 +354,32 @@
     </div>
   </div>
 
-  <!-- Toast 提示 -->
-  <div class="toast" id="toast-msg"></div>
-
-  <!-- 规则与结算弹窗 -->
-  <div class="modal" id="game-modal">
-    <div class="modal-content">
-      <div class="modal-title" id="modal-title">游戏规则</div>
-      <div class="modal-body" id="modal-body"></div>
-      <button class="modal-btn" onclick="closeModal()">我知道了</button>
-    </div>
-  </div>
-
+  <script src="../common/audio.js"></script>
+  <script src="../common/common.js"></script>
   <script>
-    // 跨端 Canvas roundRect 兼容垫片
-    (function() {
-      if (typeof CanvasRenderingContext2D !== 'undefined' && !CanvasRenderingContext2D.prototype.roundRect) {
-        CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, radii) {
-          let r = Array.isArray(radii) ? radii[0] : (radii || 0);
-          r = Math.min(r, w / 2, h / 2);
-          this.beginPath();
-          this.moveTo(x + r, y);
-          this.arcTo(x + w, y, x + w, y + h, r);
-          this.arcTo(x + w, y + h, x, y + h, r);
-          this.arcTo(x, y + h, x, y, r);
-          this.arcTo(x, y, x + w, y, r);
-          this.closePath();
-          return this;
-        };
-      }
-    })();
-
-    // 原生 Web Audio 纯合成音效系统
-    const AUDIO = {
-      ctx: null,
-      enabled: true,
-      init() {
-        if (!this.ctx) {
-          const AudioCtx = window.AudioContext || window.webkitAudioContext;
-          if (AudioCtx) this.ctx = new AudioCtx();
-        }
-      },
-      toggle() {
-        this.enabled = !this.enabled;
-        return this.enabled;
-      },
-      play(type) {
-        if (!this.enabled) return;
-        this.init();
-        if (!this.ctx) return;
-        if (this.ctx.state === 'suspended') this.ctx.resume();
-        const t = this.ctx.currentTime;
-        try {
-          if (type === 'click') {
-            const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain();
-            osc.type = 'sine'; osc.frequency.setValueAtTime(600, t); osc.frequency.exponentialRampToValueAtTime(150, t + 0.05);
-            gain.gain.setValueAtTime(0.12, t); gain.gain.linearRampToValueAtTime(0.01, t + 0.05);
-            osc.connect(gain); gain.connect(this.ctx.destination);
-            osc.start(t); osc.stop(t + 0.05);
-          } else if (type === 'contra_shoot') {
-            const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain();
-            osc.type = 'square'; osc.frequency.setValueAtTime(520, t); osc.frequency.exponentialRampToValueAtTime(180, t + 0.06);
-            gain.gain.setValueAtTime(0.2, t); gain.gain.linearRampToValueAtTime(0.01, t + 0.06);
-            osc.connect(gain); gain.connect(this.ctx.destination);
-            osc.start(t); osc.stop(t + 0.06);
-          } else if (type === 'contra_spread') {
-            [480, 640, 780].forEach((f, idx) => {
-              const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain();
-              osc.type = 'square'; osc.frequency.setValueAtTime(f, t + idx * 0.01);
-              osc.frequency.exponentialRampToValueAtTime(160, t + idx * 0.01 + 0.08);
-              gain.gain.setValueAtTime(0.18, t + idx * 0.01); gain.gain.linearRampToValueAtTime(0.01, t + idx * 0.01 + 0.08);
-              osc.connect(gain); gain.connect(this.ctx.destination);
-              osc.start(t + idx * 0.01); osc.stop(t + idx * 0.01 + 0.08);
-            });
-          } else if (type === 'contra_jump') {
-            const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain();
-            osc.type = 'triangle'; osc.frequency.setValueAtTime(180, t); osc.frequency.linearRampToValueAtTime(460, t + 0.12);
-            gain.gain.setValueAtTime(0.25, t); gain.gain.linearRampToValueAtTime(0.01, t + 0.12);
-            osc.connect(gain); gain.connect(this.ctx.destination);
-            osc.start(t); osc.stop(t + 0.12);
-          } else if (type === 'contra_explode') {
-            const bufferSize = this.ctx.sampleRate * 0.28;
-            const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-            const data = buffer.getChannelData(0);
-            for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.18));
-            const noise = this.ctx.createBufferSource(); noise.buffer = buffer;
-            const filter = this.ctx.createBiquadFilter(); filter.type = 'lowpass';
-            filter.frequency.setValueAtTime(600, t); filter.frequency.linearRampToValueAtTime(80, t + 0.28);
-            const gain = this.ctx.createGain();
-            gain.gain.setValueAtTime(0.65, t); gain.gain.exponentialRampToValueAtTime(0.01, t + 0.28);
-            noise.connect(filter); filter.connect(gain); gain.connect(this.ctx.destination);
-            noise.start(t);
-          } else if (type === 'contra_30') {
-            [330, 392, 659, 523, 587, 784].forEach((f, i) => {
-              const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain();
-              osc.type = 'square'; osc.frequency.setValueAtTime(f, t + i * 0.08);
-              gain.gain.setValueAtTime(0.22, t + i * 0.08); gain.gain.linearRampToValueAtTime(0.01, t + i * 0.08 + 0.28);
-              osc.connect(gain); gain.connect(this.ctx.destination);
-              osc.start(t + i * 0.08); osc.stop(t + i * 0.08 + 0.28);
-            });
-          }
-        } catch(e) {}
-      }
-    };
-
-    function toggleSound() {
-      const on = AUDIO.toggle();
-      const btn = document.getElementById('btn-sound-toggle');
-      if (btn) btn.textContent = on ? '🔊' : '🔇';
-      showToast(on ? '🔊 音效已开启' : '🔇 音效已静音');
-    }
-
     // 全局状态单例
     const STATE = {
       currentGame: 'CONTRA',
       contra: {
         keys: { up: false, down: false, left: false, right: false, fire: false, jump: false },
+        player: {
+          x: 50, y: 220, vx: 0, vy: 0, w: 20, h: 36,
+          onGround: true, facing: 1, crouch: false, aimUp: false,
+          invincibleTime: 120, animFrame: 0, jumpAngle: 0,
+          shootCooldown: 0, _lastDist: 0
+        },
         animId: null
       }
     };
+    window.STATE = STATE;
 
-    function showToast(msg) {
-      const t = document.getElementById('toast-msg') || document.getElementById('toast');
-      if (!t) return;
-      t.textContent = msg;
-      t.classList.add('show');
-      clearTimeout(t._timer);
-      t._timer = setTimeout(() => t.classList.remove('show'), 2200);
-    }
-
-    function showModal(title, bodyHtml) {
-      const titleEl = document.getElementById('modal-title');
-      const bodyEl = document.getElementById('modal-body');
-      const modalEl = document.getElementById('game-modal') || document.getElementById('modal');
-      if (titleEl) titleEl.textContent = title;
-      if (bodyEl) bodyEl.innerHTML = bodyHtml;
-      if (modalEl) modalEl.classList.add('show');
-    }
-
-    function closeModal() {
-      if (typeof AUDIO !== 'undefined' && AUDIO.play) AUDIO.play('click');
-      const modalEl = document.getElementById('game-modal') || document.getElementById('modal');
-      if (modalEl) modalEl.classList.remove('show');
+    function toggleSound() {
+      if (window.AUDIO) {
+        const on = window.AUDIO.toggle();
+        const btn = document.getElementById('btn-sound-toggle');
+        if (btn) btn.textContent = on ? '🔊' : '🔇';
+        showToast(on ? '🔊 音效已开启' : '🔇 音效已静音');
+      }
     }
 
     function showCurrentRules() {
@@ -450,18 +392,20 @@
           <li><b>经典秘籍：</b>右上角可随时点击 <b>【⚡ 30 条命】</b>，一秒注入经典三十命！</li>
         </ul><br>
         <p><strong>⌨️ 操作指南：</strong></p>
-        <p>【W/A/S/D 或 方向键】8向奔跑瞄准；【J / 空格】开火；【K】跳跃翻滚；【S / ▼】趴下避弹；鼠标轻点画面亦可即刻连射！</p>
+        <p>【W/A/S/D 或 方向键】8向奔跑瞄准；【J / 空格 / U】开火；【K / I】跳跃翻滚；【S / ▼】趴下避弹；鼠标轻点画面亦可即刻连射！</p>
       `);
     }
-
-    function resetContraMatch() {
-      initContraGame();
-      showToast('🔄 关卡已重置，无限远征重新启程！');
-    }
   </script>
-  <script src="js/contra.js?v=20260911_1"></script>
+  <script src="js/contra.js?v=20261001_2"></script>
   <script>
+    window.currentRestartFn = function() {
+      if (typeof resetContraMatch === 'function') resetContraMatch();
+    };
     window.addEventListener('DOMContentLoaded', () => {
+      const soundBtn = document.getElementById('btn-sound-toggle');
+      if (soundBtn && window.AUDIO) {
+        soundBtn.textContent = window.AUDIO.enabled ? '🔊' : '🔇';
+      }
       initContraGame();
     });
   </script>
