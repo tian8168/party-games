@@ -233,6 +233,12 @@
       <h2 class="game-title">🔫 魂斗罗 (Contra)</h2>
       <div class="header-actions">
         <a href="contra_canvas.html" class="btn-icon" style="text-decoration:none; display:inline-flex; align-items:center; gap:4px; font-size:0.75rem; background:rgba(139,92,246,0.25); border:1px solid rgba(139,92,246,0.5); color:#c084fc; border-radius:6px; padding:4px 8px;">🚀 自研无限版</a>
+        <select id="engine-select" onchange="switchContraEngine(this.value)" style="background:#1e293b; color:#38bdf8; border:1px solid #334155; border-radius:6px; padding:3px 6px; font-size:0.75rem; cursor:pointer;" title="切换底层模拟器内核">
+          <option value="WASM" selected>🚀 WASM 硬件核心</option>
+          <option value="JSNES">⚡ JSNES 轻量核心</option>
+        </select>
+        <button class="btn-icon" id="btn-save-slot" onclick="quickSaveState()" title="即时存档">💾 存</button>
+        <button class="btn-icon" id="btn-load-slot" onclick="quickLoadState()" title="即时读档">📂 读</button>
         <button class="btn-icon" id="btn-sound-toggle">🔊</button>
         <button class="btn-icon" id="btn-rules-header">📖 操作</button>
         <button class="btn-icon" id="restart-btn" onclick="resetCurrentGame()">🔄 重置</button>
@@ -305,6 +311,7 @@
 
   <script src="../common/audio.js"></script>
   <script src="../common/common.js"></script>
+  <script src="js/nostalgist.umd.js"></script>
   <script src="js/jsnes.min.js"></script>
   <script>
     const STATE = {
@@ -316,7 +323,16 @@
       online: { connected: false, roomId: null, myRole: 'host', opponentJoined: false, mqttClient: null }
     };
 
-    let emuBrowser = null;
+    let currentNostalgist = null; // WASM Libretro core instance
+    let emuBrowser = null;        // JSNES pure-JS instance
+    let activeEngineType = 'WASM';// 'WASM' | 'JSNES'
+    let forcedEngine = 'WASM';
+    let currentRomBuffer = null;
+    let currentRomFilename = 'contra_30lives.nes';
+    let savedStateBlob = null;
+
+    // 清理历史可能残存的无效键位
+    try { localStorage.removeItem("keys"); } catch(e) {}
 
     function setStatus(msg, isErr = false) {
       const el = document.getElementById('emu-status');
@@ -326,16 +342,60 @@
       }
     }
 
+    function switchContraEngine(type) {
+      forcedEngine = type;
+      const sel = document.getElementById('engine-select');
+      if (sel) sel.value = type;
+
+      if (type === 'JSNES') {
+        showToast('⚡ 已切换至【JSNES 极速轻量核心】！秒级启动/低内存', 2000);
+      } else {
+        showToast('🚀 已切换至【WASM 硬件级仿真核心】！高保真芯片音画/支持即时存档', 2000);
+      }
+
+      if (currentRomBuffer) {
+        runRomBuffer(currentRomBuffer, currentRomFilename);
+      }
+    }
+
+    async function quickSaveState() {
+      if (currentNostalgist) {
+        try {
+          const state = await currentNostalgist.saveState();
+          savedStateBlob = state.state;
+          showToast('💾 游戏进度已即时保存！', 2000);
+        } catch(e) {
+          console.error(e);
+          showToast('❌ 存档失败: ' + e.message, 2500);
+        }
+      } else {
+        showToast('💡 即时存读档需在 WASM 核心下运行', 2500);
+      }
+    }
+
+    async function quickLoadState() {
+      if (currentNostalgist) {
+        if (!savedStateBlob) {
+          showToast('⚠️ 暂无已保存的即时存档', 2000);
+          return;
+        }
+        try {
+          await currentNostalgist.loadState(savedStateBlob);
+          showToast('📂 游戏进度已成功恢复！', 2000);
+        } catch(e) {
+          console.error(e);
+          showToast('❌ 读档失败: ' + e.message, 2500);
+        }
+      } else {
+        showToast('💡 即时存读档需在 WASM 核心下运行', 2500);
+      }
+    }
+
     function startBundledGame(filename) {
       const btns = document.getElementById('emu-btn-group');
       if (btns) btns.style.opacity = '0.4';
-      setStatus('⏳ 正在加载 ROM 与初始化 NES 硬件...');
-
-      if (typeof jsnes === 'undefined') {
-        setStatus('❌ JSNES 模拟器脚本加载中，请稍候再试...', true);
-        if (btns) btns.style.opacity = '1';
-        return;
-      }
+      setStatus('⏳ 正在加载 ROM 与初始化红白机硬件...');
+      currentRomFilename = filename;
 
       fetch('./roms/' + filename)
         .then(resp => {
@@ -343,7 +403,7 @@
           return resp.arrayBuffer();
         })
         .then(buffer => {
-          runRomBuffer(buffer);
+          runRomBuffer(buffer, filename);
         })
         .catch(err => {
           console.error(err);
@@ -356,10 +416,11 @@
       const file = e.target.files && e.target.files[0];
       if (!file) return;
 
+      currentRomFilename = file.name;
       setStatus('⏳ 正在读取本地文件: ' + file.name);
       const reader = new FileReader();
       reader.onload = function(evt) {
-        runRomBuffer(evt.target.result);
+        runRomBuffer(evt.target.result, file.name);
       };
       reader.onerror = function() {
         setStatus('❌ 读取文件失败', true);
@@ -367,7 +428,138 @@
       reader.readAsArrayBuffer(file);
     }
 
-    function runRomBuffer(buffer) {
+    async function runRomBuffer(buffer, filename = '') {
+      currentRomBuffer = buffer;
+      currentRomFilename = filename || currentRomFilename;
+
+      // 彻底清理先前的模拟器实例，防止背景线程与监听器堆叠
+      if (currentNostalgist) {
+        try { await currentNostalgist.exit(); } catch(e) {}
+        currentNostalgist = null;
+      }
+      if (emuBrowser) {
+        try { if (emuBrowser.destroy) emuBrowser.destroy(); else if (emuBrowser.stop) emuBrowser.stop(); } catch(e) {}
+        emuBrowser = null;
+      }
+
+      const container = document.getElementById('contra-emu-container');
+      container.querySelectorAll('canvas').forEach(c => c.remove());
+
+      const engineSelect = document.getElementById('engine-select');
+      const selectedEngine = engineSelect ? engineSelect.value : forcedEngine;
+
+      if (selectedEngine === 'JSNES') {
+        runWithJsnes(buffer, container);
+        return;
+      }
+
+      // 默认优先启动 WASM Nostalgist (fceumm Libretro core)
+      activeEngineType = 'WASM';
+      setStatus('⏳ 正在初始化 WebAssembly FC 硬件仿真核心...');
+
+      // 关键修复：Nostalgist.launch 必须接收 HTMLCanvasElement，若传入 div 容器会触发 TypeError: invalid element 导致 WASM 核心崩溃
+      const canvas = document.createElement('canvas');
+      canvas.id = 'contra-canvas';
+      canvas.style.width = '100%';
+      canvas.style.height = '100%';
+      canvas.style.objectFit = 'contain';
+      canvas.style.imageRendering = 'pixelated';
+      container.appendChild(canvas);
+
+      try {
+        const blob = new Blob([buffer]);
+        currentNostalgist = await Nostalgist.launch({
+          core: 'fceumm',
+          rom: blob,
+          element: canvas,
+          retroarchConfig: {
+            input_enable_hotkey: "nul",
+            input_audio_mute: "nul",
+            input_cheat_index_minus: "nul",
+            input_cheat_index_plus: "nul",
+            input_cheat_toggle: "nul",
+            input_desktop_menu_toggle: "nul",
+            input_exit_emulator: "nul",
+            input_fps_toggle: "nul",
+            input_frame_advance: "nul",
+            input_game_focus_toggle: "nul",
+            input_grab_mouse_toggle: "nul",
+            input_hold_fast_forward: "nul",
+            input_hold_slowmotion: "nul",
+            input_load_state: "nul",
+            input_netplay_game_watch: "nul",
+            input_netplay_player_chat: "nul",
+            input_pause_toggle: "nul",
+            input_reset: "nul",
+            input_rewind: "nul",
+            input_save_state: "nul",
+            input_screenshot: "nul",
+            input_shader_next: "nul",
+            input_shader_prev: "nul",
+            input_shader_toggle: "nul",
+            input_state_slot_decrease: "nul",
+            input_state_slot_increase: "nul",
+            input_toggle_fast_forward: "nul",
+            input_toggle_fullscreen: "nul",
+            input_volume_down: "nul",
+            input_volume_up: "nul",
+            // 解决按A自动开枪、按S自动跳跃的核心根源：
+            // 将 RetroArch 原生按键映射为无冲突专用虚拟键，避免物理键盘 A(Y键/开火) 与 S(X键/跳跃) 发生底层冲突
+            input_player1_up: 'up',
+            input_player1_down: 'down',
+            input_player1_left: 'left',
+            input_player1_right: 'right',
+            input_player1_a: 'x',
+            input_player1_b: 'z',
+            input_player1_x: 'pageup',
+            input_player1_y: 'pagedown',
+            input_player1_start: 'enter',
+            input_player1_select: 'rshift',
+            input_player1_l: 'home',
+            input_player1_r: 'end',
+            // P2 专属按键映射
+            input_player2_up: 'num8',
+            input_player2_down: 'num2',
+            input_player2_left: 'num4',
+            input_player2_right: 'num6',
+            input_player2_a: 'num9',
+            input_player2_b: 'num7',
+            input_player2_x: 'num1',
+            input_player2_y: 'num3',
+            input_player2_start: 'kp_enter',
+            input_player2_select: 'num0',
+            input_player2_l: 'kp_minus',
+            input_player2_r: 'kp_plus',
+          }
+        });
+
+        const cvs = container.querySelector('canvas');
+        if (cvs) {
+          cvs.style.width = '100%';
+          cvs.style.height = '100%';
+          cvs.style.objectFit = 'contain';
+          cvs.style.imageRendering = 'pixelated';
+        }
+
+        const overlay = document.getElementById('emu-overlay');
+        if (overlay) overlay.style.display = 'none';
+
+        setupCustomControls();
+        setupTouchControls();
+        showToast('🎮 魂斗罗 WASM 硬件核心已就绪！真实FC芯片模拟', 2500);
+      } catch(wasmErr) {
+        console.warn('WASM launch failed, falling back to JSNES:', wasmErr);
+        if (engineSelect) engineSelect.value = 'JSNES';
+        showToast('⚠️ WASM 核心初始化受限，自动降级至 JSNES 极速架构', 2500);
+        runWithJsnes(buffer, container);
+      }
+    }
+
+    function runWithJsnes(buffer, container) {
+      activeEngineType = 'JSNES';
+      const engineSelect = document.getElementById('engine-select');
+      if (engineSelect) engineSelect.value = 'JSNES';
+
       try {
         const bytes = new Uint8Array(buffer);
         let romData = '';
@@ -375,19 +567,8 @@
           romData += String.fromCharCode(bytes[i]);
         }
 
-        // Clean up previous instance if any
-        if (emuBrowser) {
-          try { emuBrowser.destroy(); } catch(e) {}
-          emuBrowser = null;
-        }
-
-        const container = document.getElementById('contra-emu-container');
-        // Remove any old canvas
-        const oldCanvases = container.querySelectorAll('canvas');
-        oldCanvases.forEach(c => c.remove());
-
         emuBrowser = new jsnes.Browser({
-          container: container,
+          container: container || document.getElementById('contra-emu-container'),
           romData: romData,
           onError: function(e) {
             console.error('NES Runtime Error:', e);
@@ -397,12 +578,22 @@
           }
         });
 
-        // Hide overlay
+        // 彻底卸载 JSNES 默认挂在 document 上的原生按键监听器，消除其内置 A 键连射、S 键连跳的严重冲突
+        if (emuBrowser && emuBrowser.keyboard) {
+          try {
+            document.removeEventListener("keydown", emuBrowser.keyboard.handleKeyDown);
+            document.removeEventListener("keyup", emuBrowser.keyboard.handleKeyUp);
+            document.removeEventListener("keypress", emuBrowser.keyboard.handleKeyPress);
+            emuBrowser.keyboard.keys = {};
+          } catch(e) {}
+        }
+
         const overlay = document.getElementById('emu-overlay');
         if (overlay) overlay.style.display = 'none';
 
         setupCustomControls();
         setupTouchControls();
+        showToast('⚡ JSNES 纯 JS 轻量引擎已就绪！', 2000);
       } catch(err) {
         console.error(err);
         setStatus('❌ 启动失败: ' + err.message, true);
@@ -411,42 +602,157 @@
       }
     }
 
+    // --- 🎮 输入总线：统一下发给当前活跃引擎 (WASM 或 JSNES) ---
+    function triggerLocalButton(btn, isDown) {
+      injectControllerInput(1, btn, isDown);
+    }
+
+    function injectControllerInput(player, btn, isDown) {
+      const p = player === 2 ? 2 : 1;
+      if (currentNostalgist) {
+        if (isDown) currentNostalgist.pressDown(btn, p);
+        else currentNostalgist.pressUp(btn, p);
+      } else if (emuBrowser && emuBrowser.nes) {
+        const nes = emuBrowser.nes;
+        const btnMap = {
+          'up': jsnes.Controller.BUTTON_UP,
+          'down': jsnes.Controller.BUTTON_DOWN,
+          'left': jsnes.Controller.BUTTON_LEFT,
+          'right': jsnes.Controller.BUTTON_RIGHT,
+          'a': jsnes.Controller.BUTTON_A,
+          'b': jsnes.Controller.BUTTON_B,
+          'y': jsnes.Controller.BUTTON_TURBO_B,
+          'x': jsnes.Controller.BUTTON_TURBO_A,
+          'start': jsnes.Controller.BUTTON_START,
+          'select': jsnes.Controller.BUTTON_SELECT
+        };
+        const nesBtn = btnMap[btn];
+        if (nesBtn !== undefined) {
+          if (isDown) nes.buttonDown(p, nesBtn);
+          else nes.buttonUp(p, nesBtn);
+        }
+      }
+    }
+
     let customKeysBound = false;
     function setupCustomControls() {
       if (customKeysBound) return;
       customKeysBound = true;
 
-      // Add dual-keyboard support: WASD + JK + UI
-      window.addEventListener('keydown', (e) => {
-        if (!emuBrowser || !emuBrowser.nes) return;
-        const nes = emuBrowser.nes;
+      // 玩家 1 键位：双套方案全兼容
+      const p1Map = {
+        // 方案二：WASD 双手流移动
+        'KeyW': 'up',
+        'KeyS': 'down',
+        'KeyA': 'left',
+        'KeyD': 'right',
 
-        if (['KeyW', 'KeyS', 'KeyA', 'KeyD', 'KeyJ', 'KeyK', 'KeyU', 'KeyI'].includes(e.code)) {
-          e.preventDefault();
+        // 方案一：方向键移动
+        'ArrowUp': 'up',
+        'ArrowDown': 'down',
+        'ArrowLeft': 'left',
+        'ArrowRight': 'right',
+
+        // 攻击与跳跃按键
+        'KeyJ': 'b', // 方案二：J = 射击 (B)
+        'KeyZ': 'b', // 方案一：Z = 射击 (B)
+        'KeyK': 'a', // 方案二：K = 跳跃 (A)
+        'KeyX': 'a', // 方案一：X = 跳跃 (A)
+
+        // 连发按键
+        'KeyU': 'y', // U = 连射 (Turbo B)
+        'KeyI': 'x', // I = 连跳 (Turbo A)
+
+        // 菜单与控制键 (修复 1P/2P Start 独立绑定，Shift 选人)
+        'Enter': 'start',
+        'ShiftRight': 'select',
+        'ShiftLeft': 'select'
+      };
+
+      // 玩家 2 键盘按键 (支持同屏双人红白机对战，NumpadEnter 为 2P 开始键)
+      const p2Map = {
+        'Numpad8': 'up',
+        'Numpad2': 'down',
+        'Numpad4': 'left',
+        'Numpad6': 'right',
+        'Numpad7': 'b',
+        'Numpad9': 'a',
+        'Numpad1': 'y',
+        'Numpad3': 'x',
+        'NumpadEnter': 'start',
+        'Numpad0': 'select'
+      };
+
+      const activeKeys = new Set();
+
+      function releaseAllActiveKeys() {
+        for (const code of activeKeys) {
+          const p1Btn = p1Map[code];
+          if (p1Btn) triggerLocalButton(p1Btn, false);
+          const p2Btn = p2Map[code];
+          if (p2Btn) injectControllerInput(2, p2Btn, false);
         }
-        if (e.code === 'KeyW') nes.buttonDown(1, jsnes.Controller.BUTTON_UP);
-        if (e.code === 'KeyS') nes.buttonDown(1, jsnes.Controller.BUTTON_DOWN);
-        if (e.code === 'KeyA') nes.buttonDown(1, jsnes.Controller.BUTTON_LEFT);
-        if (e.code === 'KeyD') nes.buttonDown(1, jsnes.Controller.BUTTON_RIGHT);
-        if (e.code === 'KeyJ') nes.buttonDown(1, jsnes.Controller.BUTTON_B);
-        if (e.code === 'KeyK') nes.buttonDown(1, jsnes.Controller.BUTTON_A);
-        if (e.code === 'KeyU') nes.buttonDown(1, jsnes.Controller.BUTTON_TURBO_B);
-        if (e.code === 'KeyI') nes.buttonDown(1, jsnes.Controller.BUTTON_TURBO_A);
-      });
+        activeKeys.clear();
+      }
+      window.releaseAllContraKeys = releaseAllActiveKeys;
+
+      window.addEventListener('keydown', (e) => {
+        const p1Btn = p1Map[e.code];
+        if (p1Btn) {
+          // 捕获阶段拦截，阻止事件向模拟器底层冒泡产生原生按键冲突
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+
+          if (!activeKeys.has(e.code)) {
+            activeKeys.add(e.code);
+            triggerLocalButton(p1Btn, true);
+          }
+          return;
+        }
+
+        const p2Btn = p2Map[e.code];
+        if (p2Btn) {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+
+          if (!activeKeys.has(e.code)) {
+            activeKeys.add(e.code);
+            injectControllerInput(2, p2Btn, true);
+          }
+          return;
+        }
+      }, { capture: true });
 
       window.addEventListener('keyup', (e) => {
-        if (!emuBrowser || !emuBrowser.nes) return;
-        const nes = emuBrowser.nes;
+        const p1Btn = p1Map[e.code];
+        if (p1Btn) {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          activeKeys.delete(e.code);
+          triggerLocalButton(p1Btn, false);
+          return;
+        }
 
-        if (e.code === 'KeyW') nes.buttonUp(1, jsnes.Controller.BUTTON_UP);
-        if (e.code === 'KeyS') nes.buttonUp(1, jsnes.Controller.BUTTON_DOWN);
-        if (e.code === 'KeyA') nes.buttonUp(1, jsnes.Controller.BUTTON_LEFT);
-        if (e.code === 'KeyD') nes.buttonUp(1, jsnes.Controller.BUTTON_RIGHT);
-        if (e.code === 'KeyJ') nes.buttonUp(1, jsnes.Controller.BUTTON_B);
-        if (e.code === 'KeyK') nes.buttonUp(1, jsnes.Controller.BUTTON_A);
-        if (e.code === 'KeyU') nes.buttonUp(1, jsnes.Controller.BUTTON_TURBO_B);
-        if (e.code === 'KeyI') nes.buttonUp(1, jsnes.Controller.BUTTON_TURBO_A);
+        const p2Btn = p2Map[e.code];
+        if (p2Btn) {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          activeKeys.delete(e.code);
+          injectControllerInput(2, p2Btn, false);
+          return;
+        }
+      }, { capture: true });
+
+      // 切屏/失焦时统一释放按键
+      window.addEventListener('blur', () => {
+        releaseAllActiveKeys();
       });
+
+      startGamepadPolling();
     }
 
     let touchBound = false;
@@ -454,41 +760,171 @@
       if (touchBound) return;
       touchBound = true;
 
-      const btnMap = {
-        'up': jsnes.Controller.BUTTON_UP,
-        'down': jsnes.Controller.BUTTON_DOWN,
-        'left': jsnes.Controller.BUTTON_LEFT,
-        'right': jsnes.Controller.BUTTON_RIGHT,
-        'a': jsnes.Controller.BUTTON_A,
-        'b': jsnes.Controller.BUTTON_B,
-        'start': jsnes.Controller.BUTTON_START,
-        'select': jsnes.Controller.BUTTON_SELECT
+      // 十字键滑动操控 (8向平滑滑动，支持斜向奔跑射击与下蹲)
+      const dpadEl = document.querySelector('.dpad');
+      const dpadButtons = {
+        'up': document.querySelector('.dpad-up'),
+        'down': document.querySelector('.dpad-down'),
+        'left': document.querySelector('.dpad-left'),
+        'right': document.querySelector('.dpad-right')
       };
 
-      document.querySelectorAll('[data-btn]').forEach(el => {
-        const btnName = el.getAttribute('data-btn');
-        const nesBtn = btnMap[btnName];
-        if (nesBtn === undefined) return;
+      let activeDpadDirs = new Set();
 
-        const press = (e) => {
-          e.preventDefault();
-          if (emuBrowser && emuBrowser.nes) emuBrowser.nes.buttonDown(1, nesBtn);
-        };
-        const release = (e) => {
-          e.preventDefault();
-          if (emuBrowser && emuBrowser.nes) emuBrowser.nes.buttonUp(1, nesBtn);
+      if (dpadEl) {
+        const updateDpadFromPoint = (clientX, clientY) => {
+          const rect = dpadEl.getBoundingClientRect();
+          const cx = rect.left + rect.width / 2;
+          const cy = rect.top + rect.height / 2;
+          const dx = clientX - cx;
+          const dy = clientY - cy;
+          const dist = Math.hypot(dx, dy);
+
+          const newDirs = new Set();
+          if (dist > rect.width * 0.15) {
+            const nx = dx / dist;
+            const ny = dy / dist;
+            // 8向判定：当角度处于斜角区间时，同时激活横向与纵向方向，完美支持魂斗罗8向射击与斜下趴伏
+            if (nx > 0.38) newDirs.add('right');
+            else if (nx < -0.38) newDirs.add('left');
+            if (ny > 0.38) newDirs.add('down');
+            else if (ny < -0.38) newDirs.add('up');
+          }
+
+          // 释放不再处于激活区间的方向
+          for (const dir of activeDpadDirs) {
+            if (!newDirs.has(dir)) {
+              triggerLocalButton(dir, false);
+              if (dpadButtons[dir]) dpadButtons[dir].classList.remove('active');
+            }
+          }
+          // 激活新方向
+          for (const dir of newDirs) {
+            if (!activeDpadDirs.has(dir)) {
+              triggerLocalButton(dir, true);
+              if (dpadButtons[dir]) dpadButtons[dir].classList.add('active');
+            }
+          }
+          activeDpadDirs = newDirs;
         };
 
-        el.addEventListener('pointerdown', press);
-        el.addEventListener('pointerup', release);
-        el.addEventListener('pointercancel', release);
-        el.addEventListener('pointerleave', release);
+        const releaseDpad = () => {
+          for (const dir of activeDpadDirs) {
+            triggerLocalButton(dir, false);
+            if (dpadButtons[dir]) dpadButtons[dir].classList.remove('active');
+          }
+          activeDpadDirs.clear();
+        };
+
+        dpadEl.addEventListener('pointerdown', (e) => {
+          e.preventDefault();
+          try { dpadEl.setPointerCapture(e.pointerId); } catch(err) {}
+          updateDpadFromPoint(e.clientX, e.clientY);
+        });
+
+        dpadEl.addEventListener('pointermove', (e) => {
+          if (e.buttons > 0 || e.pressure > 0) {
+            e.preventDefault();
+            updateDpadFromPoint(e.clientX, e.clientY);
+          }
+        });
+
+        dpadEl.addEventListener('pointerup', (e) => {
+          e.preventDefault();
+          try { dpadEl.releasePointerCapture(e.pointerId); } catch(err) {}
+          releaseDpad();
+        });
+
+        dpadEl.addEventListener('pointercancel', (e) => {
+          e.preventDefault();
+          releaseDpad();
+        });
+      }
+
+      // 功能键与动作键 (B / A / Select / Start)
+      document.querySelectorAll('.action-btn, .meta-btn').forEach(el => {
+        const btn = el.getAttribute('data-btn');
+        if (!btn) return;
+
+        el.addEventListener('pointerdown', (e) => {
+          e.preventDefault();
+          try { el.setPointerCapture(e.pointerId); } catch(err) {}
+          el.classList.add('active');
+          triggerLocalButton(btn, true);
+        });
+
+        const releaseBtn = (e) => {
+          e.preventDefault();
+          try { el.releasePointerCapture(e.pointerId); } catch(err) {}
+          el.classList.remove('active');
+          triggerLocalButton(btn, false);
+        };
+
+        el.addEventListener('pointerup', releaseBtn);
+        el.addEventListener('pointercancel', releaseBtn);
       });
     }
 
+    // --- 🎮 原生 Gamepad 游戏手柄 API 支持 (Xbox / PS / 8BitDo / Switch) ---
+    let gamepadPollStarted = false;
+    let prevGamepadButtons = {};
+
+    function startGamepadPolling() {
+      if (gamepadPollStarted) return;
+      gamepadPollStarted = true;
+
+      function poll() {
+        const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+        for (let i = 0; i < gamepads.length; i++) {
+          const gp = gamepads[i];
+          if (!gp) continue;
+
+          const player = (i === 1) ? 2 : 1;
+          const prev = prevGamepadButtons[i] || {};
+          const curr = {};
+
+          // 方向键 (D-pad & 左摇杆)
+          curr['up'] = Boolean(gp.buttons[12]?.pressed || (gp.axes[1] !== undefined && gp.axes[1] < -0.45));
+          curr['down'] = Boolean(gp.buttons[13]?.pressed || (gp.axes[1] !== undefined && gp.axes[1] > 0.45));
+          curr['left'] = Boolean(gp.buttons[14]?.pressed || (gp.axes[0] !== undefined && gp.axes[0] < -0.45));
+          curr['right'] = Boolean(gp.buttons[15]?.pressed || (gp.axes[0] !== undefined && gp.axes[0] > 0.45));
+
+          // 经典红白机与现代手柄键位映射：
+          // Xbox A(0) -> B键(射击)，Xbox B(1) -> A键(跳跃)
+          // Xbox X(2) -> Turbo B(连射)，Xbox Y(3) -> Turbo A(连跳)
+          // 肩键与扳机：LB(4)/LT(6) -> Turbo B，RB(5)/RT(7) -> Turbo A
+          curr['b'] = Boolean(gp.buttons[0]?.pressed);
+          curr['a'] = Boolean(gp.buttons[1]?.pressed);
+          curr['y'] = Boolean(gp.buttons[2]?.pressed || gp.buttons[4]?.pressed || gp.buttons[6]?.pressed);
+          curr['x'] = Boolean(gp.buttons[3]?.pressed || gp.buttons[5]?.pressed || gp.buttons[7]?.pressed);
+
+          curr['select'] = Boolean(gp.buttons[8]?.pressed);
+          curr['start'] = Boolean(gp.buttons[9]?.pressed);
+
+          for (const btn of ['up', 'down', 'left', 'right', 'a', 'b', 'y', 'x', 'select', 'start']) {
+            if (curr[btn] && !prev[btn]) {
+              injectControllerInput(player, btn, true);
+            } else if (!curr[btn] && prev[btn]) {
+              injectControllerInput(player, btn, false);
+            }
+          }
+          prevGamepadButtons[i] = curr;
+        }
+        requestAnimationFrame(poll);
+      }
+      requestAnimationFrame(poll);
+    }
+
     function resetCurrentGame() {
-      if (emuBrowser && emuBrowser.nes) {
+      if (typeof window.releaseAllContraKeys === 'function') {
+        window.releaseAllContraKeys();
+      }
+      if (currentNostalgist) {
+        currentNostalgist.restart();
+        showToast('🔄 游戏已重置', 1200);
+      } else if (emuBrowser && emuBrowser.nes) {
         emuBrowser.nes.reset();
+        showToast('🔄 游戏已重置', 1200);
       } else {
         const overlay = document.getElementById('emu-overlay');
         if (overlay) overlay.style.display = 'flex';
@@ -503,10 +939,11 @@
         <p><strong>经典红白机魂斗罗 (FC/NES)</strong>，运行原版真实芯片模拟硬件。</p><br>
         <p><b>键盘操作支持两套方案：</b></p>
         <ul>
-          <li><b>方案一 (单手/箭头)：</b>方向键 ↑↓←→ 移动，Z 键射击，X 键跳跃，Enter 开始，Shift 选择。</li>
-          <li><b>方案二 (双手/WASD)：</b>W/A/S/D 移动，J 键射击，K 键跳跃，U 键连射，I 键连跳。</li>
+          <li><b>方案一 (单手/传统小键盘)：</b>方向键 ↑↓←→ 移动，Z 键射击，X 键跳跃，Enter 开始，Shift 选择/切换双人。</li>
+          <li><b>方案二 (双手/WASD经典流)：</b>W/A/S/D 移动，J 键射击，K 键跳跃，U 键连射，I 键连跳，Enter 开始，Shift 选择。</li>
         </ul><br>
-        <p>手机端自动呼出底部半透明触控手柄，随时随地畅玩！</p>`, resetCurrentGame);
+        <p><b>🎮 手柄即插即玩：</b>支持 Xbox、PS4/PS5、Switch Pro 及 USB 红白机手柄自动识别！</p>
+        <p><b>📱 触屏支持：</b>移动端自动呼出 360° 滑动十字键与动作按钮，随时随地畅玩！</p>`, resetCurrentGame);
     });
   </script>
 </body>

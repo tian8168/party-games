@@ -796,6 +796,9 @@
     let currentSelectedGame = null;
     let netplay = null;
 
+    // 清理历史可能残存的无效键位
+    try { localStorage.removeItem("keys"); } catch(e) {}
+
     const coopKeywords = ['魂斗罗', '坦克', '雪人', '松鼠', '双截龙', '赤色要塞', '沙罗曼蛇', '热血', '敲冰块', '泡泡龙', '兵蜂', '影子传说', '恐龙', '赤影战士'];
 
     const PLATFORM_CONFIG = {
@@ -1210,12 +1213,21 @@
         currentNostalgist = null;
       }
       if (emuBrowser) {
-        try { if (emuBrowser.stop) emuBrowser.stop(); } catch(e) {}
+        try { if (emuBrowser.destroy) emuBrowser.destroy(); else if (emuBrowser.stop) emuBrowser.stop(); } catch(e) {}
         emuBrowser = null;
       }
 
       const container = document.getElementById('nes-screen-wrapper');
       container.querySelectorAll('canvas').forEach(c => c.remove());
+
+      // 关键修复：Nostalgist 必须绑定 HTMLCanvasElement，若传入 div 容器会触发 TypeError: invalid element 导致核心崩溃
+      const canvas = document.createElement('canvas');
+      canvas.id = 'nes-canvas';
+      canvas.style.width = '100%';
+      canvas.style.height = '100%';
+      canvas.style.objectFit = 'contain';
+      canvas.style.imageRendering = 'pixelated';
+      container.appendChild(canvas);
 
       // Detect Platform and Core from file extension
       const lower = (filename || title).toLowerCase();
@@ -1260,7 +1272,66 @@
         currentNostalgist = await Nostalgist.launch({
           core: coreToUse,
           rom: blob,
-          element: container
+          element: canvas,
+          retroarchConfig: {
+            input_enable_hotkey: "nul",
+            input_audio_mute: "nul",
+            input_cheat_index_minus: "nul",
+            input_cheat_index_plus: "nul",
+            input_cheat_toggle: "nul",
+            input_desktop_menu_toggle: "nul",
+            input_exit_emulator: "nul",
+            input_fps_toggle: "nul",
+            input_frame_advance: "nul",
+            input_game_focus_toggle: "nul",
+            input_grab_mouse_toggle: "nul",
+            input_hold_fast_forward: "nul",
+            input_hold_slowmotion: "nul",
+            input_load_state: "nul",
+            input_netplay_game_watch: "nul",
+            input_netplay_player_chat: "nul",
+            input_pause_toggle: "nul",
+            input_reset: "nul",
+            input_rewind: "nul",
+            input_save_state: "nul",
+            input_screenshot: "nul",
+            input_shader_next: "nul",
+            input_shader_prev: "nul",
+            input_shader_toggle: "nul",
+            input_state_slot_decrease: "nul",
+            input_state_slot_increase: "nul",
+            input_toggle_fast_forward: "nul",
+            input_toggle_fullscreen: "nul",
+            input_volume_down: "nul",
+            input_volume_up: "nul",
+            // 解决按A自动开火、按S自动跳跃的根本根源：
+            // 将 RetroArch 原生按键映射为无冲突专用虚拟键，避免物理键盘 A(Y键/开火) 与 S(X键/跳跃) 发生原生底层串扰
+            input_player1_up: 'up',
+            input_player1_down: 'down',
+            input_player1_left: 'left',
+            input_player1_right: 'right',
+            input_player1_a: 'x',
+            input_player1_b: 'z',
+            input_player1_x: 'pageup',
+            input_player1_y: 'pagedown',
+            input_player1_start: 'enter',
+            input_player1_select: 'rshift',
+            input_player1_l: 'home',
+            input_player1_r: 'end',
+            // P2 专属无冲突独立映射 (联机对战 & 本地2P 双人同屏必备)
+            input_player2_up: 'num8',
+            input_player2_down: 'num2',
+            input_player2_left: 'num4',
+            input_player2_right: 'num6',
+            input_player2_a: 'num9',
+            input_player2_b: 'num7',
+            input_player2_x: 'num1',
+            input_player2_y: 'num3',
+            input_player2_start: 'kp_enter',
+            input_player2_select: 'num0',
+            input_player2_l: 'kp_minus',
+            input_player2_r: 'kp_plus',
+          }
         });
 
         const cvs = container.querySelector('canvas');
@@ -1310,6 +1381,16 @@
           }
         });
 
+        // 彻底卸载 JSNES 默认挂在 document 上的物理按键监听器，消除其内置 A 键连射、S 键连跳的严重键位冲突
+        if (emuBrowser && emuBrowser.keyboard) {
+          try {
+            document.removeEventListener("keydown", emuBrowser.keyboard.handleKeyDown);
+            document.removeEventListener("keyup", emuBrowser.keyboard.handleKeyUp);
+            document.removeEventListener("keypress", emuBrowser.keyboard.handleKeyPress);
+            emuBrowser.keyboard.keys = {};
+          } catch(e) {}
+        }
+
         document.getElementById('nes-overlay').style.display = 'none';
         setupCustomControls();
         setupTouchControls();
@@ -1339,6 +1420,9 @@
     }
 
     function restartCurrentRom(broadcast = true) {
+      if (typeof window.releaseAllNesKeys === 'function') {
+        window.releaseAllNesKeys();
+      }
       if (currentNostalgist) {
         currentNostalgist.restart();
         showToast('🔄 游戏已重启', 1500);
@@ -1434,39 +1518,145 @@
       if (customKeysBound) return;
       customKeysBound = true;
 
-      const keyMapping = {
-        'KeyW': 'up', 'ArrowUp': 'up',
-        'KeyS': 'down', 'ArrowDown': 'down',
-        'KeyA': 'left', 'ArrowLeft': 'left',
-        'KeyD': 'right', 'ArrowRight': 'right',
-        'KeyJ': 'b', 'KeyZ': 'b',
-        'KeyK': 'a', 'KeyX': 'a',
-        'KeyU': 'y',
-        'KeyI': 'x',
+      // 玩家 1 键盘映射：全面支持两套经典操作方案 + 肩键扩展
+      const p1Map = {
+        // 方案二：WASD 双手流移动
+        'KeyW': 'up',
+        'KeyS': 'down',
+        'KeyA': 'left',
+        'KeyD': 'right',
+
+        // 方案一：经典方向键移动
+        'ArrowUp': 'up',
+        'ArrowDown': 'down',
+        'ArrowLeft': 'left',
+        'ArrowRight': 'right',
+
+        // 攻击与跳跃按键
+        'KeyJ': 'b', // 方案二：J = B键 (射击/普通攻击)
+        'KeyZ': 'b', // 方案一：Z = B键 (射击/普通攻击)
+        'KeyK': 'a', // 方案二：K = A键 (跳跃/特技)
+        'KeyX': 'a', // 方案一：X = A键 (跳跃/特技)
+
+        // 连发按键 (Turbo B / Turbo A 或 SNES/MD 的 Y / X)
+        'KeyU': 'y', // U = Turbo B / Y
+        'KeyI': 'x', // I = Turbo A / X
+
+        // GBA / SFC / MD 主机肩键扩展 (L / R)
+        'KeyQ': 'l',
+        'KeyE': 'r',
+
+        // 菜单与控制键 (1P 回车开始，Shift 选人)
         'Enter': 'start',
-        'ShiftRight': 'select', 'ShiftLeft': 'select'
+        'ShiftRight': 'select',
+        'ShiftLeft': 'select'
       };
 
+      // 玩家 2 键盘映射 (传统小键盘区，支持同屏双人竞技，NumpadEnter 专用于 2P 开始)
+      const p2Map = {
+        'Numpad8': 'up',
+        'Numpad2': 'down',
+        'Numpad4': 'left',
+        'Numpad6': 'right',
+        'Numpad7': 'b',
+        'Numpad9': 'a',
+        'Numpad1': 'y',
+        'Numpad3': 'x',
+        'NumpadEnter': 'start',
+        'Numpad0': 'select',
+        'NumpadSubtract': 'l',
+        'NumpadAdd': 'r'
+      };
+
+      // 追踪当前物理按下的键，彻底杜绝操作系统长按 repeat 导致的事件重发和顿挫
+      const activeKeys = new Set();
+
+      function releaseAllActiveKeys() {
+        for (const code of activeKeys) {
+          const p1Btn = p1Map[code];
+          if (p1Btn) triggerLocalButton(p1Btn, false);
+          const p2Btn = p2Map[code];
+          if (p2Btn) {
+            injectControllerInput(2, p2Btn, false);
+            if (netplay && netplay.role !== 'solo') netplay.sendInput(2, p2Btn, false);
+          }
+        }
+        activeKeys.clear();
+      }
+      window.releaseAllNesKeys = releaseAllActiveKeys;
+
       window.addEventListener('keydown', (e) => {
+        // Tab 快进热键
         if (e.code === 'Tab') {
           e.preventDefault();
-          toggleFastForward();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          if (!e.repeat) toggleFastForward();
           return;
         }
 
-        const btn = keyMapping[e.code];
-        if (btn) {
+        const p1Btn = p1Map[e.code];
+        if (p1Btn) {
+          // 关键防护：在捕获阶段彻底阻止事件继续下发到 Nostalgist/Emscripten，彻底杜绝 A/S/W 等键位底层冲突
           e.preventDefault();
-          triggerLocalButton(btn, true);
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+
+          if (!activeKeys.has(e.code)) {
+            activeKeys.add(e.code);
+            triggerLocalButton(p1Btn, true);
+          }
+          return;
         }
-      });
+
+        const p2Btn = p2Map[e.code];
+        if (p2Btn) {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+
+          if (!activeKeys.has(e.code)) {
+            activeKeys.add(e.code);
+            injectControllerInput(2, p2Btn, true);
+            if (netplay && netplay.role !== 'solo') {
+              netplay.sendInput(2, p2Btn, true);
+            }
+          }
+          return;
+        }
+      }, { capture: true });
 
       window.addEventListener('keyup', (e) => {
-        const btn = keyMapping[e.code];
-        if (btn) {
-          triggerLocalButton(btn, false);
+        const p1Btn = p1Map[e.code];
+        if (p1Btn) {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          activeKeys.delete(e.code);
+          triggerLocalButton(p1Btn, false);
+          return;
         }
+
+        const p2Btn = p2Map[e.code];
+        if (p2Btn) {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          activeKeys.delete(e.code);
+          injectControllerInput(2, p2Btn, false);
+          if (netplay && netplay.role !== 'solo') {
+            netplay.sendInput(2, p2Btn, false);
+          }
+          return;
+        }
+      }, { capture: true });
+
+      // 切屏/失焦时统一释放所有已按下的键，避免卡按键
+      window.addEventListener('blur', () => {
+        releaseAllActiveKeys();
       });
+
+      startGamepadPolling();
     }
 
     let touchBound = false;
@@ -1474,27 +1664,162 @@
       if (touchBound) return;
       touchBound = true;
 
-      document.querySelectorAll('[data-btn]').forEach(el => {
+      // 十字键滑动操控 (8向平滑矢量滑动，支持无缝斜向奔跑与瞄准)
+      const dpadEl = document.querySelector('.dpad');
+      const dpadButtons = {
+        'up': document.querySelector('.dpad-up'),
+        'down': document.querySelector('.dpad-down'),
+        'left': document.querySelector('.dpad-left'),
+        'right': document.querySelector('.dpad-right')
+      };
+
+      let activeDpadDirs = new Set();
+
+      if (dpadEl) {
+        const updateDpadFromPoint = (clientX, clientY) => {
+          const rect = dpadEl.getBoundingClientRect();
+          const cx = rect.left + rect.width / 2;
+          const cy = rect.top + rect.height / 2;
+          const dx = clientX - cx;
+          const dy = clientY - cy;
+          const dist = Math.hypot(dx, dy);
+
+          const newDirs = new Set();
+          if (dist > rect.width * 0.15) {
+            const nx = dx / dist;
+            const ny = dy / dist;
+            if (nx > 0.38) newDirs.add('right');
+            else if (nx < -0.38) newDirs.add('left');
+            if (ny > 0.38) newDirs.add('down');
+            else if (ny < -0.38) newDirs.add('up');
+          }
+
+          for (const dir of activeDpadDirs) {
+            if (!newDirs.has(dir)) {
+              triggerLocalButton(dir, false);
+              if (dpadButtons[dir]) dpadButtons[dir].classList.remove('active');
+            }
+          }
+          for (const dir of newDirs) {
+            if (!activeDpadDirs.has(dir)) {
+              triggerLocalButton(dir, true);
+              if (dpadButtons[dir]) dpadButtons[dir].classList.add('active');
+            }
+          }
+          activeDpadDirs = newDirs;
+        };
+
+        const releaseDpad = () => {
+          for (const dir of activeDpadDirs) {
+            triggerLocalButton(dir, false);
+            if (dpadButtons[dir]) dpadButtons[dir].classList.remove('active');
+          }
+          activeDpadDirs.clear();
+        };
+
+        dpadEl.addEventListener('pointerdown', (e) => {
+          e.preventDefault();
+          try { dpadEl.setPointerCapture(e.pointerId); } catch(err) {}
+          updateDpadFromPoint(e.clientX, e.clientY);
+        });
+
+        dpadEl.addEventListener('pointermove', (e) => {
+          if (e.buttons > 0 || e.pressure > 0) {
+            e.preventDefault();
+            updateDpadFromPoint(e.clientX, e.clientY);
+          }
+        });
+
+        dpadEl.addEventListener('pointerup', (e) => {
+          e.preventDefault();
+          try { dpadEl.releasePointerCapture(e.pointerId); } catch(err) {}
+          releaseDpad();
+        });
+
+        dpadEl.addEventListener('pointercancel', (e) => {
+          e.preventDefault();
+          releaseDpad();
+        });
+      }
+
+      // 功能键与动作键 (B / A / Select / Start)
+      document.querySelectorAll('.action-btn, .meta-btn').forEach(el => {
         const btn = el.getAttribute('data-btn');
         if (!btn) return;
 
         el.addEventListener('pointerdown', (e) => {
           e.preventDefault();
+          try { el.setPointerCapture(e.pointerId); } catch(err) {}
+          el.classList.add('active');
           triggerLocalButton(btn, true);
         });
-        el.addEventListener('pointerup', (e) => {
+
+        const releaseBtn = (e) => {
           e.preventDefault();
+          try { el.releasePointerCapture(e.pointerId); } catch(err) {}
+          el.classList.remove('active');
           triggerLocalButton(btn, false);
-        });
-        el.addEventListener('pointercancel', (e) => {
-          e.preventDefault();
-          triggerLocalButton(btn, false);
-        });
-        el.addEventListener('pointerleave', (e) => {
-          e.preventDefault();
-          triggerLocalButton(btn, false);
-        });
+        };
+
+        el.addEventListener('pointerup', releaseBtn);
+        el.addEventListener('pointercancel', releaseBtn);
       });
+    }
+
+    // --- 🎮 原生 Gamepad 游戏手柄 API 支持 (Xbox / PS / 8BitDo / Switch) ---
+    let gamepadPollStarted = false;
+    let prevGamepadButtons = {};
+
+    function startGamepadPolling() {
+      if (gamepadPollStarted) return;
+      gamepadPollStarted = true;
+
+      function poll() {
+        const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+        for (let i = 0; i < gamepads.length; i++) {
+          const gp = gamepads[i];
+          if (!gp) continue;
+
+          const player = (i === 1 || (netplay && netplay.role === 'guest')) ? 2 : 1;
+          const prev = prevGamepadButtons[i] || {};
+          const curr = {};
+
+          // 方向键 (D-pad & 左摇杆)
+          curr['up'] = Boolean(gp.buttons[12]?.pressed || (gp.axes[1] !== undefined && gp.axes[1] < -0.45));
+          curr['down'] = Boolean(gp.buttons[13]?.pressed || (gp.axes[1] !== undefined && gp.axes[1] > 0.45));
+          curr['left'] = Boolean(gp.buttons[14]?.pressed || (gp.axes[0] !== undefined && gp.axes[0] < -0.45));
+          curr['right'] = Boolean(gp.buttons[15]?.pressed || (gp.axes[0] !== undefined && gp.axes[0] > 0.45));
+
+          // 经典红白机/GBA/SFC/MD全平台手柄映射：
+          // Xbox A(0) -> B键，Xbox B(1) -> A键
+          // Xbox X(2) -> Y键(NES连射Turbo B / SNES Y / MD A)
+          // Xbox Y(3) -> X键(NES连跳Turbo A / SNES X / MD Y)
+          // 肩键：LB(4) -> L键，RB(5) -> R键
+          // 扳机：LT(6) -> Turbo B，RT(7) -> Turbo A
+          curr['b'] = Boolean(gp.buttons[0]?.pressed);
+          curr['a'] = Boolean(gp.buttons[1]?.pressed);
+          curr['y'] = Boolean(gp.buttons[2]?.pressed || gp.buttons[6]?.pressed);
+          curr['x'] = Boolean(gp.buttons[3]?.pressed || gp.buttons[7]?.pressed);
+          curr['l'] = Boolean(gp.buttons[4]?.pressed);
+          curr['r'] = Boolean(gp.buttons[5]?.pressed);
+
+          curr['select'] = Boolean(gp.buttons[8]?.pressed);
+          curr['start'] = Boolean(gp.buttons[9]?.pressed);
+
+          for (const btn of ['up', 'down', 'left', 'right', 'a', 'b', 'y', 'x', 'l', 'r', 'select', 'start']) {
+            if (curr[btn] && !prev[btn]) {
+              injectControllerInput(player, btn, true);
+              if (netplay && netplay.role !== 'solo') netplay.sendInput(player, btn, true);
+            } else if (!curr[btn] && prev[btn]) {
+              injectControllerInput(player, btn, false);
+              if (netplay && netplay.role !== 'solo') netplay.sendInput(player, btn, false);
+            }
+          }
+          prevGamepadButtons[i] = curr;
+        }
+        requestAnimationFrame(poll);
+      }
+      requestAnimationFrame(poll);
     }
 
     function toggleFullscreen() {
