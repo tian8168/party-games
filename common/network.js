@@ -1,6 +1,9 @@
 /**
  * 🌐 聚会游戏大厅 · MQTT 异步联机中枢 (Online Multiplayer Network)
  * 基于公共 WebSocket MQTT Broker 实现轻量级去中心化房间协同。
+ * 增强特性：
+ * 1. 严格游戏命名空间隔离: game_hall_v2/${game.toLowerCase()}/room/${roomId}
+ * 2. 6位数字随机房间号生成，杜绝全局房间号冲突与跨游戏串号
  */
 
 window.ONLINE_NETWORK = (function() {
@@ -10,11 +13,18 @@ window.ONLINE_NETWORK = (function() {
   const state = {
     connected: false,
     roomId: null,
+    currentGame: null,
     myRole: 'host', // 'host' | 'guest'
     opponentJoined: false,
     mqttClient: null,
     onMessageCallback: null
   };
+
+  function getTopic(game, roomId) {
+    const g = (game || state.currentGame || (window.STATE && window.STATE.currentGame) || 'general').toLowerCase();
+    const r = roomId || state.roomId;
+    return `game_hall_v2/${g}/room/${r}`;
+  }
 
   function initMqtt(roomId, role, onMessage, currentGame) {
     if (state.mqttClient) {
@@ -22,6 +32,7 @@ window.ONLINE_NETWORK = (function() {
     }
 
     state.roomId = roomId;
+    state.currentGame = (currentGame || (window.STATE && window.STATE.currentGame) || 'general').toLowerCase();
     state.myRole = role;
     if (onMessage) state.onMessageCallback = onMessage;
     if (typeof state.onRoleChange === 'function') {
@@ -32,7 +43,7 @@ window.ONLINE_NETWORK = (function() {
     if (roomElem) roomElem.textContent = roomId;
     const roleElem = document.getElementById('display-role-info');
     if (roleElem) {
-      if (currentGame === 'GO') {
+      if (state.currentGame === 'go' || state.currentGame === 'kaya') {
         roleElem.innerHTML = role === 'host' ? 
           '你是 <b style="color:#38bdf8">⚫ 房主 (执黑·先手)</b>' : 
           '你是 <b style="color:#f8fafc">⚪ 好友 (执白·后手)</b>';
@@ -50,10 +61,10 @@ window.ONLINE_NETWORK = (function() {
     client.on('connect', () => {
       state.connected = true;
       if (typeof state.onConnect === 'function') state.onConnect(roomId, role);
-      const topic = `game_hall_v2/room/${roomId}`;
+      const topic = getTopic(state.currentGame, roomId);
       client.subscribe(topic, () => {
         if (role === 'guest') {
-          client.publish(topic, JSON.stringify({ type: 'JOIN', sender: myClientId, game: currentGame }));
+          client.publish(topic, JSON.stringify({ type: 'JOIN', sender: myClientId, game: state.currentGame }));
           if (window.showToast) window.showToast('已进入房间，正在等待同步...');
         } else {
           if (window.showToast) window.showToast('房间已就绪！点击复制链接发给好友');
@@ -73,7 +84,7 @@ window.ONLINE_NETWORK = (function() {
             if (typeof state.onOpponentJoined === 'function') {
               state.onOpponentJoined(msg);
             } else {
-              sendAction({ type: 'SYNC', game: currentGame });
+              sendAction({ type: 'SYNC', game: state.currentGame });
             }
           }
         }
@@ -94,12 +105,16 @@ window.ONLINE_NETWORK = (function() {
   function sendAction(data) {
     if (!state.mqttClient || !state.connected) return;
     data.sender = myClientId;
-    state.mqttClient.publish(`game_hall_v2/room/${state.roomId}`, JSON.stringify(data));
+    const topic = getTopic(state.currentGame, state.roomId);
+    state.mqttClient.publish(topic, JSON.stringify(data));
   }
 
   function createRoom(currentGame) {
-    const roomId = Math.floor(1000 + Math.random() * 9000).toString();
-    initMqtt(roomId, 'host', state.onMessageCallback, currentGame);
+    const g = (currentGame || (window.STATE && window.STATE.currentGame) || 'general').toLowerCase();
+    state.currentGame = g;
+    // 6 位数字房间号生成机制 (100000 - 999999)，兼顾快捷输入与海量命名空间隔离
+    const roomId = Math.floor(100000 + Math.random() * 900000).toString();
+    initMqtt(roomId, 'host', state.onMessageCallback, g);
     return roomId;
   }
 
@@ -108,6 +123,7 @@ window.ONLINE_NETWORK = (function() {
     const url = new URL(window.location.href);
     url.searchParams.set('room', state.roomId);
     url.searchParams.set('mode', 'ONLINE');
+    if (state.currentGame) url.searchParams.set('game', state.currentGame);
     const textToCopy = url.toString();
     const fallback = () => {
       const ta = document.createElement('textarea');
@@ -136,11 +152,13 @@ window.ONLINE_NETWORK = (function() {
   }
 
   function joinRoom(roomId, currentGame) {
+    const g = (currentGame || (window.STATE && window.STATE.currentGame) || 'general').toLowerCase();
+    state.currentGame = g;
     if (!roomId) {
-      roomId = prompt('请输入4位房间号：');
+      roomId = prompt('请输入房间号：');
     }
     if (roomId) {
-      initMqtt(roomId.trim(), 'guest', state.onMessageCallback, currentGame);
+      initMqtt(roomId.trim(), 'guest', state.onMessageCallback, g);
     }
   }
 
@@ -159,6 +177,7 @@ window.ONLINE_NETWORK = (function() {
 
   return {
     state,
+    getTopic,
     initMqtt,
     sendAction,
     createRoom,

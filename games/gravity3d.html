@@ -506,7 +506,7 @@
     }
 
     function runGravity3DAI() {
-      if (STATE.winner) return;
+      if (STATE.winner || STATE.turn !== 2) return;
       const b = STATE.gravity3d.board;
       let bestRod = null;
       let maxScore = -Infinity;
@@ -938,13 +938,15 @@
     }
 
     // ==========================================================================
-        function endTurn() {
+    function endTurn() {
       STATE.turn = STATE.turn === 1 ? 2 : 1;
       updateScoreboard();
 
       if (!STATE.winner && STATE.gameMode === 'AI' && STATE.turn === 2) {
         STATE.animating = true;
-        setTimeout(() => {
+        if (!STATE.gravity3d) STATE.gravity3d = {};
+        if (STATE.gravity3d.aiTimer) clearTimeout(STATE.gravity3d.aiTimer);
+        STATE.gravity3d.aiTimer = setTimeout(() => {
           if (typeof runGravity3DAI === 'function') runGravity3DAI();
           STATE.animating = false;
           if (typeof update3DScene === 'function') update3DScene();
@@ -953,6 +955,10 @@
     }
 
     function initGravity3D() {
+      if (STATE.gravity3d && STATE.gravity3d.aiTimer) {
+        clearTimeout(STATE.gravity3d.aiTimer);
+        STATE.gravity3d.aiTimer = null;
+      }
       STATE.winner = null;
       STATE.turn = 1;
       STATE.animating = false;

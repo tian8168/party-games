@@ -465,8 +465,22 @@
 
     function resetAeroplaneGame() {
       if (STATE.aeroplane.animId) cancelAnimationFrame(STATE.aeroplane.animId);
-      if (STATE.aeroplane.aiTimer) clearTimeout(STATE.aeroplane.aiTimer);
-
+      if (STATE.aeroplane.aiTimer) {
+        clearTimeout(STATE.aeroplane.aiTimer);
+        STATE.aeroplane.aiTimer = null;
+      }
+      if (STATE.aeroplane.rollInterval) {
+        clearInterval(STATE.aeroplane.rollInterval);
+        STATE.aeroplane.rollInterval = null;
+      }
+      if (STATE.aeroplane.moveTimer) {
+        clearTimeout(STATE.aeroplane.moveTimer);
+        STATE.aeroplane.moveTimer = null;
+      }
+      if (STATE.aeroplane.hopTimer) {
+        clearTimeout(STATE.aeroplane.hopTimer);
+        STATE.aeroplane.hopTimer = null;
+      }
       STATE.aeroplane.turn = 0;
       STATE.turn = 1;
       STATE.winner = null;
@@ -657,11 +671,13 @@
 
       const pips = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
       let ticks = 0;
-      const rollInterval = setInterval(() => {
+      if (STATE.aeroplane.rollInterval) clearInterval(STATE.aeroplane.rollInterval);
+      STATE.aeroplane.rollInterval = setInterval(() => {
         ticks++;
         if (pipText) pipText.textContent = pips[Math.floor(Math.random() * 6)];
         if (ticks >= 8) {
-          clearInterval(rollInterval);
+          clearInterval(STATE.aeroplane.rollInterval);
+          STATE.aeroplane.rollInterval = null;
           if (diceEl) diceEl.classList.remove('rolling');
           const finalVal = Math.floor(Math.random() * 6) + 1;
           STATE.aeroplane.diceVal = finalVal;
@@ -715,7 +731,8 @@
       if (validPlanes.length === 0) {
         if (promptEl) promptEl.textContent = `${AERO_COLOR_NAMES[curPlayer]} 掷出 ${roll} 点，无法起飞或移动`;
         const delay = isFast ? 250 : 800;
-        setTimeout(() => {
+        if (STATE.aeroplane.moveTimer) clearTimeout(STATE.aeroplane.moveTimer);
+        STATE.aeroplane.moveTimer = setTimeout(() => {
           finishAeroplaneTurn(false);
         }, delay);
         return;
@@ -727,7 +744,8 @@
           promptEl.textContent = `${AERO_COLOR_NAMES[curPlayer]} 掷出 ${roll} 点！即将移动 ${pIdx + 1}号战机`;
         }
         const delay = isHuman ? (isFast ? 250 : 600) : (isFast ? 150 : 450);
-        setTimeout(() => {
+        if (STATE.aeroplane.moveTimer) clearTimeout(STATE.aeroplane.moveTimer);
+        STATE.aeroplane.moveTimer = setTimeout(() => {
           executeAeroplaneMove(curPlayer, pIdx, roll, true);
         }, delay);
         return;
@@ -747,7 +765,8 @@
           promptEl.textContent = `🤖 ${AERO_COLOR_NAMES[curPlayer]} 思考后选择出击 ${bestIdx + 1}号战机`;
         }
         const delay = isFast ? 150 : 450;
-        setTimeout(() => {
+        if (STATE.aeroplane.moveTimer) clearTimeout(STATE.aeroplane.moveTimer);
+        STATE.aeroplane.moveTimer = setTimeout(() => {
           executeAeroplaneMove(curPlayer, bestIdx, roll, true);
         }, delay);
       }
@@ -1061,8 +1080,11 @@
 
             if (!STATE.aeroplane.humanPlayers.includes(playerIdx)) {
               const delay = STATE.aeroplane.fastAI ? 200 : 600;
-              setTimeout(() => {
-                runAeroplaneAI();
+              if (STATE.aeroplane.aiTimer) clearTimeout(STATE.aeroplane.aiTimer);
+              STATE.aeroplane.aiTimer = setTimeout(() => {
+                if (STATE.aeroplane.turn === playerIdx && !STATE.winner) {
+                  runAeroplaneAI();
+                }
               }, delay);
             }
           }
@@ -1085,6 +1107,7 @@
       let startTime = performance.now();
 
       function hop() {
+        if (!STATE.aeroplane.animating) return;
         if (stepIdx >= waypoints.length) {
           onDone();
           return;
@@ -1101,7 +1124,8 @@
 
         AUDIO.play('plane_hop');
         stepIdx++;
-        setTimeout(hop, stepDuration);
+        if (STATE.aeroplane.hopTimer) clearTimeout(STATE.aeroplane.hopTimer);
+        STATE.aeroplane.hopTimer = setTimeout(hop, stepDuration);
       }
 
       hop();

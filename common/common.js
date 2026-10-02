@@ -146,6 +146,7 @@ function initCommonHeader(rulesTitle, rulesHtml, onRestart) {
   if (restartBtn && typeof onRestart === 'function') {
     restartBtn.onclick = () => {
       if (window.AUDIO) window.AUDIO.play('click');
+      closeModal();
       onRestart();
     };
   }

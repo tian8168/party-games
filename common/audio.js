@@ -486,6 +486,102 @@
               osc.connect(gain); gain.connect(this.ctx.destination);
               osc.start(t + i * 0.08); osc.stop(t + i * 0.08 + 0.28);
             });
+          } else if (type === 'tron_turn') { // 极光光轮激光急转弯扫频
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(350, t);
+            osc.frequency.exponentialRampToValueAtTime(1200, t + 0.04);
+            osc.frequency.exponentialRampToValueAtTime(650, t + 0.08);
+            const filter = this.ctx.createBiquadFilter();
+            filter.type = 'bandpass';
+            filter.frequency.setValueAtTime(850, t);
+            filter.Q.setValueAtTime(2.5, t);
+            gain.gain.setValueAtTime(0.22, t);
+            gain.gain.linearRampToValueAtTime(0.01, t + 0.08);
+            osc.connect(filter);
+            filter.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(t);
+            osc.stop(t + 0.08);
+          } else if (type === 'tron_boost') { // 极光光轮过载引擎喷射轰鸣
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(110, t);
+            osc.frequency.exponentialRampToValueAtTime(360, t + 0.16);
+            osc.frequency.linearRampToValueAtTime(180, t + 0.35);
+            gain.gain.setValueAtTime(0.32, t);
+            gain.gain.linearRampToValueAtTime(0.01, t + 0.35);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(t);
+            osc.stop(t + 0.35);
+            const bufSize = Math.floor(this.ctx.sampleRate * 0.28);
+            const buf = this.ctx.createBuffer(1, bufSize, this.ctx.sampleRate);
+            const data = buf.getChannelData(0);
+            for (let i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufSize * 0.35));
+            const noise = this.ctx.createBufferSource();
+            noise.buffer = buf;
+            const f = this.ctx.createBiquadFilter();
+            f.type = 'bandpass';
+            f.frequency.setValueAtTime(650, t);
+            f.frequency.exponentialRampToValueAtTime(1900, t + 0.2);
+            const ng = this.ctx.createGain();
+            ng.gain.setValueAtTime(0.26, t);
+            ng.gain.linearRampToValueAtTime(0.01, t + 0.28);
+            noise.connect(f);
+            f.connect(ng);
+            ng.connect(this.ctx.destination);
+            noise.start(t);
+          } else if (type === 'cat_meow') { // 疯狂拆弹猫 哀鸣猫叫
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(520, t);
+            osc.frequency.exponentialRampToValueAtTime(940, t + 0.14);
+            osc.frequency.exponentialRampToValueAtTime(420, t + 0.38);
+            gain.gain.setValueAtTime(0.01, t);
+            gain.gain.linearRampToValueAtTime(0.32, t + 0.08);
+            gain.gain.linearRampToValueAtTime(0.01, t + 0.38);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(t);
+            osc.stop(t + 0.38);
+          } else if (type === 'card_draw') { // 摸牌/抽牌摩擦轻快声
+            const bufSize = Math.floor(this.ctx.sampleRate * 0.09);
+            const buf = this.ctx.createBuffer(1, bufSize, this.ctx.sampleRate);
+            const data = buf.getChannelData(0);
+            for (let i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * Math.sin((i / bufSize) * Math.PI);
+            const noise = this.ctx.createBufferSource();
+            noise.buffer = buf;
+            const filter = this.ctx.createBiquadFilter();
+            filter.type = 'bandpass';
+            filter.frequency.setValueAtTime(2200, t);
+            filter.frequency.exponentialRampToValueAtTime(4600, t + 0.06);
+            filter.Q.setValueAtTime(1.5, t);
+            const gain = this.ctx.createGain();
+            gain.gain.setValueAtTime(0.3, t);
+            gain.gain.linearRampToValueAtTime(0.01, t + 0.09);
+            noise.connect(filter);
+            filter.connect(gain);
+            gain.connect(this.ctx.destination);
+            noise.start(t);
+          } else if (type === 'bomb_alarm') { // 炸弹猫引线拉响刺耳三连急促警报
+            for (let i = 0; i < 3; i++) {
+              const dt = t + i * 0.11;
+              const osc = this.ctx.createOscillator();
+              const gain = this.ctx.createGain();
+              osc.type = 'square';
+              osc.frequency.setValueAtTime(1050, dt);
+              osc.frequency.setValueAtTime(1450, dt + 0.04);
+              gain.gain.setValueAtTime(0.24, dt);
+              gain.gain.linearRampToValueAtTime(0.01, dt + 0.08);
+              osc.connect(gain);
+              gain.connect(this.ctx.destination);
+              osc.start(dt);
+              osc.stop(dt + 0.08);
+            }
           }
         } catch(e) {}
       }

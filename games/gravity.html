@@ -162,7 +162,8 @@
 
       if (!STATE.winner && STATE.gameMode === 'AI' && STATE.turn === 2) {
         STATE.animating = true;
-        setTimeout(() => {
+        if (STATE.gravity.aiTimer) clearTimeout(STATE.gravity.aiTimer);
+        STATE.gravity.aiTimer = setTimeout(() => {
           runGravity2DAI();
           STATE.animating = false;
           render2D();
@@ -171,6 +172,10 @@
     }
 
     function initGravity() {
+      if (STATE.gravity.aiTimer) {
+        clearTimeout(STATE.gravity.aiTimer);
+        STATE.gravity.aiTimer = null;
+      }
       STATE.winner = null;
       STATE.turn = 1;
       STATE.animating = false;
@@ -402,7 +407,7 @@
     }
 
     function runGravity2DAI() {
-      if (STATE.winner) return;
+      if (STATE.winner || STATE.turn !== 2) return;
       const board = STATE.gravity.board;
       let bestCol = -1, maxScore = -Infinity;
 

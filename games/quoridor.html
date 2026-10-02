@@ -757,7 +757,8 @@
 
       if (!STATE.winner && STATE.gameMode === 'AI' && STATE.turn !== 1) {
         STATE.animating = true;
-        setTimeout(() => {
+        if (STATE.quoridor.aiTimer) clearTimeout(STATE.quoridor.aiTimer);
+        STATE.quoridor.aiTimer = setTimeout(() => {
           runQuoridorAI();
           STATE.animating = false;
           render2D();
@@ -766,6 +767,10 @@
     }
 
     function initQuoridor() {
+      if (STATE.quoridor.aiTimer) {
+        clearTimeout(STATE.quoridor.aiTimer);
+        STATE.quoridor.aiTimer = null;
+      }
       STATE.winner = null;
       STATE.turn = 1;
       STATE.animating = false;
@@ -1103,7 +1108,7 @@
     }
 
     function runQuoridorAI() {
-      if (STATE.winner) return;
+      if (STATE.winner || STATE.turn === 1) return;
       const goals = {
         2: { type: 'ROW', val: 8 },
         3: { type: 'COL', val: 8 },

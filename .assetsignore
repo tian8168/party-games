@@ -6,6 +6,8 @@ wrangler.json
 .assetsignore
 *.py
 bug维护
+tools
+tools/
 old_index.html
 old_index_spa.html
 test.txt

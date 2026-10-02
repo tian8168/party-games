@@ -227,7 +227,7 @@
     STATE.sumo = {
         p1Score: 0, p2Score: 0, targetScore: 3,
         car1: null, car2: null,
-        arenaRadius: 180, particles: [], animId: null,
+        arenaRadius: 180, particles: [], animId: null, endTimer: null,
         roundOver: false, matchOver: false, aiReactionDelay: 0,
         started: false,
         keys: { p1: { up:false, down:false, left:false, right:false }, p2: { up:false, down:false, left:false, right:false } }
@@ -286,6 +286,7 @@
 
       // Stop & reset
       STATE.sumo.started = false;
+      if (STATE.sumo.endTimer) { clearTimeout(STATE.sumo.endTimer); STATE.sumo.endTimer = null; }
       if (STATE.sumo.animId) { cancelAnimationFrame(STATE.sumo.animId); STATE.sumo.animId = null; }
       STATE.sumo.p1Score = 0;
       STATE.sumo.p2Score = 0;
@@ -307,6 +308,8 @@
     let sumoInputBound = false;
 
     function startSumoMatch() {
+      if (STATE.sumo.endTimer) { clearTimeout(STATE.sumo.endTimer); STATE.sumo.endTimer = null; }
+      if (STATE.sumo.animId) { cancelAnimationFrame(STATE.sumo.animId); STATE.sumo.animId = null; }
       const overlay = document.getElementById('sumo-start-overlay');
       if (overlay) overlay.style.display = 'none';
       
@@ -322,6 +325,8 @@
     }
 
     function initSumoGame() {
+      if (STATE.sumo.endTimer) { clearTimeout(STATE.sumo.endTimer); STATE.sumo.endTimer = null; }
+      if (STATE.sumo.animId) { cancelAnimationFrame(STATE.sumo.animId); STATE.sumo.animId = null; }
       STATE.sumo.p1Score = 0;
       STATE.sumo.p2Score = 0;
       STATE.sumo.roundOver = false;
@@ -723,7 +728,8 @@
           STATE.sumo.p1Score++;
         }
 
-        setTimeout(checkSumoMatchEnd, 1100);
+        if (STATE.sumo.endTimer) clearTimeout(STATE.sumo.endTimer);
+        STATE.sumo.endTimer = setTimeout(checkSumoMatchEnd, 1100);
       }
 
       // Particles update
@@ -734,6 +740,8 @@
     }
 
     function checkSumoMatchEnd() {
+      STATE.sumo.endTimer = null;
+      if (!STATE.sumo.started) return;
       const isLocal = STATE.gameMode === 'LOCAL';
       const p1ScoreEl = document.getElementById('sumo-p1-score');
       const p2ScoreEl = document.getElementById('sumo-p2-score');

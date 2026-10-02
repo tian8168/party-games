@@ -79,7 +79,22 @@
 
     function resetAeroplaneGame() {
       if (STATE.aeroplane.animId) cancelAnimationFrame(STATE.aeroplane.animId);
-      if (STATE.aeroplane.aiTimer) clearTimeout(STATE.aeroplane.aiTimer);
+      if (STATE.aeroplane.aiTimer) {
+        clearTimeout(STATE.aeroplane.aiTimer);
+        STATE.aeroplane.aiTimer = null;
+      }
+      if (STATE.aeroplane.rollInterval) {
+        clearInterval(STATE.aeroplane.rollInterval);
+        STATE.aeroplane.rollInterval = null;
+      }
+      if (STATE.aeroplane.moveTimer) {
+        clearTimeout(STATE.aeroplane.moveTimer);
+        STATE.aeroplane.moveTimer = null;
+      }
+      if (STATE.aeroplane.hopTimer) {
+        clearTimeout(STATE.aeroplane.hopTimer);
+        STATE.aeroplane.hopTimer = null;
+      }
 
       STATE.aeroplane.turn = 0;
       STATE.turn = 1;
@@ -271,11 +286,13 @@
 
       const pips = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
       let ticks = 0;
-      const rollInterval = setInterval(() => {
+      if (STATE.aeroplane.rollInterval) clearInterval(STATE.aeroplane.rollInterval);
+      STATE.aeroplane.rollInterval = setInterval(() => {
         ticks++;
         if (pipText) pipText.textContent = pips[Math.floor(Math.random() * 6)];
         if (ticks >= 8) {
-          clearInterval(rollInterval);
+          clearInterval(STATE.aeroplane.rollInterval);
+          STATE.aeroplane.rollInterval = null;
           if (diceEl) diceEl.classList.remove('rolling');
           const finalVal = Math.floor(Math.random() * 6) + 1;
           STATE.aeroplane.diceVal = finalVal;
@@ -675,8 +692,11 @@
 
             if (!STATE.aeroplane.humanPlayers.includes(playerIdx)) {
               const delay = STATE.aeroplane.fastAI ? 200 : 600;
-              setTimeout(() => {
-                runAeroplaneAI();
+              if (STATE.aeroplane.aiTimer) clearTimeout(STATE.aeroplane.aiTimer);
+              STATE.aeroplane.aiTimer = setTimeout(() => {
+                if (STATE.aeroplane.turn === playerIdx && !STATE.winner) {
+                  runAeroplaneAI();
+                }
               }, delay);
             }
           }

@@ -31,6 +31,7 @@
       justify-content: space-between;
       align-items: center;
       z-index: 10;
+      pointer-events: none;
     }
 
     .iaido-life-box {
@@ -121,6 +122,7 @@
       align-items: center;
       justify-content: center;
       z-index: 20;
+      pointer-events: none;
     }
 
     .iaido-kanji {
@@ -129,6 +131,7 @@
       color: #ffffff;
       text-shadow: 0 0 30px #ffffff, 0 0 60px #ff0000;
       animation: kanjiBlast 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      pointer-events: none;
     }
     @keyframes kanjiBlast {
       0% { transform: scale(0.3) rotate(-15deg); opacity: 0; }
@@ -146,9 +149,53 @@
       transform: rotate(-25deg);
       display: none;
       z-index: 25;
+      pointer-events: none;
     }
 
-    
+    /* 双人触控区与提示 */
+    .iaido-touch-zones {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      z-index: 30;
+    }
+    .iaido-touch-half {
+      flex: 1;
+      height: 100%;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding-bottom: 12px;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+      transition: background 0.12s;
+    }
+    .iaido-touch-half:active {
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .touch-hint-tag {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 8px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      pointer-events: none;
+      backdrop-filter: blur(4px);
+    }
+    .iaido-touch-half.p1 .touch-hint-tag {
+      color: #f87171;
+      border-color: rgba(239, 68, 68, 0.4);
+    }
+    .iaido-touch-half.p2 .touch-hint-tag {
+      color: #38bdf8;
+      border-color: rgba(56, 189, 248, 0.4);
+    }
   </style>
 </head>
 <body>
@@ -163,61 +210,37 @@
       </div>
     </div>
 
+    <div class="mode-nav">
+      <div class="mode-tab active" id="tab-ai" onclick="switchGameMode('AI')">🤖 人机对弈</div>
+      <div class="mode-tab" id="tab-local" onclick="switchGameMode('LOCAL')">👥 双人同屏</div>
+    </div>
     
-      <div class="mode-nav">
-        <div class="mode-tab active" id="tab-ai" onclick="switchGameMode('AI')">🤖 人机对弈</div>
-  <div class="mode-tab" id="tab-local" onclick="switchGameMode('LOCAL')">👥 双人同屏</div>
-</div>
-    
-      <div class="generic-scoreboard" id="generic-scoreboard">
-        <div class="player-card p2" id="card-p2">
-          <div class="player-meta">
-            <span class="player-name" id="name-p2">🟢 玩家 2 (客)</span>
-            <span class="turn-badge">行动中</span>
-          </div>
-          <div id="walls-wrapper-p2" style="display:none; font-size:0.75rem; margin-top:2px;">
-            余墙: <span id="walls-count-p2">10</span>
-            <div id="wall-bars-p2" style="display:flex; gap:2px; height:4px; margin-top:2px;"></div>
-          </div>
-        </div>
-
-        <div class="player-card p1 active-turn" id="card-p1">
-          <div class="player-meta">
-            <span class="player-name" id="name-p1">🔴 玩家 1 (主)</span>
-            <span class="turn-badge">行动中</span>
-          </div>
-          <div id="walls-wrapper-p1" style="display:none; font-size:0.75rem; margin-top:2px;">
-            余墙: <span id="walls-count-p1">10</span>
-            <div id="wall-bars-p1" style="display:flex; gap:2px; height:4px; margin-top:2px;"></div>
-          </div>
-        </div>
-
-        <div class="player-card p3" id="card-p3" style="display:none;">
-          <div class="player-meta">
-            <span class="player-name" id="name-p3">🔵 玩家 3 (西)</span>
-            <span class="turn-badge">行动中</span>
-          </div>
-          <div id="walls-wrapper-p3" style="display:none; font-size:0.75rem; margin-top:2px;">
-            余墙: <span id="walls-count-p3">5</span>
-            <div id="wall-bars-p3" style="display:flex; gap:2px; height:4px; margin-top:2px;"></div>
-          </div>
-        </div>
-
-        <div class="player-card p4" id="card-p4" style="display:none;">
-          <div class="player-meta">
-            <span class="player-name" id="name-p4">🟡 玩家 4 (东)</span>
-            <span class="turn-badge">行动中</span>
-          </div>
-          <div id="walls-wrapper-p4" style="display:none; font-size:0.75rem; margin-top:2px;">
-            余墙: <span id="walls-count-p4">5</span>
-            <div id="wall-bars-p4" style="display:flex; gap:2px; height:4px; margin-top:2px;"></div>
-          </div>
+    <div class="generic-scoreboard" id="generic-scoreboard">
+      <div class="player-card p1 active-turn" id="card-p1">
+        <div class="player-meta">
+          <span class="player-name" id="name-p1">🔴 剑客 P1</span>
+          <span class="turn-badge">准备出刀</span>
         </div>
       </div>
-
+      <div class="player-card p2" id="card-p2">
+        <div class="player-meta">
+          <span class="player-name" id="name-p2">🔵 剑客 P2</span>
+          <span class="turn-badge">准备出刀</span>
+        </div>
+      </div>
+    </div>
 
     <div class="stage-wrapper">
-      <div id="iaido-stage" onclick="handleIaidoTap()">
+      <div id="iaido-stage">
+          <!-- 双人专属触控区 (移动端左半屏P1 / 右半屏P2) -->
+          <div class="iaido-touch-zones" id="iaido-touch-zones">
+            <div class="iaido-touch-half p1" id="iaido-touch-p1">
+              <span class="touch-hint-tag" id="hint-p1-tag">🔴 P1 (按 A / 空格)</span>
+            </div>
+            <div class="iaido-touch-half p2" id="iaido-touch-p2">
+              <span class="touch-hint-tag" id="hint-p2-tag">🔵 P2 (按 L / 回车)</span>
+            </div>
+          </div>
           <div class="iaido-hud-top">
             <div class="duelist-box">
               <span class="duelist-name" style="color:#ef4444;" id="iaido-p1-name">🔴 剑客P1</span>
@@ -282,7 +305,7 @@
     };
 
     STATE.iaido = {
-        state: 'IDLE', p1Wins: 0, p2Wins: 0, targetWins: 3, timer: null, signalTime: 0, roundNum: 1
+        state: 'IDLE', p1Wins: 0, p2Wins: 0, targetWins: 3, timer: null, aiTimer: null, roundTimer: null, modalTimer: null, signalTime: 0, roundNum: 1
       };
 
     function checkIsMyTurn() {
@@ -299,23 +322,17 @@
     function updateScoreboard() {
       const cardP1 = document.getElementById('card-p1');
       const cardP2 = document.getElementById('card-p2');
-      const cardP3 = document.getElementById('card-p3');
-      const cardP4 = document.getElementById('card-p4');
       if (cardP1) {
-        cardP1.classList.toggle('active-turn', STATE.turn === 1);
         const n1 = document.getElementById('name-p1');
-        if (n1) n1.innerHTML = '🔴 玩家 1 (主)' + (STATE.scores[1] !== undefined ? ' <small>('+STATE.scores[1]+')</small>' : '');
+        if (n1) n1.innerHTML = '🔴 剑客 P1' + (STATE.iaido ? ' <small>('+STATE.iaido.p1Wins+'胜)</small>' : '');
       }
       if (cardP2) {
-        cardP2.classList.toggle('active-turn', STATE.turn === 2);
         const n2 = document.getElementById('name-p2');
         if (n2) {
-          const p2Label = STATE.gameMode === 'AI' ? '🤖 电脑 (AI)' : (STATE.gameMode === 'ONLINE' ? '🟢 好友 (客)' : '🟢 玩家 2');
-          n2.innerHTML = p2Label + (STATE.scores[2] !== undefined ? ' <small>('+STATE.scores[2]+')</small>' : '');
+          const p2Label = STATE.gameMode === 'AI' ? '🤖 电脑 (AI)' : '🔵 剑客 P2';
+          n2.innerHTML = p2Label + (STATE.iaido ? ' <small>('+STATE.iaido.p2Wins+'胜)</small>' : '');
         }
       }
-      if (cardP3) cardP3.classList.toggle('active-turn', STATE.turn === 3);
-      if (cardP4) cardP4.classList.toggle('active-turn', STATE.turn === 4);
     }
 
     function switchGameMode(mode, doReset = true) {
@@ -347,6 +364,10 @@
     // 7. 拔刀居合斩核心逻辑 (IAIDO)
     // ==========================================================================
     function initIaidoGame() {
+      if (STATE.iaido.modalTimer) clearTimeout(STATE.iaido.modalTimer);
+      if (STATE.iaido.timer) clearTimeout(STATE.iaido.timer);
+      if (STATE.iaido.aiTimer) clearTimeout(STATE.iaido.aiTimer);
+      if (STATE.iaido.roundTimer) clearTimeout(STATE.iaido.roundTimer);
       STATE.iaido.p1Wins = 0;
       STATE.iaido.p2Wins = 0;
       STATE.iaido.roundNum = 1;
@@ -361,15 +382,35 @@
       document.getElementById('iaido-p1-life').textContent = p1Hearts;
       document.getElementById('iaido-p2-life').textContent = p2Hearts;
       document.getElementById('iaido-round-badge').textContent = `第 ${STATE.iaido.roundNum} 回合 (抢3胜)`;
+
+      const p2Name = document.getElementById('iaido-p2-name');
+      if (p2Name) {
+        p2Name.textContent = STATE.gameMode === 'AI' ? '🔵 恶魔AI' : '🔵 剑客P2';
+      }
+
+      const hintP1 = document.getElementById('hint-p1-tag');
+      const hintP2 = document.getElementById('hint-p2-tag');
+      if (hintP1) {
+        hintP1.textContent = STATE.gameMode === 'AI' ? '🔴 出刀区 (点击 / 空格)' : '🔴 P1 (按 A / 空格)';
+      }
+      if (hintP2) {
+        hintP2.textContent = STATE.gameMode === 'AI' ? '🤖 电脑对手' : '🔵 P2 (按 L / 回车)';
+      }
+
+      updateScoreboard();
     }
 
     function startIaidoRound() {
       if (STATE.iaido.timer) clearTimeout(STATE.iaido.timer);
+      if (STATE.iaido.aiTimer) clearTimeout(STATE.iaido.aiTimer);
+      if (STATE.iaido.roundTimer) clearTimeout(STATE.iaido.roundTimer);
       STATE.iaido.state = 'WAITING';
       document.getElementById('iaido-slash-overlay').style.display = 'none';
       document.getElementById('iaido-slash-line').style.display = 'none';
       document.getElementById('iaido-prompt').textContent = '心如止水... 伺机而动';
-      document.getElementById('iaido-sub-prompt').textContent = '屏息凝神！出现「斬」字瞬间点击屏幕';
+      document.getElementById('iaido-sub-prompt').textContent = STATE.gameMode === 'AI'
+        ? '屏息凝神！出现「斬」字瞬间触碰屏幕或按空格'
+        : '屏息凝神！出现「斬」字瞬间出刀！P1: A/空格，P2: L/回车';
 
       AUDIO.play('heartbeat');
 
@@ -385,32 +426,44 @@
           const aiReaction = 210 + Math.floor(Math.random() * 110);
           STATE.iaido.aiTimer = setTimeout(() => {
             if (STATE.iaido.state === 'SIGNAL') {
-              resolveIaidoWinner('P2', aiReaction, null);
+              resolveIaidoWinner('P2', aiReaction);
             }
           }, aiReaction);
         }
       }, waitMs);
     }
 
-    function handleIaidoTap() {
+    function handleIaidoAction(player) {
       AUDIO.init();
       if (STATE.iaido.state === 'WAITING') {
         clearTimeout(STATE.iaido.timer);
+        if (STATE.iaido.aiTimer) clearTimeout(STATE.iaido.aiTimer);
         STATE.iaido.state = 'RESOLVED';
         AUDIO.play('false_start');
         document.getElementById('iaido-prompt').textContent = '⚠️ 抢跑犯规！';
-        document.getElementById('iaido-sub-prompt').textContent = '太早拔刀被对手斩于马下！🔵 对方得 1 分';
-        STATE.iaido.p2Wins++;
+
+        if (player === 'P1') {
+          STATE.iaido.p2Wins++;
+          const p2Label = STATE.gameMode === 'AI' ? '🔵 恶魔AI' : '🔵 剑客P2';
+          document.getElementById('iaido-sub-prompt').textContent = `太早拔刀！🔴 P1 抢跑犯规！${p2Label} 斩获 1 胜！`;
+        } else {
+          STATE.iaido.p1Wins++;
+          document.getElementById('iaido-sub-prompt').textContent = '太早拔刀！🔵 P2 抢跑犯规！🔴 剑客P1 斩获 1 胜！';
+        }
         finishIaidoRound();
       } else if (STATE.iaido.state === 'SIGNAL') {
-        const p1Reaction = Math.round(performance.now() - STATE.iaido.signalTime);
+        const reactionMs = Math.round(performance.now() - STATE.iaido.signalTime);
         if (STATE.iaido.aiTimer) clearTimeout(STATE.iaido.aiTimer);
         STATE.iaido.state = 'RESOLVED';
-        resolveIaidoWinner('P1', p1Reaction, null);
+        resolveIaidoWinner(player, reactionMs);
       }
     }
 
-    function resolveIaidoWinner(winner, winnerMs, loserMs) {
+    function handleIaidoTap() {
+      handleIaidoAction('P1');
+    }
+
+    function resolveIaidoWinner(winner, winnerMs) {
       document.getElementById('iaido-slash-overlay').style.display = 'none';
       const slashLine = document.getElementById('iaido-slash-line');
       slashLine.style.display = 'block';
@@ -419,11 +472,12 @@
       if (winner === 'P1') {
         STATE.iaido.p1Wins++;
         document.getElementById('iaido-prompt').textContent = '⚡ 绝杀一闪！';
-        document.getElementById('iaido-sub-prompt').textContent = `极速反应: ${winnerMs} 毫秒！🔴 玩家斩下 1 胜！`;
+        document.getElementById('iaido-sub-prompt').textContent = `极速反应: ${winnerMs} 毫秒！🔴 P1 斩下 1 胜！`;
       } else {
         STATE.iaido.p2Wins++;
-        document.getElementById('iaido-prompt').textContent = '💥 慢了一步！';
-        document.getElementById('iaido-sub-prompt').textContent = `对手反应: ${winnerMs} 毫秒！🔵 对手斩下 1 胜！`;
+        const p2Label = STATE.gameMode === 'AI' ? '🔵 恶魔AI' : '🔵 P2';
+        document.getElementById('iaido-prompt').textContent = STATE.gameMode === 'AI' ? '💥 慢了一步！' : '⚡ 绝杀一闪！';
+        document.getElementById('iaido-sub-prompt').textContent = `极速反应: ${winnerMs} 毫秒！${p2Label} 斩下 1 胜！`;
       }
 
       finishIaidoRound();
@@ -433,18 +487,71 @@
       updateIaidoHUD();
       if (STATE.iaido.p1Wins >= STATE.iaido.targetWins || STATE.iaido.p2Wins >= STATE.iaido.targetWins) {
         STATE.iaido.state = 'OVER';
-        setTimeout(() => {
-          const isP1 = STATE.iaido.p1Wins >= STATE.iaido.targetWins;
-          showModal('决斗落幕', isP1 ? '🏆 恭喜！你以高超剑术斩落对手，问鼎剑圣！' : '💀 惜败！对手刀光更快一筹，再接再厉！');
+        if (STATE.iaido.modalTimer) clearTimeout(STATE.iaido.modalTimer);
+        STATE.iaido.modalTimer = setTimeout(() => {
+          let winMsg = '';
+          if (STATE.gameMode === 'AI') {
+            winMsg = STATE.iaido.p1Wins >= STATE.iaido.targetWins
+              ? '🏆 恭喜！你以高超剑术斩落对手，问鼎剑圣！'
+              : '💀 惜败！对手刀光更快一筹，再接再厉！';
+          } else {
+            winMsg = STATE.iaido.p1Wins >= STATE.iaido.targetWins
+              ? '🏆 恭喜 🔴 剑客P1 刀光夺魄，问鼎剑圣！'
+              : '🏆 恭喜 🔵 剑客P2 刀光夺魄，问鼎剑圣！';
+          }
+          showModal('决斗落幕', winMsg);
         }, 1000);
       } else {
         STATE.iaido.roundNum++;
-        setTimeout(startIaidoRound, 2400);
+        if (STATE.iaido.roundTimer) clearTimeout(STATE.iaido.roundTimer);
+        STATE.iaido.roundTimer = setTimeout(startIaidoRound, 2400);
       }
     }
 
     function resetIaidoMatch() {
       initIaidoGame();
+    }
+
+    function setupIaidoInputs() {
+      const p1Zone = document.getElementById('iaido-touch-p1');
+      const p2Zone = document.getElementById('iaido-touch-p2');
+
+      if (p1Zone) {
+        p1Zone.addEventListener('pointerdown', (e) => {
+          e.preventDefault();
+          handleIaidoAction('P1');
+        });
+      }
+
+      if (p2Zone) {
+        p2Zone.addEventListener('pointerdown', (e) => {
+          e.preventDefault();
+          if (STATE.gameMode === 'LOCAL') {
+            handleIaidoAction('P2');
+          } else {
+            handleIaidoAction('P1');
+          }
+        });
+      }
+
+      window.addEventListener('keydown', (e) => {
+        if (STATE.currentGame !== 'IAIDO') return;
+        const code = e.code;
+        const key = e.key;
+
+        if (code === 'Space' || code === 'KeyA' || code === 'KeyL' || code === 'Enter' || key === ' ' || key === 'Enter') {
+          e.preventDefault();
+        }
+
+        // P1: KeyA, Space
+        if (code === 'KeyA' || code === 'Space' || key === 'a' || key === 'A' || key === ' ') {
+          handleIaidoAction('P1');
+        }
+        // P2: KeyL, Enter (only in LOCAL mode)
+        else if (STATE.gameMode === 'LOCAL' && (code === 'KeyL' || code === 'Enter' || key === 'l' || key === 'L' || key === 'Enter')) {
+          handleIaidoAction('P2');
+        }
+      });
     }
 
     // ==========================================================================
@@ -456,7 +563,9 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       initCommonHeader("拔刀居合斩 规则", `<p><strong>屏息凝神：</strong>屏幕变暗等待，切勿提前触碰，<strong>抢跑直接判负！</strong></p><br>
-          <p><strong>一击必杀：</strong>红光闪现「斬」字瞬间，以极限手速点击屏幕，快 1 毫秒者胜！率先赢下 3 胜者问鼎剑圣！</p>`, resetCurrentGame);
+          <p><strong>一击必杀：</strong>红光闪现「斬」字瞬间出刀！快 1 毫秒者胜！率先赢下 3 胜者问鼎剑圣！</p><br>
+          <p><strong>双人键位：</strong>P1 使用 <code>A</code> 或 <code>空格</code> (左半屏)；P2 使用 <code>L</code> 或 <code>回车</code> (右半屏)。</p>`, resetCurrentGame);
+      setupIaidoInputs();
       initIaidoGame();
     });
   </script>

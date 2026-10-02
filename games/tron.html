@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>极光光轮摩托 (Tron Light Cycles 4P) · 聚会游戏大厅</title>
+  <link rel="stylesheet" href="../common/common.css">
+  <style>
+    /* ==========================================================================
+       极光光轮摩托专属赛博竞技场 (TRON ARENA)
+       ========================================================================== */
+    .tron-wrapper {
+      width: 100%;
+      max-width: 760px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* 4人状态指示与比分栏 */
+    .tron-hud {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      width: 100%;
+    }
+    @media (max-width: 580px) {
+      .tron-hud {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px;
+      }
+    }
+
+    .tron-card {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 6px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      position: relative;
+      transition: all 0.25s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+    .tron-card.dead {
+      opacity: 0.45;
+      filter: grayscale(0.8);
+      border-color: #475569 !important;
+    }
+    .tron-card.p1 { border-left: 4px solid #ff4757; }
+    .tron-card.p2 { border-left: 4px solid #2ed573; }
+    .tron-card.p3 { border-left: 4px solid #1e90ff; }
+    .tron-card.p4 { border-left: 4px solid #ffa502; }
+
+    .tron-card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.82rem;
+      font-weight: 800;
+    }
+    .tron-card.p1 .tron-card-head { color: #ff6b81; }
+    .tron-card.p2 .tron-card-head { color: #7bed9f; }
+    .tron-card.p3 .tron-card-head { color: #70a1ff; }
+    .tron-card.p4 .tron-card-head { color: #eccc68; }
+
+    .tron-status-badge {
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .tron-card.dead .tron-status-badge {
+      background: rgba(239, 68, 68, 0.25);
+      color: #fca5a5;
+    }
+
+    .tron-card-body {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+    .tron-score {
+      font-size: 1.15rem;
+      font-weight: 900;
+      font-family: monospace;
+      color: #fff;
+    }
+    .tron-boost-pill {
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 6px;
+      background: rgba(56, 189, 248, 0.2);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: #38bdf8;
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+    }
+    .tron-boost-pill.used {
+      background: rgba(148, 163, 184, 0.1);
+      border-color: rgba(148, 163, 184, 0.2);
+      color: #64748b;
+    }
+    .tron-boost-pill.active {
+      background: linear-gradient(135deg, #f59e0b, #ef4444);
+      border-color: #fbbf24;
+      color: #fff;
+      box-shadow: 0 0 10px rgba(245, 158, 11, 0.6);
+      animation: pulseGlow 0.4s infinite alternate;
+    }
+    @keyframes pulseGlow {
+      from { transform: scale(0.96); filter: brightness(1); }
+      to { transform: scale(1.04); filter: brightness(1.3); }
+    }
+
+    /* 目标胜场配置条 */
+    .tron-meta-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+    }
+    .tron-target-toggle {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .tron-btn-opt {
+      background: #1e293b;
+      border: 1px solid #475569;
+      color: #cbd5e1;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tron-btn-opt.active {
+      background: #3b82f6;
+      border-color: #60a5fa;
+      color: #fff;
+      box-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
+    }
+
+    /* 游戏主画布容器 */
+    #tron-stage {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      max-height: 64vh;
+      background: #040812;
+      border: 2px solid #1e293b;
+      border-radius: 14px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(56, 189, 248, 0.1);
+    }
+    #tron-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      touch-action: none;
+    }
+
+    /* 倒计时与大字浮层 */
+    .tron-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(4, 8, 18, 0.65);
+      backdrop-filter: blur(4px);
+      z-index: 20;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .tron-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .tron-countdown-text {
+      font-size: 4.8rem;
+      font-weight: 900;
+      font-family: monospace;
+      color: #38bdf8;
+      text-shadow: 0 0 30px #38bdf8, 0 0 60px #0284c7;
+      animation: scalePop 0.8s ease-out;
+    }
+    .tron-round-notice {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #f8fafc;
+      text-shadow: 0 0 12px rgba(255, 255, 255, 0.5);
+      margin-top: 10px;
+    }
+    @keyframes scalePop {
+      0% { transform: scale(1.8); opacity: 0; }
+      50% { transform: scale(1); opacity: 1; }
+      100% { transform: scale(0.9); opacity: 0.9; }
+    }
+
+    /* 移动端 4 人独立触控按键区 */
+    .tron-touch-overlay {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .tron-touch-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      width: 100%;
+    }
+    .tron-touch-pad {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 6px 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+    }
+    .tron-pad-label {
+      font-size: 0.75rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .tron-pad-btns {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .tron-touch-btn {
+      width: 44px;
+      height: 44px;
+      background: #1e293b;
+      border: 1px solid #475569;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 1.05rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+      transition: all 0.1s;
+    }
+    .tron-touch-btn:active {
+      transform: scale(0.9);
+      background: #38bdf8;
+      border-color: #7dd3fc;
+      color: #0f172a;
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.8);
+    }
+    .tron-touch-btn.btn-boost {
+      width: 48px;
+      background: rgba(245, 158, 11, 0.2);
+      border-color: rgba(245, 158, 11, 0.5);
+      color: #fbbf24;
+      font-size: 0.82rem;
+    }
+    .tron-touch-btn.btn-boost:active {
+      background: #f59e0b;
+      color: #fff;
+    }
+
+    /* 键盘操作指南面板 */
+    .tron-key-hints {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 0.75rem;
+      color: #94a3b8;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+    }
+    @media (max-width: 580px) {
+      .tron-key-hints {
+        grid-template-columns: 1fr;
+      }
+    }
+    .tron-key-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .key-badge {
+      display: inline-block;
+      padding: 1px 6px;
+      background: #1e293b;
+      border: 1px solid #475569;
+      border-radius: 4px;
+      color: #e2e8f0;
+      font-family: monospace;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <div class="container in-game">
+    <!-- 通用顶栏 -->
+    <div class="game-header">
+      <a href="../index.html" class="nav-back">🔙 返回大厅</a>
+      <h2 class="game-title">🏍️ 极光光轮摩托 (Tron Light 4P)</h2>
+      <div class="header-actions">
+        <button class="btn-icon" id="btn-sound-toggle">🔊</button>
+        <button class="btn-icon" id="btn-rules-header">📖 规则</button>
+        <button class="btn-icon" id="restart-btn">🔄 重置</button>
+      </div>
+    </div>
+
+    <div class="tron-wrapper">
+      <!-- 模式切换选项卡 -->
+      <div class="mode-nav">
+        <div class="mode-tab active" id="tab-ai1" onclick="switchTronMode('AI1')">🤖 1P vs 1电脑</div>
+        <div class="mode-tab" id="tab-ai3" onclick="switchTronMode('AI3')">🤖 1P vs 3电脑</div>
+        <div class="mode-tab" id="tab-local2" onclick="switchTronMode('LOCAL2')">👥 2人同屏</div>
+        <div class="mode-tab" id="tab-local4" onclick="switchTronMode('LOCAL4')">👥👥 4人大乱斗</div>
+      </div>
+
+      <!-- 4 人即时状态卡片 -->
+      <div class="tron-hud">
+        <div class="tron-card p1" id="tron-card-p1">
+          <div class="tron-card-head">
+            <span id="tron-name-p1">🔴 P1 (红)</span>
+            <span class="tron-status-badge" id="tron-status-p1">存活</span>
+          </div>
+          <div class="tron-card-body">
+            <span class="tron-score" id="tron-score-p1">0</span>
+            <span class="tron-boost-pill" id="tron-boost-p1">⚡ 过载</span>
+          </div>
+        </div>
+
+        <div class="tron-card p2" id="tron-card-p2">
+          <div class="tron-card-head">
+            <span id="tron-name-p2">🟢 P2 (绿)</span>
+            <span class="tron-status-badge" id="tron-status-p2">存活</span>
+          </div>
+          <div class="tron-card-body">
+            <span class="tron-score" id="tron-score-p2">0</span>
+            <span class="tron-boost-pill" id="tron-boost-p2">⚡ 过载</span>
+          </div>
+        </div>
+
+        <div class="tron-card p3" id="tron-card-p3" style="display:none;">
+          <div class="tron-card-head">
+            <span id="tron-name-p3">🔵 P3 (蓝)</span>
+            <span class="tron-status-badge" id="tron-status-p3">存活</span>
+          </div>
+          <div class="tron-card-body">
+            <span class="tron-score" id="tron-score-p3">0</span>
+            <span class="tron-boost-pill" id="tron-boost-p3">⚡ 过载</span>
+          </div>
+        </div>
+
+        <div class="tron-card p4" id="tron-card-p4" style="display:none;">
+          <div class="tron-card-head">
+            <span id="tron-name-p4">🟡 P4 (黄)</span>
+            <span class="tron-status-badge" id="tron-status-p4">存活</span>
+          </div>
+          <div class="tron-card-body">
+            <span class="tron-score" id="tron-score-p4">0</span>
+            <span class="tron-boost-pill" id="tron-boost-p4">⚡ 过载</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 胜场目标控制 -->
+      <div class="tron-meta-bar">
+        <span>🏁 目标胜场设置:</span>
+        <div class="tron-target-toggle">
+          <button class="tron-btn-opt active" id="btn-target-3" onclick="setTronTargetScore(3)">抢 3 胜</button>
+          <button class="tron-btn-opt" id="btn-target-5" onclick="setTronTargetScore(5)">抢 5 胜</button>
+        </div>
+      </div>
+
+      <!-- 主竞技场画布 -->
+      <div class="stage-wrapper">
+        <div id="tron-stage">
+          <canvas id="tron-canvas"></canvas>
+          <div class="tron-overlay hidden" id="tron-overlay">
+            <div class="tron-countdown-text" id="tron-countdown-text">3</div>
+            <div class="tron-round-notice" id="tron-round-notice"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 移动端虚拟触控面板 -->
+      <div class="tron-touch-overlay" id="tron-touch-overlay">
+        <div class="tron-touch-grid">
+          <div class="tron-touch-pad" id="touch-pad-p1">
+            <span class="tron-pad-label" style="color:#ff6b81;">🔴 P1</span>
+            <div class="tron-pad-btns">
+              <button class="tron-touch-btn" onpointerdown="handleTouchTurn(1, 'left', event)" title="左转">↶</button>
+              <button class="tron-touch-btn" onpointerdown="handleTouchTurn(1, 'right', event)" title="右转">↷</button>
+              <button class="tron-touch-btn btn-boost" onpointerdown="handleTouchBoost(1, event)" title="过载">⚡</button>
+            </div>
+          </div>
+
+          <div class="tron-touch-pad" id="touch-pad-p2">
+            <span class="tron-pad-label" style="color:#7bed9f;">🟢 P2</span>
+            <div class="tron-pad-btns">
+              <button class="tron-touch-btn" onpointerdown="handleTouchTurn(2, 'left', event)" title="左转">↶</button>
+              <button class="tron-touch-btn" onpointerdown="handleTouchTurn(2, 'right', event)" title="右转">↷</button>
+              <button class="tron-touch-btn btn-boost" onpointerdown="handleTouchBoost(2, event)" title="过载">⚡</button>
+            </div>
+          </div>
+
+          <div class="tron-touch-pad" id="touch-pad-p3" style="display:none;">
+            <span class="tron-pad-label" style="color:#70a1ff;">🔵 P3</span>
+            <div class="tron-pad-btns">
+              <button class="tron-touch-btn" onpointerdown="handleTouchTurn(3, 'left', event)" title="左转">↶</button>
+              <button class="tron-touch-btn" onpointerdown="handleTouchTurn(3, 'right', event)" title="右转">↷</button>
+              <button class="tron-touch-btn btn-boost" onpointerdown="handleTouchBoost(3, event)" title="过载">⚡</button>
+            </div>
+          </div>
+
+          <div class="tron-touch-pad" id="touch-pad-p4" style="display:none;">
+            <span class="tron-pad-label" style="color:#eccc68;">🟡 P4</span>
+            <div class="tron-pad-btns">
+              <button class="tron-touch-btn" onpointerdown="handleTouchTurn(4, 'left', event)" title="左转">↶</button>
+              <button class="tron-touch-btn" onpointerdown="handleTouchTurn(4, 'right', event)" title="右转">↷</button>
+              <button class="tron-touch-btn btn-boost" onpointerdown="handleTouchBoost(4, event)" title="过载">⚡</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 键盘按键映射说明 -->
+      <div class="tron-key-hints">
+        <div class="tron-key-row">
+          <span style="color:#ff6b81; font-weight:800;">🔴 P1:</span>
+          <span><span class="key-badge">W</span><span class="key-badge">A</span><span class="key-badge">S</span><span class="key-badge">D</span> 转向，<span class="key-badge">Q</span> 过载加速</span>
+        </div>
+        <div class="tron-key-row">
+          <span style="color:#7bed9f; font-weight:800;">🟢 P2:</span>
+          <span><span class="key-badge">↑</span><span class="key-badge">←</span><span class="key-badge">↓</span><span class="key-badge">→</span> 转向，<span class="key-badge">Enter</span>/<span class="key-badge">M</span> 过载加速</span>
+        </div>
+        <div class="tron-key-row" id="hint-p3">
+          <span style="color:#70a1ff; font-weight:800;">🔵 P3:</span>
+          <span><span class="key-badge">I</span><span class="key-badge">J</span><span class="key-badge">K</span><span class="key-badge">L</span> 转向，<span class="key-badge">U</span> 过载加速</span>
+        </div>
+        <div class="tron-key-row" id="hint-p4">
+          <span style="color:#eccc68; font-weight:800;">🟡 P4:</span>
+          <span><span class="key-badge">8</span><span class="key-badge">4</span><span class="key-badge">5</span><span class="key-badge">6</span> 或 <span class="key-badge">TFGH</span> 转向，<span class="key-badge">R</span> 过载加速</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../common/audio.js"></script>
+  <script src="../common/common.js"></script>
+  <script src="./js/tron.js"></script>
+</body>
+</html>

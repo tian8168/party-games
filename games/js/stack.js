@@ -1,6 +1,9 @@
     // 11. 极光叠叠高核心逻辑 (STACK)
     // ==========================================================================
     function initStackGame() {
+      if (typeof closeModal === 'function') closeModal();
+      if (STATE.stack.modalTimer) { clearTimeout(STATE.stack.modalTimer); STATE.stack.modalTimer = null; }
+      if (STATE.stack.animId) { cancelAnimationFrame(STATE.stack.animId); STATE.stack.animId = null; }
       STATE.stack.score = 0;
       STATE.stack.combo = 0;
       STATE.stack.over = false;
@@ -113,7 +116,8 @@
         });
         STATE.stack.current = null;
         AUDIO.play('fall');
-        setTimeout(() => {
+        if (STATE.stack.modalTimer) clearTimeout(STATE.stack.modalTimer);
+        STATE.stack.modalTimer = setTimeout(() => {
           showModal('极光叠叠高 结算', `<h3>🏛️ 建造总层数: ${STATE.stack.score}</h3><br><p>节奏感极佳！点击任意位置可重新挑战更高摩天大厦！</p>`);
         }, 800);
         return;

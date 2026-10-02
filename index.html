@@ -628,7 +628,7 @@
         <span class="logo-icon">🕹️</span>
         <div class="brand-text">
           <h1>聚会游戏大厅</h1>
-          <span class="sub-title">17 款经典对战 · 原生秒开</span>
+          <span class="sub-title">19 款经典对战 · 原生秒开</span>
         </div>
       </div>
       <div class="header-right">
@@ -662,7 +662,7 @@
               <span>PARTY SYSTEM ONLINE · MATRIX v2.5</span>
             </div>
             <h2>🔥 聚会游戏大厅 · 随时开战</h2>
-            <p>17 款经典独立物理与博弈神作，支持单兵突破、双人同屏拼手速与 4 人大乱斗！</p>
+            <p>19 款经典独立物理与博弈神作，支持单兵突破、双人同屏拼手速与 4 人大乱斗！</p>
           </div>
           <button class="btn-random-pick" onclick="randomPickGame()" title="聚会破冰摇号">
             <span>🎲</span>
@@ -678,16 +678,146 @@
 
       <!-- 分类标签 -->
       <div class="category-bar">
-        <div class="category-pill active" onclick="filterLobby('ALL')">全部 (17)</div>
-        <div class="category-pill" onclick="filterLobby('4PLAYER')">👥👥 4人混战 (7)</div>
-        <div class="category-pill" onclick="filterLobby('STRATEGY')">🧠 策略博弈 (8)</div>
-        <div class="category-pill" onclick="filterLobby('MIND')">🔫 心理博弈 (1)</div>
-        <div class="category-pill" onclick="filterLobby('PHYSICS')">⚡ 物理对抗 (6)</div>
-        <div class="category-pill" onclick="filterLobby('REFLEX')">⚡ 极限手速 (2)</div>
+        <div class="category-pill active" data-cat-pill="ALL" onclick="filterLobby('ALL')">全部 (19)</div>
+        <div class="category-pill" data-cat-pill="4PLAYER" onclick="filterLobby('4PLAYER')">👥👥 4人混战 (4)</div>
+        <div class="category-pill" data-cat-pill="STRATEGY" onclick="filterLobby('STRATEGY')">🧠 策略博弈 (8)</div>
+        <div class="category-pill" data-cat-pill="MIND" onclick="filterLobby('MIND')">🔫 心理博弈 (2)</div>
+        <div class="category-pill" data-cat-pill="PHYSICS" onclick="filterLobby('PHYSICS')">⚡ 物理对抗 (7)</div>
+        <div class="category-pill" data-cat-pill="REFLEX" onclick="filterLobby('REFLEX')">⚡ 极限手速 (2)</div>
       </div>
 
       <!-- 主机大比例海报瀑布流 (Console Game Grid) -->
       <div class="game-grid" id="lobby-game-grid">
+
+    <!-- 🏍️ 极光光轮摩托 (Tron Light Cycles 4P) -->
+    <div class="game-card hero-card" data-cat="PHYSICS" data-players="4" onclick="enterGame('TRON')">
+      <div class="card-cover-wrapper">
+        <div class="card-art-canvas">
+          <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="tronBgGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#040814"/>
+                <stop offset="50%" stop-color="#0b172a"/>
+                <stop offset="100%" stop-color="#021c2e"/>
+              </linearGradient>
+              <filter id="tronNeonGlow">
+                <feGaussianBlur stdDeviation="3.5" result="glow"/>
+                <feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+            <rect width="320" height="180" fill="url(#tronBgGrad)"/>
+            <!-- Cyberpunk grid perspective lines -->
+            <path d="M0,40 L320,40 M0,80 L320,80 M0,120 L320,120 M0,150 L320,150" stroke="#0ea5e9" stroke-width="0.8" opacity="0.25"/>
+            <path d="M40,0 L10,180 M100,0 L80,180 M160,0 L160,180 M220,0 L240,180 M280,0 L310,180" stroke="#0ea5e9" stroke-width="0.8" opacity="0.2"/>
+            <!-- Red Bike and Light Trail -->
+            <path d="M10,135 L120,135 L120,75 L175,75" stroke="#ff4757" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#tronNeonGlow)"/>
+            <rect x="175" y="70" width="22" height="10" rx="3" fill="#ffffff" stroke="#ff4757" stroke-width="2" filter="url(#tronNeonGlow)"/>
+            <!-- Cyan Bike and Light Trail -->
+            <path d="M310,45 L200,45 L200,105 L145,105" stroke="#38bdf8" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#tronNeonGlow)"/>
+            <rect x="123" y="100" width="22" height="10" rx="3" fill="#ffffff" stroke="#38bdf8" stroke-width="2" filter="url(#tronNeonGlow)"/>
+            <!-- Sparks at intersection center -->
+            <circle cx="160" cy="90" r="4" fill="#fbbf24" filter="url(#tronNeonGlow)"/>
+            <line x1="150" y1="80" x2="170" y2="100" stroke="#fbbf24" stroke-width="2" opacity="0.8"/>
+            <line x1="170" y1="80" x2="150" y2="100" stroke="#fbbf24" stroke-width="2" opacity="0.8"/>
+            <!-- Logo overlay -->
+            <text x="160" y="165" font-family="'Segoe UI', monospace" font-size="12" font-weight="900" fill="#38bdf8" letter-spacing="3" text-anchor="middle" filter="url(#tronNeonGlow)">TRON CYCLES 4P</text>
+          </svg>
+        </div>
+        <div class="cover-badges">
+          <span class="badge-pill players-4">👥👥 1-4人同屏</span>
+          <span class="badge-pill tag-hot" style="background:linear-gradient(135deg,#0ea5e9,#2563eb);">⚡ 60FPS 极速封路</span>
+        </div>
+        <div class="cover-overlay"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="title-group">
+            <div class="card-main-title">
+              <span>极光光轮摩托</span>
+              <span class="card-sub" style="color:#38bdf8;">TRON LIGHT CYCLES</span>
+            </div>
+            <div class="card-tagline">赛博极速光轨封路 · 1.6倍速过载喷射与智能连通域AI</div>
+          </div>
+          <div class="btn-play-action" style="background:linear-gradient(135deg,#0284c7,#2563eb); box-shadow:0 4px 14px rgba(2,132,199,0.5);">极速开战 ▶</div>
+        </div>
+        <div class="card-meta-chips">
+          <span class="meta-chip">👥👥 4人单键盘无冲突</span>
+          <span class="meta-chip">Flood-Fill 连通域AI</span>
+          <span class="meta-chip accent">Canvas 2D 霓虹管线</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 💣 疯狂拆弹猫 (Bomb Cat) -->
+    <div class="game-card hero-card" data-cat="MIND" data-players="4" onclick="enterGame('BOMBCAT')">
+      <div class="card-cover-wrapper">
+        <div class="card-art-canvas">
+          <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="bombcatBg" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#450a0a"/>
+                <stop offset="50%" stop-color="#180b0b"/>
+                <stop offset="100%" stop-color="#2a0808"/>
+              </linearGradient>
+              <radialGradient id="bombGlow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#f59e0b"/>
+                <stop offset="50%" stop-color="#ef4444"/>
+                <stop offset="100%" stop-color="transparent"/>
+              </radialGradient>
+            </defs>
+            <rect width="320" height="180" fill="url(#bombcatBg)"/>
+            <!-- Bomb burst halo -->
+            <circle cx="160" cy="85" r="60" fill="url(#bombGlow)" opacity="0.35"/>
+            <!-- Ticking Bomb with Cat Ears -->
+            <circle cx="160" cy="95" r="38" fill="#1e1b2e" stroke="#ef4444" stroke-width="3"/>
+            <!-- Cat Ears -->
+            <polygon points="135,65 148,42 154,62" fill="#ef4444"/>
+            <polygon points="166,62 172,42 185,65" fill="#ef4444"/>
+            <!-- Fuse & Spark -->
+            <path d="M160,57 Q160,35 180,30" stroke="#fbbf24" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <circle cx="182" cy="29" r="6" fill="#f59e0b"/>
+            <circle cx="182" cy="29" r="3" fill="#ffffff"/>
+            <!-- Cat Face & Bomb Timer on Belly -->
+            <circle cx="148" cy="90" r="4.5" fill="#ffffff"/>
+            <circle cx="149" cy="90" r="2.5" fill="#000000"/>
+            <circle cx="172" cy="90" r="4.5" fill="#ffffff"/>
+            <circle cx="171" cy="90" r="2.5" fill="#000000"/>
+            <!-- Whiskers -->
+            <line x1="130" y1="95" x2="142" y2="97" stroke="#cbd5e1" stroke-width="1.5"/>
+            <line x1="130" y1="102" x2="142" y2="101" stroke="#cbd5e1" stroke-width="1.5"/>
+            <line x1="178" y1="97" x2="190" y2="95" stroke="#cbd5e1" stroke-width="1.5"/>
+            <line x1="178" y1="101" x2="190" y2="102" stroke="#cbd5e1" stroke-width="1.5"/>
+            <!-- Timer countdown -->
+            <rect x="146" y="110" width="28" height="14" rx="4" fill="#0f172a" stroke="#f59e0b" stroke-width="1"/>
+            <text x="160" y="121" font-family="monospace" font-size="10" font-weight="900" fill="#ef4444" text-anchor="middle">00:01</text>
+            <!-- Title -->
+            <text x="160" y="162" font-family="'Segoe UI', sans-serif" font-size="12" font-weight="900" fill="#f87171" letter-spacing="2" text-anchor="middle">BOMB CAT · 疯狂拆弹猫</text>
+          </svg>
+        </div>
+        <div class="cover-badges">
+          <span class="badge-pill players-4">👥👥 1-4人桌游</span>
+          <span class="badge-pill tag-hot" style="background:linear-gradient(135deg,#ef4444,#dc2626);">💣 心理博弈陷害</span>
+        </div>
+        <div class="cover-overlay"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="title-group">
+            <div class="card-main-title">
+              <span>疯狂拆弹猫</span>
+              <span class="card-sub" style="color:#f87171;">BOMB CAT LITE</span>
+            </div>
+            <div class="card-tagline">甩锅跳过与秘密埋雷 · 防偷看长按手牌与全矢量桌游</div>
+          </div>
+          <div class="btn-play-action" style="background:linear-gradient(135deg,#dc2626,#991b1b); box-shadow:0 4px 14px rgba(220,38,38,0.5);">拆弹开玩 ▶</div>
+        </div>
+        <div class="card-meta-chips">
+          <span class="meta-chip">🧯 7大精炼战术卡牌</span>
+          <span class="meta-chip">本地同屏防窥遮罩</span>
+          <span class="meta-chip accent">暗算埋雷心机博弈</span>
+        </div>
+      </div>
+    </div>
 
     <!-- 🕹️ FC 怀旧红白机厅 (800+ 经典原版) -->
     <div class="game-card hero-card" data-cat="PHYSICS" data-players="2" onclick="enterGame('NES')" style="background: linear-gradient(135deg, rgba(30, 27, 75, 0.8), rgba(15, 23, 42, 0.9)); border: 1px solid #6366f1;">
@@ -1189,7 +1319,7 @@
     </div>
   
 
-    <div class="game-card hero-card" data-cat="PHYSICS" data-players="4" onclick="enterGame('TANKTROUBLE')">
+    <div class="game-card hero-card" data-cat="PHYSICS" data-players="2" onclick="enterGame('TANKTROUBLE')">
       <div class="card-cover-wrapper">
         <div class="card-art-canvas">
           
@@ -1241,7 +1371,7 @@
   </svg>
         </div>
         <div class="cover-badges">
-          <span class="badge-pill players-4">👥 1-3人</span>
+          <span class="badge-pill players">👥 1-2人</span>
           <span class="badge-pill tag-new">🛡️ 经典弹射神作</span>
         </div>
         <div class="cover-overlay"></div>
@@ -1601,7 +1731,7 @@
     </div>
   
 
-    <div class="game-card" data-cat="REFLEX" data-players="4" onclick="enterGame('IAIDO')">
+    <div class="game-card" data-cat="REFLEX" data-players="2" onclick="enterGame('IAIDO')">
       <div class="card-cover-wrapper">
         <div class="card-art-canvas">
           
@@ -1637,7 +1767,7 @@
   </svg>
         </div>
         <div class="cover-badges">
-          <span class="badge-pill players-4">👥 1-4人</span>
+          <span class="badge-pill players">👥 1-2人</span>
           <span class="badge-pill tag-reflex">⚡ 极限反应</span>
         </div>
         <div class="cover-overlay"></div>
@@ -1662,7 +1792,7 @@
     </div>
   
 
-    <div class="game-card" data-cat="MIND" data-players="4" onclick="enterGame('LIARSDICE')">
+    <div class="game-card" data-cat="MIND" data-players="2" onclick="enterGame('LIARSDICE')">
       <div class="card-cover-wrapper">
         <div class="card-art-canvas">
           
@@ -1714,7 +1844,7 @@
   </svg>
         </div>
         <div class="cover-badges">
-          <span class="badge-pill players-4">👥👥 2-4人</span>
+          <span class="badge-pill players">👥 1-2人</span>
           <span class="badge-pill tag-hot">🎲 聚会之王</span>
         </div>
         <div class="cover-overlay"></div>
@@ -1739,7 +1869,7 @@
     </div>
   
 
-    <div class="game-card" data-cat="PHYSICS" data-players="4" onclick="enterGame('SUMO')">
+    <div class="game-card" data-cat="PHYSICS" data-players="2" onclick="enterGame('SUMO')">
       <div class="card-cover-wrapper">
         <div class="card-art-canvas">
           
@@ -1776,7 +1906,7 @@
   </svg>
         </div>
         <div class="cover-badges">
-          <span class="badge-pill players-4">👥 1-4人</span>
+          <span class="badge-pill players">👥 1-2人</span>
           <span class="badge-pill tag-new">🚗 魔性乱斗</span>
         </div>
         <div class="cover-overlay"></div>
@@ -1864,7 +1994,7 @@
     </div>
   
 
-    <div class="game-card" data-cat="REFLEX" data-players="4" onclick="enterGame('STACK')">
+    <div class="game-card" data-cat="REFLEX" data-players="1" onclick="enterGame('STACK')">
       <div class="card-cover-wrapper">
         <div class="card-art-canvas">
           
@@ -1910,7 +2040,7 @@
   </svg>
         </div>
         <div class="cover-badges">
-          <span class="badge-pill players-4">👥 1-4人</span>
+          <span class="badge-pill players">👤 1人挑战</span>
           <span class="badge-pill tag-reflex">🥞 强迫症福音</span>
         </div>
         <div class="cover-overlay"></div>
@@ -1965,7 +2095,9 @@
       'LIARSDICE': 'liarsdice.html',
       'SUMO': 'sumo.html',
       'TANK': 'tank.html',
-      'STACK': 'stack.html'
+      'STACK': 'stack.html',
+      'TRON': 'tron.html',
+      'BOMBCAT': 'bombcat.html'
     };
 
     const prefetchedLinks = new Set();
@@ -2015,7 +2147,7 @@
 
     function randomPickGame() {
       if (window.AUDIO) window.AUDIO.play('drop');
-      const gameKeys = ['NES', 'CONTRA', 'QUORIDOR', 'AEROPLANE', 'HOCKEY', 'GRAVITY', 'GRAVITY4', 'GRAVITY3D', 'GRAVITY3D4', 'GO', 'KAYA', 'IAIDO', 'LIARSDICE', 'SUMO', 'TANK', 'STACK', 'TANKTROUBLE'];
+      const gameKeys = ['NES', 'CONTRA', 'QUORIDOR', 'AEROPLANE', 'HOCKEY', 'GRAVITY', 'GRAVITY4', 'GRAVITY3D', 'GRAVITY3D4', 'GO', 'KAYA', 'IAIDO', 'LIARSDICE', 'SUMO', 'TANK', 'STACK', 'TANKTROUBLE', 'TRON', 'BOMBCAT'];
       const chosen = gameKeys[Math.floor(Math.random() * gameKeys.length)];
       const titles = {
         'NES': '🕹️ FC 怀旧街机厅 (800+ 经典原版)',
@@ -2034,7 +2166,9 @@
         'SUMO': '🚗 物理飞车相扑',
         'TANK': '🎯 极限抛物线',
         'STACK': '🥞 极光叠叠高',
-        'TANKTROUBLE': '🛡️ 坦克震荡 (Tank Trouble)'
+        'TANKTROUBLE': '🛡️ 坦克震荡 (Tank Trouble)',
+        'TRON': '🏍️ 极光光轮摩托 (Tron Light 4P)',
+        'BOMBCAT': '💣 疯狂拆弹猫 (Bomb Cat)'
       };
       showToast('🎲 聚会天命摇中：【' + titles[chosen] + '】！即刻启程！', 2000);
       setTimeout(() => {
@@ -2083,7 +2217,9 @@
           'SUMO': '🚗 飞车相扑',
           'TANK': '🎯 抛物线',
           'STACK': '🥞 叠叠高',
-          'TANKTROUBLE': '🛡️ 坦克震荡'
+          'TANKTROUBLE': '🛡️ 坦克震荡',
+          'TRON': '🏍️ 光轮摩托',
+          'BOMBCAT': '💣 拆弹猫'
         };
         recents.forEach(key => {
           if (!titles[key]) return;
@@ -2100,7 +2236,10 @@
       if (window.AUDIO) window.AUDIO.play('click');
       const pills = document.querySelectorAll('.category-pill');
       pills.forEach(p => p.classList.remove('active'));
-      if (typeof event !== 'undefined' && event && event.target) {
+      const targetPill = document.querySelector(`.category-pill[data-cat-pill="${category}"]`);
+      if (targetPill) {
+        targetPill.classList.add('active');
+      } else if (typeof event !== 'undefined' && event && event.target && event.target.classList) {
         event.target.classList.add('active');
       }
 
@@ -2115,6 +2254,14 @@
         }
       });
     }
+
+    window.addEventListener('pageshow', () => {
+      isNavigating = false;
+      document.querySelectorAll('.game-card.launching').forEach(c => c.classList.remove('launching'));
+      const loader = document.getElementById('top-nav-loader');
+      if (loader) loader.style.width = '0%';
+      renderRecentGames();
+    });
 
     window.addEventListener('DOMContentLoaded', () => {
       renderRecentGames();
@@ -2156,7 +2303,7 @@
           if (window.AUDIO) window.AUDIO.play('click');
           showModal('🎮 聚会游戏大厅说明', `
             <p><strong>欢迎来到聚会游戏大厅！</strong></p><br>
-            <p>本平台包含 <b>17 款</b> 纯前端原生高画质对抗游戏，涵盖策略博弈、物理对抗、心理博弈与手速竞技四大类。</p><br>
+            <p>本平台包含 <b>19 款</b> 纯前端原生高画质对抗游戏，涵盖策略博弈、物理对抗、心理博弈与手速竞技四大类。</p><br>
             <p><strong>游戏独立化架构：</strong>每个游戏均拥有专属独立 HTML 页面，零依赖极速秒开，支持人机对弈、本地同屏与好友联机！</p><br>
             <p><strong>操作提示：</strong>点击任意游戏卡片即可直接进入游戏。在游戏内点击顶部的 <b>【◀ 返回大厅】</b> 可随时返回。</p>
           `);

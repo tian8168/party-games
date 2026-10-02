@@ -6,6 +6,10 @@
         cancelAnimationFrame(STATE.tanktrouble.animId);
         STATE.tanktrouble.animId = null;
       }
+      if (STATE.tanktrouble.modalTimer) {
+        clearTimeout(STATE.tanktrouble.modalTimer);
+        STATE.tanktrouble.modalTimer = null;
+      }
       if (STATE.tanktrouble.nextRoundTimer) {
         clearTimeout(STATE.tanktrouble.nextRoundTimer);
         STATE.tanktrouble.nextRoundTimer = null;
@@ -42,6 +46,14 @@
     }
 
     function resetTankTroubleMatch() {
+      if (STATE.tanktrouble.modalTimer) {
+        clearTimeout(STATE.tanktrouble.modalTimer);
+        STATE.tanktrouble.modalTimer = null;
+      }
+      if (STATE.tanktrouble.nextRoundTimer) {
+        clearTimeout(STATE.tanktrouble.nextRoundTimer);
+        STATE.tanktrouble.nextRoundTimer = null;
+      }
       STATE.tanktrouble.p1Score = 0;
       STATE.tanktrouble.p2Score = 0;
       STATE.tanktrouble.p3Score = 0;
@@ -768,13 +780,17 @@
       const target = STATE.tanktrouble.targetScore;
       if (STATE.tanktrouble.p1Score >= target) {
         STATE.tanktrouble.matchOver = true;
-        setTimeout(() => {
+        if (STATE.tanktrouble.modalTimer) clearTimeout(STATE.tanktrouble.modalTimer);
+        STATE.tanktrouble.modalTimer = setTimeout(() => {
+          if (!STATE.tanktrouble.matchOver || STATE.currentGame !== 'TANKTROUBLE') return;
           AUDIO.play('goal');
           showModal('🏆 终极总冠军！', `<p><b>🔴 玩家 1 (红坦克)</b> 以 <b>${STATE.tanktrouble.p1Score} : ${STATE.tanktrouble.p2Score}</b> 彻底统治迷宫，荣获总冠军！</p>`);
         }, 600);
       } else if (STATE.tanktrouble.p2Score >= target) {
         STATE.tanktrouble.matchOver = true;
-        setTimeout(() => {
+        if (STATE.tanktrouble.modalTimer) clearTimeout(STATE.tanktrouble.modalTimer);
+        STATE.tanktrouble.modalTimer = setTimeout(() => {
+          if (!STATE.tanktrouble.matchOver || STATE.currentGame !== 'TANKTROUBLE') return;
           AUDIO.play('goal');
           const winnerName = STATE.gameMode === 'AI' ? '🤖 机器人 (AI)' : '🟢 玩家 2 (绿坦克)';
           showModal('🏆 终极总冠军！', `<p><b>${winnerName}</b> 以 <b>${STATE.tanktrouble.p2Score} : ${STATE.tanktrouble.p1Score}</b> 彻底统治迷宫，荣获总冠军！</p>`);

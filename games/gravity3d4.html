@@ -177,7 +177,8 @@
         board: Array.from({ length: 4 }, () => Array.from({ length: 4 }, () => new Array(4).fill(0))),
         hoverRod: null,
         winningLine: null,
-        lastMove: null
+        lastMove: null,
+        aiTimer: null
       }
     };
 
@@ -506,7 +507,7 @@
     }
 
     function runGravity3DAI() {
-      if (STATE.winner) return;
+      if (STATE.winner || STATE.turn !== 2) return;
       const b = STATE.gravity3d.board;
       let bestRod = null;
       let maxScore = -Infinity;
@@ -543,7 +544,7 @@
     }
 
     function runGravity3D4AI() {
-      if (STATE.winner) return;
+      if (STATE.winner || STATE.turn !== 2) return;
       const b = STATE.gravity3d4.board;
       let bestRod = null;
       let maxScore = -Infinity;
@@ -943,7 +944,10 @@
 
       if (!STATE.winner && STATE.gameMode === 'AI' && STATE.turn === 2) {
         STATE.animating = true;
-        setTimeout(() => {
+        if (STATE.gravity3d4 && STATE.gravity3d4.aiTimer) {
+          clearTimeout(STATE.gravity3d4.aiTimer);
+        }
+        STATE.gravity3d4.aiTimer = setTimeout(() => {
           if (typeof runGravity3D4AI === 'function') runGravity3D4AI();
           STATE.animating = false;
           if (typeof update3DScene === 'function') update3DScene();
@@ -952,12 +956,16 @@
     }
 
     function initGravity3D4() {
+      if (STATE.gravity3d4 && STATE.gravity3d4.aiTimer) {
+        clearTimeout(STATE.gravity3d4.aiTimer);
+      }
       STATE.winner = null;
       STATE.turn = 1;
       STATE.animating = false;
       if (!STATE.gravity3d4) {
         STATE.gravity3d4 = {};
       }
+      STATE.gravity3d4.aiTimer = null;
       STATE.gravity3d4.board = Array.from({ length: 4 }, () => Array.from({ length: 4 }, () => new Array(4).fill(0)));
       STATE.gravity3d4.hoverRod = null;
       STATE.gravity3d4.winningLine = null;

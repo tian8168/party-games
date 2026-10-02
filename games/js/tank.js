@@ -1,14 +1,21 @@
     // 10. 极限抛物线弹道核心逻辑 (TANK)
     // ==========================================================================
     function initTankGame() {
+      if (STATE.tank.modalTimer) { clearTimeout(STATE.tank.modalTimer); STATE.tank.modalTimer = null; }
+      if (STATE.tank.aiTimer) { clearTimeout(STATE.tank.aiTimer); STATE.tank.aiTimer = null; }
+      if (STATE.tank.animId) { cancelAnimationFrame(STATE.tank.animId); STATE.tank.animId = null; }
       STATE.tank.p1Hp = 100;
       STATE.tank.p2Hp = 100;
       STATE.tank.bullet = null;
       STATE.turn = 1;
+      const hp1 = document.getElementById('tank-hp-p1');
+      const hp2 = document.getElementById('tank-hp-p2');
+      if (hp1) hp1.style.width = '100%';
+      if (hp2) hp2.style.width = '100%';
       resizeTankCanvas();
       generateTankTerrain();
       updateTankWind();
-      updateTankAimHUD();
+      syncTankControlsUI();
       renderTank();
     }
 
@@ -44,23 +51,58 @@
       badge.textContent = `💨 风向: ${dir} ${Math.abs(STATE.tank.wind)} m/s`;
     }
 
+    function syncTankControlsUI() {
+      const curTank = STATE.turn === 1 ? STATE.tank.tank1 : STATE.tank.tank2;
+      const angleSlider = document.getElementById('tank-angle-slider');
+      const powerSlider = document.getElementById('tank-power-slider');
+      const angleVal = document.getElementById('tank-angle-val');
+      const powerVal = document.getElementById('tank-power-val');
+      const fireBtn = document.getElementById('btn-tank-fire');
+      const p2Label = document.getElementById('tank-p2-label');
+
+      if (p2Label) {
+        p2Label.textContent = STATE.gameMode === 'LOCAL' ? '🟢 玩家 2' : '🟢 电脑坦克';
+      }
+      if (angleSlider && curTank) angleSlider.value = curTank.angle;
+      if (powerSlider && curTank) powerSlider.value = curTank.power;
+      if (angleVal && curTank) angleVal.textContent = `${curTank.angle}°`;
+      if (powerVal && curTank) powerVal.textContent = `${curTank.power}%`;
+
+      if (fireBtn) {
+        if (STATE.turn === 1) {
+          fireBtn.disabled = false;
+          fireBtn.textContent = '🔥 🔴 P1 发射炮弹！';
+        } else if (STATE.turn === 2 && STATE.gameMode === 'LOCAL') {
+          fireBtn.disabled = false;
+          fireBtn.textContent = '🔥 🟢 P2 发射炮弹！';
+        } else if (STATE.turn === 2 && STATE.gameMode === 'AI') {
+          fireBtn.disabled = true;
+          fireBtn.textContent = '🤖 电脑锁定瞄准中...';
+        }
+      }
+    }
+
     function updateTankAimHUD() {
       const angle = document.getElementById('tank-angle-slider').value;
       const power = document.getElementById('tank-power-slider').value;
       document.getElementById('tank-angle-val').textContent = `${angle}°`;
       document.getElementById('tank-power-val').textContent = `${power}%`;
 
-      if (STATE.turn === 1) {
-        STATE.tank.tank1.angle = parseInt(angle);
-        STATE.tank.tank1.power = parseInt(power);
-      }
+      const curTank = STATE.turn === 1 ? STATE.tank.tank1 : STATE.tank.tank2;
+      curTank.angle = parseInt(angle);
+      curTank.power = parseInt(power);
       renderTank();
     }
 
     function fireTankPlayer() {
-      if (STATE.turn !== 1 || STATE.tank.bullet) return;
-      const t1 = STATE.tank.tank1;
-      fireTankBullet(t1.x, t1.y - 6, t1.angle, t1.power, 1);
+      if (STATE.tank.bullet) return;
+      if (STATE.turn === 1) {
+        const t1 = STATE.tank.tank1;
+        fireTankBullet(t1.x, t1.y - 6, t1.angle, t1.power, 1);
+      } else if (STATE.turn === 2 && STATE.gameMode === 'LOCAL') {
+        const t2 = STATE.tank.tank2;
+        fireTankBullet(t2.x, t2.y - 6, t2.angle, t2.power, 2);
+      }
     }
 
     function fireTankBullet(startX, startY, angleDeg, powerVal, shooter) {
@@ -170,20 +212,27 @@
       renderTank();
 
       if (STATE.tank.p1Hp <= 0 || STATE.tank.p2Hp <= 0) {
-        setTimeout(() => {
-          showModal('坦克大战 战报', STATE.tank.p1Hp > 0 ? '🏆 神级高抛！你成功轰平了对方的防御！' : '💀 战车装甲破损，敌方炮火更胜一筹！');
+        if (STATE.tank.modalTimer) clearTimeout(STATE.tank.modalTimer);
+        STATE.tank.modalTimer = setTimeout(() => {
+          const winMsg = STATE.tank.p1Hp > 0
+            ? '🏆 🔴 玩家 1 获胜！神级高抛轰平了对方的防御！'
+            : (STATE.gameMode === 'LOCAL' ? '🏆 🟢 玩家 2 获胜！精准弹道彻底摧毁红方战车！' : '💀 战车装甲破损，敌方炮火更胜一筹！');
+          showModal('坦克大战 战报', winMsg);
         }, 1000);
       } else {
         STATE.turn = STATE.turn === 1 ? 2 : 1;
         updateTankWind();
+        if (typeof updateScoreboard === 'function') updateScoreboard();
+        syncTankControlsUI();
         if (STATE.turn === 2 && STATE.gameMode === 'AI') {
-          setTimeout(runTankAI, 1400);
+          if (STATE.tank.aiTimer) clearTimeout(STATE.tank.aiTimer);
+          STATE.tank.aiTimer = setTimeout(runTankAI, 1400);
         }
       }
     }
 
     function runTankAI() {
-      if (STATE.turn !== 2 || STATE.tank.bullet) return;
+      if (STATE.turn !== 2 || STATE.tank.bullet || STATE.tank.p1Hp <= 0 || STATE.tank.p2Hp <= 0) return;
       const t2 = STATE.tank.tank2;
       const t1 = STATE.tank.tank1;
 
