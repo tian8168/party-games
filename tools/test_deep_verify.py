@@ -102,10 +102,10 @@ def run_deep_verification():
     print("\n--- [2] Service Worker App Shell Pre-caching ---")
     with open('sw.js', 'r', encoding='utf-8') as fp:
         sw_content = fp.read()
-    assert 'party-arcade-v2.2' in sw_content
+    assert 'party-arcade-v2.2' in sw_content or 'party-arcade-v2.3' in sw_content
     for required_file in ['./games/tron.html', './games/js/tron.js', './games/bombcat.html', './games/js/bombcat.js']:
         assert required_file in sw_content, f"{required_file} must be in sw.js APP_SHELL"
-    print("  [PASS] Service Worker version party-arcade-v2.2 and new games precache verified.")
+    print("  [PASS] Service Worker cache version and new games precache verified.")
 
     # 3. AUDIO
     print("\n--- [3] Web Audio Synthesizer Sounds ---")

@@ -6,7 +6,7 @@
  * 3. 动态信令 (WebSocket/MQTT)：直连放行
  */
 
-const CACHE_NAME = 'party-arcade-v2.2';
+const CACHE_NAME = 'party-arcade-v2.3';
 
 const APP_SHELL = [
   './',
@@ -42,13 +42,25 @@ const APP_SHELL = [
   './games/contra_canvas.html',
   './games/nes.html',
   './games/tron.html',
-  './games/js/tron.js',
   './games/bombcat.html',
+  './games/js/aeroplane.js',
   './games/js/bombcat.js',
   './games/js/contra.js',
+  './games/js/gravity.js',
+  './games/js/gravity3d.js',
+  './games/js/gravity4.js',
+  './games/js/hockey.js',
+  './games/js/iaido.js',
   './games/js/jsnes.min.js',
-  './games/js/nostalgist.umd.js',
+  './games/js/liarsdice.js',
   './games/js/nes_netplay.js',
+  './games/js/nostalgist.umd.js',
+  './games/js/quoridor.js',
+  './games/js/stack.js',
+  './games/js/sumo.js',
+  './games/js/tank.js',
+  './games/js/tanktrouble.js',
+  './games/js/tron.js',
   './games/roms/roms_index.json',
   './games/roms/contra.nes',
   './games/roms/contra_30lives.nes'
