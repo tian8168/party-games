@@ -38,6 +38,18 @@
       -webkit-user-select: none;
       margin: 0;
       padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      overflow-x: hidden;
+      width: 100%;
+      max-width: 100vw;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    button, select, input, a, .btn, .game-card, .category-pill, .filter-pill, .recent-pill, .dock-btn, .dock-item, .mobile-dock {
+      touch-action: manipulation;
     }
 
     body {
@@ -1151,7 +1163,133 @@
       gap: 6px;
     }
 
-    
+    /* ====================================================================
+       移动端底部悬浮常驻导航坞 (Mobile Bottom Floating Glass Dock)
+       ==================================================================== */
+    .mobile-dock {
+      display: none;
+      position: fixed;
+      left: 50%;
+      bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+      transform: translateX(-50%);
+      width: calc(100% - 28px);
+      max-width: 440px;
+      height: 62px;
+      background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 28px;
+      box-shadow: 0 10px 32px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+      z-index: 1000;
+      align-items: center;
+      justify-content: space-around;
+      padding: 0 8px;
+      box-sizing: border-box;
+      touch-action: manipulation;
+    }
+
+    @media (max-width: 768px) {
+      .mobile-dock {
+        display: flex;
+      }
+
+      body {
+        padding-bottom: calc(90px + env(safe-area-inset-bottom, 0px)) !important;
+      }
+
+      .container {
+        padding-bottom: 0 !important;
+      }
+    }
+
+    .dock-btn, .dock-item {
+      flex: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      color: var(--text-muted, #94a3b8);
+      gap: 3px;
+      padding: 4px 2px;
+      border-radius: 18px;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      transition: all 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+      user-select: none;
+      text-decoration: none;
+    }
+
+    .dock-btn:hover, .dock-btn:focus-visible {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .dock-btn:active {
+      transform: scale(0.92);
+      color: #fff;
+      background: rgba(255, 255, 255, 0.14);
+    }
+
+    .dock-btn-icon, .dock-icon {
+      font-size: 1.25rem;
+      line-height: 1;
+      display: inline-block;
+      transition: transform 0.18s ease;
+    }
+
+    .dock-btn:active .dock-btn-icon {
+      transform: scale(1.15);
+    }
+
+    .dock-btn-text, .dock-label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .dock-btn.sound-muted {
+      color: #f87171;
+    }
+
+    /* 天命随机卡片高亮脉冲流光 */
+    @keyframes cardHighlightPulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.8);
+        transform: scale(1);
+      }
+      50% {
+        box-shadow: 0 0 35px 8px rgba(56, 189, 248, 0.95);
+        transform: scale(1.03);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(56, 189, 248, 0);
+        transform: scale(1);
+      }
+    }
+
+    .card-highlight-pulse {
+      animation: cardHighlightPulse 1.2s ease-out;
+      border-color: rgba(56, 189, 248, 0.9) !important;
+    }
+
+    /* 底部专属页脚 */
+    .lobby-footer {
+      width: 100%;
+      margin-top: 24px;
+      padding: 16px 12px;
+      text-align: center;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
   </style>
 </head>
 <body>
@@ -2690,11 +2828,33 @@
       </div>
     </div>
 
-    <!-- ====================================================================
-         游戏房间视图 (GAME VIEW)
-         ==================================================================== -->
-    
+    <!-- 专属页脚 (LOBBY FOOTER) -->
+    <footer class="lobby-footer" id="lobby-footer">
+      <div>🎮 聚会游戏大厅 · Party Arcade Hub · 纯前端零依赖街机厅</div>
+    </footer>
   </div>
+
+  <!-- ====================================================================
+       移动端底部悬浮常驻导航坞 (Mobile Floating Glass Dock)
+       ==================================================================== -->
+  <nav class="mobile-dock" id="mobile-dock" aria-label="移动端快捷导航坞">
+    <button class="dock-btn dock-item" id="dock-btn-home" onclick="dockScrollToTop()" aria-label="大厅置顶" title="大厅/置顶">
+      <span class="dock-btn-icon dock-icon">🏠</span>
+      <span class="dock-btn-text dock-label">大厅</span>
+    </button>
+    <button class="dock-btn dock-item" id="dock-btn-random" onclick="pickRandomGame()" aria-label="天命随机" title="天命随机">
+      <span class="dock-btn-icon dock-icon">🎲</span>
+      <span class="dock-btn-text dock-label">天命随机</span>
+    </button>
+    <button class="dock-btn dock-item" id="dock-btn-search" onclick="dockFocusSearch()" aria-label="快速搜索" title="快速搜索">
+      <span class="dock-btn-icon dock-icon">🔍</span>
+      <span class="dock-btn-text dock-label">快速搜索</span>
+    </button>
+    <button class="dock-btn dock-item" id="dock-btn-sound" onclick="dockToggleSound()" aria-label="全局音效" title="全局音效">
+      <span class="dock-btn-icon dock-icon" id="dock-sound-icon">🔊</span>
+      <span class="dock-btn-text dock-label" id="dock-sound-label">音效</span>
+    </button>
+  </nav>
 
   <script src="common/audio.js"></script>
   <script src="common/common.js"></script>
@@ -2740,6 +2900,8 @@
       if (isNavigating) return;
       isNavigating = true;
 
+      if (typeof triggerHaptic === 'function') triggerHaptic('light');
+
       // 1. 0ms 视觉即时响应反馈
       const targetCard = (e && e.currentTarget) || (typeof event !== 'undefined' && event ? event.currentTarget : null);
       if (targetCard && targetCard.classList) {
@@ -2768,10 +2930,99 @@
       launchGame(gameKey, typeof event !== 'undefined' ? event : null);
     }
 
-    function randomPickGame() {
-      if (window.AUDIO) window.AUDIO.play('drop');
-      const gameKeys = ['NES', 'CONTRA', 'QUORIDOR', 'AEROPLANE', 'HOCKEY', 'GRAVITY', 'GRAVITY4', 'GRAVITY3D', 'GRAVITY3D4', 'GO', 'KAYA', 'IAIDO', 'LIARSDICE', 'SUMO', 'TANK', 'STACK', 'TANKTROUBLE', 'TRON', 'BOMBCAT'];
-      const chosen = gameKeys[Math.floor(Math.random() * gameKeys.length)];
+    // ==========================================================================
+    // 移动端底部悬浮 Dock 核心交互与天命随机 (Mobile Dock Actions & Random Pick)
+    // ==========================================================================
+    function dockScrollToTop() {
+      if (typeof triggerHaptic === 'function') triggerHaptic('light');
+      if (window.AUDIO) try { window.AUDIO.play('click'); } catch(e) {}
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function dockFocusSearch() {
+      if (typeof triggerHaptic === 'function') triggerHaptic('light');
+      if (window.AUDIO) try { window.AUDIO.play('click'); } catch(e) {}
+      const searchInput = document.getElementById('game-search-input');
+      if (searchInput) {
+        const searchBox = document.querySelector('.search-box-wrapper') || searchInput;
+        searchBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // 同步唤起虚拟软键盘（针对移动端 WebKit 手势限制）
+        try { searchInput.focus(); } catch(err) {}
+        setTimeout(() => {
+          try {
+            searchInput.focus({ preventScroll: true });
+          } catch(err) {
+            searchInput.focus();
+          }
+        }, 260);
+      }
+    }
+
+    function syncSoundUI(enabled) {
+      if (enabled === undefined && window.AUDIO) {
+        enabled = window.AUDIO.enabled;
+      }
+      const isMuted = !enabled;
+      const icon = enabled ? '🔊' : '🔇';
+      const soundBtn = document.getElementById('btn-sound-toggle');
+      if (soundBtn) {
+        soundBtn.textContent = icon;
+        soundBtn.title = enabled ? '音效：开启 (点击静音)' : '音效：静音 (点击开启)';
+        soundBtn.setAttribute('aria-label', soundBtn.title);
+      }
+      const dockSoundIcon = document.getElementById('dock-sound-icon');
+      if (dockSoundIcon) dockSoundIcon.textContent = icon;
+      const dockSoundLabel = document.getElementById('dock-sound-label');
+      if (dockSoundLabel) dockSoundLabel.textContent = enabled ? '音效' : '静音';
+      const dockSoundBtn = document.getElementById('dock-btn-sound');
+      if (dockSoundBtn) {
+        dockSoundBtn.classList.toggle('sound-muted', isMuted);
+        dockSoundBtn.title = enabled ? '全局音效 (已开启)' : '全局音效 (已静音)';
+        dockSoundBtn.setAttribute('aria-label', dockSoundBtn.title);
+        dockSoundBtn.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+      }
+    }
+
+    function dockToggleSound() {
+      if (typeof triggerHaptic === 'function') triggerHaptic('light');
+      if (window.AUDIO) {
+        const enabled = window.AUDIO.toggle();
+        syncSoundUI(enabled);
+        showToast(enabled ? '🔊 音效已开启' : '🔇 音效已静音');
+      }
+    }
+
+    let randomPickTimer = null;
+
+    function pickRandomGame() {
+      if (isNavigating) return;
+      if (typeof triggerHaptic === 'function') triggerHaptic('medium');
+      if (window.AUDIO) try { window.AUDIO.play('drop'); } catch(e) {}
+
+      if (randomPickTimer) {
+        clearTimeout(randomPickTimer);
+        randomPickTimer = null;
+      }
+      document.querySelectorAll('.game-card.card-highlight-pulse').forEach(c => c.classList.remove('card-highlight-pulse'));
+
+      const allCards = Array.from(document.querySelectorAll('.game-card'));
+      const visibleCards = allCards.filter(c => c.style.display !== 'none');
+      let chosenCard;
+      if (visibleCards.length > 0) {
+        chosenCard = visibleCards[Math.floor(Math.random() * visibleCards.length)];
+      } else {
+        resetAllFilters();
+        chosenCard = allCards[Math.floor(Math.random() * allCards.length)];
+      }
+
+      const chosen = chosenCard ? (chosenCard.dataset.gameKey || 'NES') : 'NES';
+
+      if (chosenCard) {
+        chosenCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        chosenCard.classList.add('card-highlight-pulse');
+        setTimeout(() => chosenCard.classList.remove('card-highlight-pulse'), 1500);
+      }
+
       const titles = {
         'NES': '🕹️ FC 怀旧街机厅 (800+ 经典原版)',
         'CONTRA': '💥 魂斗罗 (Contra)',
@@ -2793,11 +3044,20 @@
         'TRON': '🏍️ 极光光轮摩托 (Tron Light 4P)',
         'BOMBCAT': '💣 疯狂拆弹猫 (Bomb Cat)'
       };
-      showToast('🎲 聚会天命摇中：【' + titles[chosen] + '】！即刻启程！', 2000);
-      setTimeout(() => {
-        launchGame(chosen);
-      }, 500);
+      const titleName = titles[chosen] || chosen;
+      showToast('🎲 聚会天命摇中：【' + titleName + '】！即刻启程！', 2000);
+
+      randomPickTimer = setTimeout(() => {
+        randomPickTimer = null;
+        launchGame(chosen, chosenCard ? { currentTarget: chosenCard } : null);
+      }, 650);
     }
+
+    function randomPickGame() {
+      pickRandomGame();
+    }
+    window.pickRandomGame = pickRandomGame;
+    window.randomPickGame = randomPickGame;
 
     function recordRecentGame(gameKey) {
       try {
@@ -2961,18 +3221,21 @@
     }
 
     function nextHeroSlide() {
+      if (typeof triggerHaptic === 'function') triggerHaptic('light');
       if (window.AUDIO) try { window.AUDIO.play('click'); } catch(e) {}
       renderHeroSlide(heroIndex + 1);
       restartHeroTimer();
     }
 
     function prevHeroSlide() {
+      if (typeof triggerHaptic === 'function') triggerHaptic('light');
       if (window.AUDIO) try { window.AUDIO.play('click'); } catch(e) {}
       renderHeroSlide(heroIndex - 1);
       restartHeroTimer();
     }
 
     function goToHeroSlide(idx) {
+      if (typeof triggerHaptic === 'function') triggerHaptic('light');
       if (window.AUDIO) try { window.AUDIO.play('click'); } catch(e) {}
       renderHeroSlide(idx);
       restartHeroTimer();
@@ -3041,6 +3304,7 @@
     let activeSearchQuery = '';
 
     function setPlayerFilter(player) {
+      if (typeof triggerHaptic === 'function') triggerHaptic('light');
       if (window.AUDIO) try { window.AUDIO.play('click'); } catch(e) {}
       activePlayerFilter = player;
       document.querySelectorAll('[data-player-filter]').forEach(btn => {
@@ -3050,6 +3314,7 @@
     }
 
     function setCategoryFilter(cat) {
+      if (typeof triggerHaptic === 'function') triggerHaptic('light');
       if (window.AUDIO) try { window.AUDIO.play('click'); } catch(e) {}
       activeCatFilter = cat;
       document.querySelectorAll('[data-cat-filter]').forEach(btn => {
@@ -3121,6 +3386,7 @@
     }
 
     function clearSearch() {
+      if (typeof triggerHaptic === 'function') triggerHaptic('light');
       const input = document.getElementById('game-search-input');
       if (input) {
         input.value = '';
@@ -3135,6 +3401,7 @@
     }
 
     function resetAllFilters() {
+      if (typeof triggerHaptic === 'function') triggerHaptic('medium');
       if (window.AUDIO) try { window.AUDIO.play('click'); } catch(e) {}
       activePlayerFilter = 'ALL';
       activeCatFilter = 'ALL';
@@ -3211,6 +3478,7 @@
     // 3. 视图切换: 海报大图 vs 紧凑列表 (View Mode Toggle)
     // ==========================================================================
     function setViewMode(mode, playSound = false) {
+      if (playSound && typeof triggerHaptic === 'function') triggerHaptic('light');
       if (playSound && window.AUDIO) try { window.AUDIO.play('click'); } catch(e) {}
       const targetMode = mode === 'compact' ? 'compact' : 'poster';
       try {
@@ -3249,9 +3517,15 @@
     window.addEventListener('pageshow', () => {
       isNavigating = false;
       document.querySelectorAll('.game-card.launching, .btn-hero-launch.launching').forEach(c => c.classList.remove('launching'));
+      document.querySelectorAll('.game-card.card-highlight-pulse').forEach(c => c.classList.remove('card-highlight-pulse'));
+      if (randomPickTimer) {
+        clearTimeout(randomPickTimer);
+        randomPickTimer = null;
+      }
       const loader = document.getElementById('top-nav-loader');
       if (loader) loader.style.width = '0%';
       renderRecentGames();
+      syncSoundUI();
       startHeroTimer();
     });
 
@@ -3279,15 +3553,13 @@
       // 音效按钮
       const soundBtn = document.getElementById('btn-sound-toggle');
       if (soundBtn) {
-        const updateSoundIcon = () => {
-          soundBtn.textContent = (window.AUDIO && window.AUDIO.enabled) ? '🔊' : '🔇';
-        };
-        updateSoundIcon();
+        syncSoundUI();
         soundBtn.onclick = () => {
+          if (typeof triggerHaptic === 'function') triggerHaptic('light');
           if (window.AUDIO) {
-            window.AUDIO.toggle();
-            updateSoundIcon();
-            showToast(window.AUDIO.enabled ? '音效已开启' : '音效已静音');
+            const enabled = window.AUDIO.toggle();
+            syncSoundUI(enabled);
+            showToast(enabled ? '音效已开启' : '音效已静音');
           }
         };
       }
@@ -3296,6 +3568,7 @@
       const rulesBtn = document.getElementById('btn-rules-header');
       if (rulesBtn) {
         rulesBtn.onclick = () => {
+          if (typeof triggerHaptic === 'function') triggerHaptic('light');
           if (window.AUDIO) window.AUDIO.play('click');
           showModal('🎮 聚会游戏大厅说明', `
             <p><strong>欢迎来到聚会游戏大厅！</strong></p><br>

@@ -195,10 +195,88 @@ function stopConfetti() {
 }
 
 // ==========================================================================
+// 📳 移动端 Web 触觉反馈引擎 (Web Haptic Feedback Engine)
+// ==========================================================================
+const HAPTIC_PATTERNS = {
+  light: 15,
+  medium: 30,
+  heavy: 70,
+  success: [30, 40, 50],
+  warning: [40, 40, 40]
+};
+
+const HAPTIC_PRIORITIES = {
+  light: 1,
+  medium: 2,
+  warning: 3,
+  heavy: 4,
+  success: 5
+};
+
+let _lastHapticTime = 0;
+let _lastHapticEndTime = 0;
+let _lastHapticPriority = 0;
+
+function triggerHaptic(type = 'light') {
+  try {
+    if (typeof navigator === 'undefined' || !navigator || typeof navigator.vibrate !== 'function') {
+      return false;
+    }
+    let pattern;
+    let priority = 1;
+    let duration = 15;
+
+    if (Array.isArray(type)) {
+      pattern = type;
+      duration = type.reduce((sum, v) => sum + (Number(v) || 0), 0);
+      priority = duration >= 100 ? 4 : (duration >= 30 ? 2 : 1);
+    } else if (typeof type === 'number') {
+      pattern = type;
+      duration = type;
+      priority = duration >= 60 ? 4 : (duration >= 25 ? 2 : 1);
+    } else if (typeof type === 'string' && HAPTIC_PATTERNS[type]) {
+      pattern = HAPTIC_PATTERNS[type];
+      priority = HAPTIC_PRIORITIES[type] || 1;
+      duration = Array.isArray(pattern) ? pattern.reduce((s, v) => s + v, 0) : pattern;
+    } else {
+      pattern = HAPTIC_PATTERNS.light;
+      priority = 1;
+      duration = 15;
+    }
+
+    if (pattern === 0 || (Array.isArray(pattern) && pattern.length === 0)) {
+      _lastHapticEndTime = 0;
+      _lastHapticPriority = 0;
+      return Boolean(navigator.vibrate(pattern));
+    }
+
+    const now = Date.now();
+    // 保护正在执行的高优先级长震动（如 victory [30,40,50] 或 heavy 70ms），防止微秒级 light 点击误中断
+    if (now < _lastHapticEndTime && priority < _lastHapticPriority) {
+      return true;
+    }
+
+    // 抑制 25ms 内同级别极弱连击抖动
+    if (priority === 1 && (now - _lastHapticTime < 25)) {
+      return true;
+    }
+
+    _lastHapticTime = now;
+    _lastHapticEndTime = now + duration;
+    _lastHapticPriority = priority;
+
+    return Boolean(navigator.vibrate(pattern));
+  } catch (err) {
+    return false;
+  }
+}
+
+// ==========================================================================
 // 规则与通用弹窗系统 (Universal Modal System)
 // ==========================================================================
 function handleModalRestart() {
-  closeModal();
+  triggerHaptic('medium');
+  closeModal(true);
   if (typeof window.currentRestartFn === 'function') {
     window.currentRestartFn();
   } else if (typeof window.resetCurrentGame === 'function') {
@@ -219,7 +297,8 @@ function handleModalRestart() {
 }
 
 function handleModalReturnLobby() {
-  closeModal();
+  triggerHaptic('light');
+  closeModal(true);
   const path = window.location.pathname.split('\\').join('/');
   const gamesIdx = path.lastIndexOf('/games/');
   if (gamesIdx !== -1) {
@@ -335,17 +414,28 @@ function showModal(title, bodyHtml, options = {}) {
     }
   }
 
-  // 5. 胜利彩带特效启动 / 非胜利停止
+  // 5. 胜利彩带特效启动 / 非胜利停止 与 触觉反馈联动
   if (outcomeType === 'victory') {
     startConfetti();
+    triggerHaptic('success');
+  } else if (outcomeType === 'defeat') {
+    stopConfetti();
+    triggerHaptic('warning');
+  } else if (outcomeType === 'draw') {
+    stopConfetti();
+    triggerHaptic('medium');
   } else {
     stopConfetti();
+    triggerHaptic('light');
   }
 
   modal.classList.add('open');
 }
 
-function closeModal() {
+function closeModal(skipHaptic = false) {
+  if (!skipHaptic) {
+    triggerHaptic('light');
+  }
   const modal = document.getElementById('rules-modal');
   if (modal) modal.classList.remove('open');
   stopConfetti();
@@ -369,6 +459,7 @@ function initCommonHeader(rulesTitle, rulesHtml, onRestart) {
     };
     updateSoundIcon();
     soundBtn.onclick = () => {
+      triggerHaptic('light');
       if (window.AUDIO) {
         window.AUDIO.toggle();
         updateSoundIcon();
@@ -383,6 +474,7 @@ function initCommonHeader(rulesTitle, rulesHtml, onRestart) {
     rulesBtn._commonBound = true;
     rulesBtn.title = '查看游戏规则与按键说明';
     rulesBtn.onclick = () => {
+      triggerHaptic('light');
       if (window.AUDIO) window.AUDIO.play('click');
       showModal(rulesTitle, rulesHtml);
     };
@@ -395,8 +487,9 @@ function initCommonHeader(rulesTitle, rulesHtml, onRestart) {
     restartBtn.title = '重新开始游戏';
     if (typeof onRestart === 'function') {
       restartBtn.onclick = () => {
+        triggerHaptic('medium');
         if (window.AUDIO) window.AUDIO.play('click');
-        closeModal();
+        closeModal(true);
         onRestart();
       };
     }
@@ -414,6 +507,7 @@ function autoBindCommonHeader() {
     updateIcon();
     if (!soundBtn.getAttribute('onclick')) {
       soundBtn.onclick = () => {
+        triggerHaptic('light');
         if (window.AUDIO) {
           window.AUDIO.toggle();
           updateIcon();
@@ -428,6 +522,7 @@ function autoBindCommonHeader() {
     restartBtn.title = restartBtn.title || '重新开始游戏';
     if (!restartBtn.getAttribute('onclick')) {
       restartBtn.onclick = () => {
+        triggerHaptic('medium');
         if (window.AUDIO) window.AUDIO.play('click');
         handleModalRestart();
       };
@@ -455,6 +550,7 @@ window.stopConfetti = stopConfetti;
 window.handleModalRestart = handleModalRestart;
 window.handleModalReturnLobby = handleModalReturnLobby;
 window.initCommonHeader = initCommonHeader;
+window.triggerHaptic = triggerHaptic;
 
 // ==========================================================================
 // 📱 PWA Service Worker 注册与安装引导 (PWA Integration)

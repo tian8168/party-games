@@ -42,8 +42,15 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-html, body, button, select, input, a, .btn, .game-card, .category-pill, .recent-pill {
+html, body, button, select, input, a, .btn, .game-card, .category-pill, .recent-pill, .dock-btn, .dock-item, .mobile-dock {
   touch-action: manipulation;
+}
+
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+  -webkit-overflow-scrolling: touch;
 }
 
 body {

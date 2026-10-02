@@ -19,6 +19,24 @@
         return this.enabled;
       },
       play(type) {
+        try {
+          const hFn = (typeof triggerHaptic === 'function') ? triggerHaptic : ((typeof window !== 'undefined' && typeof window.triggerHaptic === 'function') ? window.triggerHaptic : null);
+          if (hFn) {
+            if (type === 'win' || type === 'plane_win' || type === 'goal' || type === 'contra_30') {
+              hFn('success');
+            } else if (type === 'bomb_alarm' || type === 'turn_warning' || type === 'false_start') {
+              hFn('warning');
+            } else if (type === 'crash' || type === 'plane_crash' || type === 'tank_explosion' || type === 'tank_explode' || type === 'contra_explode' || type === 'fall' || type === 'bonk') {
+              hFn('heavy');
+            } else if (type === 'drop' || type === 'card_play' || type === 'dice_roll' || type === 'go_stone' || type === 'go_capture' || type === 'card_draw' || type === 'cup_slam' || type === 'slice' || type === 'tron_boost' || type === 'tank_fire') {
+              hFn('medium');
+            } else {
+              hFn('light');
+            }
+          } else if (typeof navigator !== 'undefined' && navigator && typeof navigator.vibrate === 'function') {
+            navigator.vibrate(15);
+          }
+        } catch (e) {}
         if (!this.enabled) return;
         this.init();
         if (!this.ctx) return;
