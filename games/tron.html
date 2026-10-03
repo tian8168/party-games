@@ -118,6 +118,76 @@
       to { transform: scale(1.04); filter: brightness(1.3); }
     }
 
+    /* 道具槽 HUD 样式 */
+    .tron-item-slot {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #94a3b8;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .tron-item-slot.missile {
+      background: rgba(249, 115, 22, 0.2);
+      border-color: #f97316;
+      color: #fdba74;
+      box-shadow: 0 0 8px rgba(249, 115, 22, 0.5);
+    }
+    .tron-item-slot.ghost {
+      background: rgba(168, 85, 247, 0.25);
+      border-color: #a855f7;
+      color: #d8b4fe;
+      box-shadow: 0 0 10px rgba(168, 85, 247, 0.6);
+      animation: ghostPulse 0.6s infinite alternate;
+    }
+    .tron-item-slot.super-boost {
+      background: rgba(234, 179, 8, 0.25);
+      border-color: #eab308;
+      color: #fde047;
+      box-shadow: 0 0 10px rgba(234, 179, 8, 0.6);
+      animation: pulseGlow 0.4s infinite alternate;
+    }
+    .tron-item-slot.emp-affected {
+      background: rgba(99, 102, 241, 0.3);
+      border-color: #818cf8;
+      color: #c7d2fe;
+      box-shadow: 0 0 10px rgba(99, 102, 241, 0.7);
+      animation: empGlitch 0.25s infinite alternate;
+    }
+    .tron-card.emp-shocked {
+      border-color: #818cf8 !important;
+      box-shadow: 0 0 14px rgba(129, 140, 248, 0.6) !important;
+      animation: empCardShock 0.2s infinite alternate;
+    }
+    .tron-card.ghost-mode {
+      border-color: #c084fc !important;
+      box-shadow: 0 0 14px rgba(192, 132, 252, 0.6) !important;
+    }
+    .tron-card.super-boost {
+      border-color: #fbbf24 !important;
+      box-shadow: 0 0 14px rgba(251, 191, 36, 0.6) !important;
+    }
+    @keyframes ghostPulse {
+      0% { opacity: 0.75; }
+      100% { opacity: 1; filter: drop-shadow(0 0 6px #c084fc); }
+    }
+    @keyframes empGlitch {
+      0% { transform: translateX(-1px); }
+      100% { transform: translateX(1px); }
+    }
+    @keyframes empCardShock {
+      0% { filter: hue-rotate(0deg); }
+      100% { filter: hue-rotate(50deg); }
+    }
+
     /* 目标胜场配置条 */
     .tron-meta-bar {
       display: flex;
@@ -348,6 +418,10 @@
             <span class="tron-score" id="tron-score-p1">0</span>
             <span class="tron-boost-pill" id="tron-boost-p1">⚡ 过载</span>
           </div>
+          <div class="tron-item-slot" id="tron-item-slot-p1">
+            <span class="tron-item-icon" id="tron-item-icon-p1">🎁</span>
+            <span class="tron-item-text" id="tron-item-text-p1">道具: 待拾取</span>
+          </div>
         </div>
 
         <div class="tron-card p2" id="tron-card-p2">
@@ -358,6 +432,10 @@
           <div class="tron-card-body">
             <span class="tron-score" id="tron-score-p2">0</span>
             <span class="tron-boost-pill" id="tron-boost-p2">⚡ 过载</span>
+          </div>
+          <div class="tron-item-slot" id="tron-item-slot-p2">
+            <span class="tron-item-icon" id="tron-item-icon-p2">🎁</span>
+            <span class="tron-item-text" id="tron-item-text-p2">道具: 待拾取</span>
           </div>
         </div>
 
@@ -370,6 +448,10 @@
             <span class="tron-score" id="tron-score-p3">0</span>
             <span class="tron-boost-pill" id="tron-boost-p3">⚡ 过载</span>
           </div>
+          <div class="tron-item-slot" id="tron-item-slot-p3">
+            <span class="tron-item-icon" id="tron-item-icon-p3">🎁</span>
+            <span class="tron-item-text" id="tron-item-text-p3">道具: 待拾取</span>
+          </div>
         </div>
 
         <div class="tron-card p4" id="tron-card-p4" style="display:none;">
@@ -380,6 +462,10 @@
           <div class="tron-card-body">
             <span class="tron-score" id="tron-score-p4">0</span>
             <span class="tron-boost-pill" id="tron-boost-p4">⚡ 过载</span>
+          </div>
+          <div class="tron-item-slot" id="tron-item-slot-p4">
+            <span class="tron-item-icon" id="tron-item-icon-p4">🎁</span>
+            <span class="tron-item-text" id="tron-item-text-p4">道具: 待拾取</span>
           </div>
         </div>
       </div>

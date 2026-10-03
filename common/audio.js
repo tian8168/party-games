@@ -26,10 +26,12 @@
               hFn('success');
             } else if (type === 'bomb_alarm' || type === 'turn_warning' || type === 'false_start') {
               hFn('warning');
-            } else if (type === 'crash' || type === 'plane_crash' || type === 'tank_explosion' || type === 'tank_explode' || type === 'contra_explode' || type === 'fall' || type === 'bonk') {
+            } else if (type === 'crash' || type === 'plane_crash' || type === 'tank_explosion' || type === 'tank_explode' || type === 'contra_explode' || type === 'fall' || type === 'bonk' || type === 'tron_missile_hit' || type === 'tron_emp') {
               hFn('heavy');
-            } else if (type === 'drop' || type === 'card_play' || type === 'dice_roll' || type === 'go_stone' || type === 'go_capture' || type === 'card_draw' || type === 'cup_slam' || type === 'slice' || type === 'tron_boost' || type === 'tank_fire') {
+            } else if (type === 'drop' || type === 'card_play' || type === 'dice_roll' || type === 'go_stone' || type === 'go_capture' || type === 'card_draw' || type === 'cup_slam' || type === 'slice' || type === 'tron_boost' || type === 'tank_fire' || type === 'tron_missile' || type === 'tron_super_boost' || type === 'tron_ghost') {
               hFn('medium');
+            } else if (type === 'tron_item_pickup') {
+              hFn('light');
             } else {
               hFn('light');
             }
@@ -550,6 +552,136 @@
             ng.gain.linearRampToValueAtTime(0.01, t + 0.28);
             noise.connect(f);
             f.connect(ng);
+            ng.connect(this.ctx.destination);
+            noise.start(t);
+          } else if (type === 'tron_item_pickup') { // 极光光轮道具箱拾取 (清脆双音和弦琶音)
+            [523.25, 659.25, 783.99, 1046.5].forEach((freq, i) => {
+              const osc = this.ctx.createOscillator();
+              const gain = this.ctx.createGain();
+              osc.type = 'triangle';
+              osc.frequency.setValueAtTime(freq, t + i * 0.045);
+              gain.gain.setValueAtTime(0.2, t + i * 0.045);
+              gain.gain.exponentialRampToValueAtTime(0.001, t + i * 0.045 + 0.16);
+              osc.connect(gain);
+              gain.connect(this.ctx.destination);
+              osc.start(t + i * 0.045);
+              osc.stop(t + i * 0.045 + 0.16);
+            });
+          } else if (type === 'tron_missile') { // 破墙飞弹点火发射呼啸
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(260, t);
+            osc.frequency.exponentialRampToValueAtTime(1100, t + 0.12);
+            osc.frequency.exponentialRampToValueAtTime(450, t + 0.28);
+            const filter = this.ctx.createBiquadFilter();
+            filter.type = 'bandpass';
+            filter.frequency.setValueAtTime(900, t);
+            gain.gain.setValueAtTime(0.25, t);
+            gain.gain.linearRampToValueAtTime(0.01, t + 0.28);
+            osc.connect(filter);
+            filter.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(t);
+            osc.stop(t + 0.28);
+          } else if (type === 'tron_missile_hit') { // 破墙飞弹炸裂光壁震撼爆炸
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(160, t);
+            osc.frequency.exponentialRampToValueAtTime(35, t + 0.35);
+            gain.gain.setValueAtTime(0.4, t);
+            gain.gain.linearRampToValueAtTime(0.01, t + 0.35);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(t);
+            osc.stop(t + 0.35);
+            const bufSize = Math.floor(this.ctx.sampleRate * 0.3);
+            const buf = this.ctx.createBuffer(1, bufSize, this.ctx.sampleRate);
+            const data = buf.getChannelData(0);
+            for (let i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufSize * 0.28));
+            const noise = this.ctx.createBufferSource();
+            noise.buffer = buf;
+            const f = this.ctx.createBiquadFilter();
+            f.type = 'lowpass';
+            f.frequency.setValueAtTime(950, t);
+            f.frequency.exponentialRampToValueAtTime(120, t + 0.3);
+            const ng = this.ctx.createGain();
+            ng.gain.setValueAtTime(0.35, t);
+            ng.gain.linearRampToValueAtTime(0.01, t + 0.3);
+            noise.connect(f);
+            f.connect(ng);
+            ng.connect(this.ctx.destination);
+            noise.start(t);
+          } else if (type === 'tron_ghost') { // 幽灵穿墙虚化空灵相位扫频
+            const osc1 = this.ctx.createOscillator();
+            const osc2 = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc1.type = 'sine';
+            osc2.type = 'sine';
+            osc1.frequency.setValueAtTime(420, t);
+            osc1.frequency.exponentialRampToValueAtTime(840, t + 0.25);
+            osc1.frequency.exponentialRampToValueAtTime(560, t + 0.45);
+            osc2.frequency.setValueAtTime(426, t);
+            osc2.frequency.exponentialRampToValueAtTime(852, t + 0.25);
+            osc2.frequency.exponentialRampToValueAtTime(568, t + 0.45);
+            gain.gain.setValueAtTime(0.01, t);
+            gain.gain.linearRampToValueAtTime(0.25, t + 0.08);
+            gain.gain.linearRampToValueAtTime(0.01, t + 0.45);
+            osc1.connect(gain);
+            osc2.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc1.start(t);
+            osc2.start(t);
+            osc1.stop(t + 0.45);
+            osc2.stop(t + 0.45);
+          } else if (type === 'tron_super_boost') { // 超频氮气 200% 暴走轰鸣
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(140, t);
+            osc.frequency.exponentialRampToValueAtTime(620, t + 0.15);
+            osc.frequency.exponentialRampToValueAtTime(320, t + 0.4);
+            const f = this.ctx.createBiquadFilter();
+            f.type = 'bandpass';
+            f.frequency.setValueAtTime(800, t);
+            f.frequency.exponentialRampToValueAtTime(2200, t + 0.2);
+            gain.gain.setValueAtTime(0.35, t);
+            gain.gain.linearRampToValueAtTime(0.01, t + 0.4);
+            osc.connect(f);
+            f.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(t);
+            osc.stop(t + 0.4);
+          } else if (type === 'tron_emp') { // EMP 全场震撼脉冲与电流瘫痪
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(80, t);
+            osc.frequency.exponentialRampToValueAtTime(30, t + 0.45);
+            gain.gain.setValueAtTime(0.45, t);
+            gain.gain.linearRampToValueAtTime(0.01, t + 0.45);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(t);
+            osc.stop(t + 0.45);
+            const bufSize = Math.floor(this.ctx.sampleRate * 0.4);
+            const buf = this.ctx.createBuffer(1, bufSize, this.ctx.sampleRate);
+            const data = buf.getChannelData(0);
+            for (let i = 0; i < bufSize; i++) {
+              data[i] = (Math.random() * 2 - 1) * (i % 60 < 30 ? 1 : -0.5) * Math.exp(-i / (bufSize * 0.4));
+            }
+            const noise = this.ctx.createBufferSource();
+            noise.buffer = buf;
+            const filter = this.ctx.createBiquadFilter();
+            filter.type = 'bandpass';
+            filter.frequency.setValueAtTime(1400, t);
+            filter.Q.setValueAtTime(4.0, t);
+            const ng = this.ctx.createGain();
+            ng.gain.setValueAtTime(0.3, t);
+            ng.gain.linearRampToValueAtTime(0.01, t + 0.4);
+            noise.connect(filter);
+            filter.connect(ng);
             ng.connect(this.ctx.destination);
             noise.start(t);
           } else if (type === 'cat_meow') { // 疯狂拆弹猫 哀鸣猫叫
