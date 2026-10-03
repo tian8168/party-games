@@ -3,7 +3,7 @@ import re
 import sys
 
 sys.stdout.reconfigure(encoding='utf-8')
-ROOT = r'c:\Users\admin\Desktop\partygame'
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 games_dir = os.path.join(ROOT, 'games')
 for f in sorted(os.listdir(games_dir)):

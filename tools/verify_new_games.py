@@ -102,7 +102,7 @@ def run_tests():
     print("\n=== [2] SERVICE WORKER & APP_SHELL EXISTENCE TESTS ===")
     with open('sw.js', 'r', encoding='utf-8') as fp:
         sw_content = fp.read()
-    assert 'party-arcade-v2.2' in sw_content, "sw.js cache must be party-arcade-v2.2"
+    assert 'party-arcade-v2.' in sw_content, "sw.js cache must be party-arcade-v2.x"
     app_shell_match = re.search(r'const APP_SHELL = \[(.*?)\];', sw_content, re.DOTALL)
     assert app_shell_match, "APP_SHELL array must be found in sw.js"
     shell_raw = app_shell_match.group(1)

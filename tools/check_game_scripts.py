@@ -1,7 +1,7 @@
 import os
 import re
 
-ROOT = os.path.abspath(r'c:\Users\admin\Desktop\partygame')
+ROOT = os.path.abspath(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 html_files = [
     'games/tron.html',

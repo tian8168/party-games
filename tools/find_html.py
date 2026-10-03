@@ -2,7 +2,7 @@ import os
 import re
 import json
 
-ROOT = os.path.abspath(r'c:\Users\admin\Desktop\partygame')
+ROOT = os.path.abspath(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 html_files = []
 for dirpath, _, filenames in os.walk(ROOT):

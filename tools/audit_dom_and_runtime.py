@@ -1,7 +1,7 @@
 import os
 import re
 
-ROOT = os.path.abspath(r'c:\Users\admin\Desktop\partygame')
+ROOT = os.path.abspath(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # 1. Parse sound types in common/audio.js
 audio_path = os.path.join(ROOT, 'common', 'audio.js')

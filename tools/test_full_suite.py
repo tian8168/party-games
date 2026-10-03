@@ -3,7 +3,7 @@ import re
 import sys
 
 sys.stdout.reconfigure(encoding='utf-8', errors='replace')
-ROOT = os.path.abspath(r'c:\Users\admin\Desktop\partygame')
+ROOT = os.path.abspath(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 print("==================================================")
 print("  PARTY ARCADE FULL AUTOMATED VALIDATION SUITE")
