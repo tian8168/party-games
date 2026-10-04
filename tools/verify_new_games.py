@@ -168,22 +168,25 @@ def run_tests():
         idx_content = fp.read()
     assert "enterGame('TRON')" in idx_content, "Tron card must be clickable in index.html"
     assert "enterGame('BOMBCAT')" in idx_content, "Bomb Cat card must be clickable in index.html"
+    assert "enterGame('BOMBERMAN')" in idx_content, "Bomberman card must be clickable in index.html"
     assert "'TRON': 'tron.html'" in idx_content, "TRON must be in fileMap"
     assert "'BOMBCAT': 'bombcat.html'" in idx_content, "BOMBCAT must be in fileMap"
+    assert "'BOMBERMAN': 'bomberman.html'" in idx_content, "BOMBERMAN must be in fileMap"
     assert "'TRON'" in idx_content and "'BOMBCAT'" in idx_content, "TRON and BOMBCAT must be in randomPickGame"
-    assert '全部 (19)' in idx_content, "Total games pill must show 19"
+    assert '全部 (20)' in idx_content, "Total games pill must show 20"
     assert '4人混战 (4)' in idx_content, "4PLAYER pill must show 4"
     assert '心理博弈 (2)' in idx_content, "MIND pill must show 2"
-    assert '物理对抗 (7)' in idx_content, "PHYSICS pill must show 7"
+    assert '物理对抗 (8)' in idx_content, "PHYSICS pill must show 8"
     print("  [PASS] Lobby category counts, route maps, cards, and SVG artwork verified.")
 
     print("\n=== [7] README.md MATRIX VERIFICATION ===")
     with open('README.md', 'r', encoding='utf-8') as fp:
         readme_content = fp.read()
-    assert '19 款完整游戏矩阵' in readme_content, "README should mention 19 games"
+    assert '20 款' in readme_content, "README should mention 20 games"
     assert '极光光轮摩托' in readme_content, "Tron should be in README table"
     assert '疯狂拆弹猫' in readme_content, "Bomb Cat should be in README table"
-    print("  [PASS] README.md matrix updated to 19 games.")
+    assert '极光炸弹人大乱斗' in readme_content, "Neon Bomberman should be in README table"
+    print("  [PASS] README.md matrix updated to 20 games.")
 
     print("\n[SUCCESS] ALL 7 TEST SUITES PASSED WITH 100% SUCCESS!")
 

@@ -22,15 +22,15 @@
         try {
           const hFn = (typeof triggerHaptic === 'function') ? triggerHaptic : ((typeof window !== 'undefined' && typeof window.triggerHaptic === 'function') ? window.triggerHaptic : null);
           if (hFn) {
-            if (type === 'win' || type === 'plane_win' || type === 'goal' || type === 'contra_30') {
+            if (type === 'win' || type === 'plane_win' || type === 'goal' || type === 'contra_30' || type === 'bm_win') {
               hFn('success');
-            } else if (type === 'bomb_alarm' || type === 'turn_warning' || type === 'false_start') {
+            } else if (type === 'bomb_alarm' || type === 'turn_warning' || type === 'false_start' || type === 'bm_warning') {
               hFn('warning');
-            } else if (type === 'crash' || type === 'plane_crash' || type === 'tank_explosion' || type === 'tank_explode' || type === 'contra_explode' || type === 'fall' || type === 'bonk' || type === 'tron_missile_hit' || type === 'tron_emp') {
+            } else if (type === 'crash' || type === 'plane_crash' || type === 'tank_explosion' || type === 'tank_explode' || type === 'contra_explode' || type === 'fall' || type === 'bonk' || type === 'tron_missile_hit' || type === 'tron_emp' || type === 'bm_explode' || type === 'bm_death') {
               hFn('heavy');
-            } else if (type === 'drop' || type === 'card_play' || type === 'dice_roll' || type === 'go_stone' || type === 'go_capture' || type === 'card_draw' || type === 'cup_slam' || type === 'slice' || type === 'tron_boost' || type === 'tank_fire' || type === 'tron_missile' || type === 'tron_super_boost' || type === 'tron_ghost') {
+            } else if (type === 'drop' || type === 'card_play' || type === 'dice_roll' || type === 'go_stone' || type === 'go_capture' || type === 'card_draw' || type === 'cup_slam' || type === 'slice' || type === 'tron_boost' || type === 'tank_fire' || type === 'tron_missile' || type === 'tron_super_boost' || type === 'tron_ghost' || type === 'bm_place') {
               hFn('medium');
-            } else if (type === 'tron_item_pickup') {
+            } else if (type === 'tron_item_pickup' || type === 'bm_item') {
               hFn('light');
             } else {
               hFn('light');
@@ -731,6 +731,86 @@
               gain.connect(this.ctx.destination);
               osc.start(dt);
               osc.stop(dt + 0.08);
+            }
+          } else if (type === 'bm_place') { // 炸弹放置 - 沉闷机械声
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(140, t);
+            osc.frequency.exponentialRampToValueAtTime(80, t + 0.12);
+            gain.gain.setValueAtTime(0.38, t);
+            gain.gain.linearRampToValueAtTime(0.01, t + 0.18);
+            osc.connect(gain); gain.connect(this.ctx.destination);
+            osc.start(t); osc.stop(t + 0.2);
+          } else if (type === 'bm_explode') { // 炸弹爆炸 - 低频巨响+白噪声
+            // Low boom
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(120, t);
+            osc.frequency.exponentialRampToValueAtTime(30, t + 0.35);
+            gain.gain.setValueAtTime(0.6, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.45);
+            osc.connect(gain); gain.connect(this.ctx.destination);
+            osc.start(t); osc.stop(t + 0.5);
+            // Noise burst
+            const bufSize = Math.floor(this.ctx.sampleRate * 0.3);
+            const buf = this.ctx.createBuffer(1, bufSize, this.ctx.sampleRate);
+            const data = buf.getChannelData(0);
+            for (let i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufSize, 1.5);
+            const noise = this.ctx.createBufferSource();
+            noise.buffer = buf;
+            const nFilter = this.ctx.createBiquadFilter();
+            nFilter.type = 'lowpass'; nFilter.frequency.setValueAtTime(1800, t);
+            const nGain = this.ctx.createGain();
+            nGain.gain.setValueAtTime(0.45, t); nGain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+            noise.connect(nFilter); nFilter.connect(nGain); nGain.connect(this.ctx.destination);
+            noise.start(t);
+          } else if (type === 'bm_item') { // 道具拾取 - 上扬音阶叮咚
+            const freqs = [523.25, 659.25, 783.99, 1046.5];
+            freqs.forEach((freq, i) => {
+              const osc = this.ctx.createOscillator();
+              const gain = this.ctx.createGain();
+              osc.type = 'sine';
+              osc.frequency.setValueAtTime(freq, t + i * 0.06);
+              gain.gain.setValueAtTime(0.22, t + i * 0.06);
+              gain.gain.linearRampToValueAtTime(0.001, t + i * 0.06 + 0.14);
+              osc.connect(gain); gain.connect(this.ctx.destination);
+              osc.start(t + i * 0.06); osc.stop(t + i * 0.06 + 0.15);
+            });
+          } else if (type === 'bm_death') { // 玩家死亡 - 下沉滑落+破碎
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(440, t);
+            osc.frequency.exponentialRampToValueAtTime(60, t + 0.5);
+            gain.gain.setValueAtTime(0.3, t);
+            gain.gain.linearRampToValueAtTime(0.001, t + 0.55);
+            osc.connect(gain); gain.connect(this.ctx.destination);
+            osc.start(t); osc.stop(t + 0.6);
+          } else if (type === 'bm_win') { // 回合胜利 - 欢快三连升调
+            const notes = [523.25, 659.25, 783.99, 1046.5, 1318.5];
+            notes.forEach((freq, i) => {
+              const osc = this.ctx.createOscillator();
+              const gain = this.ctx.createGain();
+              osc.type = i < 3 ? 'square' : 'sine';
+              osc.frequency.setValueAtTime(freq, t + i * 0.1);
+              gain.gain.setValueAtTime(0.25, t + i * 0.1);
+              gain.gain.linearRampToValueAtTime(0.001, t + i * 0.1 + (i === 4 ? 0.5 : 0.15));
+              osc.connect(gain); gain.connect(this.ctx.destination);
+              osc.start(t + i * 0.1); osc.stop(t + i * 0.1 + (i === 4 ? 0.55 : 0.2));
+            });
+          } else if (type === 'bm_warning') { // 末日突袭警报 - 急促双音交替
+            for (let i = 0; i < 4; i++) {
+              const dt2 = t + i * 0.15;
+              const osc = this.ctx.createOscillator();
+              const gain = this.ctx.createGain();
+              osc.type = 'square';
+              osc.frequency.setValueAtTime(i % 2 === 0 ? 880 : 660, dt2);
+              gain.gain.setValueAtTime(0.28, dt2);
+              gain.gain.linearRampToValueAtTime(0.001, dt2 + 0.1);
+              osc.connect(gain); gain.connect(this.ctx.destination);
+              osc.start(dt2); osc.stop(dt2 + 0.12);
             }
           }
         } catch(e) {}

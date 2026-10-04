@@ -106,10 +106,11 @@ except Exception as e:
     errors.append(f"View Mode Error: {e}")
     print(f"  [FAIL] {e}")
 
-# --- 5. All 19 Games Integrity and Keywords Verification ---
-print("\n--- [5] 19 Games Matrix & Keywords Verification ---")
+# --- 5. All 20 Games Integrity and Keywords Verification ---
+print("\n--- [5] 20 Games Matrix & Keywords Verification ---")
 EXPECTED_GAMES = [
     ('TRON', 'PHYSICS', '4'),
+    ('BOMBERMAN', 'PHYSICS', '4'),
     ('BOMBCAT', 'MIND', '4'),
     ('NES', 'PHYSICS', '2'),
     ('CONTRA', 'PHYSICS', '2'),
@@ -131,20 +132,20 @@ EXPECTED_GAMES = [
 ]
 
 try:
-    assert len(EXPECTED_GAMES) == 19
+    assert len(EXPECTED_GAMES) == 20
     for key, cat, players in EXPECTED_GAMES:
         assert f"enterGame('{key}')" in html, f"Card onclick for {key} missing"
-        assert f"data-game-key=\"{key}\"" in html, f"data-game-key={key} missing"
-        assert f"data-cat=\"{cat}\"" in html, f"data-cat={cat} for {key} missing"
-        assert f"data-players=\"{players}\"" in html, f"data-players={players} for {key} missing"
+        assert f'data-game-key="{key}"' in html, f"data-game-key={key} missing"
+        assert f'data-cat="{cat}"' in html, f"data-cat={cat} for {key} missing"
+        assert f'data-players="{players}"' in html, f"data-players={players} for {key} missing"
         # Check data-keywords exists for game
         pattern = rf'data-game-key="{key}"[^>]*data-keywords="([^"]+)"'
         match = re.search(pattern, html)
         assert match and len(match.group(1)) > 5, f"Keywords missing or too short for {key}"
         assert f"'{key}':" in html, f"FileMap entry for {key} missing"
-    print(f"  [PASS] All 19 games verified with exact categories, player counts, keywords, and fileMap mappings.")
+    print(f"  [PASS] All 20 games verified with exact categories, player counts, keywords, and fileMap mappings.")
 except Exception as e:
-    errors.append(f"19 Games Matrix Error: {e}")
+    errors.append(f"20 Games Matrix Error: {e}")
     print(f"  [FAIL] {e}")
 
 # --- 6. Backward Compatibility & Critical Handlers Verification ---
@@ -158,10 +159,10 @@ try:
     assert 'isNavigating = false' in html, "isNavigating reset missing"
     assert 'btn-sound-toggle' in html, "Sound toggle button missing"
     assert 'btn-rules-header' in html, "Rules header button missing"
-    assert '全部 (19)' in html, "Legacy assertion '全部 (19)' missing"
+    assert '全部 (20)' in html, "Legacy assertion '全部 (20)' missing"
     assert '4人混战 (4)' in html, "Legacy assertion '4人混战 (4)' missing"
     assert '心理博弈 (2)' in html, "Legacy assertion '心理博弈 (2)' missing"
-    assert '物理对抗 (7)' in html, "Legacy assertion '物理对抗 (7)' missing"
+    assert '物理对抗 (8)' in html, "Legacy assertion '物理对抗 (8)' missing"
     print("  [PASS] Recent games bar, BFCache unlock, audio toggle, and legacy assertions verified.")
 except Exception as e:
     errors.append(f"Compatibility Error: {e}")
