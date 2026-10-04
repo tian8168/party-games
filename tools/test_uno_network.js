@@ -15,31 +15,33 @@ console.log('=======================================================');
 // 1. 验证文件存在性与语法
 console.log('\n--- [1] Checking Files & Syntax Integrity ---');
 const workerPath = path.join(__dirname, '../cloudflare/uno-room-worker.js');
+const pagesFuncPath = path.join(__dirname, '../functions/ws.js');
 const unoJsPath = path.join(__dirname, '../games/js/uno.js');
 const unoHtmlPath = path.join(__dirname, '../games/uno.html');
 
 assert(fs.existsSync(workerPath), 'cloudflare/uno-room-worker.js must exist');
+assert(fs.existsSync(pagesFuncPath), 'functions/ws.js must exist');
 assert(fs.existsSync(unoJsPath), 'games/js/uno.js must exist');
 assert(fs.existsSync(unoHtmlPath), 'games/uno.html must exist');
 
 const workerCode = fs.readFileSync(workerPath, 'utf8');
+const pagesFuncCode = fs.readFileSync(pagesFuncPath, 'utf8');
 const unoJsCode = fs.readFileSync(unoJsPath, 'utf8');
 const unoHtmlCode = fs.readFileSync(unoHtmlPath, 'utf8');
 
 assert(workerCode.includes('export default'), 'Worker must export default fetch handler');
-assert(workerCode.includes('WebSocketPair'), 'Worker must use Cloudflare WebSocketPair API');
-assert(workerCode.includes('ROOM_UPDATE'), 'Worker must handle ROOM_UPDATE');
-assert(workerCode.includes('GAME_ACTION'), 'Worker must handle GAME_ACTION');
+assert(pagesFuncCode.includes('export async function onRequest'), 'Pages function must export onRequest');
+assert(pagesFuncCode.includes('WebSocketPair'), 'Pages function must use WebSocketPair');
 
 assert(unoJsCode.includes('UNO_NETWORK'), 'uno.js must contain UNO_NETWORK');
-assert(unoJsCode.includes('DEFAULT_WORKER_URL'), 'uno.js must contain DEFAULT_WORKER_URL');
+assert(unoJsCode.includes('getDefaultWorkerUrl'), 'uno.js must contain getDefaultWorkerUrl');
 assert(unoJsCode.includes('buildInitialGameState'), 'uno.js must contain buildInitialGameState');
 
 assert(unoHtmlCode.includes('uno-online-modal'), 'uno.html must contain uno-online-modal');
 assert(unoHtmlCode.includes('uno-online-bar'), 'uno.html must contain uno-online-bar');
 assert(unoHtmlCode.includes('btn-mode-online'), 'uno.html must contain online mode button');
 
-console.log('  [PASS] All files exist and contain required networking signatures.');
+console.log('  [PASS] All files (including Pages Functions) exist and contain required networking signatures.');
 
 // 2. 模拟 Cloudflare Worker 席位分配与房间生命周期逻辑
 console.log('\n--- [2] Simulating Cloudflare Worker Seat Allocation & Room Manager ---');

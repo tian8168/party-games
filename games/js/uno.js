@@ -1030,9 +1030,26 @@
   };
 
   // ==========================================================================
-  // 12. 在线联机网络中枢 (UNO NETWORK & CLOUDFLARE WORKER CLIENT)
+  // 12. 在线联机网络中枢 (UNO NETWORK & CLOUDFLARE WORKER / PAGES FUNCTIONS)
   // ==========================================================================
-  const DEFAULT_WORKER_URL = 'wss://uno-hub.party-games.workers.dev/ws';
+  const PUBLIC_WORKER_FALLBACK = 'wss://uno-hub.party-games.workers.dev/ws';
+
+  function getDefaultWorkerUrl() {
+    // 1. 若用户在设置面板手动保存过专属 Worker URL，优先使用
+    const saved = localStorage.getItem('uno_worker_url');
+    if (saved && saved.trim()) return saved.trim();
+
+    // 2. 若当前运行在 HTTP/HTTPS 环境 (如 Cloudflare Pages 的 *.pages.dev 或自定义域名)
+    if (typeof window !== 'undefined' && window.location && (window.location.protocol === 'https:' || window.location.protocol === 'http:')) {
+      const isHttps = window.location.protocol === 'https:';
+      const wsProto = isHttps ? 'wss://' : 'ws://';
+      // 零配置同源直连：由 Cloudflare Pages Functions (/functions/ws.js) 自动全权承载
+      return `${wsProto}${window.location.host}/ws`;
+    }
+
+    // 3. 本地以 file:// 双击直接运行时，回退至公共节点
+    return PUBLIC_WORKER_FALLBACK;
+  }
 
   const FUN_NAMES = [
     '乌诺闪电侠', '极光爆牌手', '七彩神牌王', '超级反转王', 
@@ -1046,7 +1063,7 @@
 
   const UNO_NETWORK = {
     ws: null,
-    serverUrl: localStorage.getItem('uno_worker_url') || DEFAULT_WORKER_URL,
+    serverUrl: getDefaultWorkerUrl(),
     roomId: null,
     myPlayerName: localStorage.getItem('uno_player_name') || getRandomUnoName(),
     myClientId: localStorage.getItem('uno_client_id') || ('uno_cli_' + Math.random().toString(36).substr(2, 9)),
@@ -1066,8 +1083,8 @@
       this.myPlayerName = playerName || this.myPlayerName;
       localStorage.setItem('uno_player_name', this.myPlayerName);
 
-      let url = this.serverUrl.trim();
-      if (!url) url = DEFAULT_WORKER_URL;
+      let url = this.serverUrl ? this.serverUrl.trim() : '';
+      if (!url) url = getDefaultWorkerUrl();
 
       if (url.startsWith('http://')) url = url.replace('http://', 'ws://');
       else if (url.startsWith('https://')) url = url.replace('https://', 'wss://');
@@ -1588,11 +1605,12 @@
     const resetWorkerBtn = document.getElementById('btn-reset-worker-url');
     if (resetWorkerBtn) {
       resetWorkerBtn.onclick = () => {
-        UNO_NETWORK.serverUrl = DEFAULT_WORKER_URL;
         localStorage.removeItem('uno_worker_url');
+        const defaultUrl = getDefaultWorkerUrl();
+        UNO_NETWORK.serverUrl = defaultUrl;
         const input = document.getElementById('input-worker-url');
-        if (input) input.value = DEFAULT_WORKER_URL;
-        showToast('已恢复为默认 Worker 配置！');
+        if (input) input.value = defaultUrl;
+        showToast('已恢复为默认同源/公共 Worker 配置！');
       };
     }
 
