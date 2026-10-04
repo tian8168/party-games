@@ -1435,7 +1435,7 @@
         <span class="logo-icon">🕹️</span>
         <div class="brand-text">
           <h1>聚会游戏大厅</h1>
-          <span class="sub-title">19 款经典对战 · 原生秒开</span>
+          <span class="sub-title">24 款经典对战 · 原生秒开</span>
         </div>
       </div>
       <div class="header-right">
@@ -1545,10 +1545,10 @@
           <div class="filter-axis-row">
             <span class="axis-label"><span class="axis-icon">👥</span>人数:</span>
             <div class="filter-pills-group" id="filter-player-group">
-              <button class="filter-pill active" data-player-filter="ALL" onclick="setPlayerFilter('ALL')">全部 <span class="pill-count">(22)</span></button>
+              <button class="filter-pill active" data-player-filter="ALL" onclick="setPlayerFilter('ALL')">全部 <span class="pill-count">(24)</span></button>
               <button class="filter-pill" data-player-filter="1" onclick="setPlayerFilter('1')">👤 单人挑战 <span class="pill-count">(1)</span></button>
               <button class="filter-pill" data-player-filter="2" onclick="setPlayerFilter('2')">👥 双人死斗 <span class="pill-count">(14)</span></button>
-              <button class="filter-pill" data-player-filter="4" data-alias="4人混战 (6)" onclick="setPlayerFilter('4')">👥👥 4人大乱斗 <span class="pill-count">(6)</span><!-- 4人混战 (6) --></button>
+              <button class="filter-pill" data-player-filter="4" data-alias="4人大乱斗 (9)" onclick="setPlayerFilter('4')">👥👥 4人大乱斗 <span class="pill-count">(9)</span><!-- 4人大乱斗 (9) --></button>
             </div>
           </div>
 
@@ -1556,10 +1556,10 @@
           <div class="filter-axis-row">
             <span class="axis-label"><span class="axis-icon">🏷️</span>类型:</span>
             <div class="filter-pills-group" id="filter-cat-group">
-              <button class="filter-pill category-pill active" data-cat-filter="ALL" data-cat-pill="ALL" onclick="setCategoryFilter('ALL')">全部 <span class="pill-count">(22)</span><!-- 全部 (22) --></button>
+              <button class="filter-pill category-pill active" data-cat-filter="ALL" data-cat-pill="ALL" onclick="setCategoryFilter('ALL')">全部 <span class="pill-count">(24)</span><!-- 全部 (24) --></button>
               <button class="filter-pill category-pill" data-cat-filter="PHYSICS" data-cat-pill="PHYSICS" onclick="setCategoryFilter('PHYSICS')">⚡ 物理对抗 <span class="pill-count">(8)</span><!-- 物理对抗 (8) --></button>
-              <button class="filter-pill category-pill" data-cat-filter="STRATEGY" data-cat-pill="STRATEGY" onclick="setCategoryFilter('STRATEGY')">🧠 策略博弈 <span class="pill-count">(9)</span><!-- 策略博弈 (9) --></button>
-              <button class="filter-pill category-pill" data-cat-filter="MIND" data-cat-pill="MIND" data-alias="心理博弈 (3)" onclick="setCategoryFilter('MIND')">💣 心理暗牌 <span class="pill-count">(3)</span><!-- 心理博弈 (3) --></button>
+              <button class="filter-pill category-pill" data-cat-filter="STRATEGY" data-cat-pill="STRATEGY" onclick="setCategoryFilter('STRATEGY')">🧠 策略博弈 <span class="pill-count">(11)</span><!-- 策略博弈 (11) --></button>
+              <button class="filter-pill category-pill" data-cat-filter="MIND" data-cat-pill="MIND" data-alias="心理暗牌 (3)" onclick="setCategoryFilter('MIND')">💣 心理暗牌 <span class="pill-count">(3)</span><!-- 心理暗牌 (3) --></button>
               <button class="filter-pill category-pill" data-cat-filter="REFLEX" data-cat-pill="REFLEX" onclick="setCategoryFilter('REFLEX')">⚡ 极限手速 <span class="pill-count">(2)</span><!-- 极限手速 (2) --></button>
             </div>
           </div>
@@ -2474,6 +2474,245 @@
     </div>
   
 
+    <!-- 🎩 大富翁 (Monopoly / 强手棋) -->
+    <div class="game-card hero-card" data-cat="STRATEGY" data-players="4" data-game-key="MONOPOLY" data-keywords="monopoly 大富翁 强手棋 地产大亨 掷骰子 盖楼 买地 收租 破产 机会 命运 2人 4人 8人 策略 桌游 AI 人机 dfw" onclick="enterGame('MONOPOLY')" style="border: 1px solid rgba(16, 185, 129, 0.45); box-shadow: 0 4px 20px rgba(16, 185, 129, 0.18);">
+      <div class="card-cover-wrapper">
+        <div class="card-art-canvas">
+          <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="monoBgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#064e3b"/>
+                <stop offset="50%" stop-color="#065f46"/>
+                <stop offset="100%" stop-color="#022c22"/>
+              </linearGradient>
+              <linearGradient id="monoGold" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#fde047"/>
+                <stop offset="50%" stop-color="#eab308"/>
+                <stop offset="100%" stop-color="#ca8a04"/>
+              </linearGradient>
+              <linearGradient id="monoRedDice" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#f87171"/>
+                <stop offset="100%" stop-color="#b91c1c"/>
+              </linearGradient>
+              <radialGradient id="monoEmeraldGlow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#34d399" stop-opacity="0.45"/>
+                <stop offset="100%" stop-color="#059669" stop-opacity="0"/>
+              </radialGradient>
+              <filter id="monoShadow">
+                <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000" flood-opacity="0.6"/>
+              </filter>
+            </defs>
+            <rect width="320" height="180" fill="url(#monoBgGrad)"/>
+            <circle cx="160" cy="90" r="85" fill="url(#monoEmeraldGlow)"/>
+
+            <!-- 棋盘边框回廊透视 -->
+            <g stroke="rgba(255,255,255,0.15)" stroke-width="1" fill="none">
+              <rect x="24" y="16" width="272" height="148" rx="8" stroke="#10b981" stroke-width="1.8" opacity="0.4"/>
+              <rect x="36" y="26" width="248" height="128" rx="6" stroke="#fde047" stroke-width="1" opacity="0.3" stroke-dasharray="8 4"/>
+              <rect x="24" y="16" width="28" height="24" fill="#ef4444" opacity="0.65" rx="3"/>
+              <rect x="268" y="16" width="28" height="24" fill="#3b82f6" opacity="0.65" rx="3"/>
+              <rect x="24" y="140" width="28" height="24" fill="#eab308" opacity="0.65" rx="3"/>
+              <rect x="268" y="140" width="28" height="24" fill="#10b981" opacity="0.65" rx="3"/>
+            </g>
+
+            <!-- 飞舞金币装饰 -->
+            <g opacity="0.85">
+              <circle cx="68" cy="54" r="11" fill="url(#monoGold)" filter="url(#monoShadow)"/>
+              <text x="68" y="58" fill="#78350f" font-size="11" font-weight="900" text-anchor="middle">$</text>
+              <circle cx="254" cy="50" r="9" fill="url(#monoGold)" filter="url(#monoShadow)"/>
+              <text x="254" y="53" fill="#78350f" font-size="9" font-weight="900" text-anchor="middle">$</text>
+              <circle cx="248" cy="130" r="12" fill="url(#monoGold)" filter="url(#monoShadow)"/>
+              <text x="248" y="135" fill="#78350f" font-size="12" font-weight="900" text-anchor="middle">$</text>
+            </g>
+
+            <!-- 绿色房产与红色酒店模型 -->
+            <g transform="translate(74, 98)" filter="url(#monoShadow)">
+              <polygon points="12,0 24,10 0,10" fill="#22c55e"/>
+              <rect x="2" y="10" width="20" height="14" fill="#16a34a"/>
+              <rect x="7" y="14" width="4" height="6" fill="#fef08a"/>
+              <rect x="13" y="14" width="4" height="6" fill="#fef08a"/>
+            </g>
+            <g transform="translate(216, 92)" filter="url(#monoShadow)">
+              <polygon points="14,0 28,10 0,10" fill="#ef4444"/>
+              <rect x="2" y="10" width="24" height="18" fill="#dc2626"/>
+              <rect x="6" y="15" width="4" height="6" fill="#fef08a"/>
+              <rect x="12" y="15" width="4" height="6" fill="#fef08a"/>
+              <rect x="18" y="15" width="4" height="6" fill="#fef08a"/>
+            </g>
+
+            <!-- 绅士高礼帽 (Banker Top Hat) -->
+            <g transform="translate(136, 42)" filter="url(#monoShadow)">
+              <ellipse cx="24" cy="46" rx="30" ry="7" fill="#1e293b"/>
+              <path d="M 6,44 L 10,12 L 38,12 L 42,44 Z" fill="#0f172a"/>
+              <rect x="9" y="36" width="30" height="6" fill="url(#monoGold)"/>
+              <ellipse cx="24" cy="12" rx="14" ry="4" fill="#334155"/>
+            </g>
+
+            <!-- 3D 浮空发光双骰子 (Rolling Dice) -->
+            <g transform="translate(122, 92) rotate(-12)" filter="url(#monoShadow)">
+              <rect x="-16" y="-16" width="32" height="32" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+              <circle cx="0" cy="0" r="3.2" fill="#ef4444"/>
+              <circle cx="-8" cy="-8" r="2.8" fill="#1e293b"/>
+              <circle cx="8" cy="8" r="2.8" fill="#1e293b"/>
+              <circle cx="-8" cy="8" r="2.8" fill="#1e293b"/>
+              <circle cx="8" cy="-8" r="2.8" fill="#1e293b"/>
+            </g>
+            <g transform="translate(168, 102) rotate(15)" filter="url(#monoShadow)">
+              <rect x="-17" y="-17" width="34" height="34" rx="6" fill="url(#monoRedDice)" stroke="#fca5a5" stroke-width="1.5"/>
+              <circle cx="-7" cy="-7" r="3" fill="#ffffff"/>
+              <circle cx="0" cy="0" r="3" fill="#ffffff"/>
+              <circle cx="7" cy="7" r="3" fill="#ffffff"/>
+            </g>
+
+            <!-- 底部特色勋章 -->
+            <g transform="translate(18, 144)">
+              <rect width="138" height="24" rx="6" fill="rgba(15,23,42,0.9)" stroke="rgba(16,185,129,0.5)" stroke-width="1"/>
+              <text x="10" y="16" fill="#6ee7b7" font-size="11" font-weight="800" font-family="system-ui, sans-serif">🎩 掷骰圈地 · 40格完整棋盘</text>
+            </g>
+          </svg>
+        </div>
+        <div class="cover-badges">
+          <span class="badge-pill players">👥👥 2-8人 / AI</span>
+          <span class="badge-pill tag-new" style="background:linear-gradient(135deg,#10b981,#059669); color:#fff; font-weight:800;">🎩 地产强手 · 支持电脑AI</span>
+        </div>
+        <div class="cover-overlay"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="title-group">
+            <div class="card-main-title">
+              <span>经典大富翁 (Monopoly)</span>
+              <span class="card-sub" style="color:#34d399;">MONOPOLY CLASSIC · 2-8P</span>
+            </div>
+            <div class="card-tagline">掷骰买地 · 商业垄断 · 房产投资与多AI同台资产争夺</div>
+          </div>
+          <div class="btn-play-action" style="background:linear-gradient(135deg,#10b981,#059669); color:#fff; border-color:#34d399;">开玩 ▶</div>
+        </div>
+        <div class="card-meta-chips">
+          <span class="meta-chip">⏱️ 15-45分钟</span>
+          <span class="meta-chip">经营 ⭐⭐⭐⭐⭐</span>
+          <span class="meta-chip accent" style="background:rgba(16,185,129,0.15); border-color:rgba(16,185,129,0.35); color:#6ee7b7;">2-8人同屏 · 智能AI机器人 · 强手棋全规则</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 💎 璀璨宝石 (Splendor / 文艺复兴商战) -->
+    <div class="game-card hero-card" data-cat="STRATEGY" data-players="4" data-game-key="SPLENDOR" data-keywords="splendor 璀璨宝石 宝石商人 发展卡 贵族 筹码 翡翠 蓝宝石 红宝石 钻石 玛瑙 黄金 文艺复兴 2人 3人 4人 策略 桌游 ccbs" onclick="enterGame('SPLENDOR')" style="border: 1px solid rgba(168, 85, 247, 0.45); box-shadow: 0 4px 20px rgba(168, 85, 247, 0.18);">
+      <div class="card-cover-wrapper">
+        <div class="card-art-canvas">
+          <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="splBgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#2e1065"/>
+                <stop offset="50%" stop-color="#3b0764"/>
+                <stop offset="100%" stop-color="#0f172a"/>
+              </linearGradient>
+              <linearGradient id="splGold" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#fef08a"/>
+                <stop offset="50%" stop-color="#eab308"/>
+                <stop offset="100%" stop-color="#a16207"/>
+              </linearGradient>
+              <radialGradient id="splPurpleGlow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#c084fc" stop-opacity="0.5"/>
+                <stop offset="100%" stop-color="#6b21a8" stop-opacity="0"/>
+              </radialGradient>
+              <filter id="splGlow">
+                <feGaussianBlur stdDeviation="3" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+            <rect width="320" height="180" fill="url(#splBgGrad)"/>
+            <circle cx="160" cy="90" r="85" fill="url(#splPurpleGlow)"/>
+
+            <!-- 文艺复兴皇室星芒纹理 -->
+            <g stroke="#eab308" stroke-width="1" opacity="0.25" fill="none">
+              <circle cx="160" cy="85" r="72"/>
+              <circle cx="160" cy="85" r="50" stroke-dasharray="4 4"/>
+              <polygon points="160,20 175,70 225,85 175,100 160,150 145,100 95,85 145,70"/>
+            </g>
+
+            <!-- 5色核心发光宝石环绕阵列 (Five Gems & Gold Token) -->
+            <!-- 1. 白钻石 -->
+            <g transform="translate(105, 52)">
+              <polygon points="0,-12 12,0 0,12 -12,0" fill="#f8fafc" stroke="#38bdf8" stroke-width="1.8" filter="url(#splGlow)"/>
+              <polygon points="0,-7 7,0 0,7 -7,0" fill="#e0f2fe"/>
+            </g>
+
+            <!-- 2. 蓝宝石 -->
+            <g transform="translate(215, 52)">
+              <polygon points="-12,-10 12,-10 16,0 0,14 -16,0" fill="#2563eb" stroke="#60a5fa" stroke-width="1.8" filter="url(#splGlow)"/>
+              <polygon points="-7,-7 7,-7 10,0 0,9 -10,0" fill="#1d4ed8"/>
+            </g>
+
+            <!-- 3. 绿翡翠 -->
+            <g transform="translate(85, 102)">
+              <rect x="-10" y="-10" width="20" height="20" rx="3" transform="rotate(45)" fill="#10b981" stroke="#6ee7b7" stroke-width="1.8" filter="url(#splGlow)"/>
+              <rect x="-6" y="-6" width="12" height="12" rx="2" transform="rotate(45)" fill="#059669"/>
+            </g>
+
+            <!-- 4. 红宝石 -->
+            <g transform="translate(235, 102)">
+              <polygon points="0,-13 13,0 0,13 -13,0" fill="#ef4444" stroke="#fca5a5" stroke-width="1.8" filter="url(#splGlow)"/>
+              <polygon points="0,-8 8,0 0,8 -8,0" fill="#dc2626"/>
+            </g>
+
+            <!-- 5. 黑玛瑙 -->
+            <g transform="translate(118, 126)">
+              <circle cx="0" cy="0" r="11" fill="#1e293b" stroke="#94a3b8" stroke-width="1.8" filter="url(#splGlow)"/>
+              <circle cx="0" cy="0" r="7" fill="#0f172a"/>
+            </g>
+
+            <!-- 6. 黄金百搭筹码 -->
+            <g transform="translate(202, 126)">
+              <circle cx="0" cy="0" r="12" fill="url(#splGold)" stroke="#fef08a" stroke-width="2" filter="url(#splGlow)"/>
+              <circle cx="0" cy="0" r="8" fill="none" stroke="#78350f" stroke-width="1" stroke-dasharray="2 2"/>
+              <text x="0" y="4" fill="#78350f" font-size="11" font-weight="900" text-anchor="middle">★</text>
+            </g>
+
+            <!-- 中央核心: 文艺复兴皇室赞助卡 (Noble Patron Crest) -->
+            <g transform="translate(160, 84)">
+              <rect x="-24" y="-34" width="48" height="68" rx="5" fill="#1e1b4b" stroke="url(#splGold)" stroke-width="2.2" filter="url(#splGlow)"/>
+              <rect x="-20" y="-30" width="40" height="60" rx="3" fill="#312e81" opacity="0.9"/>
+              <path d="M -12,-8 L -14,-18 L -6,-12 L 0,-22 L 6,-12 L 14,-18 L 12,-8 Z" fill="url(#splGold)"/>
+              <circle cx="0" cy="2" r="8" fill="#4338ca"/>
+              <text x="0" y="6" fill="#fde047" font-size="11" font-weight="900" text-anchor="middle">👑</text>
+              <rect x="-14" y="14" width="28" height="12" rx="3" fill="rgba(245,158,11,0.25)" stroke="#f59e0b" stroke-width="1"/>
+              <text x="0" y="23" fill="#fde047" font-size="9" font-weight="900" text-anchor="middle">★ 3 VP</text>
+            </g>
+
+            <!-- 底部勋章 -->
+            <g transform="translate(18, 144)">
+              <rect width="138" height="24" rx="6" fill="rgba(15,23,42,0.9)" stroke="rgba(168,85,247,0.5)" stroke-width="1"/>
+              <text x="10" y="16" fill="#d8b4fe" font-size="11" font-weight="800" font-family="system-ui, sans-serif">💎 15分竞速 · 引擎构筑</text>
+            </g>
+          </svg>
+        </div>
+        <div class="cover-badges">
+          <span class="badge-pill players">👥👥 2-4人同屏</span>
+          <span class="badge-pill tag-new" style="background:linear-gradient(135deg,#9333ea,#6366f1); color:#fff; font-weight:800;">👑 贵族赞助 · 经典德式桌游</span>
+        </div>
+        <div class="cover-overlay"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="title-group">
+            <div class="card-main-title">
+              <span>璀璨宝石 (Splendor)</span>
+              <span class="card-sub" style="color:#c084fc;">SPLENDOR RENAISSANCE · 2-4P</span>
+            </div>
+            <div class="card-tagline">文艺复兴宝石商战 · 5色矿脉引擎构筑 · 争夺10大皇家贵族赞助</div>
+          </div>
+          <div class="btn-play-action" style="background:linear-gradient(135deg,#9333ea,#6366f1); color:#fff; border-color:#c084fc;">开玩 ▶</div>
+        </div>
+        <div class="card-meta-chips">
+          <span class="meta-chip">⏱️ 15-30分钟</span>
+          <span class="meta-chip">策略 ⭐⭐⭐⭐⭐</span>
+          <span class="meta-chip accent" style="background:rgba(168,85,247,0.15); border-color:rgba(168,85,247,0.35); color:#d8b4fe;">2-4人轮弈 · 15分终局竞速 · 10位古典贵族</span>
+        </div>
+      </div>
+    </div>
+  
+
     <div class="game-card hero-card" data-cat="PHYSICS" data-players="2" data-game-key="TANKTROUBLE" data-keywords="tanktrouble 坦克动荡 坦克 弹射 炮弹 物理 迷宫 反弹 双人 2人 二人 人机 tk" onclick="enterGame('TANKTROUBLE')">
       <div class="card-cover-wrapper">
         <div class="card-art-canvas">
@@ -3283,6 +3522,8 @@
       'GO': 'go.html',
       'KAYA': 'kaya/index.html',
       'SANGUOSHA': 'sanguosha/index.html',
+      'MONOPOLY': 'monopoly.html',
+      'SPLENDOR': 'splendor.html',
       'IAIDO': 'iaido.html',
       'LIARSDICE': 'liarsdice.html',
       'SUMO': 'sumo.html',
@@ -3447,6 +3688,8 @@
         'GO': '⚪⚫ 玄素围棋 (The Game of Go)',
         'KAYA': '🌲 Kaya 现代围棋 (KataGo AI 研判·双人对弈)',
         'SANGUOSHA': '🗡️ 三国杀 (身份/国战/军争全模式)',
+        'MONOPOLY': '🎩 经典大富翁 (Monopoly·强手棋)',
+        'SPLENDOR': '💎 璀璨宝石 (Splendor·文艺复兴商战)',
         'IAIDO': '⚡ 拔刀居合斩',
         'LIARSDICE': '🎲 皇家大话骰',
         'SUMO': '🚗 物理飞车相扑',
@@ -3509,6 +3752,8 @@
           'GO': '⚪⚫ 玄素围棋',
           'KAYA': '🌲 Kaya围棋',
           'SANGUOSHA': '🗡️ 三国杀',
+          'MONOPOLY': '🎩 大富翁',
+          'SPLENDOR': '💎 璀璨宝石',
           'IAIDO': '⚡ 居合斩',
           'LIARSDICE': '🎲 大话骰',
           'SUMO': '🚗 飞车相扑',
@@ -3598,6 +3843,32 @@
         btnShadow: 'rgba(220, 38, 38, 0.6)',
         chips: ['⚔️ 身份局/国战/军争', '👑 经典全武将卡牌', '高智能单机AI对决'],
         icon: '🗡️'
+      },
+      {
+        key: 'MONOPOLY',
+        title: '经典大富翁 (Monopoly)',
+        sub: 'MONOPOLY CLASSIC · 2-8P',
+        tagline: '掷骰买地 · 商业垄断 · 房产投资与多AI同台资产争夺',
+        badge: '👥👥 2-8人 / AI · 策略强手棋',
+        bgGradient: 'radial-gradient(circle at 75% 30%, rgba(16, 185, 129, 0.45) 0%, rgba(15, 23, 42, 0.95) 70%)',
+        borderColor: 'rgba(52, 211, 153, 0.5)',
+        btnColor: 'linear-gradient(135deg, #10b981, #059669)',
+        btnShadow: 'rgba(16, 185, 129, 0.6)',
+        chips: ['🎩 2-8人同屏对战', '🎲 智能电脑AI参与', '40格完整经典强手棋'],
+        icon: '🎩'
+      },
+      {
+        key: 'SPLENDOR',
+        title: '璀璨宝石 (Splendor)',
+        sub: 'SPLENDOR RENAISSANCE · 2-4P',
+        tagline: '文艺复兴宝石商战 · 5色矿脉引擎构筑 · 争夺10大皇家贵族赞助',
+        badge: '👥👥 2-4人同屏 · 策略轮弈',
+        bgGradient: 'radial-gradient(circle at 75% 30%, rgba(168, 85, 247, 0.45) 0%, rgba(15, 23, 42, 0.95) 70%)',
+        borderColor: 'rgba(192, 132, 252, 0.5)',
+        btnColor: 'linear-gradient(135deg, #9333ea, #6366f1)',
+        btnShadow: 'rgba(168, 85, 247, 0.6)',
+        chips: ['💎 5色原石引擎构筑', '👑 10位皇家贵族赞助', '15分极速冲刺结算'],
+        icon: '💎'
       }
     ];
 
