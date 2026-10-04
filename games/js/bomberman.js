@@ -47,7 +47,7 @@ const CONTROLS = [
 function applyCurse(p) {
   p.cursed = true;
   p.curseDuration = 10000;
-  const curses = ['slow', 'reverse', 'auto_bomb', 'can_pass'];
+  const curses = ['slow', 'reverse', 'auto_bomb'];
   p.curseType = curses[Math.floor(Math.random() * curses.length)];
 }
 
@@ -298,15 +298,24 @@ function update(dt) {
   checkWinCondition();
 }
 
+const PLAYER_RADIUS = 16;
+const SLIDE_THRESHOLD = 18;
+
 function spawnNextSuddenDeathWall() {
   while (suddenDeathStep < suddenDeathPath.length) {
     let p = suddenDeathPath[suddenDeathStep++];
     if (grid[p.r][p.c] !== CELL_HARD) {
       grid[p.r][p.c] = CELL_HARD;
-      // Kill any player here
+      // Kill any player crushed by falling wall
       players.forEach(player => {
-        if (player.alive && getCell(player.x) === p.c && getCell(player.y) === p.r) {
-          killPlayer(player);
+        if (player.alive) {
+          let minC = Math.floor((player.x - PLAYER_RADIUS) / CELL);
+          let maxC = Math.floor((player.x + PLAYER_RADIUS) / CELL);
+          let minR = Math.floor((player.y - PLAYER_RADIUS) / CELL);
+          let maxR = Math.floor((player.y + PLAYER_RADIUS) / CELL);
+          if (p.c >= minC && p.c <= maxC && p.r >= minR && p.r <= maxR) {
+            killPlayer(player);
+          }
         }
       });
       break;
@@ -315,6 +324,91 @@ function spawnNextSuddenDeathWall() {
 }
 
 function getCell(px) { return Math.floor(px / CELL); }
+
+function isSolid(c, r, p) {
+  if (c < 0 || c >= COLS || r < 0 || r >= ROWS) return true;
+  if (grid[r][c] === CELL_HARD || grid[r][c] === CELL_SOFT) return true;
+  for (let b of bombs) {
+    if (b.col === c && b.row === r) {
+      if (b.passablePlayers && b.passablePlayers.has(p.id)) {
+        continue;
+      }
+      return true;
+    }
+  }
+  return false;
+}
+
+function boxCollides(x, y, p) {
+  const minC = Math.floor((x - PLAYER_RADIUS) / CELL);
+  const maxC = Math.floor((x + PLAYER_RADIUS) / CELL);
+  const minR = Math.floor((y - PLAYER_RADIUS) / CELL);
+  const maxR = Math.floor((y + PLAYER_RADIUS) / CELL);
+  for (let r = minR; r <= maxR; r++) {
+    for (let c = minC; c <= maxC; c++) {
+      if (isSolid(c, r, p)) return true;
+    }
+  }
+  return false;
+}
+
+function movePlayer(p, moveX, moveY, speed) {
+  if (moveX !== 0 && moveY !== 0) {
+    moveX = 0; // Enforce single-axis movement to eliminate diagonal wall-pinching
+  }
+
+  // Handle kicking bombs when walking into them
+  if (p.hasKick && !p.cursed) {
+    const checkC = Math.floor((p.x + moveX * (PLAYER_RADIUS + 8)) / CELL);
+    const checkR = Math.floor((p.y + moveY * (PLAYER_RADIUS + 8)) / CELL);
+    const hitBomb = bombs.find(b => b.col === checkC && b.row === checkR && !b.kicked);
+    if (hitBomb) {
+      hitBomb.kicked = true;
+      hitBomb.kickDx = moveX;
+      hitBomb.kickDy = moveY;
+    }
+  }
+
+  // 1. Direct movement attempt
+  const targetX = p.x + moveX * speed;
+  const targetY = p.y + moveY * speed;
+  if (!boxCollides(targetX, targetY, p)) {
+    p.x = targetX;
+    p.y = targetY;
+    return;
+  }
+
+  // 2. Safe assisted cornering (smoothly guide player into perpendicular corridors without wall clipping)
+  if (moveX !== 0) {
+    const currentR = Math.floor(p.y / CELL);
+    const centerY = currentR * CELL + CELL / 2;
+    const diffY = centerY - p.y;
+    if (Math.abs(diffY) <= SLIDE_THRESHOLD && Math.abs(diffY) > 0.01) {
+      const slideDir = diffY > 0 ? 1 : -1;
+      const slideY = p.y + slideDir * Math.min(speed, Math.abs(diffY));
+      if (!boxCollides(p.x, slideY, p)) {
+        p.y = slideY;
+        if (!boxCollides(p.x + moveX * speed, p.y, p)) {
+          p.x += moveX * speed;
+        }
+      }
+    }
+  } else if (moveY !== 0) {
+    const currentC = Math.floor(p.x / CELL);
+    const centerX = currentC * CELL + CELL / 2;
+    const diffX = centerX - p.x;
+    if (Math.abs(diffX) <= SLIDE_THRESHOLD && Math.abs(diffX) > 0.01) {
+      const slideDir = diffX > 0 ? 1 : -1;
+      const slideX = p.x + slideDir * Math.min(speed, Math.abs(diffX));
+      if (!boxCollides(slideX, p.y, p)) {
+        p.x = slideX;
+        if (!boxCollides(p.x, p.y + moveY * speed, p)) {
+          p.y += moveY * speed;
+        }
+      }
+    }
+  }
+}
 
 function updatePlayers(dt) {
   for (let p of players) {
@@ -346,75 +440,18 @@ function updatePlayers(dt) {
       moveX = -moveX; moveY = -moveY;
     }
 
-    if (moveX !== 0 && moveY !== 0) { moveX = 0; } // no diagonal
-
-    let nextX = p.x + moveX * speed;
-    let nextY = p.y + moveY * speed;
-
-    const margin = 12; 
-    let canMove = true;
-
-    if (moveX !== 0) {
-      let c = getCell(nextX + Math.sign(moveX) * margin);
-      let rTop = getCell(p.y - margin + 2);
-      let rBot = getCell(p.y + margin - 2);
-      if (isSolid(c, rTop, p) || isSolid(c, rBot, p)) {
-        canMove = false;
-        // corner sliding
-        if (!isSolid(c, getCell(p.y - CELL/2), p)) p.y -= speed;
-        else if (!isSolid(c, getCell(p.y + CELL/2), p)) p.y += speed;
-      }
-    }
-    if (moveY !== 0) {
-      let r = getCell(nextY + Math.sign(moveY) * margin);
-      let cLeft = getCell(p.x - margin + 2);
-      let cRight = getCell(p.x + margin - 2);
-      if (isSolid(cLeft, r, p) || isSolid(cRight, r, p)) {
-        canMove = false;
-        if (!isSolid(getCell(p.x - CELL/2), r, p)) p.x -= speed;
-        else if (!isSolid(getCell(p.x + CELL/2), r, p)) p.x += speed;
-      }
-    }
-
-    if (canMove) {
-      p.x = nextX; p.y = nextY;
+    if (moveX !== 0 || moveY !== 0) {
+      movePlayer(p, moveX, moveY, speed);
     }
     
-    p.col = getCell(p.x);
-    p.row = getCell(p.y);
+    p.col = Math.floor(p.x / CELL);
+    p.row = Math.floor(p.y / CELL);
 
     if (p.keys.bomb && p.activeBombs < p.maxBombs) {
       placeBomb(p);
       p.keys.bomb = false; 
     }
   }
-}
-
-function isSolid(c, r, p) {
-  if (c<0 || c>=COLS || r<0 || r>=ROWS) return true;
-  if (grid[r][c] === CELL_HARD) return true;
-  if (grid[r][c] === CELL_SOFT && !(p.cursed && p.curseType === 'can_pass')) return true;
-  
-  let hasBomb = bombs.some(b => b.col === c && b.row === r);
-  if (hasBomb) {
-    if (p.hasKick && !p.cursed) {
-      // Initiate kick handled elsewhere or simple bump
-      let b = bombs.find(b => b.col === c && b.row === r);
-      if (b && !b.kicked) {
-        let dx = c - getCell(p.x);
-        let dy = r - getCell(p.y);
-        if (Math.abs(dx) + Math.abs(dy) === 1) {
-          b.kicked = true;
-          b.kickDx = dx;
-          b.kickDy = dy;
-        }
-      }
-    }
-    // allow walking through bomb if player was already on it
-    if (getCell(p.x) === c && getCell(p.y) === r) return false;
-    return true;
-  }
-  return false;
 }
 
 function placeBomb(p) {
@@ -433,35 +470,56 @@ function placeBomb(p) {
     kicked: false,
     kickDx: 0, kickDy: 0,
     thrown: false,
-    glowing: true
+    glowing: true,
+    passablePlayers: new Set([p.id])
   });
   if (window.AUDIO) AUDIO.play('bm_place');
   updateHUD();
 }
 
 function updateBombs(dt) {
+  // Update bomb passability: once player has stepped off the bomb cell, remove from passablePlayers
+  for (let b of bombs) {
+    if (b.passablePlayers && b.passablePlayers.size > 0) {
+      for (let pid of Array.from(b.passablePlayers)) {
+        let player = players[pid];
+        if (!player || !player.alive) {
+          b.passablePlayers.delete(pid);
+          continue;
+        }
+        let pMinC = Math.floor((player.x - PLAYER_RADIUS) / CELL);
+        let pMaxC = Math.floor((player.x + PLAYER_RADIUS) / CELL);
+        let pMinR = Math.floor((player.y - PLAYER_RADIUS) / CELL);
+        let pMaxR = Math.floor((player.y + PLAYER_RADIUS) / CELL);
+        if (b.col < pMinC || b.col > pMaxC || b.row < pMinR || b.row > pMaxR) {
+          b.passablePlayers.delete(pid);
+        }
+      }
+    }
+  }
+
   for (let i = bombs.length - 1; i >= 0; i--) {
     let b = bombs[i];
     b.fuseTime -= dt;
 
     if (b.kicked) {
-      let speed = 4;
+      let speed = 5;
       let nextX = b.x + b.kickDx * speed;
       let nextY = b.y + b.kickDy * speed;
-      let nextC = getCell(nextX + Math.sign(b.kickDx) * CELL/2);
-      let nextR = getCell(nextY + Math.sign(b.kickDy) * CELL/2);
+      let nextC = Math.floor((nextX + Math.sign(b.kickDx) * CELL / 2) / CELL);
+      let nextR = Math.floor((nextY + Math.sign(b.kickDy) * CELL / 2) / CELL);
       
       if (isSolidForBomb(nextC, nextR)) {
         b.kicked = false;
-        b.col = getCell(b.x);
-        b.row = getCell(b.y);
-        b.x = b.col * CELL + CELL/2;
-        b.y = b.row * CELL + CELL/2;
+        b.col = Math.floor(b.x / CELL);
+        b.row = Math.floor(b.y / CELL);
+        b.x = b.col * CELL + CELL / 2;
+        b.y = b.row * CELL + CELL / 2;
       } else {
         b.x = nextX;
         b.y = nextY;
-        b.col = getCell(b.x);
-        b.row = getCell(b.y);
+        b.col = Math.floor(b.x / CELL);
+        b.row = Math.floor(b.y / CELL);
       }
     }
 
@@ -704,12 +762,25 @@ function render() {
   // Draw Players
   for (let p of players) {
     if (!p.alive) continue;
+    const pr = PLAYER_RADIUS;
     ctx.fillStyle = p.color;
-    ctx.fillRect(p.x - CELL/2 + 6, p.y - CELL/2 + 6, CELL - 12, CELL - 12);
+    if (ctx.roundRect) {
+      ctx.beginPath();
+      ctx.roundRect(p.x - pr, p.y - pr, pr * 2, pr * 2, 6);
+      ctx.fill();
+    } else {
+      ctx.fillRect(p.x - pr, p.y - pr, pr * 2, pr * 2);
+    }
     
     if (p.cursed) {
-      ctx.fillStyle = 'rgba(0,0,0,0.5)';
-      ctx.fillRect(p.x - CELL/2 + 6, p.y - CELL/2 + 6, CELL - 12, CELL - 12);
+      ctx.fillStyle = 'rgba(0,0,0,0.55)';
+      if (ctx.roundRect) {
+        ctx.beginPath();
+        ctx.roundRect(p.x - pr, p.y - pr, pr * 2, pr * 2, 6);
+        ctx.fill();
+      } else {
+        ctx.fillRect(p.x - pr, p.y - pr, pr * 2, pr * 2);
+      }
       ctx.fillStyle = '#fff';
       ctx.font = '16px Arial';
       ctx.fillText('☠️', p.x, p.y);
