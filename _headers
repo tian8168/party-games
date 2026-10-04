@@ -46,3 +46,17 @@
 
 /games/kaya/sw.js
   Cache-Control: no-cache, no-store, must-revalidate
+
+# Sanguosha (Legends of the Three Kingdoms)
+/games/sanguosha/service-worker.js
+  Cache-Control: no-cache, no-store, must-revalidate
+  Service-Worker-Allowed: /games/sanguosha/
+
+/games/sanguosha/audio/*
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=31536000, immutable
+
+/games/sanguosha/image/*
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=31536000, immutable
+

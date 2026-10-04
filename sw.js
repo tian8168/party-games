@@ -6,7 +6,7 @@
  * 3. 动态信令 (WebSocket/MQTT)：直连放行
  */
 
-const CACHE_NAME = 'party-arcade-v3.3';
+const CACHE_NAME = 'party-arcade-v3.4';
 
 const APP_SHELL = [
   './',
@@ -25,6 +25,7 @@ const APP_SHELL = [
   './games/go.html',
   './games/kaya.html',
   './games/kaya/index.html',
+  './games/sanguosha.html',
   './games/sumo.html',
   './games/tanktrouble.html',
   './games/quoridor.html',
@@ -113,8 +114,8 @@ self.addEventListener('fetch', (event) => {
   if (url.protocol !== 'http:' && url.protocol !== 'https:') return;
   if (url.hostname.includes('emqx.io')) return;
 
-  // Kaya 现代围棋拥有独立 Service Worker 与 WASM/COEP 隔离策略，由其自身作用域接管
-  if (url.pathname.startsWith('/games/kaya/')) return;
+  // Kaya 现代围棋与三国杀拥有独立 Service Worker 与隔离策略，由其自身作用域接管
+  if (url.pathname.startsWith('/games/kaya/') || url.pathname.startsWith('/games/sanguosha/')) return;
 
   // 策略 A: HTML 页面采用 Network-First (网络优先，断网回退缓存)
   if (request.mode === 'navigate' || (request.headers.get('accept') && request.headers.get('accept').includes('text/html'))) {
