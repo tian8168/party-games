@@ -178,10 +178,27 @@
         { id: 3, name: '🔵 玩家 3 (蓝)', isAi: false, colorClass: 'seat-p3' },
         { id: 4, name: '🟡 玩家 4 (黄)', isAi: false, colorClass: 'seat-p4' }
       ];
+    } else if (UNO_STATE.mode === 'ONLINE') {
+      const colors = ['seat-p1', 'seat-p2', 'seat-p3', 'seat-p4'];
+      const defaultNames = ['🔴 房主', '🟢 玩家 2', '🔵 玩家 3', '🟡 玩家 4'];
+      configs = [0, 1, 2, 3].map(idx => {
+        const rp = UNO_NETWORK.roomPlayers[idx];
+        const isMe = idx === UNO_NETWORK.mySeatIndex;
+        let displayName = rp ? rp.name : defaultNames[idx];
+        if (isMe && !displayName.includes('(你)')) displayName += ' (你)';
+        return {
+          id: idx + 1,
+          seatIndex: idx,
+          name: displayName,
+          isAi: rp ? !!rp.isAi : true,
+          colorClass: colors[idx]
+        };
+      });
     }
 
     UNO_STATE.players = configs.map(c => ({
       id: c.id,
+      seatIndex: c.seatIndex !== undefined ? c.seatIndex : (c.id - 1),
       name: c.name,
       isAi: c.isAi,
       colorClass: c.colorClass,
@@ -287,7 +304,7 @@
     return player.hand.filter(card => canPlayCard(card, player));
   }
 
-  function playCard(player, cardIndex, chosenColor = null) {
+  function playCard(player, cardIndex, chosenColor = null, isRemote = false) {
     if (UNO_STATE.phase !== 'PLAYING') return;
 
     const card = player.hand[cardIndex];
@@ -302,6 +319,16 @@
     if (window.AUDIO) AUDIO.play('uno_play');
 
     appendLog(`${player.name} 打出了 [${COLORS[card.color === 'WILD' ? (chosenColor || 'WILD') : card.color].name} ${card.label}]`);
+
+    // 在线模式：本地主动操作时广播至网络对端
+    if (UNO_STATE.mode === 'ONLINE' && !isRemote) {
+      UNO_NETWORK.sendAction('PLAY_CARD', {
+        seatIndex: player.seatIndex !== undefined ? player.seatIndex : (player.id - 1),
+        cardIndex,
+        cardId: card.id,
+        chosenColor
+      });
+    }
 
     // 处理 UNO 喊叫机制：如果出牌后只剩 1 张牌
     if (player.hand.length === 1) {
@@ -319,7 +346,11 @@
     // 处理功能效果
     if (card.color === 'WILD') {
       if (!chosenColor) {
-        if (!player.isAi) {
+        const isLocalHuman = (UNO_STATE.mode === 'ONLINE')
+          ? (player.seatIndex === UNO_NETWORK.mySeatIndex)
+          : !player.isAi;
+
+        if (isLocalHuman) {
           // 人类玩家弹出四色选择转盘
           UNO_STATE.phase = 'COLOR_PICKER';
           openColorPickerModal(card);
@@ -407,12 +438,24 @@
 
   function handleDrawButton() {
     const activePlayer = UNO_STATE.players[UNO_STATE.turnIndex];
-    if (activePlayer.isAi || UNO_STATE.phase !== 'PLAYING') return;
+    if (UNO_STATE.phase !== 'PLAYING') return;
+
+    if (UNO_STATE.mode === 'ONLINE') {
+      if (UNO_STATE.turnIndex !== UNO_NETWORK.mySeatIndex) return;
+    } else {
+      if (activePlayer.isAi) return;
+    }
 
     playerDrawTurn(activePlayer);
   }
 
-  function playerDrawTurn(player) {
+  function playerDrawTurn(player, isRemote = false) {
+    if (UNO_STATE.mode === 'ONLINE' && !isRemote) {
+      UNO_NETWORK.sendAction('DRAW_CARD', {
+        seatIndex: player.seatIndex !== undefined ? player.seatIndex : (player.id - 1)
+      });
+    }
+
     // 1. 如果当前存在 +2/+4 叠牌惩罚，且玩家无法出牌接招
     if (UNO_STATE.stackPenalty > 0) {
       const penaltyCount = UNO_STATE.stackPenalty;
@@ -439,12 +482,20 @@
 
       // 检查刚摸到的牌是否立即可出
       if (canPlayCard(card, player)) {
-        if (!player.isAi) {
+        const isLocalHuman = (UNO_STATE.mode === 'ONLINE')
+          ? (player.seatIndex === UNO_NETWORK.mySeatIndex)
+          : !player.isAi;
+
+        if (isLocalHuman) {
           // 人类玩家：高亮并给予即刻打出提示，更新手牌
           updateUI();
           return;
-        } else {
-          // AI 立即打出
+        } else if (player.isAi) {
+          // 仅在 AI 时立即打出 (如果是 ONLINE 模式由 Host 触发)
+          if (UNO_STATE.mode === 'ONLINE' && !UNO_NETWORK.isHost) {
+            updateUI();
+            return;
+          }
           const cardIdx = player.hand.length - 1;
           setTimeout(() => {
             playCard(player, cardIdx);
@@ -484,7 +535,7 @@
     }
   }
 
-  function callUno(player) {
+  function callUno(player, isRemote = false) {
     if (player.hand.length !== 1) return;
     player.calledUno = true;
     UNO_STATE.unoDangerPlayerId = null;
@@ -493,12 +544,19 @@
     if (window.AUDIO) AUDIO.play('uno_call');
     showFloatingNotice(`📣 ${player.name} 狂喊了 【UNO!】`, '#f59e0b');
     appendLog(`📣 ${player.name} 及时大喊 【UNO!】！`);
+
+    if (UNO_STATE.mode === 'ONLINE' && !isRemote) {
+      UNO_NETWORK.sendAction('CALL_UNO', {
+        seatIndex: player.seatIndex !== undefined ? player.seatIndex : (player.id - 1)
+      });
+    }
+
     updateUI();
   }
 
-  function catchUno(accuser) {
+  function catchUno(accuser, explicitTarget = null, isRemote = false) {
     // 判定是否有漏喊 UNO 的对手
-    const target = UNO_STATE.players.find(p => p.hand.length === 1 && !p.calledUno);
+    const target = explicitTarget || UNO_STATE.players.find(p => p.hand.length === 1 && !p.calledUno);
     if (!target) {
       showToast('❌ 当前没有漏喊 UNO 的玩家！');
       return;
@@ -516,15 +574,26 @@
     if (window.AUDIO) AUDIO.play('uno_catch');
     showFloatingNotice(`🚨 抓漏成功！${target.name} 漏喊 UNO 罚抽 2 张！`, '#ef4444');
     appendLog(`🚨 ${accuser.name} 抓漏成功！${target.name} 被罚抽 2 张牌！`);
+
+    if (UNO_STATE.mode === 'ONLINE' && !isRemote) {
+      UNO_NETWORK.sendAction('CATCH_UNO', {
+        reporterSeatIndex: accuser.seatIndex !== undefined ? accuser.seatIndex : (accuser.id - 1),
+        targetSeatIndex: target.seatIndex !== undefined ? target.seatIndex : (target.id - 1)
+      });
+    }
+
     updateUI();
   }
 
   function aiAttemptCatchUno(targetPlayer) {
+    // 如果在线模式且非房主，不执行 AI 抓漏
+    if (UNO_STATE.mode === 'ONLINE' && !UNO_NETWORK.isHost) return;
+
     // 70% 概率 AI 成功抓漏
     if (Math.random() < 0.75) {
       const aiAccuser = UNO_STATE.players.find(p => p.isAi && p.id !== targetPlayer.id);
       if (aiAccuser) {
-        catchUno(aiAccuser);
+        catchUno(aiAccuser, targetPlayer);
       }
     }
   }
@@ -535,6 +604,11 @@
   function checkNextTurn() {
     clearTimeout(UNO_STATE.aiTimer);
     if (UNO_STATE.phase !== 'PLAYING') return;
+
+    // 在在线模式下，仅房主 (Host) 执行 AI 逻辑，避免多个客户端重复执行
+    if (UNO_STATE.mode === 'ONLINE' && !UNO_NETWORK.isHost) {
+      return;
+    }
 
     const currentP = UNO_STATE.players[UNO_STATE.turnIndex];
     if (currentP.isAi) {
@@ -733,15 +807,30 @@
     handContainer.innerHTML = '';
 
     const activePlayer = UNO_STATE.players[UNO_STATE.turnIndex];
-    const isHumanTurn = !activePlayer.isAi;
+    if (!activePlayer) return;
 
-    // 单人模式或本地多人轮到自己
-    const viewPlayer = (!activePlayer.isAi) ? activePlayer : UNO_STATE.players[0];
+    let viewPlayer;
+    let isHumanTurn;
 
-    // 如果开启了隐私暗牌且未按下查看
+    if (UNO_STATE.mode === 'ONLINE') {
+      const mySeat = UNO_NETWORK.mySeatIndex;
+      viewPlayer = (mySeat >= 0 && mySeat < UNO_STATE.players.length) ? UNO_STATE.players[mySeat] : UNO_STATE.players[0];
+      isHumanTurn = (UNO_STATE.turnIndex === mySeat) && (UNO_STATE.phase === 'PLAYING');
+    } else {
+      viewPlayer = (!activePlayer.isAi) ? activePlayer : UNO_STATE.players[0];
+      isHumanTurn = !activePlayer.isAi && (UNO_STATE.phase === 'PLAYING');
+    }
+
+    // 本地多人暗牌保护遮罩 (在线模式无需暗牌)
     const antiPeekActive = (UNO_STATE.mode.startsWith('LOCAL') && !UNO_STATE.antiPeekHeld);
     const coverEl = document.getElementById('uno-anti-peek-cover');
     if (coverEl) coverEl.style.display = antiPeekActive ? 'flex' : 'none';
+
+    // 手牌张数文字提示
+    const handCountText = document.getElementById('uno-hand-count-text');
+    if (handCountText) {
+      handCountText.textContent = `(${viewPlayer.hand.length} 张)`;
+    }
 
     viewPlayer.hand.forEach((card, idx) => {
       const isPlayable = isHumanTurn && viewPlayer.id === activePlayer.id && canPlayCard(card, viewPlayer);
@@ -772,13 +861,21 @@
 
   function renderActionButtons() {
     const activePlayer = UNO_STATE.players[UNO_STATE.turnIndex];
-    const isHumanTurn = !activePlayer.isAi && UNO_STATE.phase === 'PLAYING';
+    if (!activePlayer) return;
+
+    const mySeat = UNO_NETWORK.mySeatIndex;
+    const isHumanTurn = (UNO_STATE.mode === 'ONLINE')
+      ? (UNO_STATE.turnIndex === mySeat && UNO_STATE.phase === 'PLAYING')
+      : (!activePlayer.isAi && UNO_STATE.phase === 'PLAYING');
 
     // 摸牌按钮
     const drawBtn = document.getElementById('btn-uno-draw');
     if (drawBtn) {
       drawBtn.disabled = !isHumanTurn;
-      if (UNO_STATE.stackPenalty > 0) {
+      if (UNO_STATE.mode === 'ONLINE' && !isHumanTurn) {
+        drawBtn.innerHTML = `⏳ 等待对方出牌...`;
+        drawBtn.classList.remove('penalty');
+      } else if (UNO_STATE.stackPenalty > 0) {
         drawBtn.innerHTML = `💥 受罚摸入 ${UNO_STATE.stackPenalty} 张并跳过`;
         drawBtn.classList.add('penalty');
       } else {
@@ -790,8 +887,10 @@
     // 喊 UNO 按钮状态
     const unoBtn = document.getElementById('btn-call-uno');
     if (unoBtn) {
-      const humanPlayer = UNO_STATE.players.find(p => !p.isAi);
-      const canCall = humanPlayer && humanPlayer.hand.length === 1 && !humanPlayer.calledUno;
+      const myPlayer = (UNO_STATE.mode === 'ONLINE' && mySeat >= 0)
+        ? UNO_STATE.players[mySeat]
+        : UNO_STATE.players.find(p => !p.isAi);
+      const canCall = myPlayer && myPlayer.hand.length === 1 && !myPlayer.calledUno;
       unoBtn.classList.toggle('active-glow', canCall);
       unoBtn.disabled = !canCall;
     }
@@ -799,7 +898,10 @@
     // 抓漏按钮状态
     const catchBtn = document.getElementById('btn-catch-uno');
     if (catchBtn) {
-      const canCatch = UNO_STATE.players.some(p => p.hand.length === 1 && !p.calledUno && (!p.isAi || p.id !== activePlayer.id));
+      const myId = (UNO_STATE.mode === 'ONLINE' && mySeat >= 0)
+        ? UNO_STATE.players[mySeat]?.id
+        : null;
+      const canCatch = UNO_STATE.players.some(p => p.hand.length === 1 && !p.calledUno && (myId ? p.id !== myId : true));
       catchBtn.classList.toggle('active-alert', canCatch);
       catchBtn.disabled = !canCatch;
     }
@@ -816,16 +918,15 @@
     if (modal) modal.style.display = 'flex';
   }
 
-  window.selectUnoColor = function(colorKey) {
+  window.selectUnoColor = function(colorKey, isRemote = false) {
     const modal = document.getElementById('uno-color-modal');
     if (modal) modal.style.display = 'none';
 
     UNO_STATE.phase = 'PLAYING';
-    const activePlayer = UNO_STATE.players[UNO_STATE.turnIndex];
 
     UNO_STATE.currentColor = colorKey;
     if (window.AUDIO) AUDIO.play('uno_wild');
-    appendLog(`🌈 你选择了 【${COLORS[colorKey].name}色】！`);
+    appendLog(`🌈 选色生效：当前颜色变更为 【${COLORS[colorKey].name}色】！`);
 
     if (pendingWildCard && pendingWildCard.type === CARD_TYPES.WILD_DRAW4) {
       UNO_STATE.stackPenalty += 4;
@@ -835,6 +936,11 @@
     }
 
     pendingWildCard = null;
+
+    if (UNO_STATE.mode === 'ONLINE' && !isRemote) {
+      UNO_NETWORK.sendAction('SELECT_COLOR', { colorKey });
+    }
+
     advanceTurn(false);
   };
 
@@ -887,19 +993,663 @@
     if (m2) m2.style.display = 'none';
   };
 
-  window.nextUnoRound = function() {
+  window.nextUnoRound = function(isRemote = false) {
     closeUnoModals();
     UNO_STATE.roundNumber++;
+
+    if (UNO_STATE.mode === 'ONLINE') {
+      if (!isRemote) {
+        if (UNO_NETWORK.isHost) {
+          startHostOnlineGame();
+        } else {
+          showToast('⏳ 等待房主开启下一局...');
+        }
+      }
+      return;
+    }
+
     startUnoGame(false);
   };
 
-  window.restartUnoMatch = function() {
+  window.restartUnoMatch = function(isRemote = false) {
     closeUnoModals();
+
+    if (UNO_STATE.mode === 'ONLINE') {
+      if (!isRemote) {
+        if (UNO_NETWORK.isHost) {
+          UNO_STATE.roundNumber = 1;
+          startHostOnlineGame();
+        } else {
+          showToast('⏳ 等待房主重新开启对局...');
+        }
+      }
+      return;
+    }
+
     startUnoGame(true);
   };
 
   // ==========================================================================
-  // 12. 外部交互接口与初始化挂载
+  // 12. 在线联机网络中枢 (UNO NETWORK & CLOUDFLARE WORKER CLIENT)
+  // ==========================================================================
+  const DEFAULT_WORKER_URL = 'wss://uno-hub.party-games.workers.dev/ws';
+
+  const FUN_NAMES = [
+    '乌诺闪电侠', '极光爆牌手', '七彩神牌王', '超级反转王', 
+    '红黄蓝绿星', '绝对不加4', '反弹大师', '牌局预言家',
+    '摸牌狂魔', '无情跳过侠', '乌诺战神', '幸运大魔王'
+  ];
+
+  function getRandomUnoName() {
+    return FUN_NAMES[Math.floor(Math.random() * FUN_NAMES.length)];
+  }
+
+  const UNO_NETWORK = {
+    ws: null,
+    serverUrl: localStorage.getItem('uno_worker_url') || DEFAULT_WORKER_URL,
+    roomId: null,
+    myPlayerName: localStorage.getItem('uno_player_name') || getRandomUnoName(),
+    myClientId: localStorage.getItem('uno_client_id') || ('uno_cli_' + Math.random().toString(36).substr(2, 9)),
+    mySeatIndex: -1,
+    isHost: false,
+    roomPlayers: [],
+    pingTimer: null,
+
+    init() {
+      localStorage.setItem('uno_client_id', this.myClientId);
+      localStorage.setItem('uno_player_name', this.myPlayerName);
+    },
+
+    connect(roomId, playerName, isCreate = false) {
+      this.disconnect();
+      this.roomId = roomId;
+      this.myPlayerName = playerName || this.myPlayerName;
+      localStorage.setItem('uno_player_name', this.myPlayerName);
+
+      let url = this.serverUrl.trim();
+      if (!url) url = DEFAULT_WORKER_URL;
+
+      if (url.startsWith('http://')) url = url.replace('http://', 'ws://');
+      else if (url.startsWith('https://')) url = url.replace('https://', 'wss://');
+      else if (!url.startsWith('ws://') && !url.startsWith('wss://')) {
+        url = (window.location.protocol === 'https:' ? 'wss://' : 'ws://') + url;
+      }
+
+      const wsUrl = `${url}${url.includes('?') ? '&' : '?'}room=${encodeURIComponent(roomId)}&name=${encodeURIComponent(this.myPlayerName)}&clientId=${encodeURIComponent(this.myClientId)}&create=${isCreate ? '1' : '0'}`;
+
+      showFloatingNotice(`🌐 正在连接联机房间 ${roomId}...`, '#38bdf8');
+
+      try {
+        this.ws = new WebSocket(wsUrl);
+      } catch (err) {
+        showToast('❌ WebSocket 连接失败: ' + err.message);
+        return;
+      }
+
+      this.ws.onopen = () => {
+        showToast(`✅ 已接入联机中枢，房间号: ${roomId}`);
+        clearInterval(this.pingTimer);
+        this.pingTimer = setInterval(() => {
+          if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+            this.ws.send(JSON.stringify({ type: 'PING' }));
+          }
+        }, 15000);
+      };
+
+      this.ws.onmessage = (event) => {
+        try {
+          const msg = JSON.parse(event.data);
+          this.handleMessage(msg);
+        } catch (e) {
+          console.error('[UNO Network] Message parse error:', e);
+        }
+      };
+
+      this.ws.onerror = (err) => {
+        console.error('[UNO Network] WebSocket error:', err);
+        showToast('⚠️ 联机中枢未连接成功，可在下方「服务器配置」填入您的 Cloudflare Worker 域名！');
+      };
+
+      this.ws.onclose = (event) => {
+        clearInterval(this.pingTimer);
+        console.log('[UNO Network] WebSocket closed:', event.code);
+        if (UNO_STATE.mode === 'ONLINE' && UNO_STATE.phase === 'PLAYING') {
+          showFloatingNotice('⚠️ 联机连接已断开', '#ef4444');
+        }
+        updateOnlineBar();
+      };
+    },
+
+    disconnect() {
+      clearInterval(this.pingTimer);
+      if (this.ws) {
+        try { this.ws.close(); } catch (e) {}
+        this.ws = null;
+      }
+      this.roomId = null;
+      this.mySeatIndex = -1;
+      this.isHost = false;
+      this.roomPlayers = [];
+      updateOnlineBar();
+    },
+
+    send(msg) {
+      if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+        this.ws.send(JSON.stringify(msg));
+      }
+    },
+
+    sendAction(action, payload) {
+      this.send({
+        type: 'GAME_ACTION',
+        action: action,
+        payload: payload,
+        syncId: Date.now()
+      });
+    },
+
+    handleMessage(msg) {
+      switch (msg.type) {
+        case 'JOINED_SUCCESS':
+          this.roomId = msg.roomId;
+          this.mySeatIndex = msg.mySeatIndex;
+          this.isHost = msg.isHost;
+          this.roomPlayers = msg.roomData?.players || [];
+          if (msg.roomData?.houseRules) {
+            UNO_STATE.houseRules = { ...UNO_STATE.houseRules, ...msg.roomData.houseRules };
+          }
+          openOnlineLobbyView();
+          renderLobbySeats();
+          updateOnlineBar();
+          break;
+
+        case 'ROOM_UPDATE':
+          this.roomPlayers = msg.players || [];
+          if (msg.mySeatIndex !== undefined && msg.mySeatIndex !== -1) {
+            this.mySeatIndex = msg.mySeatIndex;
+          }
+          if (msg.hostId) {
+            this.isHost = (msg.hostId === this.myClientId);
+          }
+          if (msg.houseRules) {
+            UNO_STATE.houseRules = { ...UNO_STATE.houseRules, ...msg.houseRules };
+          }
+          renderLobbySeats();
+          updateOnlineBar();
+          break;
+
+        case 'RULES_UPDATED':
+          if (msg.rules) {
+            UNO_STATE.houseRules = { ...UNO_STATE.houseRules, ...msg.rules };
+            showToast('房规已同步更新');
+          }
+          break;
+
+        case 'GAME_START':
+          this.handleGameStart(msg);
+          break;
+
+        case 'GAME_ACTION':
+          this.handleRemoteAction(msg);
+          break;
+
+        case 'HOST_STATE_SYNC':
+          this.handleHostSync(msg.snapshot);
+          break;
+
+        case 'PLAYER_LEFT':
+          showToast(`席位 ${msg.seatIndex + 1} 玩家已离开房间`);
+          if (msg.roomData?.players) {
+            this.roomPlayers = msg.roomData.players;
+          }
+          if (msg.newHostId) {
+            this.isHost = (msg.newHostId === this.myClientId);
+          }
+          if (UNO_STATE.mode === 'ONLINE' && UNO_STATE.phase === 'PLAYING') {
+            const leftPlayer = UNO_STATE.players[msg.seatIndex];
+            if (leftPlayer) {
+              leftPlayer.isAi = true;
+              leftPlayer.name = leftPlayer.name.replace(' (你)', '') + ' (托管AI)';
+              appendLog(`🤖 玩家离开，席位 ${msg.seatIndex + 1} 已自动转为电脑托管`);
+              updateUI();
+              checkNextTurn();
+            }
+          }
+          renderLobbySeats();
+          updateOnlineBar();
+          break;
+
+        case 'ERROR':
+          showToast(`❌ ${msg.message || '网络错误'}`);
+          break;
+
+        case 'PONG':
+          break;
+      }
+    },
+
+    handleGameStart(msg) {
+      closeOnlineModal();
+      UNO_STATE.mode = 'ONLINE';
+
+      // 切换模式按钮高亮
+      document.querySelectorAll('.uno-mode-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.mode === 'ONLINE');
+      });
+
+      // 初始化 4 个席位
+      UNO_STATE.players = msg.players.map((p, idx) => ({
+        id: idx + 1,
+        seatIndex: idx,
+        name: idx === this.mySeatIndex ? `${p.name} (你)` : p.name,
+        isAi: !!p.isAi,
+        colorClass: `seat-p${idx + 1}`,
+        hand: msg.initialState?.playersHands ? msg.initialState.playersHands[idx] : [],
+        score: 0,
+        calledUno: false
+      }));
+
+      UNO_STATE.deck = msg.initialState.deck || [];
+      UNO_STATE.discardPile = [msg.initialState.firstCard];
+      UNO_STATE.currentCard = msg.initialState.firstCard;
+      UNO_STATE.currentColor = msg.initialState.currentColor;
+      UNO_STATE.turnIndex = msg.initialState.turnIndex || 0;
+      UNO_STATE.direction = msg.initialState.direction || 1;
+      UNO_STATE.stackPenalty = msg.initialState.stackPenalty || 0;
+      UNO_STATE.stackCardType = msg.initialState.stackCardType || null;
+      UNO_STATE.phase = 'PLAYING';
+      UNO_STATE.roundNumber = msg.initialState.roundNumber || 1;
+      UNO_STATE.antiPeekHeld = false;
+
+      updateOnlineBar();
+      updateUI();
+      appendLog(`🏁 在线对决正式开启！底牌为 [${COLORS[UNO_STATE.currentColor].name} ${UNO_STATE.currentCard.label}]`);
+      showFloatingNotice(`🎮 对决开启！底牌为 [${COLORS[UNO_STATE.currentColor].name} ${UNO_STATE.currentCard.label}]`, COLORS[UNO_STATE.currentColor].hex);
+
+      checkNextTurn();
+    },
+
+    handleRemoteAction(msg) {
+      if (UNO_STATE.mode !== 'ONLINE' || UNO_STATE.phase !== 'PLAYING') return;
+
+      const { seatIndex, action, payload } = msg;
+      const player = UNO_STATE.players[seatIndex];
+      if (!player) return;
+
+      switch (action) {
+        case 'PLAY_CARD':
+          let cardIdx = -1;
+          if (payload.cardId) {
+            cardIdx = player.hand.findIndex(c => c.id === payload.cardId);
+          }
+          if (cardIdx === -1 && payload.cardIndex !== undefined && payload.cardIndex < player.hand.length) {
+            cardIdx = payload.cardIndex;
+          }
+          if (cardIdx !== -1) {
+            playCard(player, cardIdx, payload.chosenColor, true);
+          }
+          break;
+
+        case 'DRAW_CARD':
+          playerDrawTurn(player, true);
+          break;
+
+        case 'CALL_UNO':
+          callUno(player, true);
+          break;
+
+        case 'CATCH_UNO':
+          const accuser = UNO_STATE.players[payload.reporterSeatIndex];
+          const target = payload.targetSeatIndex !== null && payload.targetSeatIndex !== undefined ? UNO_STATE.players[payload.targetSeatIndex] : null;
+          if (accuser) catchUno(accuser, target, true);
+          break;
+
+        case 'SELECT_COLOR':
+          selectUnoColor(payload.colorKey, true);
+          break;
+
+        case 'NEXT_ROUND':
+          nextUnoRound(true);
+          break;
+
+        case 'RESTART_MATCH':
+          restartUnoMatch(true);
+          break;
+      }
+    },
+
+    handleHostSync(snapshot) {
+      if (!snapshot || this.isHost) return;
+      UNO_STATE.turnIndex = snapshot.turnIndex;
+      UNO_STATE.direction = snapshot.direction;
+      UNO_STATE.currentColor = snapshot.currentColor;
+      UNO_STATE.stackPenalty = snapshot.stackPenalty;
+      UNO_STATE.stackCardType = snapshot.stackCardType;
+      if (snapshot.currentCard) UNO_STATE.currentCard = snapshot.currentCard;
+      if (snapshot.scores) {
+        snapshot.scores.forEach((sc, idx) => {
+          if (UNO_STATE.players[idx]) UNO_STATE.players[idx].score = sc;
+        });
+      }
+      updateUI();
+    }
+  };
+
+  function buildInitialGameState(playersConfig, roundNumber = 1) {
+    const fullDeck = shuffle(buildUnoDeck());
+    const playersHands = [];
+
+    // 发牌给各席位 (每人 7 张)
+    playersConfig.forEach(() => {
+      playersHands.push(fullDeck.splice(0, 7));
+    });
+
+    // 翻出第一张非 Wild+4 底牌
+    let firstCard = fullDeck.shift();
+    while (firstCard.type === CARD_TYPES.WILD_DRAW4) {
+      fullDeck.push(firstCard);
+      firstCard = fullDeck.shift();
+    }
+
+    let currentColor = firstCard.color === 'WILD' ? 'RED' : firstCard.color;
+    let turnIndex = 0;
+    let direction = 1;
+    let stackPenalty = 0;
+    let stackCardType = null;
+
+    if (firstCard.type === CARD_TYPES.SKIP) {
+      turnIndex = 1 % playersConfig.length;
+    } else if (firstCard.type === CARD_TYPES.REVERSE) {
+      direction = -1;
+      turnIndex = (playersConfig.length - 1) % playersConfig.length;
+    } else if (firstCard.type === CARD_TYPES.DRAW2) {
+      stackPenalty = 2;
+      stackCardType = CARD_TYPES.DRAW2;
+    }
+
+    return {
+      deck: fullDeck,
+      firstCard,
+      currentColor,
+      turnIndex,
+      direction,
+      stackPenalty,
+      stackCardType,
+      roundNumber,
+      playersHands
+    };
+  }
+
+  function startHostOnlineGame() {
+    if (!UNO_NETWORK.isHost) return;
+
+    const fillAi = document.getElementById('lobby-toggle-fill-ai')?.checked ?? true;
+    const stacking = document.getElementById('lobby-toggle-stacking')?.checked ?? true;
+    UNO_STATE.houseRules.stacking = stacking;
+
+    let players = [];
+    for (let i = 0; i < 4; i++) {
+      const roomP = UNO_NETWORK.roomPlayers[i];
+      if (roomP) {
+        players.push({
+          id: roomP.id,
+          name: roomP.name,
+          seatIndex: i,
+          isAi: false,
+          isHost: roomP.isHost
+        });
+      } else if (fillAi) {
+        players.push({
+          id: `ai_${i + 1}`,
+          name: `🤖 智子 ${i + 1} (AI)`,
+          seatIndex: i,
+          isAi: true,
+          isHost: false
+        });
+      }
+    }
+
+    if (players.length < 2) {
+      showToast('⚠️ 至少需要 2 位玩家或开启 AI 替补才能开启对局！');
+      return;
+    }
+
+    const initialState = buildInitialGameState(players, UNO_STATE.roundNumber);
+
+    UNO_NETWORK.send({
+      type: 'START_GAME',
+      initialState: initialState,
+      rules: { stacking, fillAi }
+    });
+  }
+
+  function renderLobbySeats() {
+    const list = document.getElementById('lobby-seats-list');
+    if (!list) return;
+    list.innerHTML = '';
+
+    const colors = ['badge-p1', 'badge-p2', 'badge-p3', 'badge-p4'];
+    const pNames = ['P1 (红)', 'P2 (绿)', 'P3 (蓝)', 'P4 (黄)'];
+
+    for (let i = 0; i < 4; i++) {
+      const p = UNO_NETWORK.roomPlayers[i];
+      const isMe = (i === UNO_NETWORK.mySeatIndex);
+      const card = document.createElement('div');
+      card.className = `lobby-seat-card ${p ? '' : 'seat-empty'}`;
+
+      if (p) {
+        card.innerHTML = `
+          <div class="lobby-seat-badge ${colors[i]}">P${i + 1}</div>
+          <div class="lobby-seat-info">
+            <div class="lobby-player-name">${p.name} ${isMe ? '<span style="color:#f59e0b;">(你)</span>' : ''}</div>
+            <div class="lobby-player-tag">${p.isHost ? '👑 房主' : '席位就绪'}</div>
+          </div>
+          <span class="lobby-seat-status status-online">🟢 已就位</span>
+        `;
+      } else {
+        const fillAi = document.getElementById('lobby-toggle-fill-ai')?.checked ?? true;
+        card.innerHTML = `
+          <div class="lobby-seat-badge ${colors[i]}" style="opacity:0.5;">P${i + 1}</div>
+          <div class="lobby-seat-info">
+            <div class="lobby-player-name" style="color:#64748b;">${pNames[i]} 空席</div>
+            <div class="lobby-player-tag">${fillAi ? '开局将由 AI 补位' : '等待真人玩家加入'}</div>
+          </div>
+          <span class="lobby-seat-status status-empty">⚪ 待入座</span>
+        `;
+      }
+      list.appendChild(card);
+    }
+
+    const hostPanel = document.getElementById('host-controls-panel');
+    const guestHint = document.getElementById('guest-waiting-hint');
+    if (hostPanel) hostPanel.style.display = UNO_NETWORK.isHost ? 'flex' : 'none';
+    if (guestHint) guestHint.style.display = UNO_NETWORK.isHost ? 'none' : 'flex';
+
+    const codeEl = document.getElementById('lobby-room-code');
+    if (codeEl) codeEl.textContent = UNO_NETWORK.roomId || '------';
+  }
+
+  function updateOnlineBar() {
+    const bar = document.getElementById('uno-online-bar');
+    if (!bar) return;
+    const isOnlineActive = UNO_STATE.mode === 'ONLINE' || (UNO_NETWORK.ws && UNO_NETWORK.ws.readyState === WebSocket.OPEN);
+    bar.style.display = isOnlineActive ? 'flex' : 'none';
+
+    const codeBadge = document.getElementById('online-room-code-badge');
+    if (codeBadge) codeBadge.textContent = UNO_NETWORK.roomId || '------';
+
+    const rolePill = document.getElementById('online-my-role-pill');
+    if (rolePill) {
+      rolePill.textContent = UNO_NETWORK.isHost ? '👑 房主' : `P${UNO_NETWORK.mySeatIndex + 1} 席位`;
+      rolePill.style.background = UNO_NETWORK.isHost ? '#f59e0b' : '#3b82f6';
+      rolePill.style.color = UNO_NETWORK.isHost ? '#0f172a' : '#ffffff';
+    }
+  }
+
+  function openOnlineModal() {
+    const modal = document.getElementById('uno-online-modal');
+    if (!modal) return;
+    modal.style.display = 'flex';
+
+    if (UNO_NETWORK.ws && UNO_NETWORK.ws.readyState === WebSocket.OPEN && UNO_NETWORK.roomId) {
+      openOnlineLobbyView();
+    } else {
+      openOnlineConnectView();
+    }
+  }
+
+  function closeOnlineModal() {
+    const modal = document.getElementById('uno-online-modal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  function openOnlineConnectView() {
+    const cView = document.getElementById('online-connect-view');
+    const lView = document.getElementById('online-lobby-view');
+    if (cView) cView.style.display = 'block';
+    if (lView) lView.style.display = 'none';
+
+    const nickInput = document.getElementById('input-online-nickname');
+    if (nickInput) nickInput.value = UNO_NETWORK.myPlayerName;
+
+    const workerInput = document.getElementById('input-worker-url');
+    if (workerInput) workerInput.value = UNO_NETWORK.serverUrl;
+  }
+
+  function openOnlineLobbyView() {
+    const cView = document.getElementById('online-connect-view');
+    const lView = document.getElementById('online-lobby-view');
+    if (cView) cView.style.display = 'none';
+    if (lView) lView.style.display = 'block';
+    renderLobbySeats();
+  }
+
+  function setupOnlineLobby() {
+    UNO_NETWORK.init();
+
+    // 随机昵称按钮
+    const randBtn = document.getElementById('btn-random-name');
+    if (randBtn) {
+      randBtn.onclick = () => {
+        const name = getRandomUnoName();
+        UNO_NETWORK.myPlayerName = name;
+        const nickInput = document.getElementById('input-online-nickname');
+        if (nickInput) nickInput.value = name;
+        localStorage.setItem('uno_player_name', name);
+      };
+    }
+
+    // 关闭模态弹窗
+    const closeBtn = document.getElementById('btn-close-online-modal');
+    if (closeBtn) closeBtn.onclick = closeOnlineModal;
+
+    // 创建房间
+    const createBtn = document.getElementById('btn-create-room');
+    if (createBtn) {
+      createBtn.onclick = () => {
+        const nickInput = document.getElementById('input-online-nickname');
+        const name = (nickInput && nickInput.value.trim()) ? nickInput.value.trim() : getRandomUnoName();
+        const roomId = Math.floor(100000 + Math.random() * 900000).toString();
+        UNO_NETWORK.connect(roomId, name, true);
+      };
+    }
+
+    // 加入房间
+    const joinBtn = document.getElementById('btn-join-room');
+    if (joinBtn) {
+      joinBtn.onclick = () => {
+        const nickInput = document.getElementById('input-online-nickname');
+        const name = (nickInput && nickInput.value.trim()) ? nickInput.value.trim() : getRandomUnoName();
+        const roomInput = document.getElementById('input-join-room-id');
+        const roomId = roomInput ? roomInput.value.trim() : '';
+        if (!roomId || roomId.length < 4) {
+          showToast('请输入正确的 6 位房间号！');
+          return;
+        }
+        UNO_NETWORK.connect(roomId, name, false);
+      };
+    }
+
+    // 保存 Worker 服务器配置
+    const saveWorkerBtn = document.getElementById('btn-save-worker-url');
+    if (saveWorkerBtn) {
+      saveWorkerBtn.onclick = () => {
+        const input = document.getElementById('input-worker-url');
+        const url = input ? input.value.trim() : '';
+        if (url) {
+          UNO_NETWORK.serverUrl = url;
+          localStorage.setItem('uno_worker_url', url);
+          showToast('✅ Cloudflare Worker 服务器配置已保存！');
+        }
+      };
+    }
+
+    // 恢复默认 Worker 配置
+    const resetWorkerBtn = document.getElementById('btn-reset-worker-url');
+    if (resetWorkerBtn) {
+      resetWorkerBtn.onclick = () => {
+        UNO_NETWORK.serverUrl = DEFAULT_WORKER_URL;
+        localStorage.removeItem('uno_worker_url');
+        const input = document.getElementById('input-worker-url');
+        if (input) input.value = DEFAULT_WORKER_URL;
+        showToast('已恢复为默认 Worker 配置！');
+      };
+    }
+
+    // 复制房间号
+    const copyHandler = () => {
+      if (!UNO_NETWORK.roomId) return;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(UNO_NETWORK.roomId).then(() => {
+          showToast(`📋 房间号 ${UNO_NETWORK.roomId} 已复制到剪贴板！`);
+        }).catch(() => {
+          showToast(`房间号: ${UNO_NETWORK.roomId}`);
+        });
+      } else {
+        showToast(`房间号: ${UNO_NETWORK.roomId}`);
+      }
+    };
+    const copyBtn1 = document.getElementById('btn-lobby-copy-code');
+    const copyBtn2 = document.getElementById('btn-bar-copy-room');
+    if (copyBtn1) copyBtn1.onclick = copyHandler;
+    if (copyBtn2) copyBtn2.onclick = copyHandler;
+
+    // 房主开启游戏
+    const hostStartBtn = document.getElementById('btn-host-start-game');
+    if (hostStartBtn) hostStartBtn.onclick = startHostOnlineGame;
+
+    // 退出房间
+    const leaveHandler = () => {
+      UNO_NETWORK.disconnect();
+      closeOnlineModal();
+      document.querySelectorAll('.uno-mode-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.mode === 'AI3');
+      });
+      UNO_STATE.mode = 'AI3';
+      startUnoGame(true);
+      showToast('已退出在线房间，切换为单人模式');
+    };
+    const leaveBtn1 = document.getElementById('btn-lobby-leave');
+    const leaveBtn2 = document.getElementById('btn-bar-leave-room');
+    if (leaveBtn1) leaveBtn1.onclick = leaveHandler;
+    if (leaveBtn2) leaveBtn2.onclick = leaveHandler;
+
+    // 席位大厅按钮
+    const openLobbyBtn = document.getElementById('btn-bar-open-lobby');
+    if (openLobbyBtn) openLobbyBtn.onclick = openOnlineModal;
+
+    // URL 房间参数自动填入
+    const urlParams = new URLSearchParams(window.location.search);
+    const roomParam = urlParams.get('room');
+    if (roomParam) {
+      openOnlineModal();
+      const joinInput = document.getElementById('input-join-room-id');
+      if (joinInput) joinInput.value = roomParam;
+    }
+  }
+
+  // ==========================================================================
+  // 13. 外部交互接口与初始化挂载
   // ==========================================================================
   document.addEventListener('DOMContentLoaded', () => {
     // 摸牌按钮绑定
@@ -914,8 +1664,13 @@
     const unoBtn = document.getElementById('btn-call-uno');
     if (unoBtn) {
       unoBtn.onclick = () => {
-        const human = UNO_STATE.players.find(p => !p.isAi);
-        if (human) callUno(human);
+        let myPlayer;
+        if (UNO_STATE.mode === 'ONLINE' && UNO_NETWORK.mySeatIndex >= 0) {
+          myPlayer = UNO_STATE.players[UNO_NETWORK.mySeatIndex];
+        } else {
+          myPlayer = UNO_STATE.players.find(p => !p.isAi);
+        }
+        if (myPlayer) callUno(myPlayer);
       };
     }
 
@@ -923,8 +1678,13 @@
     const catchBtn = document.getElementById('btn-catch-uno');
     if (catchBtn) {
       catchBtn.onclick = () => {
-        const human = UNO_STATE.players.find(p => !p.isAi) || UNO_STATE.players[0];
-        catchUno(human);
+        let myPlayer;
+        if (UNO_STATE.mode === 'ONLINE' && UNO_NETWORK.mySeatIndex >= 0) {
+          myPlayer = UNO_STATE.players[UNO_NETWORK.mySeatIndex];
+        } else {
+          myPlayer = UNO_STATE.players.find(p => !p.isAi) || UNO_STATE.players[0];
+        }
+        if (myPlayer) catchUno(myPlayer);
       };
     }
 
@@ -932,6 +1692,16 @@
     const modeBtns = document.querySelectorAll('.uno-mode-btn');
     modeBtns.forEach(btn => {
       btn.onclick = () => {
+        if (btn.dataset.mode === 'ONLINE') {
+          openOnlineModal();
+          return;
+        }
+
+        // 如果从 ONLINE 切换离开，断开连接
+        if (UNO_STATE.mode === 'ONLINE') {
+          UNO_NETWORK.disconnect();
+        }
+
         modeBtns.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         UNO_STATE.mode = btn.dataset.mode;
@@ -966,13 +1736,17 @@
       peekBtn.addEventListener('touchend', hidePeek);
     }
 
-    // 默认开启游戏
+    // 初始化在线网络与大厅组件
+    setupOnlineLobby();
+
+    // 默认开启游戏 (单人模式)
     startUnoGame(true);
   });
 
   // 挂载至全局以供自动化测试调用
   window.UNO_ENGINE = {
     STATE: UNO_STATE,
+    NETWORK: UNO_NETWORK,
     buildUnoDeck,
     shuffle,
     canPlayCard,
@@ -981,7 +1755,8 @@
     playCard,
     callUno,
     catchUno,
-    aiPickDominantColor
+    aiPickDominantColor,
+    buildInitialGameState
   };
 
 })();

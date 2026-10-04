@@ -6,7 +6,7 @@
  * 3. 动态信令 (WebSocket/MQTT)：直连放行
  */
 
-const CACHE_NAME = 'party-arcade-v3.2';
+const CACHE_NAME = 'party-arcade-v3.3';
 
 const APP_SHELL = [
   './',
