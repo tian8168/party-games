@@ -1545,10 +1545,10 @@
           <div class="filter-axis-row">
             <span class="axis-label"><span class="axis-icon">👥</span>人数:</span>
             <div class="filter-pills-group" id="filter-player-group">
-              <button class="filter-pill active" data-player-filter="ALL" onclick="setPlayerFilter('ALL')">全部 <span class="pill-count">(19)</span></button>
+              <button class="filter-pill active" data-player-filter="ALL" onclick="setPlayerFilter('ALL')">全部 <span class="pill-count">(21)</span></button>
               <button class="filter-pill" data-player-filter="1" onclick="setPlayerFilter('1')">👤 单人挑战 <span class="pill-count">(1)</span></button>
               <button class="filter-pill" data-player-filter="2" onclick="setPlayerFilter('2')">👥 双人死斗 <span class="pill-count">(14)</span></button>
-              <button class="filter-pill" data-player-filter="4" data-alias="4人混战 (4)" onclick="setPlayerFilter('4')">👥👥 4人大乱斗 <span class="pill-count">(4)</span><!-- 4人混战 (4) --></button>
+              <button class="filter-pill" data-player-filter="4" data-alias="4人混战 (5)" onclick="setPlayerFilter('4')">👥👥 4人大乱斗 <span class="pill-count">(5)</span><!-- 4人混战 (5) --><!-- 4人混战 (4) --></button>
             </div>
           </div>
 
@@ -1556,10 +1556,10 @@
           <div class="filter-axis-row">
             <span class="axis-label"><span class="axis-icon">🏷️</span>类型:</span>
             <div class="filter-pills-group" id="filter-cat-group">
-              <button class="filter-pill category-pill active" data-cat-filter="ALL" data-cat-pill="ALL" onclick="setCategoryFilter('ALL')">全部 <span class="pill-count">(20)</span><!-- 全部 (20) --></button>
+              <button class="filter-pill category-pill active" data-cat-filter="ALL" data-cat-pill="ALL" onclick="setCategoryFilter('ALL')">全部 <span class="pill-count">(21)</span><!-- 全部 (21) --><!-- 全部 (20) --></button>
               <button class="filter-pill category-pill" data-cat-filter="PHYSICS" data-cat-pill="PHYSICS" onclick="setCategoryFilter('PHYSICS')">⚡ 物理对抗 <span class="pill-count">(8)</span><!-- 物理对抗 (8) --></button>
               <button class="filter-pill category-pill" data-cat-filter="STRATEGY" data-cat-pill="STRATEGY" onclick="setCategoryFilter('STRATEGY')">🧠 策略博弈 <span class="pill-count">(8)</span><!-- 策略博弈 (8) --></button>
-              <button class="filter-pill category-pill" data-cat-filter="MIND" data-cat-pill="MIND" data-alias="心理博弈 (2)" onclick="setCategoryFilter('MIND')">💣 心理暗牌 <span class="pill-count">(2)</span><!-- 心理博弈 (2) --></button>
+              <button class="filter-pill category-pill" data-cat-filter="MIND" data-cat-pill="MIND" data-alias="心理博弈 (3)" onclick="setCategoryFilter('MIND')">💣 心理暗牌 <span class="pill-count">(3)</span><!-- 心理博弈 (3) --><!-- 心理博弈 (2) --></button>
               <button class="filter-pill category-pill" data-cat-filter="REFLEX" data-cat-pill="REFLEX" onclick="setCategoryFilter('REFLEX')">⚡ 极限手速 <span class="pill-count">(2)</span><!-- 极限手速 (2) --></button>
             </div>
           </div>
@@ -1701,6 +1701,84 @@
           <span class="meta-chip">🧯 7大精炼战术卡牌</span>
           <span class="meta-chip">本地同屏防窥遮罩</span>
           <span class="meta-chip accent">暗算埋雷心机博弈</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 🌈 彩虹乌诺牌 (UNO Party 4P) -->
+    <div class="game-card hero-card" data-cat="MIND" data-players="4" data-game-key="UNO" data-keywords="uno 乌诺牌 优诺 纸牌 桌游 聚会 变色 叠牌 4人 4player 四人 wnp" onclick="enterGame('UNO')">
+      <div class="card-cover-wrapper">
+        <div class="card-art-canvas">
+          <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="unoBgGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#1e1b4b"/>
+                <stop offset="50%" stop-color="#2e1065"/>
+                <stop offset="100%" stop-color="#4c1d95"/>
+              </linearGradient>
+              <radialGradient id="unoCenterGlow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.8"/>
+                <stop offset="60%" stop-color="#ec4899" stop-opacity="0.4"/>
+                <stop offset="100%" stop-color="transparent"/>
+              </radialGradient>
+              <filter id="unoCardGlow">
+                <feGaussianBlur stdDeviation="3.5" result="glow"/>
+                <feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+            <rect width="320" height="180" fill="url(#unoBgGrad)"/>
+            <!-- Ambient glow -->
+            <circle cx="160" cy="85" r="70" fill="url(#unoCenterGlow)"/>
+            <!-- 4 Fanned Cards: Blue, Green, Yellow, Red -->
+            <g transform="translate(100, 45) rotate(-22)">
+              <rect x="0" y="0" width="46" height="70" rx="8" fill="#3b82f6" stroke="#ffffff" stroke-width="2"/>
+              <ellipse cx="23" cy="35" rx="14" ry="22" fill="#ffffff" transform="rotate(-20, 23, 35)"/>
+              <text x="23" y="42" font-family="'Segoe UI', sans-serif" font-size="20" font-weight="900" fill="#3b82f6" text-anchor="middle">7</text>
+            </g>
+            <g transform="translate(130, 36) rotate(-8)">
+              <rect x="0" y="0" width="46" height="70" rx="8" fill="#22c55e" stroke="#ffffff" stroke-width="2"/>
+              <ellipse cx="23" cy="35" rx="14" ry="22" fill="#ffffff" transform="rotate(-20, 23, 35)"/>
+              <text x="23" y="42" font-family="'Segoe UI', sans-serif" font-size="18" font-weight="900" fill="#22c55e" text-anchor="middle">+2</text>
+            </g>
+            <g transform="translate(162, 38) rotate(8)">
+              <rect x="0" y="0" width="46" height="70" rx="8" fill="#eab308" stroke="#ffffff" stroke-width="2"/>
+              <ellipse cx="23" cy="35" rx="14" ry="22" fill="#ffffff" transform="rotate(-20, 23, 35)"/>
+              <text x="23" y="42" font-family="'Segoe UI', sans-serif" font-size="18" font-weight="900" fill="#eab308" text-anchor="middle">🔄</text>
+            </g>
+            <g transform="translate(192, 50) rotate(24)">
+              <rect x="0" y="0" width="46" height="70" rx="8" fill="#ef4444" stroke="#ffffff" stroke-width="2"/>
+              <ellipse cx="23" cy="35" rx="14" ry="22" fill="#ffffff" transform="rotate(-20, 23, 35)"/>
+              <text x="23" y="42" font-family="'Segoe UI', sans-serif" font-size="18" font-weight="900" fill="#ef4444" text-anchor="middle">+4</text>
+            </g>
+            <!-- UNO 3D Text -->
+            <g transform="translate(160, 115)">
+              <text x="0" y="0" font-family="'Impact', sans-serif" font-size="28" font-weight="900" fill="#f59e0b" text-anchor="middle" filter="url(#unoCardGlow)" letter-spacing="3" transform="skewX(-10)">UNO!</text>
+            </g>
+            <!-- Subtitle -->
+            <text x="160" y="165" font-family="'Segoe UI', sans-serif" font-size="11" font-weight="900" fill="#c084fc" letter-spacing="2" text-anchor="middle">UNO PARTY · 彩虹乌诺牌 4P</text>
+          </svg>
+        </div>
+        <div class="cover-badges">
+          <span class="badge-pill players-4">👥👥 1-4人桌游</span>
+          <span class="badge-pill tag-hot" style="background:linear-gradient(135deg,#f59e0b,#ea580c);">🌈 变色狂欢</span>
+        </div>
+        <div class="cover-overlay"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="title-group">
+            <div class="card-main-title">
+              <span>彩虹乌诺牌</span>
+              <span class="card-sub" style="color:#fbbf24;">UNO PARTY 4P</span>
+            </div>
+            <div class="card-tagline">108张正统乌诺 · 连环+2叠牌反弹 · 喊UNO与抓漏举报</div>
+          </div>
+          <div class="btn-play-action" style="background:linear-gradient(135deg,#f59e0b,#ea580c); box-shadow:0 4px 14px rgba(245,158,11,0.5);">出牌开玩 ▶</div>
+        </div>
+        <div class="card-meta-chips">
+          <span class="meta-chip">🌈 108张正统牌组</span>
+          <span class="meta-chip">⚡ 连环叠牌反弹</span>
+          <span class="meta-chip accent">📣 喊UNO与抓漏</span>
         </div>
       </div>
     </div>
@@ -3108,7 +3186,8 @@
       'STACK': 'stack.html',
       'TRON': 'tron.html',
       'BOMBERMAN': 'bomberman.html',
-      'BOMBCAT': 'bombcat.html'
+      'BOMBCAT': 'bombcat.html',
+      'UNO': 'uno.html'
     };
 
     const prefetchedLinks = new Set();

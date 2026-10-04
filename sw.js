@@ -6,7 +6,7 @@
  * 3. 动态信令 (WebSocket/MQTT)：直连放行
  */
 
-const CACHE_NAME = 'party-arcade-v3.1';
+const CACHE_NAME = 'party-arcade-v3.2';
 
 const APP_SHELL = [
   './',
@@ -44,6 +44,7 @@ const APP_SHELL = [
   './games/tron.html',
   './games/bomberman.html',
   './games/bombcat.html',
+  './games/uno.html',
   './games/js/aeroplane.js',
   './games/js/bombcat.js',
   './games/js/bomberman.js',
@@ -63,6 +64,7 @@ const APP_SHELL = [
   './games/js/tank.js',
   './games/js/tanktrouble.js',
   './games/js/tron.js',
+  './games/js/uno.js',
   './games/roms/roms_index.json',
   './games/roms/contra.nes',
   './games/roms/contra_30lives.nes'

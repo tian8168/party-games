@@ -22,15 +22,15 @@
         try {
           const hFn = (typeof triggerHaptic === 'function') ? triggerHaptic : ((typeof window !== 'undefined' && typeof window.triggerHaptic === 'function') ? window.triggerHaptic : null);
           if (hFn) {
-            if (type === 'win' || type === 'plane_win' || type === 'goal' || type === 'contra_30' || type === 'bm_win') {
+            if (type === 'win' || type === 'plane_win' || type === 'goal' || type === 'contra_30' || type === 'bm_win' || type === 'uno_win') {
               hFn('success');
-            } else if (type === 'bomb_alarm' || type === 'turn_warning' || type === 'false_start' || type === 'bm_warning') {
+            } else if (type === 'bomb_alarm' || type === 'turn_warning' || type === 'false_start' || type === 'bm_warning' || type === 'uno_call' || type === 'uno_wild') {
               hFn('warning');
-            } else if (type === 'crash' || type === 'plane_crash' || type === 'tank_explosion' || type === 'tank_explode' || type === 'contra_explode' || type === 'fall' || type === 'bonk' || type === 'tron_missile_hit' || type === 'tron_emp' || type === 'bm_explode' || type === 'bm_death') {
+            } else if (type === 'crash' || type === 'plane_crash' || type === 'tank_explosion' || type === 'tank_explode' || type === 'contra_explode' || type === 'fall' || type === 'bonk' || type === 'tron_missile_hit' || type === 'tron_emp' || type === 'bm_explode' || type === 'bm_death' || type === 'uno_strike' || type === 'uno_catch') {
               hFn('heavy');
-            } else if (type === 'drop' || type === 'card_play' || type === 'dice_roll' || type === 'go_stone' || type === 'go_capture' || type === 'card_draw' || type === 'cup_slam' || type === 'slice' || type === 'tron_boost' || type === 'tank_fire' || type === 'tron_missile' || type === 'tron_super_boost' || type === 'tron_ghost' || type === 'bm_place') {
+            } else if (type === 'drop' || type === 'card_play' || type === 'dice_roll' || type === 'go_stone' || type === 'go_capture' || type === 'card_draw' || type === 'cup_slam' || type === 'slice' || type === 'tron_boost' || type === 'tank_fire' || type === 'tron_missile' || type === 'tron_super_boost' || type === 'tron_ghost' || type === 'bm_place' || type === 'uno_reverse' || type === 'uno_skip') {
               hFn('medium');
-            } else if (type === 'tron_item_pickup' || type === 'bm_item') {
+            } else if (type === 'tron_item_pickup' || type === 'bm_item' || type === 'uno_play' || type === 'uno_draw') {
               hFn('light');
             } else {
               hFn('light');
@@ -812,6 +812,122 @@
               osc.connect(gain); gain.connect(this.ctx.destination);
               osc.start(dt2); osc.stop(dt2 + 0.12);
             }
+          } else if (type === 'uno_play') { // 乌诺牌 - 快速脆爽切牌滑牌
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(480, t);
+            osc.frequency.exponentialRampToValueAtTime(160, t + 0.08);
+            gain.gain.setValueAtTime(0.3, t);
+            gain.gain.linearRampToValueAtTime(0.01, t + 0.09);
+            osc.connect(gain); gain.connect(this.ctx.destination);
+            osc.start(t); osc.stop(t + 0.1);
+          } else if (type === 'uno_draw') { // 摸牌 - 纸质抽牌沙沙轻快声
+            const bufSize = Math.floor(this.ctx.sampleRate * 0.08);
+            const buf = this.ctx.createBuffer(1, bufSize, this.ctx.sampleRate);
+            const data = buf.getChannelData(0);
+            for (let i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * Math.sin((i / bufSize) * Math.PI);
+            const noise = this.ctx.createBufferSource();
+            noise.buffer = buf;
+            const filter = this.ctx.createBiquadFilter();
+            filter.type = 'bandpass';
+            filter.frequency.setValueAtTime(2800, t);
+            filter.frequency.exponentialRampToValueAtTime(4200, t + 0.07);
+            filter.Q.setValueAtTime(2.0, t);
+            const gain = this.ctx.createGain();
+            gain.gain.setValueAtTime(0.28, t);
+            gain.gain.linearRampToValueAtTime(0.01, t + 0.08);
+            noise.connect(filter); filter.connect(gain); gain.connect(this.ctx.destination);
+            noise.start(t);
+          } else if (type === 'uno_skip') { // 🚫 跳过 - 空气破风嗖声
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(750, t);
+            osc.frequency.exponentialRampToValueAtTime(220, t + 0.16);
+            gain.gain.setValueAtTime(0.32, t);
+            gain.gain.linearRampToValueAtTime(0.001, t + 0.18);
+            osc.connect(gain); gain.connect(this.ctx.destination);
+            osc.start(t); osc.stop(t + 0.2);
+          } else if (type === 'uno_reverse') { // 🔄 逆转 - 双向升降时空折叠滑音
+            const osc1 = this.ctx.createOscillator();
+            const gain1 = this.ctx.createGain();
+            osc1.type = 'sine';
+            osc1.frequency.setValueAtTime(320, t);
+            osc1.frequency.exponentialRampToValueAtTime(880, t + 0.14);
+            gain1.gain.setValueAtTime(0.25, t);
+            gain1.gain.linearRampToValueAtTime(0.01, t + 0.15);
+            osc1.connect(gain1); gain1.connect(this.ctx.destination);
+            osc1.start(t); osc1.stop(t + 0.16);
+
+            const osc2 = this.ctx.createOscillator();
+            const gain2 = this.ctx.createGain();
+            osc2.type = 'triangle';
+            osc2.frequency.setValueAtTime(880, t + 0.12);
+            osc2.frequency.exponentialRampToValueAtTime(320, t + 0.26);
+            gain2.gain.setValueAtTime(0.25, t + 0.12);
+            gain2.gain.linearRampToValueAtTime(0.01, t + 0.28);
+            osc2.connect(gain2); gain2.connect(this.ctx.destination);
+            osc2.start(t + 0.12); osc2.stop(t + 0.29);
+          } else if (type === 'uno_wild') { // 🌈 变色牌 - 四色彩虹梦幻琶音
+            const freqs = [523.25, 659.25, 783.99, 1046.5]; // C E G C
+            freqs.forEach((freq, idx) => {
+              const osc = this.ctx.createOscillator();
+              const gain = this.ctx.createGain();
+              osc.type = 'sine';
+              osc.frequency.setValueAtTime(freq, t + idx * 0.07);
+              gain.gain.setValueAtTime(0.22, t + idx * 0.07);
+              gain.gain.linearRampToValueAtTime(0.001, t + idx * 0.07 + 0.18);
+              osc.connect(gain); gain.connect(this.ctx.destination);
+              osc.start(t + idx * 0.07); osc.stop(t + idx * 0.07 + 0.2);
+            });
+          } else if (type === 'uno_strike') { // ⚡ +2 / 💣 +4 惩罚重击
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(140, t);
+            osc.frequency.exponentialRampToValueAtTime(45, t + 0.35);
+            gain.gain.setValueAtTime(0.55, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+            osc.connect(gain); gain.connect(this.ctx.destination);
+            osc.start(t); osc.stop(t + 0.45);
+          } else if (type === 'uno_call') { // 📣 喊 UNO! - 激昂号角三连升调
+            const fanfare = [523.25, 659.25, 1046.5];
+            fanfare.forEach((f, idx) => {
+              const osc = this.ctx.createOscillator();
+              const gain = this.ctx.createGain();
+              osc.type = 'square';
+              osc.frequency.setValueAtTime(f, t + idx * 0.11);
+              gain.gain.setValueAtTime(0.26, t + idx * 0.11);
+              gain.gain.linearRampToValueAtTime(0.001, t + idx * 0.11 + 0.2);
+              osc.connect(gain); gain.connect(this.ctx.destination);
+              osc.start(t + idx * 0.11); osc.stop(t + idx * 0.11 + 0.22);
+            });
+          } else if (type === 'uno_catch') { // 🚨 抓漏 CATCH! - 尖锐举报警报
+            for (let i = 0; i < 3; i++) {
+              const dt3 = t + i * 0.09;
+              const osc = this.ctx.createOscillator();
+              const gain = this.ctx.createGain();
+              osc.type = 'sawtooth';
+              osc.frequency.setValueAtTime(1150, dt3);
+              osc.frequency.setValueAtTime(800, dt3 + 0.04);
+              gain.gain.setValueAtTime(0.32, dt3);
+              gain.gain.linearRampToValueAtTime(0.001, dt3 + 0.08);
+              osc.connect(gain); gain.connect(this.ctx.destination);
+              osc.start(dt3); osc.stop(dt3 + 0.085);
+            }
+          } else if (type === 'uno_win') { // 🏆 胜利庆典大合唱
+            const melody = [523.25, 659.25, 783.99, 1046.5, 1318.5, 1567.98];
+            melody.forEach((f, idx) => {
+              const osc = this.ctx.createOscillator();
+              const gain = this.ctx.createGain();
+              osc.type = idx < 3 ? 'square' : 'sine';
+              osc.frequency.setValueAtTime(f, t + idx * 0.09);
+              gain.gain.setValueAtTime(0.24, t + idx * 0.09);
+              gain.gain.linearRampToValueAtTime(0.001, t + idx * 0.09 + (idx === 5 ? 0.6 : 0.18));
+              osc.connect(gain); gain.connect(this.ctx.destination);
+              osc.start(t + idx * 0.09); osc.stop(t + idx * 0.09 + (idx === 5 ? 0.65 : 0.2));
+            });
           }
         } catch(e) {}
       }
