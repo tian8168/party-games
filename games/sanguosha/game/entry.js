@@ -82,6 +82,7 @@ waitUpdate
 			}
 		} else {
 			const readConfig = async () => {
+				if (typeof game.readFileAsText !== "function") return;
 				return game.promises
 					.readFileAsText("noname.config.txt")
 					.then(data => {
@@ -139,7 +140,9 @@ waitUpdate
 						);
 					})
 					.then(() => {
-						return game.promises.removeFile("noname.config.txt");
+						if (typeof game.removeFile === "function") {
+							return game.promises.removeFile("noname.config.txt");
+						}
 					})
 					.then(() => {
 						alert("数据导入成功, 即将自动重启");
@@ -171,7 +174,10 @@ waitUpdate
 			for (let [key, value] of searchParams) {
 				// 成功导入后删除noname.config.txt
 				if (key === "sendUpdate" && value === "true") {
-					return readConfig();
+					if (typeof game.readFileAsText === "function") {
+						return readConfig();
+					}
+					return;
 				}
 				// 新客户端导入扩展
 				else if (key === "importExtensionName") {
@@ -190,7 +196,6 @@ waitUpdate
 					});
 				}
 			}
-			readConfig();
 		}
 	})
 	.then(onload);

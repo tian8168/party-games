@@ -29,6 +29,7 @@ window.config = {
 	},
 
 	game: "sgs",
+	version: "1.10.17.4",
 	duration: 500,
 	hoveration: 1000,
 	doubleclick_intro: true,
@@ -74,9 +75,10 @@ window.config = {
 	brokenFile: [],
 
 	max_loadtime: "20000",
-	theme: "simple",
+	theme: "woodden",
 	layout: "long2",
-	cardback_style: "liusha",
+	card_style: "default",
+	cardback_style: "official",
 	cardshape: "oblong",
 	hp_style: "glass",
 	menu_style: "music",
@@ -87,7 +89,8 @@ window.config = {
 	image_background: "default",
 
 	asset_image: true,
-	asset_font: true,
+	asset_font: false,
+	new_tutorial: true,
 
 	card_font: "xiaozhuan",
 	show_statusbar_ios: "off",
