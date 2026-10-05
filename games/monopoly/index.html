@@ -1,572 +1,600 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html lang="zh-CN">
 <head>
+	<meta charset="UTF-8">
 	<title>大富翁 (Monopoly) · 聚会游戏大厅</title>
-	<meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<meta name="theme-color" content="#0f172a">
+	<link rel="icon" type="image/svg+xml" href="../../icons/icon.svg">
+	<link rel="manifest" href="../../manifest.json">
+
+	<link rel="stylesheet" href="../../common/common.css">
+	<link rel="stylesheet" href="styles.css">
 
 	<script src="jquery.min.js"></script>
-	<script type="text/javascript" src="classicedition.js"></script>
-	<!-- Comment out the previous line and uncomment the next one to enable the New York City Edition -->
-	<!-- <script type="text/javascript" src="newyorkcityedition.js"></script> -->
-	<script type="text/javascript" src="ai.js"></script>
-	<script type="text/javascript" src="monopoly.js"></script>
-	<link rel="stylesheet" type="text/css" href="styles.css" />
+	<script src="../../common/audio.js"></script>
+	<script src="../../mqtt.min.js"></script>
+	<script src="../../common/network.js"></script>
+	<script src="classicedition.js"></script>
+	<script src="ai.js"></script>
+	<script src="online.js"></script>
+	<script src="monopoly.js"></script>
 </head>
 
 <body>
-	<div id="hub-back-banner" style="position:fixed;top:10px;left:12px;z-index:999999;display:flex;align-items:center;pointer-events:auto;">
-		<a href="../../index.html" style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:rgba(15,23,42,0.85);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:#f8fafc;font-size:13px;font-weight:700;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;text-decoration:none;border-radius:20px;border:1px solid rgba(245,158,11,0.4);box-shadow:0 4px 16px rgba(0,0,0,0.5);transition:all 0.2s ease;">
-			<span>🔙</span> <span>聚会大厅</span>
-		</a>
+	<!-- 顶部通用游戏导航栏 -->
+	<header class="game-header">
+		<div class="header-left">
+			<a href="../../index.html" class="nav-back-btn">🔙 聚会大厅</a>
+			<div class="game-title-wrap">
+				<span class="game-title">🎲 大富翁 · Monopoly</span>
+				<span class="mode-badge badge-local" id="header-mode-badge">🎮 本地对战</span>
+				<span id="header-room-id" style="font-size:12px;color:#38bdf8;font-weight:bold;"></span>
+			</div>
+		</div>
+		<div class="header-right">
+			<button id="btn-audio-toggle" class="header-btn" onclick="toggleAudio();">🔊 音效: 开</button>
+			<button id="btn-show-rules" class="header-btn" onclick="showRules();">📖 规则</button>
+			<button id="btn-show-stats" class="header-btn" onclick="showStats();">📊 资产总览</button>
+			<button id="btn-new-game" class="header-btn" onclick="confirmNewGame();">🔄 新对局</button>
+		</div>
+	</header>
+
+	<!-- 游戏设置与联机大厅面板 -->
+	<div id="setup">
+		<div class="setup-header">
+			<h2>🎲 大富翁 (Monopoly)</h2>
+			<p>掷骰圈地 · 盖楼收租 · 机会命运 · 2-8人同屏及网络联机对战</p>
+		</div>
+
+		<!-- 模式切换选项卡 -->
+		<div class="mode-tabs">
+			<button class="mode-tab active" id="tab-mode-ai" onclick="switchSetupMode('AI');">🤖 电脑对战</button>
+			<button class="mode-tab" id="tab-mode-local" onclick="switchSetupMode('LOCAL');">👥 本地同屏</button>
+			<button class="mode-tab" id="tab-mode-online" onclick="switchSetupMode('ONLINE');">🌐 在线联机</button>
+		</div>
+
+		<!-- 本地与人机对战配置区域 -->
+		<div id="local-setup-container">
+			<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; background: rgba(15,23,42,0.5); padding: 8px 14px; border-radius: 10px;">
+				<span style="font-weight: 700; font-size: 0.9rem;">选择对局玩家人数:</span>
+				<select id="playernumber" title="选择对局玩家人数" style="padding: 4px 10px; border-radius: 6px; background: #1e293b; color: #fff; border: 1px solid rgba(255,255,255,0.2);">
+					<option>2</option>
+					<option>3</option>
+					<option selected="selected">4</option>
+					<option>5</option>
+					<option>6</option>
+					<option>7</option>
+					<option>8</option>
+				</select>
+			</div>
+
+			<div id="player1input" class="player-input">
+				<span class="player-input-label">玩家 1:</span>
+				<input type="text" id="player1name" maxlength="16" value="玩家 1" />
+				<select id="player1color">
+					<option value="#ff4757" style="color: #ff4757;" selected="selected">红色</option>
+					<option value="#2ed573" style="color: #2ed573;">绿色</option>
+					<option value="#38bdf8" style="color: #38bdf8;">蓝色</option>
+					<option value="#f59e0b" style="color: #f59e0b;">黄色</option>
+					<option value="#a855f7" style="color: #a855f7;">紫色</option>
+					<option value="#ec4899" style="color: #ec4899;">粉色</option>
+					<option value="#06b6d4" style="color: #06b6d4;">青色</option>
+					<option value="#84cc16" style="color: #84cc16;">柠檬绿</option>
+				</select>
+				<select id="player1ai">
+					<option value="0" selected="selected">人类玩家</option>
+					<option value="1">电脑 AI</option>
+				</select>
+			</div>
+
+			<div id="player2input" class="player-input">
+				<span class="player-input-label">玩家 2:</span>
+				<input type="text" id="player2name" maxlength="16" value="电脑 AI 2" />
+				<select id="player2color">
+					<option value="#ff4757" style="color: #ff4757;">红色</option>
+					<option value="#2ed573" style="color: #2ed573;" selected="selected">绿色</option>
+					<option value="#38bdf8" style="color: #38bdf8;">蓝色</option>
+					<option value="#f59e0b" style="color: #f59e0b;">黄色</option>
+					<option value="#a855f7" style="color: #a855f7;">紫色</option>
+					<option value="#ec4899" style="color: #ec4899;">粉色</option>
+					<option value="#06b6d4" style="color: #06b6d4;">青色</option>
+					<option value="#84cc16" style="color: #84cc16;">柠檬绿</option>
+				</select>
+				<select id="player2ai">
+					<option value="0">人类玩家</option>
+					<option value="1" selected="selected">电脑 AI</option>
+				</select>
+			</div>
+
+			<div id="player3input" class="player-input">
+				<span class="player-input-label">玩家 3:</span>
+				<input type="text" id="player3name" maxlength="16" value="电脑 AI 3" />
+				<select id="player3color">
+					<option value="#ff4757" style="color: #ff4757;">红色</option>
+					<option value="#2ed573" style="color: #2ed573;">绿色</option>
+					<option value="#38bdf8" style="color: #38bdf8;" selected="selected">蓝色</option>
+					<option value="#f59e0b" style="color: #f59e0b;">黄色</option>
+					<option value="#a855f7" style="color: #a855f7;">紫色</option>
+					<option value="#ec4899" style="color: #ec4899;">粉色</option>
+					<option value="#06b6d4" style="color: #06b6d4;">青色</option>
+					<option value="#84cc16" style="color: #84cc16;">柠檬绿</option>
+				</select>
+				<select id="player3ai">
+					<option value="0">人类玩家</option>
+					<option value="1" selected="selected">电脑 AI</option>
+				</select>
+			</div>
+
+			<div id="player4input" class="player-input">
+				<span class="player-input-label">玩家 4:</span>
+				<input type="text" id="player4name" maxlength="16" value="电脑 AI 4" />
+				<select id="player4color">
+					<option value="#ff4757" style="color: #ff4757;">红色</option>
+					<option value="#2ed573" style="color: #2ed573;">绿色</option>
+					<option value="#38bdf8" style="color: #38bdf8;">蓝色</option>
+					<option value="#f59e0b" style="color: #f59e0b;" selected="selected">黄色</option>
+					<option value="#a855f7" style="color: #a855f7;">紫色</option>
+					<option value="#ec4899" style="color: #ec4899;">粉色</option>
+					<option value="#06b6d4" style="color: #06b6d4;">青色</option>
+					<option value="#84cc16" style="color: #84cc16;">柠檬绿</option>
+				</select>
+				<select id="player4ai">
+					<option value="0">人类玩家</option>
+					<option value="1" selected="selected">电脑 AI</option>
+				</select>
+			</div>
+
+			<div id="player5input" class="player-input" style="display:none;">
+				<span class="player-input-label">玩家 5:</span>
+				<input type="text" id="player5name" maxlength="16" value="电脑 AI 5" />
+				<select id="player5color">
+					<option value="#a855f7" selected="selected" style="color: #a855f7;">紫色</option>
+					<option value="#ec4899" style="color: #ec4899;">粉色</option>
+					<option value="#06b6d4" style="color: #06b6d4;">青色</option>
+					<option value="#84cc16" style="color: #84cc16;">柠檬绿</option>
+				</select>
+				<select id="player5ai">
+					<option value="0">人类玩家</option>
+					<option value="1" selected="selected">电脑 AI</option>
+				</select>
+			</div>
+
+			<div id="player6input" class="player-input" style="display:none;">
+				<span class="player-input-label">玩家 6:</span>
+				<input type="text" id="player6name" maxlength="16" value="电脑 AI 6" />
+				<select id="player6color">
+					<option value="#ec4899" selected="selected" style="color: #ec4899;">粉色</option>
+					<option value="#06b6d4" style="color: #06b6d4;">青色</option>
+					<option value="#84cc16" style="color: #84cc16;">柠檬绿</option>
+				</select>
+				<select id="player6ai">
+					<option value="0">人类玩家</option>
+					<option value="1" selected="selected">电脑 AI</option>
+				</select>
+			</div>
+
+			<div id="player7input" class="player-input" style="display:none;">
+				<span class="player-input-label">玩家 7:</span>
+				<input type="text" id="player7name" maxlength="16" value="电脑 AI 7" />
+				<select id="player7color">
+					<option value="#06b6d4" selected="selected" style="color: #06b6d4;">青色</option>
+					<option value="#84cc16" style="color: #84cc16;">柠檬绿</option>
+				</select>
+				<select id="player7ai">
+					<option value="0">人类玩家</option>
+					<option value="1" selected="selected">电脑 AI</option>
+				</select>
+			</div>
+
+			<div id="player8input" class="player-input" style="display:none;">
+				<span class="player-input-label">玩家 8:</span>
+				<input type="text" id="player8name" maxlength="16" value="电脑 AI 8" />
+				<select id="player8color">
+					<option value="#84cc16" selected="selected" style="color: #84cc16;">柠檬绿</option>
+				</select>
+				<select id="player8ai">
+					<option value="0">人类玩家</option>
+					<option value="1" selected="selected">电脑 AI</option>
+				</select>
+			</div>
+
+			<button class="btn-start" onclick="setup();">🎲 开始对局</button>
+		</div>
+
+		<!-- 在线联机房间配置区域 -->
+		<div id="online-setup-container" style="display: none;">
+			<div class="online-lobby-panel">
+				<div class="room-code-card">
+					<div class="room-code-title">大富翁 4 位联机房间号</div>
+					<div class="room-code-digits" id="online-room-code-display">----</div>
+					<div style="display: flex; gap: 8px; justify-content: center; margin-top: 10px;">
+						<button class="btn-small" onclick="MONOPOLY_ONLINE.copyLink();">📋 复制邀请链接</button>
+						<button class="btn-small" onclick="MONOPOLY_ONLINE.createRoom(4);">🔄 换新房间</button>
+						<button class="btn-small" onclick="MONOPOLY_ONLINE.joinRoom();">🔑 输入房号加入</button>
+					</div>
+					<div style="font-size: 11px; color: #94a3b8; margin-top: 8px;">
+						💡 微信/QQ好友点击链接或输入 4 位房间号即可秒进对决！
+					</div>
+				</div>
+
+				<div style="display: flex; align-items: center; gap: 8px; background: rgba(15,23,42,0.4); padding: 8px 12px; border-radius: 10px;">
+					<span style="font-size: 12px; color: #cbd5e1; font-weight: bold;">你的昵称:</span>
+					<input type="text" id="online-nickname" placeholder="输入玩家昵称" value="大富翁玩家" style="flex: 1; padding: 4px 8px; background: #1e293b; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; color: #fff;" />
+				</div>
+
+				<div class="online-slots-grid" id="online-player-slots">
+					<!-- 动态生成 4 个席位 -->
+				</div>
+
+				<button id="btn-online-start-game" class="btn-start" onclick="MONOPOLY_ONLINE.startHostGame();">🚀 开始联机游戏</button>
+			</div>
+		</div>
 	</div>
+
+	<!-- 主游戏对战舞台 (主棋盘 + 侧边栏玩家状态) -->
+	<main class="main-stage">
+		<!-- 棋盘视口自适应缩放容器 -->
+		<div id="board-container" style="display: none;">
+			<div id="board-wrapper">
+				<table id="board">
+					<tr>
+						<td class="cell board-corner" id="cell20"></td>
+						<td class="cell board-top" id="cell21"></td>
+						<td class="cell board-top" id="cell22"></td>
+						<td class="cell board-top" id="cell23"></td>
+						<td class="cell board-top" id="cell24"></td>
+						<td class="cell board-top" id="cell25"></td>
+						<td class="cell board-top" id="cell26"></td>
+						<td class="cell board-top" id="cell27"></td>
+						<td class="cell board-top" id="cell28"></td>
+						<td class="cell board-top" id="cell29"></td>
+						<td class="cell board-corner" id="cell30"></td>
+					</tr>
+					<tr>
+						<td class="cell board-left" id="cell19"></td>
+						<td colspan="9" rowspan="9" class="board-center">
+							<!-- 中央 HUD 控制台 -->
+							<div id="control">
+								<!-- 当前行动玩家横幅 -->
+								<div class="active-turn-banner" id="active-turn-banner">
+									<div class="turn-player-tag">
+										<div class="turn-avatar-badge" id="turn-avatar">1</div>
+										<div class="turn-player-name" id="pname">玩家 1 的回合</div>
+									</div>
+									<div class="turn-player-cash" id="pmoney">$1500</div>
+								</div>
+
+								<!-- 3D 拟物骰子区 -->
+								<div class="dice-area">
+									<div id="die0" title="骰子 1" class="die die-no-img"></div>
+									<div id="die1" title="骰子 2" class="die die-no-img"></div>
+								</div>
+
+								<!-- 核心掷骰/结束回合主按钮 -->
+								<input type="button" id="nextbutton" class="btn-primary-roll" value="🎲 掷骰子" />
+
+								<!-- 到达地块事件提示条 -->
+								<div id="landed" style="display: none;"></div>
+
+								<!-- 次级操作栏 (盖楼/抵押/交易/破产) -->
+								<div class="center-sub-actions">
+									<button class="btn-sub" id="btn-open-manage" onclick="$('#manage-menu-item').click();">🏠 地产管理</button>
+									<button class="btn-sub" id="btn-open-trade" onclick="game.trade();">🤝 交易谈判</button>
+									<button class="btn-sub" id="btn-open-stats" onclick="showStats();">📊 资产总览</button>
+									<input type="button" id="resignbutton" class="btn-sub danger" value="🏳 破产认输" onclick="game.resign();" />
+								</div>
+
+								<!-- 兼容原有 monopoly.js 菜单项逻辑 -->
+								<div id="menu" style="display: none;">
+									<table id="menutable">
+										<tr>
+											<td id="buy-menu-item"><a href="javascript:void(0);">Buy</a></td>
+											<td id="manage-menu-item"><a href="javascript:void(0);">Manage</a></td>
+											<td id="trade-menu-item"><a href="javascript:void(0);">Trade</a></td>
+										</tr>
+									</table>
+								</div>
+
+								<!-- 事件与购买区域 -->
+								<div id="buy" style="width: 100%;">
+									<div id="alert"></div>
+								</div>
+
+								<!-- 地产管理与盖楼选项区域 -->
+								<div id="manage" style="display: none; width: 100%;">
+									<div id="option">
+										<div id="buildings"></div>
+										<div style="display:flex;gap:6px;justify-content:center;margin-bottom:6px;">
+											<input type="button" class="btn-small" value="🏠 盖房屋" id="buyhousebutton" />
+											<input type="button" class="btn-small" value="拆售房屋" id="sellhousebutton" />
+											<input type="button" class="btn-small" value="💰 抵押/赎回" id="mortgagebutton" />
+											<input type="button" class="btn-small" value="🔙 返回日志" onclick="$('#buy-menu-item').click();" />
+										</div>
+									</div>
+									<div id="owned" style="max-height: 80px; overflow-y: auto;"></div>
+								</div>
+
+								<div id="quickstats" style="display: none;"></div>
+							</div>
+						</td>
+						<td class="cell board-right" id="cell31"></td>
+					</tr>
+					<tr>
+						<td class="cell board-left" id="cell18"></td>
+						<td class="cell board-right" id="cell32"></td>
+					</tr>
+					<tr>
+						<td class="cell board-left" id="cell17"></td>
+						<td class="cell board-right" id="cell33"></td>
+					</tr>
+					<tr>
+						<td class="cell board-left" id="cell16"></td>
+						<td class="cell board-right" id="cell34"></td>
+					</tr>
+					<tr>
+						<td class="cell board-left" id="cell15"></td>
+						<td class="cell board-right" id="cell35"></td>
+					</tr>
+					<tr>
+						<td class="cell board-left" id="cell14"></td>
+						<td class="cell board-right" id="cell36"></td>
+					</tr>
+					<tr>
+						<td class="cell board-left" id="cell13"></td>
+						<td class="cell board-right" id="cell37"></td>
+					</tr>
+					<tr>
+						<td class="cell board-left" id="cell12"></td>
+						<td class="cell board-right" id="cell38"></td>
+					</tr>
+					<tr>
+						<td class="cell board-left" id="cell11"></td>
+						<td class="cell board-right" id="cell39"></td>
+					</tr>
+					<tr>
+						<td class="cell board-corner" id="cell10">
+							<div id="jail"></div>
+						</td>
+						<td class="cell board-bottom" id="cell9"></td>
+						<td class="cell board-bottom" id="cell8"></td>
+						<td class="cell board-bottom" id="cell7"></td>
+						<td class="cell board-bottom" id="cell6"></td>
+						<td class="cell board-bottom" id="cell5"></td>
+						<td class="cell board-bottom" id="cell4"></td>
+						<td class="cell board-bottom" id="cell3"></td>
+						<td class="cell board-bottom" id="cell2"></td>
+						<td class="cell board-bottom" id="cell1"></td>
+						<td class="cell board-corner" id="cell0"></td>
+					</tr>
+				</table>
+			</div>
+		</div>
+
+		<!-- 侧边栏/底部玩家资产卡片组 -->
+		<aside class="player-hud-deck" id="player-hud-list">
+			<!-- 动态生成各个玩家的赛博状态卡 -->
+		</aside>
+	</main>
+
+	<!-- 地契卡片弹窗 (Title Deed) -->
+	<div id="deed" onclick="hidedeed();" title="点击关闭">
+		<div id="deed-normal" style="display: none;">
+			<div id="deed-header">
+				<div style="font-size: 10px; letter-spacing: 2px; opacity: 0.9;">土地产权契约 (TITLE DEED)</div>
+				<div id="deed-name" style="font-size: 16px; font-weight: 900; margin: 4px 0;"></div>
+			</div>
+			<table id="deed-table">
+				<tr>
+					<td colspan="2" style="font-weight: 900; color: #0f172a; padding: 6px 0; border-bottom: 1px solid #e2e8f0;">
+						基础地皮租金&nbsp;$&nbsp;<span id="deed-baserent">12</span>
+					</td>
+				</tr>
+				<tr>
+					<td style="text-align: left;">建有 1 套房屋</td>
+					<td style="text-align: right; font-weight: bold;">$&nbsp;<span id="deed-rent1">60</span></td>
+				</tr>
+				<tr>
+					<td style="text-align: left;">建有 2 套房屋</td>
+					<td style="text-align: right; font-weight: bold;">$&nbsp;<span id="deed-rent2">180</span></td>
+				</tr>
+				<tr>
+					<td style="text-align: left;">建有 3 套房屋</td>
+					<td style="text-align: right; font-weight: bold;">$&nbsp;<span id="deed-rent3">500</span></td>
+				</tr>
+				<tr>
+					<td style="text-align: left;">建有 4 套房屋</td>
+					<td style="text-align: right; font-weight: bold;">$&nbsp;<span id="deed-rent4">700</span></td>
+				</tr>
+				<tr>
+					<td colspan="2" style="padding-top: 6px; border-top: 1px solid #e2e8f0;">
+						<div style="font-weight: 900; color: #d97706; margin-bottom: 4px;">升级豪华酒店: $&nbsp;<span id="deed-rent5">900</span></div>
+						<div style="color: #475569; font-size: 10px;">抵押赎金价值: $&nbsp;<span id="deed-mortgage">80</span></div>
+						<div style="color: #475569; font-size: 10px;">单套房屋建造成本: $&nbsp;<span id="deed-houseprice">100</span></div>
+						<div style="color: #475569; font-size: 10px;">豪华酒店建造成本: $&nbsp;<span id="deed-hotelprice">100</span></div>
+						<div style="font-size: 9px; color: #64748b; font-style: italic; margin-top: 4px;">※ 若集齐该同色组所有地块，未建房地块租金翻倍！</div>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<div id="deed-mortgaged" style="display: none;">
+			<div id="deed-mortgaged-name" style="font-size: 16px; font-weight: 900; margin-bottom: 6px;"></div>
+			<div style="color: #ef4444; font-weight: 900; font-size: 14px; letter-spacing: 1px;">【已抵押 MORTGAGED】</div>
+			<div style="margin: 6px 0;">抵押金额: $&nbsp;<span id="deed-mortgaged-mortgage">80</span></div>
+			<div style="font-style: italic; font-size: 11px; color: #64748b;">抵押期间地产不产生租金收益，且无法盖楼</div>
+		</div>
+
+		<div id="deed-special" style="display: none;">
+			<div id="deed-special-name" style="font-size: 16px; font-weight: 900; margin-bottom: 8px;"></div>
+			<div id="deed-special-text" style="font-size: 12px; line-height: 1.5; color: #334155; margin-bottom: 10px;"></div>
+			<div id="deed-special-footer" style="border-top: 1px solid #e2e8f0; padding-top: 6px; font-size: 11px; color: #475569;">
+				抵押价值
+				<span style="float: right; font-weight: bold;">$&nbsp;<span id="deed-special-mortgage">100</span></span>
+			</div>
+		</div>
+	</div>
+
+	<!-- 交易谈判弹窗 -->
+	<div id="trade">
+		<div style="font-size:16px;font-weight:900;color:#38bdf8;text-align:center;margin-bottom:12px;">🤝 玩家商业资产交易谈判</div>
+		<table style="width:100%;border-spacing:8px;">
+			<tr>
+				<td class="trade-cell" style="width:50%;">
+					<div id="trade-leftp-name" style="font-weight:900;color:#f8fafc;margin-bottom:6px;">发起方</div>
+					<div style="display:flex;align-items:center;gap:4px;margin-bottom:8px;">
+						<span style="color:#10b981;font-weight:bold;">出让现金: $</span>
+						<input id="trade-leftp-money" value="0" title="向对方支付的现金金额" style="width:80px;background:#1e293b;border:1px solid rgba(255,255,255,0.2);color:#fff;padding:4px;border-radius:4px;" />
+					</div>
+					<div id="trade-leftp-property" style="max-height:160px;overflow-y:auto;"></div>
+				</td>
+				<td class="trade-cell" style="width:50%;">
+					<div id="trade-rightp-name" style="font-weight:900;color:#f8fafc;margin-bottom:6px;">目标方</div>
+					<div style="display:flex;align-items:center;gap:4px;margin-bottom:8px;">
+						<span style="color:#f59e0b;font-weight:bold;">索取现金: $</span>
+						<input id="trade-rightp-money" value="0" title="向对方索取的现金金额" style="width:80px;background:#1e293b;border:1px solid rgba(255,255,255,0.2);color:#fff;padding:4px;border-radius:4px;" />
+					</div>
+					<div id="trade-rightp-property" style="max-height:160px;overflow-y:auto;"></div>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2" style="text-align:center;padding-top:10px;">
+					<input type="button" class="btn-action" id="proposetradebutton" value="发起提案" onclick="game.proposeTrade();" />
+					<input type="button" class="btn-action danger" id="canceltradebutton" value="取消交易" onclick="game.cancelTrade();" style="margin-left:8px;" />
+					<input type="button" class="btn-action" id="accepttradebutton" value="接受提案" onclick="game.acceptTrade();" style="display:none;" />
+					<input type="button" class="btn-action danger" id="rejecttradebutton" value="拒绝提案" onclick="game.cancelTrade();" style="display:none;margin-left:8px;" />
+				</td>
+			</tr>
+		</table>
+	</div>
+
+	<!-- 通用事件弹出框 (Popup Modal) -->
 	<div id="popupbackground"></div>
 	<div id="popupwrap">
 		<div id="popup">
 			<div style="position: relative;">
-				<!-- <img id="popupclose" src="Images/close.png" title="Close" alt="x" onclick="hide('popupbackground'); hide('popupwrap');" /> -->
 				<div id="popuptext"></div>
-				<div id="popupdrag"></div>
+				<div id="popupdrag" style="display:none;"></div>
 			</div>
 		</div>
 	</div>
 
+	<!-- 资产统计弹出框 (Stats Modal) -->
 	<div id="statsbackground"></div>
 	<div id="statswrap">
 		<div id="stats">
 			<div style="position: relative;">
-				<img id="statsclose" src="images/close.png" title="Close" alt="x" />
 				<div id="statstext"></div>
-				<div id="statsdrag"></div>
+				<div style="text-align: center; margin-top: 14px;">
+					<button class="btn-action" id="statsclose">关闭总览</button>
+				</div>
+				<div id="statsdrag" style="display:none;"></div>
 			</div>
 		</div>
 	</div>
 
-	<p id="noscript">
-		Note: This page will not function without JavaScript.
-	</p>
-
-	<div id="refresh">
-		Refresh this page to start a new game.
-	</div>
-
-	<!-- <div id="enlarge"></div> -->
-
-	<div id="deed">
-		<div id="deed-normal" style="display: none;">
-			<div id="deed-header">
-				<div style="margin: 5px; font-size: 11px;">T I T L E&nbsp;&nbsp;D E E D</div>
-				<div id="deed-name"></div>
+	<!-- 游戏规则说明弹窗 (Rules Modal) -->
+	<div id="rulesbackground" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);z-index:2000;display:none;" onclick="hideRules();"></div>
+	<div id="ruleswrap" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2001;display:none;max-width:540px;width:90%;">
+		<div style="background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:18px;padding:22px;box-shadow:0 20px 50px rgba(0,0,0,0.8);color:#f8fafc;">
+			<h3 style="color:#38bdf8;margin-bottom:12px;font-size:1.2rem;">📖 大富翁经典玩法与规则</h3>
+			<div style="font-size:13px;line-height:1.7;color:#cbd5e1;max-height:60vh;overflow-y:auto;padding-right:6px;">
+				<p><b>1. 基础目标：</b>通过掷骰移动，圈地购买地产、升级盖楼、收取过路费，令对手资金耗尽破产出局，最终建立商业帝国赢得胜利！</p>
+				<p style="margin-top:8px;"><b>2. 起点薪水：</b>每次经过或刚好停留在【起点 (GO)】，可立即向银行领取 $200 薪资。</p>
+				<p style="margin-top:8px;"><b>3. 地产与垄断：</b>到达无主地产可按标价购买；若玩家集齐同色组所有地皮即达成【完全垄断】，未建房的基础租金直接翻倍！并解锁建造房屋与升级豪华酒店资格。</p>
+				<p style="margin-top:8px;"><b>4. 铁路与公用事业：</b>拥有越多火车站，租金按阶梯翻倍（$25 → $50 → $100 → $200）。公用事业按掷出骰子点数的 4倍 或 10倍 收取巨额租金。</p>
+				<p style="margin-top:8px;"><b>5. 监狱服刑：</b>停留【前往监狱】、连续 3 次掷出双数点、或抽到入狱卡时需立即入狱。入狱期间可掷骰尝试双数破关，亦可支付 $50 保释金或使用【免费出狱卡】。</p>
+				<p style="margin-top:8px;"><b>6. 抵押与交易：</b>资金紧张时可随时将未建房地产抵押获得半价现金借款；可在回合内与其他玩家谈判置换地产与现金。</p>
 			</div>
-			<table id="deed-table">
-				<tr>
-					<td colspan="2">
-						RENT&nbsp;$<span id="deed-baserent">12</span>.
-					</td>
-				</tr>
-				<tr>
-					<td style="text-align: left;">With 1 House</td>
-					<td style="text-align: right;">$&nbsp;&nbsp;&nbsp;<span id="deed-rent1">60</span>.</td>
-				</tr>
-				<tr>
-					<td style="text-align: left;">With 2 Houses</td>
-					<td style="text-align: right;"><span id="deed-rent2">180</span>.</td>
-				</tr>
-				<tr>
-					<td style="text-align: left;">With 3 Houses</td>
-					<td style="text-align: right;"><span id="deed-rent3">500</span>.</td>
-				</tr>
-				<tr>
-					<td style="text-align: left;">With 4 Houses</td>
-					<td style="text-align: right;"><span id="deed-rent4">700</span>.</td>
-				</tr>
-				<tr>
-					<td colspan="2">
-						<div style="margin-bottom: 8px;">With HOTEL $<span id="deed-rent5">900</span>.</div>
-						<div>Mortgage Value $<span id="deed-mortgage">80</span>.</div>
-						<div>Houses cost $<span id="deed-houseprice">100</span>. each</div>
-						<div>Hotels, $<span id="deed-hotelprice">100</span>. plus 4 houses</div>
-						<div style="font-size: 9px; font-style: italic; margin-top: 5px;">If a player owns ALL the Lots of any Color-Group, the rent is Doubled on Unimproved Lots in that group.</div>
-					</td>
-				</tr>
-			</table>
-		</div>
-
-		<div id="deed-mortgaged">
-			<div id="deed-mortgaged-name"></div>
-			<p>&bull;</p>
-			<div>MORTGAGED</div>
-			<div> for $<span id="deed-mortgaged-mortgage">80</span></div>
-			<p>&bull;</p>
-			<div style="font-style: italic; font-size: 13px; margin: 10px;">Card must be turned this side up if property is mortgaged</div>
-		</div>
-
-		<div id="deed-special">
-			<div id="deed-special-name"></div>
-			<div id="deed-special-text"></div>
-			<div id="deed-special-footer">
-				Mortgage Value
-				<span style="float: right;">$<span id="deed-special-mortgage">100</span>.</span>
+			<div style="text-align:center;margin-top:14px;">
+				<button class="btn-action" onclick="hideRules();">我知道了</button>
 			</div>
 		</div>
 	</div>
 
-	<table id="board">
-		<tr>
-			<td class="cell board-corner" id="cell20"></td>
-			<td class="cell board-top" id="cell21"></td>
-			<td class="cell board-top" id="cell22"></td>
-			<td class="cell board-top" id="cell23"></td>
-			<td class="cell board-top" id="cell24"></td>
-			<td class="cell board-top" id="cell25"></td>
-			<td class="cell board-top" id="cell26"></td>
-			<td class="cell board-top" id="cell27"></td>
-			<td class="cell board-top" id="cell28"></td>
-			<td class="cell board-top" id="cell29"></td>
-			<td class="cell board-corner" id="cell30"></td>
-		</tr><tr>
-			<td class="cell board-left" id="cell19"></td>
-			<td colspan="9" class="board-center"></td>
-			<td class="cell board-right" id="cell31"></td>
-		</tr><tr>
-			<td class="cell board-left" id="cell18"></td>
-			<td colspan="9" class="board-center"></td>
-			<td class="cell board-right" id="cell32"></td>
-		</tr><tr>
-			<td class="cell board-left" id="cell17"></td>
-			<td colspan="9" class="board-center"></td>
-			<td class="cell board-right" id="cell33"></td>
-		</tr><tr>
-			<td class="cell board-left" id="cell16"></td>
-			<td colspan="9" class="board-center"></td>
-			<td class="cell board-right" id="cell34"></td>
-		</tr><tr>
-			<td class="cell board-left" id="cell15"></td>
-			<td colspan="9" class="board-center"></td>
-			<td class="cell board-right" id="cell35"></td>
-		</tr><tr>
-			<td class="cell board-left" id="cell14"></td>
-			<td colspan="9" class="board-center"></td>
-			<td class="cell board-right" id="cell36"></td>
-		</tr><tr>
-			<td class="cell board-left" id="cell13"></td>
-			<td colspan="9" class="board-center"></td>
-			<td class="cell board-right" id="cell37"></td>
-		</tr><tr>
-			<td class="cell board-left" id="cell12"></td>
-			<td colspan="9" class="board-center"></td>
-			<td class="cell board-right" id="cell38"></td>
-		</tr><tr>
-			<td class="cell board-left" id="cell11"></td>
-			<td colspan="9" class="board-center">
-				<div id="jail"></div>
-			</td>
-			<td class="cell board-right" id="cell39"></td>
-		</tr><tr>
-			<td class="cell board-corner" id="cell10"></td>
-			<td class="cell board-bottom" id="cell9"></td>
-			<td class="cell board-bottom" id="cell8"></td>
-			<td class="cell board-bottom" id="cell7"></td>
-			<td class="cell board-bottom" id="cell6"></td>
-			<td class="cell board-bottom" id="cell5"></td>
-			<td class="cell board-bottom" id="cell4"></td>
-			<td class="cell board-bottom" id="cell3"></td>
-			<td class="cell board-bottom" id="cell2"></td>
-			<td class="cell board-bottom" id="cell1"></td>
-			<td class="cell board-corner" id="cell0"></td>
-		</tr>
-	</table>
-
-	<div id="moneybarwrap">
+	<!-- 兼容隐藏元素 (保留 DOM 引用防止老脚本报错) -->
+	<div id="moneybarwrap" style="display: none;">
 		<div id="moneybar">
 			<table>
-				<tr id="moneybarrow1" class="money-bar-row">
-					<td class="moneybararrowcell"><img src="images/arrow.png" id="p1arrow" class="money-bar-arrow" alt=">"/></td>
-					<td id="p1moneybar" class="moneybarcell">
-						<div><span id="p1moneyname" >Player 1</span>:</div>
-						<div>$<span id="p1money">1500</span></div>
-					</td>
-				</tr>
-				<tr id="moneybarrow2" class="money-bar-row">
-					<td class="moneybararrowcell"><img src="images/arrow.png" id="p2arrow" class="money-bar-arrow" alt=">" /></td>
-					<td id="p2moneybar" class="moneybarcell">
-						<div><span id="p2moneyname" >Player 2</span>:</div>
-						<div>$<span id="p2money">1500</span></div>
-					</td>
-				</tr>
-				<tr id="moneybarrow3" class="money-bar-row">
-					<td class="moneybararrowcell"><img src="images/arrow.png" id="p3arrow" class="money-bar-arrow" alt=">" /></td>
-					<td id="p3moneybar" class="moneybarcell">
-						<div><span id="p3moneyname" >Player 3</span>:</div>
-						<div>$<span id="p3money">1500</span></div>
-					</td>
-				</tr>
-				<tr id="moneybarrow4" class="money-bar-row">
-					<td class="moneybararrowcell"><img src="images/arrow.png" id="p4arrow" class="money-bar-arrow" alt=">" /></td>
-					<td id="p4moneybar" class="moneybarcell">
-						<div><span id="p4moneyname" >Player 4</span>:</div>
-						<div>$<span id="p4money">1500</span></div>
-					</td>
-				</tr>
-				<tr id="moneybarrow5" class="money-bar-row">
-					<td class="moneybararrowcell"><img src="images/arrow.png" id="p5arrow" class="money-bar-arrow" alt=">" /></td>
-					<td id="p5moneybar" class="moneybarcell">
-						<div><span id="p5moneyname" >Player 5</span>:</div>
-						<div>$<span id="p5money">1500</span></div>
-					</td>
-				</tr>
-				<tr id="moneybarrow6" class="money-bar-row">
-					<td class="moneybararrowcell"><img src="images/arrow.png" id="p6arrow" class="money-bar-arrow" alt=">" /></td>
-					<td id="p6moneybar" class="moneybarcell">
-						<div><span id="p6moneyname" >Player 6</span>:</div>
-						<div>$<span id="p6money">1500</span></div>
-					</td>
-				</tr>
-				<tr id="moneybarrow7" class="money-bar-row">
-					<td class="moneybararrowcell"><img src="images/arrow.png" id="p7arrow" class="money-bar-arrow" alt=">" /></td>
-					<td id="p7moneybar" class="moneybarcell">
-						<div><span id="p7moneyname" >Player 7</span>:</div>
-						<div>$<span id="p7money">1500</span></div>
-					</td>
-				</tr>
-				<tr id="moneybarrow8" class="money-bar-row">
-					<td class="moneybararrowcell"><img src="images/arrow.png" id="p8arrow" class="money-bar-arrow" alt=">" /></td>
-					<td id="p8moneybar" class="moneybarcell">
-						<div><span id="p8moneyname" >Player 8</span>:</div>
-						<div>$<span id="p8money">1500</span></div>
-					</td>
-				</tr>
-				<tr id="moneybarrowbutton">
-					<td class="moneybararrowcell">&nbsp;</td>
-					<td style="border: none;">
-						<input type="button" id="viewstats" value="View stats" title="View a pop-up window that shows a list of each player's properties." />
-					</td>
-				</tr>
+				<tr id="moneybarrow1"><td id="p1moneybar"><span id="p1moneyname"></span>$<span id="p1money"></span><img id="p1arrow" src="images/arrow.png" alt=""/></td></tr>
+				<tr id="moneybarrow2"><td id="p2moneybar"><span id="p2moneyname"></span>$<span id="p2money"></span><img id="p2arrow" src="images/arrow.png" alt=""/></td></tr>
+				<tr id="moneybarrow3"><td id="p3moneybar"><span id="p3moneyname"></span>$<span id="p3money"></span><img id="p3arrow" src="images/arrow.png" alt=""/></td></tr>
+				<tr id="moneybarrow4"><td id="p4moneybar"><span id="p4moneyname"></span>$<span id="p4money"></span><img id="p4arrow" src="images/arrow.png" alt=""/></td></tr>
+				<tr id="moneybarrow5"><td id="p5moneybar"><span id="p5moneyname"></span>$<span id="p5money"></span><img id="p5arrow" src="images/arrow.png" alt=""/></td></tr>
+				<tr id="moneybarrow6"><td id="p6moneybar"><span id="p6moneyname"></span>$<span id="p6money"></span><img id="p6arrow" src="images/arrow.png" alt=""/></td></tr>
+				<tr id="moneybarrow7"><td id="p7moneybar"><span id="p7moneyname"></span>$<span id="p7money"></span><img id="p7arrow" src="images/arrow.png" alt=""/></td></tr>
+				<tr id="moneybarrow8"><td id="p8moneybar"><span id="p8moneyname"></span>$<span id="p8money"></span><img id="p8arrow" src="images/arrow.png" alt=""/></td></tr>
+				<tr id="moneybarrowbutton"><td><input type="button" id="viewstats" value="查看资产" /></td></tr>
 			</table>
 		</div>
 	</div>
 
-	<div id="setup">
-		<div style="margin-bottom: 20px;">
-			Select number of players.
-			<select id="playernumber" title="Select the number of players for the game.">
-				<option>2</option>
-				<option>3</option>
-				<option selected="selected">4</option>
-				<option>5</option>
-				<option>6</option>
-				<option>7</option>
-				<option>8</option>
-			</select>
-		</div>
+	<p id="noscript" style="display:none;">Note: This page will not function without JavaScript.</p>
+	<div id="refresh" style="display:none;"></div>
+	<div id="noF5" style="display:none;"></div>
 
-		<div id="player1input" class="player-input">
-			Player 1: <input type="text" id="player1name" title="Player name" maxlength="16" value="Player 1" />
-			<select id="player1color" title="Player color">
-				<option style="color: aqua;">Aqua</option>
-				<option style="color: black;">Black</option>
-				<option style="color: blue;">Blue</option>
-				<option style="color: fuchsia;">Fuchsia</option>
-				<option style="color: gray;">Gray</option>
-				<option style="color: green;">Green</option>
-				<option style="color: lime;">Lime</option>
-				<option style="color: maroon;">Maroon</option>
-				<option style="color: navy;">Navy</option>
-				<option style="color: olive;">Olive</option>
-				<option style="color: orange;">Orange</option>
-				<option style="color: purple;">Purple</option>
-				<option style="color: red;">Red</option>
-				<option style="color: silver;">Silver</option>
-				<option style="color: teal;">Teal</option>
-				<option selected="selected" style="color: yellow;">Yellow</option>
-			</select>
-			<select id="player1ai" title="Choose whether this player is controled by a human or by the computer." onclick="document.getElementById('player1name').disabled = this.value !== '0';">
-				<option value="0" selected="selected">Human</option>
-				<option value="1">AI (Test)</option>
-			</select>
-		</div>
+	<script>
+		function switchSetupMode(mode) {
+			$(".mode-tab").removeClass("active");
+			if (mode === 'ONLINE') {
+				$("#tab-mode-online").addClass("active");
+				$("#local-setup-container").hide();
+				$("#online-setup-container").show();
+				if (window.MONOPOLY_ONLINE && !MONOPOLY_ONLINE.state.roomId) {
+					MONOPOLY_ONLINE.createRoom(4);
+				}
+			} else if (mode === 'LOCAL') {
+				$("#tab-mode-local").addClass("active");
+				$("#online-setup-container").hide();
+				$("#local-setup-container").show();
+				if (window.MONOPOLY_ONLINE) MONOPOLY_ONLINE.state.isOnline = false;
+				for (var i = 1; i <= 8; i++) {
+					var aiSel = document.getElementById("player" + i + "ai");
+					if (aiSel) aiSel.value = "0";
+					var nameInput = document.getElementById("player" + i + "name");
+					if (nameInput) nameInput.value = "玩家 " + i;
+				}
+			} else { // AI
+				$("#tab-mode-ai").addClass("active");
+				$("#online-setup-container").hide();
+				$("#local-setup-container").show();
+				if (window.MONOPOLY_ONLINE) MONOPOLY_ONLINE.state.isOnline = false;
+				var p1Ai = document.getElementById("player1ai");
+				if (p1Ai) p1Ai.value = "0";
+				var p1Name = document.getElementById("player1name");
+				if (p1Name) p1Name.value = "玩家 1";
+				for (var i = 2; i <= 8; i++) {
+					var aiSel = document.getElementById("player" + i + "ai");
+					if (aiSel) aiSel.value = "1";
+					var nameInput = document.getElementById("player" + i + "name");
+					if (nameInput) nameInput.value = "电脑 AI " + i;
+				}
+			}
+		}
 
-		<div id="player2input" class="player-input">
-			Player 2: <input type="text" id="player2name" title="Player name" maxlength="16" value="Player 2" />
-			<select id="player2color" title="Player color">
-				<option style="color: aqua;">Aqua</option>
-				<option style="color: black;">Black</option>
-				<option selected="selected" style="color: blue;">Blue</option>
-				<option style="color: fuchsia;">Fuchsia</option>
-				<option style="color: gray;">Gray</option>
-				<option style="color: green;">Green</option>
-				<option style="color: lime;">Lime</option>
-				<option style="color: maroon;">Maroon</option>
-				<option style="color: navy;">Navy</option>
-				<option style="color: olive;">Olive</option>
-				<option style="color: orange;">Orange</option>
-				<option style="color: purple;">Purple</option>
-				<option style="color: red;">Red</option>
-				<option style="color: silver;">Silver</option>
-				<option style="color: teal;">Teal</option>
-				<option style="color: yellow;">Yellow</option>
-			</select>
-			<select id="player2ai" title="Choose whether this player is controled by a human or by the computer." onclick="document.getElementById('player2name').disabled = this.value !== '0';">
-				<option value="0" selected="selected">Human</option>
-				<option value="1">AI (Test)</option>
-			</select>
-		</div>
+		function toggleAudio() {
+			if (window.AUDIO) {
+				var enabled = window.AUDIO.toggle();
+				var btn = document.getElementById("btn-audio-toggle");
+				if (btn) btn.textContent = enabled ? "🔊 音效: 开" : "🔇 音效: 关";
+			}
+		}
 
-		<div id="player3input" class="player-input">
-			Player 3: <input type="text" id="player3name" title="Player name" maxlength="16" value="Player 3" />
-			<select id="player3color" title="Player color">
-				<option style="color: aqua;">Aqua</option>
-				<option style="color: black;">Black</option>
-				<option style="color: blue;">Blue</option>
-				<option style="color: fuchsia;">Fuchsia</option>
-				<option style="color: gray;">Gray</option>
-				<option style="color: green;">Green</option>
-				<option style="color: lime;">Lime</option>
-				<option style="color: maroon;">Maroon</option>
-				<option style="color: navy;">Navy</option>
-				<option style="color: olive;">Olive</option>
-				<option style="color: orange;">Orange</option>
-				<option style="color: purple;">Purple</option>
-				<option selected="selected" style="color: red;">Red</option>
-				<option style="color: silver;">Silver</option>
-				<option style="color: teal;">Teal</option>
-				<option style="color: yellow;">Yellow</option>
-			</select>
-			<select id="player3ai" title="Choose whether this player is controled by a human or by the computer." onclick="document.getElementById('player3name').disabled = this.value !== '0';">
-				<option value="0" selected="selected">Human</option>
-				<option value="1">AI (Test)</option>
-			</select>
-		</div>
+		function showRules() {
+			$("#ruleswrap").show();
+			$("#rulesbackground").fadeIn(200);
+		}
 
-		<div id="player4input" class="player-input">
-			Player 4: <input type="text" id="player4name" title="Player name" maxlength="16" value="Player 4" />
-			<select id="player4color" title="Player color">
-				<option style="color: aqua;">Aqua</option>
-				<option style="color: black;">Black</option>
-				<option style="color: blue;">Blue</option>
-				<option style="color: fuchsia;">Fuchsia</option>
-				<option style="color: gray;">Gray</option>
-				<option style="color: green;">Green</option>
-				<option selected="selected" style="color: lime;">Lime</option>
-				<option style="color: maroon;">Maroon</option>
-				<option style="color: navy;">Navy</option>
-				<option style="color: olive;">Olive</option>
-				<option style="color: orange;">Orange</option>
-				<option style="color: purple;">Purple</option>
-				<option style="color: red;">Red</option>
-				<option style="color: silver;">Silver</option>
-				<option style="color: teal;">Teal</option>
-				<option style="color: yellow;">Yellow</option>
-			</select>
-			<select id="player4ai" title="Choose whether this player is controled by a human or by the computer." onclick="document.getElementById('player4name').disabled = this.value !== '0';">
-				<option value="0" selected="selected">Human</option>
-				<option value="1">AI (Test)</option>
-			</select>
-		</div>
+		function hideRules() {
+			$("#ruleswrap").hide();
+			$("#rulesbackground").fadeOut(200);
+		}
 
-		<div id="player5input" class="player-input">
-			Player 5: <input type="text" id="player5name" title="Player name" maxlength="16" value="Player 5" />
-			<select id="player5color" title="Player color">
-				<option style="color: aqua;">Aqua</option>
-				<option style="color: black;">Black</option>
-				<option style="color: blue;">Blue</option>
-				<option style="color: fuchsia;">Fuchsia</option>
-				<option style="color: gray;">Gray</option>
-				<option selected="selected" style="color: green;">Green</option>
-				<option style="color: lime;">Lime</option>
-				<option style="color: maroon;">Maroon</option>
-				<option style="color: navy;">Navy</option>
-				<option style="color: olive;">Olive</option>
-				<option style="color: orange;">Orange</option>
-				<option style="color: purple;">Purple</option>
-				<option style="color: red;">Red</option>
-				<option style="color: silver;">Silver</option>
-				<option style="color: teal;">Teal</option>
-				<option style="color: yellow;">Yellow</option>
-			</select>
-			<select id="player5ai" title="Choose whether this player is controled by a human or by the computer." onclick="document.getElementById('player5name').disabled = this.value !== '0';">
-				<option value="0" selected="selected">Human</option>
-				<option value="1">AI (Test)</option>
-			</select>
-		</div>
-
-		<div id="player6input" class="player-input">
-			Player 6: <input type="text" id="player6name" title="Player name" maxlength="16" value="Player 6" />
-			<select id="player6color" title="Player color">
-				<option selected="selected" style="color: aqua;">Aqua</option>
-				<option style="color: black;">Black</option>
-				<option style="color: blue;">Blue</option>
-				<option style="color: fuchsia;">Fuchsia</option>
-				<option style="color: gray;">Gray</option>
-				<option style="color: green;">Green</option>
-				<option style="color: lime;">Lime</option>
-				<option style="color: maroon;">Maroon</option>
-				<option style="color: navy;">Navy</option>
-				<option style="color: olive;">Olive</option>
-				<option style="color: orange;">Orange</option>
-				<option style="color: purple;">Purple</option>
-				<option style="color: red;">Red</option>
-				<option style="color: silver;">Silver</option>
-				<option style="color: teal;">Teal</option>
-				<option style="color: yellow;">Yellow</option>
-			</select>
-			<select id="player6ai" title="Choose whether this player is controled by a human or by the computer." onclick="document.getElementById('player6name').disabled = this.value !== '0';">
-				<option value="0" selected="selected">Human</option>
-				<option value="1">AI (Test)</option>
-			</select>
-		</div>
-
-		<div id="player7input" class="player-input">
-			Player 7: <input type="text" id="player7name" title="Player name" maxlength="16" value="Player 7" />
-			<select id="player7color" title="Player color">
-				<option style="color: aqua;">Aqua</option>
-				<option style="color: black;">Black</option>
-				<option style="color: blue;">Blue</option>
-				<option style="color: fuchsia;">Fuchsia</option>
-				<option style="color: gray;">Gray</option>
-				<option style="color: green;">Green</option>
-				<option style="color: lime;">Lime</option>
-				<option style="color: maroon;">Maroon</option>
-				<option style="color: navy;">Navy</option>
-				<option style="color: olive;">Olive</option>
-				<option selected="selected" style="color: orange;">Orange</option>
-				<option style="color: purple;">Purple</option>
-				<option style="color: red;">Red</option>
-				<option style="color: silver;">Silver</option>
-				<option style="color: teal;">Teal</option>
-				<option style="color: yellow;">Yellow</option>
-			</select>
-			<select id="player7ai" title="Choose whether this player is controled by a human or by the computer." onclick="document.getElementById('player7name').disabled = this.value !== '0';">
-				<option value="0" selected="selected">Human</option>
-				<option value="1">AI (Test)</option>
-			</select>
-		</div>
-
-		<div id="player8input" class="player-input">
-			Player 8: <input type="text" id="player8name" title="Player name" maxlength="16" value="Player 8" />
-			<select id="player8color" title="Player color">
-				<option style="color: aqua;">Aqua</option>
-				<option style="color: black;">Black</option>
-				<option style="color: blue;">Blue</option>
-				<option style="color: fuchsia;">Fuchsia</option>
-				<option style="color: gray;">Gray</option>
-				<option style="color: green;">Green</option>
-				<option style="color: lime;">Lime</option>
-				<option style="color: maroon;">Maroon</option>
-				<option style="color: navy;">Navy</option>
-				<option style="color: olive;">Olive</option>
-				<option style="color: orange;">Orange</option>
-				<option selected="selected" style="color: purple;">Purple</option>
-				<option style="color: red;">Red</option>
-				<option style="color: silver;">Silver</option>
-				<option style="color: teal;">Teal</option>
-				<option style="color: yellow;">Yellow</option>
-			</select>
-			<select id="player8ai" title="Choose whether this player is controled by a human or by the computer." onclick="document.getElementById('player8name').disabled = this.value !== '0';">
-				<option value="0" selected="selected">Human</option>
-				<option value="1">AI (Test)</option>
-			</select>
-		</div>
-
-		<div style="margin: 20px 0px;">
-			<input type="button" value="Start Game" onclick="setup();" title="Begin playing." />
-		</div>
-
-		<div id="noF5">Note: Refreshing this page or navigating away from it may end your game without warning.</div>
-	</div>
-
-	<div id="control">
-		<table>
-			<tr>
-				<td style="text-align: left; vertical-align: top; border: none;">
-					<div id="menu">
-						<table id="menutable" cellspacing="0">
-							<tr>
-								<td class="menu-item" id="buy-menu-item">
-
-									<a href="javascript:void(0);" title="View alerts and buy the property you landed on.">Buy</a>
-								</td>
-								<td class="menu-item" id="manage-menu-item">
-
-									<a href="javascript:void(0);" title="View, mortgage, and improve your property. ">Manage</a>
-								</td>
-								<td class="menu-item" id="trade-menu-item">
-
-									<a href="javascript:void(0);" title="Exchange property with other players.">Trade</a>
-								</td>
-							</tr>
-						</table>
-					</div>
-
-					<div id="buy">
-						<div id="alert"></div>
-						<div id="landed"></div>
-					</div>
-
-					<div id="manage">
-						<div id="option">
-							<div id="buildings" title="Available buildings"></div>
-							<input type="button" value="Buy house" id="buyhousebutton"/>
-							<input type="button" value="Mortgage" id="mortgagebutton" />
-							<input type="button" value="Sell house" id="sellhousebutton"/>
-						</div>
-						<div id="owned"></div>
-					</div>
-				</td>
-				<td style="vertical-align: top; border: none;">
-					<div id="quickstats" style="">
-							<div><span id="pname" >Player 1</span>:</div>
-							<div><span id="pmoney">$1500</span></div>
-					</div>
-					<div>
-						<div id="die0" title="Die" class="die die-no-img"></div>
-						<div id="die1" title="Die" class="die die-no-img"></div>
-					</div>
-
-				</td>
-			</tr><tr>
-				<td colspan="2" style="border: none">
-					<div style="padding-top: 8px;">
-						<input type="button" id="nextbutton" title="Roll the dice and move your token accordingly." value="Roll Dice"/>
-						<input type="button" id="resignbutton" title="If you cannot pay your debt then you must resign from the game." value="Resign" onclick="game.resign();" />
-					</div>
-				</td>
-			</tr>
-		</table>
-	</div>
-
-	<div id="trade">
-		<table style="border-spacing: 3px;">
-			<tr>
-				<td class="trade-cell">
-					<div id="trade-leftp-name"></div>
-				</td>
-				<td class="trade-cell">
-					<div id="trade-rightp-name"></div>
-				</td>
-			</tr>
-			<tr>
-				<td class="trade-cell">
-					$&nbsp;<input id="trade-leftp-money" value="0" title="Enter amount to exchange with the other player." />
-				</td>
-				<td class="trade-cell">
-					$&nbsp;<input id="trade-rightp-money" value="0" title="Enter amount to exchange with the other player." />
-				</td>
-			</tr>
-			<tr>
-				<td id="trade-leftp-property" class="trade-cell"></td>
-				<td id="trade-rightp-property" class="trade-cell"></td>
-			</tr>
-			<tr>
-				<td colspan="2" class="trade-cell">
-					<input type="button" id="proposetradebutton" value="Propose Trade" onclick="game.proposeTrade();" title="Exchange the money and properties that are checked above." />
-					<input type="button" id="canceltradebutton" value="Cancel Trade" onclick='game.cancelTrade();' title="Cancel the trade." />
-					<input type="button" id="accepttradebutton" value="Accept Trade" onclick="game.acceptTrade();" title="Accept the proposed trade." />
-					<input type="button" id="rejecttradebutton" value="Reject Trade" onclick='game.cancelTrade();' title="Reject the proposed trade." />
-				</td>
-			</tr>
-		</table>
-	</div>
-
+		function confirmNewGame() {
+			if (confirm("确定要重新开始一局新的大富翁对局吗？当前进度将重置。")) {
+				window.location.reload();
+			}
+		}
+	</script>
 </body>
 </html>

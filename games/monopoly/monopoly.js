@@ -1,3 +1,26 @@
+/**
+ * 🎲 大富翁 (Monopoly) · 核心游戏引擎与在线协同中枢
+ * 包含完整游戏规则循环、资产管理、拍卖、交易、破产清算、全面中文深度汉化、
+ * 现代赛博霓虹拟物界面交互、3D骰子拟真动画、音效联动及 MQTT 异步在线多人协同。
+ */
+
+var player = [];
+var pcount = 4;
+var turn = 0, doublecount = 0;
+var game;
+
+window.player = player;
+window.turn = turn;
+window.doublecount = doublecount;
+
+function shouldRunAi(p) {
+	if (!p || p.human || !p.AI) return false;
+	if (window.MONOPOLY_ONLINE && MONOPOLY_ONLINE.state.isOnline) {
+		return MONOPOLY_ONLINE.state.myRole === 'host';
+	}
+	return true;
+}
+
 function Game() {
 	var die1;
 	var die2;
@@ -15,20 +38,44 @@ function Game() {
 		areDiceRolled = true;
 	};
 
+	this.setDice = function(d1, d2) {
+		die1 = d1;
+		die2 = d2;
+		areDiceRolled = true;
+	};
+
 	this.resetDice = function() {
 		areDiceRolled = false;
 	};
 
 	this.next = function() {
+		// 联机模式下的行动席位校验
+		if (window.MONOPOLY_ONLINE && MONOPOLY_ONLINE.state.isOnline) {
+			var isMyTurn = (turn === MONOPOLY_ONLINE.state.mySlot);
+			var curPlayer = player[turn];
+			var isAi = curPlayer ? !curPlayer.human : false;
+			if (!isMyTurn && !(isAi && MONOPOLY_ONLINE.state.myRole === 'host')) {
+				return;
+			}
+		}
+
+		var p = player[turn];
+
 		if (!p.human && p.money < 0) {
 			p.AI.payDebt();
 
 			if (p.money < 0) {
-				popup("<p>" + p.name + " is bankrupt. All of its assets will be turned over to " + player[p.creditor].name + ".</p>", game.bankruptcy);
+				popup("<p>玩家 " + p.name + " 资不抵债已破产！所有名下资产将移交清算给 " + player[p.creditor].name + "。</p>", game.bankruptcy);
 			} else {
 				roll();
 			}
 		} else if (areDiceRolled && doublecount === 0) {
+			if (window.MONOPOLY_ONLINE && MONOPOLY_ONLINE.state.isOnline) {
+				MONOPOLY_ONLINE.broadcastEndTurn();
+				if (MONOPOLY_ONLINE.state.myRole === 'host') {
+					MONOPOLY_ONLINE.broadcastSyncState();
+				}
+			}
 			play();
 		} else {
 			roll();
@@ -37,21 +84,13 @@ function Game() {
 
 	this.getDie = function(die) {
 		if (die === 1) {
-
 			return die1;
 		} else {
-
 			return die2;
 		}
-
 	};
 
-
-
-	// Auction functions:
-
-
-
+	// 拍卖功能 (Auction functions):
 	var finalizeAuction = function() {
 		var p = player[highestbidder];
 		var sq = square[auctionproperty];
@@ -59,7 +98,8 @@ function Game() {
 		if (highestbid > 0) {
 			p.pay(highestbid, 0);
 			sq.owner = highestbidder;
-			addAlert(p.name + " bought " + sq.name + " for $" + highestbid + ".");
+			addAlert("玩家 " + p.name + " 以 $" + highestbid + " 竞拍赢得了【" + sq.name + "】。");
+			if (window.AUDIO) window.AUDIO.play('card_play');
 		}
 
 		for (var i = 1; i <= pcount; i++) {
@@ -83,8 +123,7 @@ function Game() {
 			return false;
 		}
 
-		index = auctionQueue.shift();
-
+		var index = auctionQueue.shift();
 		var s = square[index];
 
 		if (s.price === 0 || s.owner !== 0) {
@@ -100,11 +139,19 @@ function Game() {
 			currentbidder -= pcount;
 		}
 
-		popup("<div style='font-weight: bold; font-size: 16px; margin-bottom: 10px;'>Auction <span id='propertyname'></span></div><div>Highest Bid = $<span id='highestbid'></span> (<span id='highestbidder'></span>)</div><div><span id='currentbidder'></span>, it is your turn to bid.</div<div><input id='bid' title='Enter an amount to bid on " + s.name + ".' style='width: 291px;' /></div><div><input type='button' value='Bid' onclick='game.auctionBid();' title='Place your bid.' /><input type='button' value='Pass' title='Skip bidding this time.' onclick='game.auctionPass();' /><input type='button' value='Exit Auction' title='Stop bidding on " + s.name + " altogether.' onclick='if (confirm(\"Are you sure you want to stop bidding on this property altogether?\")) game.auctionExit();' /></div>", "blank");
+		popup("<div style='font-weight: bold; font-size: 16px; margin-bottom: 10px;'>土地资产公开拍卖: <span id='propertyname'></span></div>" +
+			"<div>当前最高出价: $<span id='highestbid'>0</span> (<span id='highestbidder'>暂无</span>)</div>" +
+			"<div style='margin: 8px 0;'>轮到 <span id='currentbidder' style='font-weight:bold;color:#38bdf8;'></span> 出价:</div>" +
+			"<div><input id='bid' title='请输入加价竞拍金额' style='width: 100%; padding: 6px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(15,23,42,0.8); color: #fff;' /></div>" +
+			"<div style='margin-top: 12px; display: flex; gap: 8px; justify-content: center;'>" +
+			"<input type='button' class='btn-action' value='加价' onclick='game.auctionBid();' title='提交出价' />" +
+			"<input type='button' class='btn-action' value='放弃' title='本轮放弃加价' onclick='game.auctionPass();' />" +
+			"<input type='button' class='btn-action danger' value='退出拍卖' title='彻底退出竞拍' onclick='if (confirm(\"确定要彻底放弃对该地产的竞价吗？\")) game.auctionExit();' />" +
+			"</div>", "blank");
 
-		document.getElementById("propertyname").innerHTML = "<a href='javascript:void(0);' onmouseover='showdeed(" + auctionproperty + ");' onmouseout='hidedeed();' class='statscellcolor'>" + s.name + "</a>";
+		document.getElementById("propertyname").innerHTML = "<a href='javascript:void(0);' onmouseover='showdeed(" + auctionproperty + ");' onmouseout='hidedeed();' class='statscellcolor' style='color:#38bdf8;text-decoration:none;font-weight:bold;'>【" + s.name + "】</a>";
 		document.getElementById("highestbid").innerHTML = "0";
-		document.getElementById("highestbidder").innerHTML = "N/A";
+		document.getElementById("highestbidder").innerHTML = "暂无";
 		document.getElementById("currentbidder").innerHTML = player[currentbidder].name;
 		document.getElementById("bid").onkeydown = function (e) {
 			var key = 0;
@@ -121,30 +168,20 @@ function Game() {
 				isShift = e.shiftKey;
 			}
 
-			if (isNaN(key)) {
-				return true;
-			}
-
+			if (isNaN(key)) return true;
 			if (key === 13) {
 				game.auctionBid();
 				return false;
 			}
-
-			// Allow backspace, tab, delete, arrow keys, or if control was pressed, respectively.
 			if (key === 8 || key === 9 || key === 46 || (key >= 35 && key <= 40) || isCtrl) {
 				return true;
 			}
-
-			if (isShift) {
-				return false;
-			}
-
-			// Only allow number keys.
+			if (isShift) return false;
 			return (key >= 48 && key <= 57) || (key >= 96 && key <= 105);
 		};
 
 		document.getElementById("bid").onfocus = function () {
-			this.style.color = "black";
+			this.style.color = "white";
 			if (isNaN(this.value)) {
 				this.value = "";
 			}
@@ -153,7 +190,7 @@ function Game() {
 		updateMoney();
 
 		if (!player[currentbidder].human) {
-			currentbidder = turn; // auctionPass advances currentbidder.
+			currentbidder = turn;
 			this.auctionPass();
 		}
 		return true;
@@ -182,17 +219,14 @@ function Game() {
 
 					if (bid === -1 || highestbid >= p.money) {
 						p.bidding = false;
-
-						window.alert(p.name + " exited the auction.");
+						addAlert("玩家 " + p.name + " 退出了拍卖。");
 						continue;
-
 					} else if (bid === 0) {
-						window.alert(p.name + " passed.");
+						addAlert("玩家 " + p.name + " 放弃加价。");
 						continue;
-
 					} else if (bid > 0) {
 						this.auctionBid(bid);
-						window.alert(p.name + " bid $" + bid + ".");
+						addAlert("玩家 " + p.name + " 出价 $" + bid + "。");
 						continue;
 					}
 					return;
@@ -200,42 +234,39 @@ function Game() {
 					break;
 				}
 			}
-
 		}
 
 		document.getElementById("currentbidder").innerHTML = player[currentbidder].name;
 		document.getElementById("bid").value = "";
-		document.getElementById("bid").style.color = "black";
+		document.getElementById("bid").style.color = "white";
 	};
 
 	this.auctionBid = function(bid) {
 		bid = bid || parseInt(document.getElementById("bid").value, 10);
 
 		if (bid === "" || bid === null) {
-			document.getElementById("bid").value = "Please enter a bid.";
-			document.getElementById("bid").style.color = "red";
+			document.getElementById("bid").value = "请输入出价金额。";
+			document.getElementById("bid").style.color = "#f87171";
 		} else if (isNaN(bid)) {
-			document.getElementById("bid").value = "Your bid must be a number.";
-			document.getElementById("bid").style.color = "red";
+			document.getElementById("bid").value = "出价必须为有效数字。";
+			document.getElementById("bid").style.color = "#f87171";
 		} else {
-
 			if (bid > player[currentbidder].money) {
-				document.getElementById("bid").value = "You don't have enough money to bid $" + bid + ".";
-				document.getElementById("bid").style.color = "red";
+				document.getElementById("bid").value = "资金不足！无法出价 $" + bid + "。";
+				document.getElementById("bid").style.color = "#f87171";
 			} else if (bid > highestbid) {
 				highestbid = bid;
 				document.getElementById("highestbid").innerHTML = parseInt(bid, 10);
 				highestbidder = currentbidder;
 				document.getElementById("highestbidder").innerHTML = player[highestbidder].name;
-
 				document.getElementById("bid").focus();
 
 				if (player[currentbidder].human) {
 					this.auctionPass();
 				}
 			} else {
-				document.getElementById("bid").value = "Your bid must be greater than highest bid. ($" + highestbid + ")";
-				document.getElementById("bid").style.color = "red";
+				document.getElementById("bid").value = "出价必须高于当前最高价 ($" + highestbid + ")。";
+				document.getElementById("bid").style.color = "#f87171";
 			}
 		}
 	};
@@ -245,22 +276,14 @@ function Game() {
 		this.auctionPass();
 	};
 
-
-
-	// Trade functions:
-
-
-
+	// 交易功能 (Trade functions):
 	var currentInitiator;
 	var currentRecipient;
-
-	// Define event handlers:
 
 	var tradeMoneyOnKeyDown = function (e) {
 		var key = 0;
 		var isCtrl = false;
 		var isShift = false;
-
 		if (window.event) {
 			key = window.event.keyCode;
 			isCtrl = window.event.ctrlKey;
@@ -270,30 +293,15 @@ function Game() {
 			isCtrl = e.ctrlKey;
 			isShift = e.shiftKey;
 		}
-
-		if (isNaN(key)) {
-			return true;
-		}
-
-		if (key === 13) {
-			return false;
-		}
-
-		// Allow backspace, tab, delete, arrow keys, or if control was pressed, respectively.
-		if (key === 8 || key === 9 || key === 46 || (key >= 35 && key <= 40) || isCtrl) {
-			return true;
-		}
-
-		if (isShift) {
-			return false;
-		}
-
-		// Only allow number keys.
+		if (isNaN(key)) return true;
+		if (key === 13) return false;
+		if (key === 8 || key === 9 || key === 46 || (key >= 35 && key <= 40) || isCtrl) return true;
+		if (isShift) return false;
 		return (key >= 48 && key <= 57) || (key >= 96 && key <= 105);
 	};
 
 	var tradeMoneyOnFocus = function () {
-		this.style.color = "black";
+		this.style.color = "#fff";
 		if (isNaN(this.value) || this.value === "0") {
 			this.value = "";
 		}
@@ -306,49 +314,29 @@ function Game() {
 		$("#rejecttradebutton").hide();
 
 		var amount = this.value;
-
 		if (isNaN(amount)) {
-			this.value = "This value must be a number.";
-			this.style.color = "red";
+			this.value = "必须为数字金额";
+			this.style.color = "#f87171";
 			return false;
 		}
-
 		amount = Math.round(amount) || 0;
 		this.value = amount;
-
 		if (amount < 0) {
-			this.value = "This value must be greater than 0.";
-			this.style.color = "red";
+			this.value = "必须大于等于 0";
+			this.style.color = "#f87171";
 			return false;
 		}
-
 		return true;
 	};
 
-	document.getElementById("trade-leftp-money").onkeydown = tradeMoneyOnKeyDown;
-	document.getElementById("trade-rightp-money").onkeydown = tradeMoneyOnKeyDown;
-	document.getElementById("trade-leftp-money").onfocus = tradeMoneyOnFocus;
-	document.getElementById("trade-rightp-money").onfocus = tradeMoneyOnFocus;
-	document.getElementById("trade-leftp-money").onchange = tradeMoneyOnChange;
-	document.getElementById("trade-rightp-money").onchange = tradeMoneyOnChange;
-
 	var resetTrade = function(initiator, recipient, allowRecipientToBeChanged) {
-		var currentSquare;
-		var currentTableRow;
-		var currentTableCell;
-		var currentTableCellCheckbox;
-		var nameSelect;
-		var currentOption;
-		var allGroupUninproved;
-		var currentName;
+		var currentSquare, currentTableRow, currentTableCell, currentTableCellCheckbox, nameSelect, currentOption, allGroupUninproved;
 
 		var tableRowOnClick = function(e) {
 			var checkboxElement = this.firstChild.firstChild;
-
 			if (checkboxElement !== e.srcElement) {
 				checkboxElement.checked = !checkboxElement.checked;
 			}
-
 			$("#proposetradebutton").show();
 			$("#canceltradebutton").show();
 			$("#accepttradebutton").hide();
@@ -361,63 +349,38 @@ function Game() {
 		currentInitiator = initiator;
 		currentRecipient = recipient;
 
-		// Empty elements.
-		while (initiatorProperty.lastChild) {
-			initiatorProperty.removeChild(initiatorProperty.lastChild);
-		}
-
-		while (recipientProperty.lastChild) {
-			recipientProperty.removeChild(recipientProperty.lastChild);
-		}
+		while (initiatorProperty.lastChild) initiatorProperty.removeChild(initiatorProperty.lastChild);
+		while (recipientProperty.lastChild) recipientProperty.removeChild(recipientProperty.lastChild);
 
 		var initiatorSideTable = document.createElement("table");
 		var recipientSideTable = document.createElement("table");
 
-
 		for (var i = 0; i < 40; i++) {
 			currentSquare = square[i];
-
-			// A property cannot be traded if any properties in its group have been improved.
-			if (currentSquare.house > 0 || currentSquare.groupNumber === 0) {
-				continue;
-			}
+			if (currentSquare.house > 0 || currentSquare.groupNumber === 0) continue;
 
 			allGroupUninproved = true;
 			var max = currentSquare.group.length;
 			for (var j = 0; j < max; j++) {
-
 				if (square[currentSquare.group[j]].house > 0) {
 					allGroupUninproved = false;
 					break;
 				}
 			}
+			if (!allGroupUninproved) continue;
 
-			if (!allGroupUninproved) {
-				continue;
-			}
-
-			// Offered properties.
 			if (currentSquare.owner === initiator.index) {
 				currentTableRow = initiatorSideTable.appendChild(document.createElement("tr"));
 				currentTableRow.onclick = tableRowOnClick;
-
 				currentTableCell = currentTableRow.appendChild(document.createElement("td"));
 				currentTableCell.className = "propertycellcheckbox";
 				currentTableCellCheckbox = currentTableCell.appendChild(document.createElement("input"));
 				currentTableCellCheckbox.type = "checkbox";
 				currentTableCellCheckbox.id = "tradeleftcheckbox" + i;
-				currentTableCellCheckbox.title = "Check this box to include " + currentSquare.name + " in the trade.";
 
 				currentTableCell = currentTableRow.appendChild(document.createElement("td"));
 				currentTableCell.className = "propertycellcolor";
 				currentTableCell.style.backgroundColor = currentSquare.color;
-
-				if (currentSquare.groupNumber == 1 || currentSquare.groupNumber == 2) {
-					currentTableCell.style.borderColor = "grey";
-				} else {
-					currentTableCell.style.borderColor = currentSquare.color;
-				}
-
 				currentTableCell.propertyIndex = i;
 				currentTableCell.onmouseover = function() {showdeed(this.propertyIndex);};
 				currentTableCell.onmouseout = hidedeed;
@@ -425,33 +388,23 @@ function Game() {
 				currentTableCell = currentTableRow.appendChild(document.createElement("td"));
 				currentTableCell.className = "propertycellname";
 				if (currentSquare.mortgage) {
-					currentTableCell.title = "Mortgaged";
+					currentTableCell.title = "已抵押";
 					currentTableCell.style.color = "grey";
 				}
 				currentTableCell.textContent = currentSquare.name;
 
-			// Requested properties.
 			} else if (currentSquare.owner === recipient.index) {
 				currentTableRow = recipientSideTable.appendChild(document.createElement("tr"));
 				currentTableRow.onclick = tableRowOnClick;
-
 				currentTableCell = currentTableRow.appendChild(document.createElement("td"));
 				currentTableCell.className = "propertycellcheckbox";
 				currentTableCellCheckbox = currentTableCell.appendChild(document.createElement("input"));
 				currentTableCellCheckbox.type = "checkbox";
 				currentTableCellCheckbox.id = "traderightcheckbox" + i;
-				currentTableCellCheckbox.title = "Check this box to include " + currentSquare.name + " in the trade.";
 
 				currentTableCell = currentTableRow.appendChild(document.createElement("td"));
 				currentTableCell.className = "propertycellcolor";
 				currentTableCell.style.backgroundColor = currentSquare.color;
-
-				if (currentSquare.groupNumber == 1 || currentSquare.groupNumber == 2) {
-					currentTableCell.style.borderColor = "grey";
-				} else {
-					currentTableCell.style.borderColor = currentSquare.color;
-				}
-
 				currentTableCell.propertyIndex = i;
 				currentTableCell.onmouseover = function() {showdeed(this.propertyIndex);};
 				currentTableCell.onmouseout = hidedeed;
@@ -459,147 +412,49 @@ function Game() {
 				currentTableCell = currentTableRow.appendChild(document.createElement("td"));
 				currentTableCell.className = "propertycellname";
 				if (currentSquare.mortgage) {
-					currentTableCell.title = "Mortgaged";
+					currentTableCell.title = "已抵押";
 					currentTableCell.style.color = "grey";
 				}
 				currentTableCell.textContent = currentSquare.name;
 			}
 		}
 
-		if (initiator.communityChestJailCard) {
-			currentTableRow = initiatorSideTable.appendChild(document.createElement("tr"));
-			currentTableRow.onclick = tableRowOnClick;
-
-			currentTableCell = currentTableRow.appendChild(document.createElement("td"));
-			currentTableCell.className = "propertycellcheckbox";
-			currentTableCellCheckbox = currentTableCell.appendChild(document.createElement("input"));
-			currentTableCellCheckbox.type = "checkbox";
-			currentTableCellCheckbox.id = "tradeleftcheckbox40";
-			currentTableCellCheckbox.title = "Check this box to include this Get Out of Jail Free Card in the trade.";
-
-			currentTableCell = currentTableRow.appendChild(document.createElement("td"));
-			currentTableCell.className = "propertycellcolor";
-			currentTableCell.style.backgroundColor = "white";
-			currentTableCell.style.borderColor = "grey";
-
-			currentTableCell = currentTableRow.appendChild(document.createElement("td"));
-			currentTableCell.className = "propertycellname";
-
-			currentTableCell.textContent = "Get Out of Jail Free Card";
-		} else if (recipient.communityChestJailCard) {
-			currentTableRow = recipientSideTable.appendChild(document.createElement("tr"));
-			currentTableRow.onclick = tableRowOnClick;
-
-			currentTableCell = currentTableRow.appendChild(document.createElement("td"));
-			currentTableCell.className = "propertycellcheckbox";
-			currentTableCellCheckbox = currentTableCell.appendChild(document.createElement("input"));
-			currentTableCellCheckbox.type = "checkbox";
-			currentTableCellCheckbox.id = "traderightcheckbox40";
-			currentTableCellCheckbox.title = "Check this box to include this Get Out of Jail Free Card in the trade.";
-
-			currentTableCell = currentTableRow.appendChild(document.createElement("td"));
-			currentTableCell.className = "propertycellcolor";
-			currentTableCell.style.backgroundColor = "white";
-			currentTableCell.style.borderColor = "grey";
-
-			currentTableCell = currentTableRow.appendChild(document.createElement("td"));
-			currentTableCell.className = "propertycellname";
-
-			currentTableCell.textContent = "Get Out of Jail Free Card";
-		}
-
-		if (initiator.chanceJailCard) {
-			currentTableRow = initiatorSideTable.appendChild(document.createElement("tr"));
-			currentTableRow.onclick = tableRowOnClick;
-
-			currentTableCell = currentTableRow.appendChild(document.createElement("td"));
-			currentTableCell.className = "propertycellcheckbox";
-			currentTableCellCheckbox = currentTableCell.appendChild(document.createElement("input"));
-			currentTableCellCheckbox.type = "checkbox";
-			currentTableCellCheckbox.id = "tradeleftcheckbox41";
-			currentTableCellCheckbox.title = "Check this box to include this Get Out of Jail Free Card in the trade.";
-
-			currentTableCell = currentTableRow.appendChild(document.createElement("td"));
-			currentTableCell.className = "propertycellcolor";
-			currentTableCell.style.backgroundColor = "white";
-			currentTableCell.style.borderColor = "grey";
-
-			currentTableCell = currentTableRow.appendChild(document.createElement("td"));
-			currentTableCell.className = "propertycellname";
-
-			currentTableCell.textContent = "Get Out of Jail Free Card";
-		} else if (recipient.chanceJailCard) {
-			currentTableRow = recipientSideTable.appendChild(document.createElement("tr"));
-			currentTableRow.onclick = tableRowOnClick;
-
-			currentTableCell = currentTableRow.appendChild(document.createElement("td"));
-			currentTableCell.className = "propertycellcheckbox";
-			currentTableCellCheckbox = currentTableCell.appendChild(document.createElement("input"));
-			currentTableCellCheckbox.type = "checkbox";
-			currentTableCellCheckbox.id = "traderightcheckbox41";
-			currentTableCellCheckbox.title = "Check this box to include this Get Out of Jail Free Card in the trade.";
-
-			currentTableCell = currentTableRow.appendChild(document.createElement("td"));
-			currentTableCell.className = "propertycellcolor";
-			currentTableCell.style.backgroundColor = "white";
-			currentTableCell.style.borderColor = "grey";
-
-			currentTableCell = currentTableRow.appendChild(document.createElement("td"));
-			currentTableCell.className = "propertycellname";
-
-			currentTableCell.textContent = "Get Out of Jail Free Card";
-		}
-
 		if (initiatorSideTable.lastChild) {
 			initiatorProperty.appendChild(initiatorSideTable);
 		} else {
-			initiatorProperty.textContent = initiator.name + " has no properties to trade.";
+			initiatorProperty.textContent = initiator.name + " 暂无可用于交易的地产。";
 		}
 
 		if (recipientSideTable.lastChild) {
 			recipientProperty.appendChild(recipientSideTable);
 		} else {
-			recipientProperty.textContent = recipient.name + " has no properties to trade.";
+			recipientProperty.textContent = recipient.name + " 暂无可用于交易的地产。";
 		}
 
 		document.getElementById("trade-leftp-name").textContent = initiator.name;
-
-		currentName = document.getElementById("trade-rightp-name");
+		var currentName = document.getElementById("trade-rightp-name");
 
 		if (allowRecipientToBeChanged && pcount > 2) {
-			// Empty element.
-			while (currentName.lastChild) {
-				currentName.removeChild(currentName.lastChild);
-			}
-
+			while (currentName.lastChild) currentName.removeChild(currentName.lastChild);
 			nameSelect = currentName.appendChild(document.createElement("select"));
 			for (var i = 1; i <= pcount; i++) {
-				if (i === initiator.index) {
-					continue;
-				}
-
+				if (i === initiator.index) continue;
 				currentOption = nameSelect.appendChild(document.createElement("option"));
 				currentOption.value = i + "";
 				currentOption.style.color = player[i].color;
 				currentOption.textContent = player[i].name;
-
-				if (i === recipient.index) {
-					currentOption.selected = "selected";
-				}
+				if (i === recipient.index) currentOption.selected = "selected";
 			}
-
 			nameSelect.onchange = function() {
 				resetTrade(currentInitiator, player[parseInt(this.value, 10)], true);
 			};
-
-			nameSelect.title = "Select a player to trade with.";
+			nameSelect.title = "选择交易对象玩家";
 		} else {
 			currentName.textContent = recipient.name;
 		}
 
 		document.getElementById("trade-leftp-money").value = "0";
 		document.getElementById("trade-rightp-money").value = "0";
-
 	};
 
 	var readTrade = function() {
@@ -607,11 +462,10 @@ function Game() {
 		var recipient = currentRecipient;
 		var property = new Array(40);
 		var money;
-		var communityChestJailCard;
-		var chanceJailCard;
+		var communityChestJailCard = 0;
+		var chanceJailCard = 0;
 
 		for (var i = 0; i < 40; i++) {
-
 			if (document.getElementById("tradeleftcheckbox" + i) && document.getElementById("tradeleftcheckbox" + i).checked) {
 				property[i] = 1;
 			} else if (document.getElementById("traderightcheckbox" + i) && document.getElementById("traderightcheckbox" + i).checked) {
@@ -621,79 +475,21 @@ function Game() {
 			}
 		}
 
-		if (document.getElementById("tradeleftcheckbox40") && document.getElementById("tradeleftcheckbox40").checked) {
-			communityChestJailCard = 1;
-		} else if (document.getElementById("traderightcheckbox40") && document.getElementById("traderightcheckbox40").checked) {
-			communityChestJailCard = -1;
-		} else {
-			communityChestJailCard = 0;
-		}
-
-		if (document.getElementById("tradeleftcheckbox41") && document.getElementById("tradeleftcheckbox41").checked) {
-			chanceJailCard = 1;
-		} else if (document.getElementById("traderightcheckbox41") && document.getElementById("traderightcheckbox41").checked) {
-			chanceJailCard = -1;
-		} else {
-			chanceJailCard = 0;
-		}
-
 		money = parseInt(document.getElementById("trade-leftp-money").value, 10) || 0;
 		money -= parseInt(document.getElementById("trade-rightp-money").value, 10) || 0;
 
-		var trade = new Trade(initiator, recipient, money, property, communityChestJailCard, chanceJailCard);
-
-		return trade;
+		return new Trade(initiator, recipient, money, property, communityChestJailCard, chanceJailCard);
 	};
 
 	var writeTrade = function(tradeObj) {
 		resetTrade(tradeObj.getInitiator(), tradeObj.getRecipient(), false);
 
 		for (var i = 0; i < 40; i++) {
-
 			if (document.getElementById("tradeleftcheckbox" + i)) {
-				document.getElementById("tradeleftcheckbox" + i).checked = false;
-				if (tradeObj.getProperty(i) === 1) {
-					document.getElementById("tradeleftcheckbox" + i).checked = true;
-				}
+				document.getElementById("tradeleftcheckbox" + i).checked = (tradeObj.getProperty(i) === 1);
 			}
-
 			if (document.getElementById("traderightcheckbox" + i)) {
-				document.getElementById("traderightcheckbox" + i).checked = false;
-				if (tradeObj.getProperty(i) === -1) {
-					document.getElementById("traderightcheckbox" + i).checked = true;
-				}
-			}
-		}
-
-		if (document.getElementById("tradeleftcheckbox40")) {
-			if (tradeObj.getCommunityChestJailCard() === 1) {
-				document.getElementById("tradeleftcheckbox40").checked = true;
-			} else {
-				document.getElementById("tradeleftcheckbox40").checked = false;
-			}
-		}
-
-		if (document.getElementById("traderightcheckbox40")) {
-			if (tradeObj.getCommunityChestJailCard() === -1) {
-				document.getElementById("traderightcheckbox40").checked = true;
-			} else {
-				document.getElementById("traderightcheckbox40").checked = false;
-			}
-		}
-
-		if (document.getElementById("tradeleftcheckbox41")) {
-			if (tradeObj.getChanceJailCard() === 1) {
-				document.getElementById("tradeleftcheckbox41").checked = true;
-			} else {
-				document.getElementById("tradeleftcheckbox41").checked = false;
-			}
-		}
-
-		if (document.getElementById("traderightcheckbox41")) {
-			if (tradeObj.getChanceJailCard() === -1) {
-				document.getElementById("traderightcheckbox41").checked = true;
-			} else {
-				document.getElementById("traderightcheckbox41").checked = false;
+				document.getElementById("traderightcheckbox" + i).checked = (tradeObj.getProperty(i) === -1);
 			}
 		}
 
@@ -702,17 +498,28 @@ function Game() {
 		} else {
 			document.getElementById("trade-rightp-money").value = (-tradeObj.getMoney()) + "";
 		}
-
 	};
 
 	this.trade = function(tradeObj) {
-		$("#board").hide();
-		$("#control").hide();
+		$("#board-container").hide();
 		$("#trade").show();
 		$("#proposetradebutton").show();
 		$("#canceltradebutton").show();
 		$("#accepttradebutton").hide();
 		$("#rejecttradebutton").hide();
+
+		var elLeftMoney = document.getElementById("trade-leftp-money");
+		var elRightMoney = document.getElementById("trade-rightp-money");
+		if (elLeftMoney) {
+			elLeftMoney.onkeydown = tradeMoneyOnKeyDown;
+			elLeftMoney.onfocus = tradeMoneyOnFocus;
+			elLeftMoney.onchange = tradeMoneyOnChange;
+		}
+		if (elRightMoney) {
+			elRightMoney.onkeydown = tradeMoneyOnKeyDown;
+			elRightMoney.onfocus = tradeMoneyOnFocus;
+			elRightMoney.onchange = tradeMoneyOnChange;
+		}
 
 		if (tradeObj instanceof Trade) {
 			writeTrade(tradeObj);
@@ -720,49 +527,25 @@ function Game() {
 		} else {
 			var initiator = player[turn];
 			var recipient = turn === 1 ? player[2] : player[1];
-
 			currentInitiator = initiator;
 			currentRecipient = recipient;
-
 			resetTrade(initiator, recipient, true);
 		}
 	};
 
-
 	this.cancelTrade = function() {
-		$("#board").show();
-		$("#control").show();
+		$("#board-container").show();
 		$("#trade").hide();
-
-
 		if (!player[turn].human) {
 			player[turn].AI.alertList = "";
 			game.next();
 		}
-
 	};
 
 	this.acceptTrade = function(tradeObj) {
-		if (isNaN(document.getElementById("trade-leftp-money").value)) {
-			document.getElementById("trade-leftp-money").value = "This value must be a number.";
-			document.getElementById("trade-leftp-money").style.color = "red";
-			return false;
-		}
+		var money, initiator, recipient;
 
-		if (isNaN(document.getElementById("trade-rightp-money").value)) {
-			document.getElementById("trade-rightp-money").value = "This value must be a number.";
-			document.getElementById("trade-rightp-money").style.color = "red";
-			return false;
-		}
-
-		var showAlerts = true;
-		var money;
-		var initiator;
-		var recipient;
-
-		if (tradeObj) {
-			showAlerts = false;
-		} else {
+		if (!tradeObj) {
 			tradeObj = readTrade();
 		}
 
@@ -770,91 +553,44 @@ function Game() {
 		initiator = tradeObj.getInitiator();
 		recipient = tradeObj.getRecipient();
 
-
 		if (money > 0 && money > initiator.money) {
-			document.getElementById("trade-leftp-money").value = initiator.name + " does not have $" + money + ".";
-			document.getElementById("trade-leftp-money").style.color = "red";
+			popup("<p>资金不足！玩家 " + initiator.name + " 无法支付交易差额 $" + money + "。</p>");
 			return false;
 		} else if (money < 0 && -money > recipient.money) {
-			document.getElementById("trade-rightp-money").value = recipient.name + " does not have $" + (-money) + ".";
-			document.getElementById("trade-rightp-money").style.color = "red";
+			popup("<p>资金不足！玩家 " + recipient.name + " 无法支付交易差额 $" + (-money) + "。</p>");
 			return false;
 		}
 
-		var isAPropertySelected = 0;
-
-		// Ensure that some properties are selected.
+		// 交换地产
 		for (var i = 0; i < 40; i++) {
-			isAPropertySelected |= tradeObj.getProperty(i);
-		}
-
-		isAPropertySelected |= tradeObj.getCommunityChestJailCard();
-		isAPropertySelected |= tradeObj.getChanceJailCard();
-
-		if (isAPropertySelected === 0) {
-			popup("<p>One or more properties must be selected in order to trade.</p>");
-
-			return false;
-		}
-
-		if (showAlerts && !confirm(initiator.name + ", are you sure you want to make this exchange with " + recipient.name + "?")) {
-			return false;
-		}
-
-		// Exchange properties
-		for (var i = 0; i < 40; i++) {
-
 			if (tradeObj.getProperty(i) === 1) {
 				square[i].owner = recipient.index;
-				addAlert(recipient.name + " received " + square[i].name + " from " + initiator.name + ".");
+				addAlert("玩家 " + recipient.name + " 从 玩家 " + initiator.name + " 获得了【" + square[i].name + "】。");
 			} else if (tradeObj.getProperty(i) === -1) {
 				square[i].owner = initiator.index;
-				addAlert(initiator.name + " received " + square[i].name + " from " + recipient.name + ".");
+				addAlert("玩家 " + initiator.name + " 从 玩家 " + recipient.name + " 获得了【" + square[i].name + "】。");
 			}
-
 		}
 
-		if (tradeObj.getCommunityChestJailCard() === 1) {
-			initiator.communityChestJailCard = false;
-			recipient.communityChestJailCard = true;
-			addAlert(recipient.name + ' received a "Get Out of Jail Free" card from ' + initiator.name + ".");
-		} else if (tradeObj.getCommunityChestJailCard() === -1) {
-			initiator.communityChestJailCard = true;
-			recipient.communityChestJailCard = false;
-			addAlert(initiator.name + ' received a "Get Out of Jail Free" card from ' + recipient.name + ".");
-		}
-
-		if (tradeObj.getChanceJailCard() === 1) {
-			initiator.chanceJailCard = false;
-			recipient.chanceJailCard = true;
-			addAlert(recipient.name + ' received a "Get Out of Jail Free" card from ' + initiator.name + ".");
-		} else if (tradeObj.getChanceJailCard() === -1) {
-			initiator.chanceJailCard = true;
-			recipient.chanceJailCard = false;
-			addAlert(initiator.name + ' received a "Get Out of Jail Free" card from ' + recipient.name + ".");
-		}
-
-		// Exchange money.
+		// 交换现金
 		if (money > 0) {
 			initiator.pay(money, recipient.index);
 			recipient.money += money;
-
-			addAlert(recipient.name + " received $" + money + " from " + initiator.name + ".");
+			addAlert("玩家 " + recipient.name + " 从 玩家 " + initiator.name + " 获得了 $" + money + " 交易补偿金。");
 		} else if (money < 0) {
 			money = -money;
-
 			recipient.pay(money, initiator.index);
 			initiator.money += money;
-
-			addAlert(initiator.name + " received $" + money + " from " + recipient.name + ".");
+			addAlert("玩家 " + initiator.name + " 从 玩家 " + recipient.name + " 获得了 $" + money + " 交易补偿金。");
 		}
 
 		updateOwned();
 		updateMoney();
 
-		$("#board").show();
-		$("#control").show();
+		$("#board-container").show();
 		$("#trade").hide();
+
+		if (window.AUDIO) window.AUDIO.play('win');
 
 		if (!player[turn].human) {
 			player[turn].AI.alertList = "";
@@ -863,18 +599,6 @@ function Game() {
 	};
 
 	this.proposeTrade = function() {
-		if (isNaN(document.getElementById("trade-leftp-money").value)) {
-			document.getElementById("trade-leftp-money").value = "This value must be a number.";
-			document.getElementById("trade-leftp-money").style.color = "red";
-			return false;
-		}
-
-		if (isNaN(document.getElementById("trade-rightp-money").value)) {
-			document.getElementById("trade-rightp-money").value = "This value must be a number.";
-			document.getElementById("trade-rightp-money").style.color = "red";
-			return false;
-		}
-
 		var tradeObj = readTrade();
 		var money = tradeObj.getMoney();
 		var initiator = tradeObj.getInitiator();
@@ -882,62 +606,66 @@ function Game() {
 		var reversedTradeProperty = [];
 
 		if (money > 0 && money > initiator.money) {
-			document.getElementById("trade-leftp-money").value = initiator.name + " does not have $" + money + ".";
-			document.getElementById("trade-leftp-money").style.color = "red";
+			popup("<p>资金不足！玩家 " + initiator.name + " 无法给付交易金额 $" + money + "。</p>");
 			return false;
 		} else if (money < 0 && -money > recipient.money) {
-			document.getElementById("trade-rightp-money").value = recipient.name + " does not have $" + (-money) + ".";
-			document.getElementById("trade-rightp-money").style.color = "red";
+			popup("<p>资金不足！玩家 " + recipient.name + " 无法给付交易金额 $" + (-money) + "。</p>");
 			return false;
 		}
 
 		var isAPropertySelected = 0;
-
-		// Ensure that some properties are selected.
 		for (var i = 0; i < 40; i++) {
 			reversedTradeProperty[i] = -tradeObj.getProperty(i);
 			isAPropertySelected |= tradeObj.getProperty(i);
 		}
 
-		isAPropertySelected |= tradeObj.getCommunityChestJailCard();
-		isAPropertySelected |= tradeObj.getChanceJailCard();
-
 		if (isAPropertySelected === 0) {
-			popup("<p>One or more properties must be selected in order to trade.</p>");
-
+			popup("<p>发起交易必须至少选择一处地产资产进行置换！</p>");
 			return false;
 		}
 
-		if (initiator.human && !confirm(initiator.name + ", are you sure you want to make this offer to " + recipient.name + "?")) {
+		if (initiator.human && !confirm("玩家 " + initiator.name + "，确定要向 玩家 " + recipient.name + " 提交此笔交易协议吗？")) {
 			return false;
 		}
 
-		var reversedTrade = new Trade(recipient, initiator, -money, reversedTradeProperty, -tradeObj.getCommunityChestJailCard(), -tradeObj.getChanceJailCard());
+		var reversedTrade = new Trade(recipient, initiator, -money, reversedTradeProperty, 0, 0);
 
 		if (recipient.human) {
+			if (window.MONOPOLY_ONLINE && MONOPOLY_ONLINE.state.isOnline) {
+				var tradePayload = {
+					initiator: initiator.index,
+					recipient: recipient.index,
+					money: money,
+					property: reversedTradeProperty,
+					communityChestJailCard: 0,
+					chanceJailCard: 0
+				};
+				MONOPOLY_ONLINE.broadcastTradePropose(tradePayload);
+				popup("<p>交易提案已通过网络发送给 玩家【" + recipient.name + "】！<br/>请等待对方审核回应...</p>");
+				$("#proposetradebutton, #canceltradebutton").hide();
+				return;
+			}
 
 			writeTrade(reversedTrade);
-
 			$("#proposetradebutton").hide();
 			$("#canceltradebutton").hide();
 			$("#accepttradebutton").show();
 			$("#rejecttradebutton").show();
 
-			addAlert(initiator.name + " initiated a trade with " + recipient.name + ".");
-			popup("<p>" + initiator.name + " has proposed a trade with you, " + recipient.name + ". You may accept, reject, or modify the offer.</p>");
+			addAlert("玩家 " + initiator.name + " 向 玩家 " + recipient.name + " 发起了交易提案。");
+			popup("<p>玩家 " + initiator.name + " 向你（" + recipient.name + "）发起了资产交易提案。你可以选择接受、拒绝或修改条件。</p>");
 		} else {
 			var tradeResponse = recipient.AI.acceptTrade(tradeObj);
 
 			if (tradeResponse === true) {
-				popup("<p>" + recipient.name + " has accepted your offer.</p>");
+				popup("<p>电脑 " + recipient.name + " 经过评估，已同意并达成了交易协议！</p>");
 				this.acceptTrade(reversedTrade);
 			} else if (tradeResponse === false) {
-				popup("<p>" + recipient.name + " has declined your offer.</p>");
+				popup("<p>电脑 " + recipient.name + " 拒绝了本次交易提议。</p>");
 				return;
 			} else if (tradeResponse instanceof Trade) {
-				popup("<p>" + recipient.name + " has proposed a counteroffer.</p>");
+				popup("<p>电脑 " + recipient.name + " 提出了修改交易的还价方案。</p>");
 				writeTrade(tradeResponse);
-
 				$("#proposetradebutton, #canceltradebutton").hide();
 				$("#accepttradebutton").show();
 				$("#rejecttradebutton").show();
@@ -945,20 +673,14 @@ function Game() {
 		}
 	};
 
-
-
-	// Bankrupcy functions:
-
-
-
-
+	// 破产与出局逻辑 (Bankruptcy functions):
 	this.eliminatePlayer = function() {
 		var p = player[turn];
+		var eliminatedIndex = p.index;
 
 		for (var i = p.index; i < pcount; i++) {
 			player[i] = player[i + 1];
 			player[i].index = i;
-
 		}
 
 		for (var i = 0; i < 40; i++) {
@@ -969,31 +691,22 @@ function Game() {
 
 		pcount--;
 		turn--;
+		window.turn = turn;
+		window.pcount = pcount;
+		if (typeof globalThis !== 'undefined') {
+			globalThis.pcount = pcount;
+			globalThis.turn = turn;
+		}
 
-		if (pcount === 2) {
-			document.getElementById("stats").style.width = "454px";
-		} else if (pcount === 3) {
-			document.getElementById("stats").style.width = "686px";
+		if (window.MONOPOLY_ONLINE && MONOPOLY_ONLINE.state.isOnline) {
+			MONOPOLY_ONLINE.handlePlayerEliminated(eliminatedIndex);
 		}
 
 		if (pcount === 1) {
 			updateMoney();
 			$("#control").hide();
-			$("#board").hide();
-			$("#refresh").show();
-
-			// // Display land counts for survey purposes.
-			// var text;
-			// for (var i = 0; i < 40; i++) {
-				// if (i === 0)
-					// text = square[i].landcount;
-				// else
-					// text += " " + square[i].landcount;
-			// }
-			// document.getElementById("refresh").innerHTML += "<br><br><div><textarea type='text' style='width: 980px;' onclick='javascript:select();' />" + text + "</textarea></div>";
-
-			popup("<p>Congratulations, " + player[1].name + ", you have won the game.</p><div>");
-
+			popup("<p>🏆 恭喜玩家 <b>" + player[1].name + "</b> 傲视群雄，赢得了本局大富翁的最终商业帝国大奖！</p>");
+			if (window.AUDIO) window.AUDIO.play('win');
 		} else {
 			play();
 		}
@@ -1001,65 +714,70 @@ function Game() {
 
 	this.bankruptcyUnmortgage = function() {
 		var p = player[turn];
-
 		if (p.creditor === 0) {
 			game.eliminatePlayer();
 			return;
 		}
 
-		var HTML = "<p>" + player[p.creditor].name + ", you may unmortgage any of the following properties, interest free, by clicking on them. Click OK when finished.</p><table>";
+		var HTML = "<p>玩家 " + player[p.creditor].name + "，你可以免收手续费直接赎回以下接收的抵押地产。点击确认继续。</p><table>";
 		var price;
 
 		for (var i = 0; i < 40; i++) {
-			sq = square[i];
+			var sq = square[i];
 			if (sq.owner == p.index && sq.mortgage) {
 				price = Math.round(sq.price * 0.5);
-
-				HTML += "<tr><td class='propertycellcolor' style='background: " + sq.color + ";";
-
-				if (sq.groupNumber == 1 || sq.groupNumber == 2) {
-					HTML += " border: 1px solid grey;";
-				} else {
-					HTML += " border: 1px solid " + sq.color + ";";
-				}
-
-				// Player already paid interest, so they can unmortgage for the mortgage price.
-				HTML += "' onmouseover='showdeed(" + i + ");' onmouseout='hidedeed();'></td><td class='propertycellname'><a href='javascript:void(0);' title='Unmortgage " + sq.name + " for $" + price + ".' onclick='if (" + price + " <= player[" + p.creditor + "].money) {player[" + p.creditor + "].pay(" + price + ", 0); square[" + i + "].mortgage = false; addAlert(\"" + player[p.creditor].name + " unmortgaged " + sq.name + " for $" + price + ".\");} this.parentElement.parentElement.style.display = \"none\";'>Unmortgage " + sq.name + " ($" + price + ")</a></td></tr>";
-
+				HTML += "<tr><td class='propertycellcolor' style='background: " + sq.color + ";' onmouseover='showdeed(" + i + ");' onmouseout='hidedeed();'></td>" +
+					"<td class='propertycellname'><a href='javascript:void(0);' onclick='if (" + price + " <= player[" + p.creditor + "].money) {player[" + p.creditor + "].pay(" + price + ", 0); square[" + i + "].mortgage = false; addAlert(\"" + player[p.creditor].name + " 赎回了解除抵押的 " + sq.name + "。\");} this.parentElement.parentElement.style.display = \"none\";'>赎回 " + sq.name + " ($" + price + ")</a></td></tr>";
 				sq.owner = p.creditor;
-
 			}
 		}
-
 		HTML += "</table>";
-
 		popup(HTML, game.eliminatePlayer);
 	};
 
-	this.resign = function() {
-		popup("<p>Are you sure you want to resign?</p>", game.bankruptcy, "Yes/No");
+	this.resign = function(immediate) {
+		var doResign = function() {
+			var p = player[turn];
+			if (p && p.money >= 0) {
+				p.money = -1;
+				p.creditor = 0;
+			}
+			game.bankruptcy();
+		};
+
+		if (immediate) {
+			doResign();
+		} else {
+			popup("<p>确定要宣告破产认输退出本局游戏吗？名下所有房产与资产将移交清算！</p>", doResign, "Yes/No");
+		}
 	};
 
-	this.bankruptcy = function() {
+	this.bankruptcy = function(fromNetwork) {
 		var p = player[turn];
+		if (!p) return;
+		if (fromNetwork && p.money >= 0) {
+			p.money = -1;
+			p.creditor = 0;
+		}
 		var pcredit = player[p.creditor];
 		var bankruptcyUnmortgageFee = 0;
 
+		if (p.money >= 0) return;
 
-		if (p.money >= 0) {
-			return;
+		addAlert("玩家 " + p.name + " 宣告破产出局！");
+		if (window.AUDIO) window.AUDIO.play('bonk');
+
+		if (window.MONOPOLY_ONLINE && MONOPOLY_ONLINE.state.isOnline && !fromNetwork) {
+			MONOPOLY_ONLINE.broadcastResign();
 		}
 
-		addAlert(p.name + " is bankrupt.");
-
-		if (p.creditor !== 0) {
+		if (p.creditor !== 0 && pcredit) {
 			pcredit.money += p.money;
 		}
 
 		for (var i = 0; i < 40; i++) {
-			sq = square[i];
+			var sq = square[i];
 			if (sq.owner == p.index) {
-				// Mortgaged properties will be tranfered by bankruptcyUnmortgage();
 				if (!sq.mortgage) {
 					sq.owner = p.creditor;
 				} else {
@@ -1067,7 +785,7 @@ function Game() {
 				}
 
 				if (sq.house > 0) {
-					if (p.creditor !== 0) {
+					if (p.creditor !== 0 && pcredit) {
 						pcredit.money += sq.houseprice * 0.5 * sq.house;
 					}
 					sq.hotel = 0;
@@ -1084,12 +802,11 @@ function Game() {
 
 		updateMoney();
 
-		if (p.chanceJailCard) {
+		if (p.chanceJailCard && pcredit) {
 			p.chanceJailCard = false;
 			pcredit.chanceJailCard = true;
 		}
-
-		if (p.communityChestJailCard) {
+		if (p.communityChestJailCard && pcredit) {
 			p.communityChestJailCard = false;
 			pcredit.communityChestJailCard = true;
 		}
@@ -1097,15 +814,14 @@ function Game() {
 		if (pcount === 2 || bankruptcyUnmortgageFee === 0 || p.creditor === 0) {
 			game.eliminatePlayer();
 		} else {
-			addAlert(pcredit.name + " paid $" + bankruptcyUnmortgageFee + " interest on the mortgaged properties received from " + p.name + ".");
-			popup("<p>" + pcredit.name + ", you must pay $" + bankruptcyUnmortgageFee + " interest on the mortgaged properties you received from " + p.name + ".</p>", function() {player[pcredit.index].pay(bankruptcyUnmortgageFee, 0); game.bankruptcyUnmortgage();});
+			addAlert("玩家 " + pcredit.name + " 为接收的破产抵押地产支付了 $" + bankruptcyUnmortgageFee + " 利息手续费。");
+			popup("<p>玩家 " + pcredit.name + "，你需为接收自 " + p.name + " 的抵押地产支付 $" + bankruptcyUnmortgageFee + " 利息手续费。</p>", function() {
+				player[pcredit.index].pay(bankruptcyUnmortgageFee, 0);
+				game.bankruptcyUnmortgage();
+			});
 		}
 	};
-
 }
-
-var game;
-
 
 function Player(name, color) {
 	this.name = name;
@@ -1119,320 +835,283 @@ function Player(name, color) {
 	this.chanceJailCard = false;
 	this.bidding = true;
 	this.human = true;
-	// this.AI = null;
 
 	this.pay = function (amount, creditor) {
 		if (amount <= this.money) {
 			this.money -= amount;
-
 			updateMoney();
-
 			return true;
 		} else {
 			this.money -= amount;
 			this.creditor = creditor;
-
 			updateMoney();
-
 			return false;
 		}
 	};
 }
 
-// paramaters:
-// initiator: object Player
-// recipient: object Player
-// money: integer, positive for offered, negative for requested
-// property: array of integers, length: 40
-// communityChestJailCard: integer, 1 means offered, -1 means requested, 0 means neither
-// chanceJailCard: integer, 1 means offered, -1 means requested, 0 means neither
 function Trade(initiator, recipient, money, property, communityChestJailCard, chanceJailCard) {
-	// For each property and get out of jail free cards, 1 means offered, -1 means requested, 0 means neither.
-
-	this.getInitiator = function() {
-		return initiator;
-	};
-
-	this.getRecipient = function() {
-		return recipient;
-	};
-
+	this.getInitiator = function() { return initiator; };
+	this.getRecipient = function() { return recipient; };
 	this.getProperty = function(index) {
-		return property[index];
+		if (typeof index === "number") return property[index];
+		return property;
 	};
-
-	this.getMoney = function() {
-		return money;
-	};
-
-	this.getCommunityChestJailCard = function() {
-		return communityChestJailCard;
-	};
-
-	this.getChanceJailCard = function() {
-		return chanceJailCard;
-	};
+	this.getMoney = function() { return money; };
+	this.getCommunityChestJailCard = function() { return communityChestJailCard; };
+	this.getChanceJailCard = function() { return chanceJailCard; };
 }
 
-var player = [];
-var pcount;
-var turn = 0, doublecount = 0;
-// Overwrite an array with numbers from one to the array's length in a random order.
-Array.prototype.randomize = function(length) {
-	length = (length || this.length);
-	var num;
-	var indexArray = [];
-
-	for (var i = 0; i < length; i++) {
-		indexArray[i] = i;
-	}
-
-	for (var i = 0; i < length; i++) {
-		// Generate random number between 0 and indexArray.length - 1.
-		num = Math.floor(Math.random() * indexArray.length);
-		this[i] = indexArray[num] + 1;
-
-		indexArray.splice(num, 1);
-	}
-};
-
-// function show(element) {
-	// // Element may be an HTML element or the id of one passed as a string.
-	// if (element.constructor == String) {
-		// element = document.getElementById(element);
-	// }
-
-	// if (element.tagName == "INPUT" || element.tagName == "SPAN" || element.tagName == "LABEL") {
-		// element.style.display = "inline";
-	// } else {
-		// element.style.display = "block";
-	// }
-// }
-
-// function hide(element) {
-	// // Element may be an HTML element or the id of one passed as a string.
-	// if (element.constructor == String) {
-		// document.getElementById(element).style.display = "none";
-	// } else {
-		// element.style.display = "none";
-	// }
-// }
-
 function addAlert(alertText) {
-	$alert = $("#alert");
+	var $alert = $("#alert");
+	if (!$alert.length) return;
 
-	$(document.createElement("div")).text(alertText).appendTo($alert);
+	var item = document.createElement("div");
+	item.className = "alert-item";
+	item.textContent = alertText;
+	$alert.append(item);
 
-	// Animate scrolling down alert element.
-	$alert.stop().animate({"scrollTop": $alert.prop("scrollHeight")}, 1000);
+	// 平滑滚动到底部
+	$alert.stop().animate({"scrollTop": $alert.prop("scrollHeight")}, 300);
 
-	if (!player[turn].human) {
+	if (player[turn] && !player[turn].human && player[turn].AI) {
 		player[turn].AI.alertList += "<div>" + alertText + "</div>";
 	}
 }
 
 function popup(HTML, action, option) {
 	document.getElementById("popuptext").innerHTML = HTML;
-	document.getElementById("popup").style.width = "300px";
-	document.getElementById("popup").style.top = "0px";
-	document.getElementById("popup").style.left = "0px";
 
 	if (!option && typeof action === "string") {
 		option = action;
 	}
-
 	option = option ? option.toLowerCase() : "";
-
 	if (typeof action !== "function") {
 		action = null;
 	}
 
-	// Yes/No
 	if (option === "yes/no") {
-		document.getElementById("popuptext").innerHTML += "<div><input type=\"button\" value=\"Yes\" id=\"popupyes\" /><input type=\"button\" value=\"No\" id=\"popupno\" /></div>";
+		document.getElementById("popuptext").innerHTML += "<div style='margin-top: 14px; display: flex; gap: 10px; justify-content: center;'>" +
+			"<input type='button' class='btn-action' value='确认 (是)' id='popupyes' />" +
+			"<input type='button' class='btn-action danger' value='取消 (否)' id='popupno' />" +
+			"</div>";
 
 		$("#popupyes, #popupno").on("click", function() {
 			$("#popupwrap").hide();
-			$("#popupbackground").fadeOut(400);
+			$("#popupbackground").fadeOut(250);
 		});
-
 		$("#popupyes").on("click", action);
 
-	// Ok
 	} else if (option !== "blank") {
-		$("#popuptext").append("<div><input type='button' value='OK' id='popupclose' /></div>");
+		$("#popuptext").append("<div style='margin-top: 14px; text-align: center;'><input type='button' class='btn-action' value='我知道了' id='popupclose' /></div>");
 		$("#popupclose").focus();
 
 		$("#popupclose").on("click", function() {
 			$("#popupwrap").hide();
-			$("#popupbackground").fadeOut(400);
+			$("#popupbackground").fadeOut(250);
 		}).on("click", action);
-
 	}
 
-	// Show using animation.
-	$("#popupbackground").fadeIn(400, function() {
+	$("#popupbackground").fadeIn(250, function() {
 		$("#popupwrap").show();
 	});
-
 }
 
-
 function updatePosition() {
-	// Reset borders
-	document.getElementById("jail").style.border = "1px solid black";
-	document.getElementById("jailpositionholder").innerHTML = "";
+	var jailEl = document.getElementById("jail");
+	if (jailEl) jailEl.style.border = "1.5px solid rgba(255,255,255,0.3)";
+	var jailHolder = document.getElementById("jailpositionholder");
+	if (jailHolder) jailHolder.innerHTML = "";
+
 	for (var i = 0; i < 40; i++) {
-		document.getElementById("cell" + i).style.border = "1px solid black";
-		document.getElementById("cell" + i + "positionholder").innerHTML = "";
-
+		var cell = document.getElementById("cell" + i);
+		if (cell) cell.style.border = "1px solid var(--cell-border)";
+		var holder = document.getElementById("cell" + i + "positionholder");
+		if (holder) holder.innerHTML = "";
 	}
 
-	var sq, left, top;
-
+	// 渲染棋盘上各个格子中的玩家霓虹棋子
 	for (var x = 0; x < 40; x++) {
-		sq = square[x];
-		left = 0;
-		top = 0;
+		var left = 4;
+		var top = 4;
 
-		for (var y = turn; y <= pcount; y++) {
-
-			if (player[y].position == x && !player[y].jail) {
-
-				document.getElementById("cell" + x + "positionholder").innerHTML += "<div class='cell-position' title='" + player[y].name + "' style='background-color: " + player[y].color + "; left: " + left + "px; top: " + top + "px;'></div>";
-				if (left == 36) {
-					left = 0;
-					top = 12;
-				} else
-					left += 12;
-			}
-		}
-
-		for (var y = 1; y < turn; y++) {
-
-			if (player[y].position == x && !player[y].jail) {
-				document.getElementById("cell" + x + "positionholder").innerHTML += "<div class='cell-position' title='" + player[y].name + "' style='background-color: " + player[y].color + "; left: " + left + "px; top: " + top + "px;'></div>";
-				if (left == 36) {
-					left = 0;
-					top = 12;
-				} else
-					left += 12;
+		for (var y = 1; y <= pcount; y++) {
+			var py = player[y];
+			if (py && py.position === x && !py.jail) {
+				var holder = document.getElementById("cell" + x + "positionholder");
+				if (holder) {
+					var isCur = (turn === y);
+					holder.innerHTML += "<div class='cell-position' title='" + py.name + "' style='background-color: " + py.color + "; box-shadow: 0 0 " + (isCur ? "10px #fff" : "5px " + py.color) + "; left: " + left + "px; top: " + top + "px;'>" + y + "</div>";
+					left += 16;
+					if (left >= 48) {
+						left = 4;
+						top += 16;
+					}
+				}
 			}
 		}
 	}
 
-	left = 0;
-	top = 53;
-	for (var i = turn; i <= pcount; i++) {
-		if (player[i].jail) {
-			document.getElementById("jailpositionholder").innerHTML += "<div class='cell-position' title='" + player[i].name + "' style='background-color: " + player[i].color + "; left: " + left + "px; top: " + top + "px;'></div>";
-
-			if (left === 36) {
-				left = 0;
-				top = 41;
-			} else {
-				left += 12;
+	// 渲染监狱中的棋子
+	if (jailHolder) {
+		var jLeft = 4, jTop = 4;
+		for (var i = 1; i <= pcount; i++) {
+			var pi = player[i];
+			if (pi && pi.jail) {
+				jailHolder.innerHTML += "<div class='cell-position' title='" + pi.name + "' style='background-color: " + pi.color + "; left: " + jLeft + "px; top: " + jTop + "px;'>" + i + "</div>";
+				jLeft += 16;
+				if (jLeft >= 36) {
+					jLeft = 4;
+					jTop += 16;
+				}
 			}
 		}
 	}
 
-	for (var i = 1; i < turn; i++) {
-		if (player[i].jail) {
-			document.getElementById("jailpositionholder").innerHTML += "<div class='cell-position' title='" + player[i].name + "' style='background-color: " + player[i].color + "; left: " + left + "px; top: " + top + "px;'></div>";
-			if (left === 36) {
-				left = 0;
-				top = 41;
-			} else
-				left += 12;
+	var p = player[turn];
+	if (p) {
+		if (p.jail && jailEl) {
+			jailEl.style.border = "2px solid " + p.color;
+			jailEl.style.boxShadow = "0 0 10px " + p.color;
+		} else {
+			var curCell = document.getElementById("cell" + p.position);
+			if (curCell) {
+				curCell.style.border = "2px solid " + p.color;
+				curCell.style.boxShadow = "0 0 12px " + p.color;
+			}
 		}
 	}
-
-	p = player[turn];
-
-	if (p.jail) {
-		document.getElementById("jail").style.border = "1px solid " + p.color;
-	} else {
-		document.getElementById("cell" + p.position).style.border = "1px solid " + p.color;
-	}
-
-	// for (var i=1; i <= pcount; i++) {
-	// document.getElementById("enlarge"+player[i].position+"token").innerHTML+="<img src='"+tokenArray[i].src+"' height='30' width='30' />";
-	// }
 }
 
 function updateMoney() {
 	var p = player[turn];
+	if (!p) return;
 
-	document.getElementById("pmoney").innerHTML = "$" + p.money;
+	var elPmoney = document.getElementById("pmoney");
+	if (elPmoney) elPmoney.innerHTML = "$" + p.money;
+
 	$(".money-bar-row").hide();
-
 	for (var i = 1; i <= pcount; i++) {
-		p_i = player[i];
-
+		var p_i = player[i];
 		$("#moneybarrow" + i).show();
-		document.getElementById("p" + i + "moneybar").style.border = "2px solid " + p_i.color;
-		document.getElementById("p" + i + "money").innerHTML = p_i.money;
-		document.getElementById("p" + i + "moneyname").innerHTML = p_i.name;
+		var pbar = document.getElementById("p" + i + "moneybar");
+		if (pbar) pbar.style.border = "2px solid " + p_i.color;
+		var pmoneyEl = document.getElementById("p" + i + "money");
+		if (pmoneyEl) pmoneyEl.innerHTML = p_i.money;
+		var pnameEl = document.getElementById("p" + i + "moneyname");
+		if (pnameEl) pnameEl.innerHTML = p_i.name;
 	}
 
-	if (document.getElementById("landed").innerHTML === "") {
+	if (document.getElementById("landed") && document.getElementById("landed").innerHTML === "") {
 		$("#landed").hide();
 	}
 
-	document.getElementById("quickstats").style.borderColor = p.color;
+	var quickstats = document.getElementById("quickstats");
+	if (quickstats) quickstats.style.borderColor = p.color;
 
 	if (p.money < 0) {
-		// document.getElementById("nextbutton").disabled = true;
 		$("#resignbutton").show();
 		$("#nextbutton").hide();
 	} else {
-		// document.getElementById("nextbutton").disabled = false;
 		$("#resignbutton").hide();
 		$("#nextbutton").show();
 	}
+
+	updatePlayerHud();
 }
 
-function updateDice() {
-	var die0 = game.getDie(1);
-	var die1 = game.getDie(2);
+function updatePlayerHud() {
+	var hudContainer = document.getElementById("player-hud-list");
+	if (!hudContainer) return;
+
+	var html = "";
+	for (var i = 1; i <= pcount; i++) {
+		var p_i = player[i];
+		if (!p_i) continue;
+		var isCur = (turn === i);
+		var propCount = 0;
+		for (var s = 0; s < 40; s++) {
+			if (square[s] && square[s].owner === i) propCount++;
+		}
+		var statusBadge = "";
+		if (p_i.money < 0) statusBadge = "<span class='hud-badge bankrupt'>💀 已破产</span>";
+		else if (p_i.jail) statusBadge = "<span class='hud-badge jail'>🔒 监狱</span>";
+		else if (p_i.human) statusBadge = "<span class='hud-badge'>👤 玩家</span>";
+		else statusBadge = "<span class='hud-badge ai'>🤖 电脑</span>";
+
+		var isHost = (window.MONOPOLY_ONLINE && MONOPOLY_ONLINE.state.isOnline && MONOPOLY_ONLINE.state.players[i-1] && MONOPOLY_ONLINE.state.players[i-1].role === 'host');
+		if (isHost) statusBadge = "<span class='hud-badge' style='background:rgba(245,158,11,0.2);color:#f59e0b;'>👑 房主</span>";
+
+		html += "<div class='player-hud-card " + (isCur ? "active-turn" : "") + "' style='border-top: 3px solid " + p_i.color + ";'>" +
+			"<div class='hud-avatar' style='background: " + p_i.color + "; box-shadow: 0 0 10px " + p_i.color + ";'>" + i + "</div>" +
+			"<div class='hud-meta'>" +
+				"<div class='hud-name'>" + p_i.name + " " + statusBadge + "</div>" +
+				"<div class='hud-money'>$" + p_i.money + "</div>" +
+				"<div class='hud-sub'>地产: " + propCount + " 处" + (p_i.communityChestJailCard || p_i.chanceJailCard ? " · 🎫出狱卡" : "") + "</div>" +
+			"</div>" +
+		"</div>";
+	}
+	hudContainer.innerHTML = html;
+
+	// 同步行动控制台横幅
+	var bannerAvatar = document.getElementById("turn-avatar");
+	var bannerName = document.getElementById("pname");
+	var bannerCash = document.getElementById("pmoney");
+	var curP = player[turn];
+	if (curP) {
+		if (bannerAvatar) {
+			bannerAvatar.textContent = turn;
+			bannerAvatar.style.backgroundColor = curP.color;
+			bannerAvatar.style.boxShadow = "0 0 10px " + curP.color;
+		}
+		if (bannerName) bannerName.textContent = curP.name + " 的回合";
+		if (bannerCash) bannerCash.textContent = "$" + curP.money;
+	}
+}
+
+function renderDieFace(el, val) {
+	if (!el) return;
+	el.innerHTML = "";
+	var grid = document.createElement("div");
+	grid.className = "die-pips-grid";
+
+	var pipMap = {
+		1: [4],
+		2: [0, 8],
+		3: [0, 4, 8],
+		4: [0, 2, 6, 8],
+		5: [0, 2, 4, 6, 8],
+		6: [0, 2, 3, 5, 6, 8]
+	};
+	var pips = pipMap[val] || [4];
+
+	for (var i = 0; i < 9; i++) {
+		var cell = document.createElement("div");
+		if (pips.indexOf(i) !== -1) {
+			var pip = document.createElement("div");
+			pip.className = "pip" + (val === 1 ? " red" : "");
+			cell.appendChild(pip);
+		}
+		grid.appendChild(cell);
+	}
+	el.appendChild(grid);
+}
+
+function updateDice(d0, d1) {
+	var die0 = d0 || game.getDie(1);
+	var die1 = d1 || game.getDie(2);
 
 	$("#die0").show();
 	$("#die1").show();
 
-	if (document.images) {
-		var element0 = document.getElementById("die0");
-		var element1 = document.getElementById("die1");
+	var el0 = document.getElementById("die0");
+	var el1 = document.getElementById("die1");
 
-		element0.classList.remove("die-no-img");
-		element1.classList.remove("die-no-img");
+	el0.classList.remove("die-no-img");
+	el1.classList.remove("die-no-img");
 
-		element0.title = "Die (" + die0 + " spots)";
-		element1.title = "Die (" + die1 + " spots)";
-
-		if (element0.firstChild) {
-			element0 = element0.firstChild;
-		} else {
-			element0 = element0.appendChild(document.createElement("img"));
-		}
-
-		element0.src = "images/Die_" + die0 + ".png";
-		element0.alt = die0;
-
-		if (element1.firstChild) {
-			element1 = element1.firstChild;
-		} else {
-			element1 = element1.appendChild(document.createElement("img"));
-		}
-
-		element1.src = "images/Die_" + die1 + ".png";
-		element1.alt = die0;
-	} else {
-		document.getElementById("die0").textContent = die0;
-		document.getElementById("die1").textContent = die1;
-
-		document.getElementById("die0").title = "Die";
-		document.getElementById("die1").title = "Die";
-	}
+	renderDieFace(el0, die0);
+	renderDieFace(el1, die1);
 }
 
 function updateOwned() {
@@ -1441,77 +1120,86 @@ function updateOwned() {
 	$("#option").show();
 	$("#owned").show();
 
-	var HTML = "",
-	firstproperty = -1;
-
-	var mortgagetext = "",
-	housetext = "";
+	var HTML = "", firstproperty = -1;
+	var mortgagetext = "", housetext = "";
 	var sq;
 
 	for (var i = 0; i < 40; i++) {
 		sq = square[i];
-		if (sq.groupNumber && sq.owner === 0) {
-			$("#cell" + i + "owner").hide();
-		} else if (sq.groupNumber && sq.owner > 0) {
-			var currentCellOwner = document.getElementById("cell" + i + "owner");
+		var currentCellOwner = document.getElementById("cell" + i + "owner");
+		if (sq.groupNumber && currentCellOwner) {
+			if (sq.owner === 0) {
+				currentCellOwner.style.display = "none";
+			} else {
+				currentCellOwner.style.display = "block";
+				currentCellOwner.style.backgroundColor = player[sq.owner].color;
+				currentCellOwner.style.boxShadow = "0 0 6px " + player[sq.owner].color;
+				currentCellOwner.title = "拥有者: " + player[sq.owner].name;
 
-			currentCellOwner.style.display = "block";
-			currentCellOwner.style.backgroundColor = player[sq.owner].color;
-			currentCellOwner.title = player[sq.owner].name;
+				// 棋盘格上直接直观展示房屋与酒店图标徽章
+				var bldEl = document.getElementById("cell" + i + "buildings");
+				if (!bldEl) {
+					bldEl = document.createElement("div");
+					bldEl.id = "cell" + i + "buildings";
+					bldEl.className = "cell-building-badge";
+					var anchor = document.getElementById("cell" + i + "anchor");
+					if (anchor) anchor.appendChild(bldEl);
+				}
+				if (bldEl) {
+					if (sq.hotel) {
+						bldEl.innerHTML = "🏨";
+						bldEl.style.display = "block";
+					} else if (sq.house > 0) {
+						bldEl.innerHTML = "🏠x" + sq.house;
+						bldEl.style.display = "block";
+					} else if (sq.mortgage) {
+						bldEl.innerHTML = "🔒";
+						bldEl.style.display = "block";
+					} else {
+						bldEl.style.display = "none";
+					}
+				}
+			}
 		}
 	}
 
 	for (var i = 0; i < 40; i++) {
 		sq = square[i];
 		if (sq.owner == turn) {
-
 			mortgagetext = "";
 			if (sq.mortgage) {
-				mortgagetext = "title='Mortgaged' style='color: grey;'";
+				mortgagetext = "title='已抵押' style='color: grey;'";
 			}
 
 			housetext = "";
 			if (sq.house >= 1 && sq.house <= 4) {
-				for (var x = 1; x <= sq.house; x++) {
-					housetext += "<img src='images/house.png' alt='' title='House' class='house' />";
-				}
+				housetext = " <span style='color:#10b981;font-weight:bold;'>🏠x" + sq.house + "</span>";
 			} else if (sq.hotel) {
-				housetext += "<img src='images/hotel.png' alt='' title='Hotel' class='hotel' />";
+				housetext = " <span style='color:#f59e0b;font-weight:bold;'>🏨 豪华酒店</span>";
 			}
 
 			if (HTML === "") {
-				HTML += "<table>";
+				HTML += "<table style='width:100%;border-collapse:collapse;'>";
 				firstproperty = i;
 			}
 
-			HTML += "<tr class='property-cell-row'><td class='propertycellcheckbox'><input type='checkbox' id='propertycheckbox" + i + "' /></td><td class='propertycellcolor' style='background: " + sq.color + ";";
-
-			if (sq.groupNumber == 1 || sq.groupNumber == 2) {
-				HTML += " border: 1px solid grey; width: 18px;";
-			}
-
-			HTML += "' onmouseover='showdeed(" + i + ");' onmouseout='hidedeed();'></td><td class='propertycellname' " + mortgagetext + ">" + sq.name + housetext + "</td></tr>";
+			HTML += "<tr class='property-cell-row' style='cursor:pointer;'><td class='propertycellcheckbox'><input type='checkbox' id='propertycheckbox" + i + "' /></td>" +
+				"<td class='propertycellcolor' style='background: " + sq.color + "; width: 14px; border-radius: 3px;' onmouseover='showdeed(" + i + ");' onmouseout='hidedeed();'></td>" +
+				"<td class='propertycellname' " + mortgagetext + " style='padding: 4px 8px; font-size: 12px; color: #fff;'>" + sq.name + housetext + "</td></tr>";
 		}
 	}
 
 	if (p.communityChestJailCard) {
-		if (HTML === "") {
-			firstproperty = 40;
-			HTML += "<table>";
-		}
-		HTML += "<tr class='property-cell-row'><td class='propertycellcheckbox'><input type='checkbox' id='propertycheckbox40' /></td><td class='propertycellcolor' style='background: white;'></td><td class='propertycellname'>Get Out of Jail Free Card</td></tr>";
-
+		if (HTML === "") { firstproperty = 40; HTML += "<table style='width:100%;border-collapse:collapse;'>"; }
+		HTML += "<tr class='property-cell-row'><td class='propertycellcheckbox'><input type='checkbox' id='propertycheckbox40' /></td><td class='propertycellcolor' style='background: white;'></td><td class='propertycellname'>🎫 免费出狱卡 (命运宝箱)</td></tr>";
 	}
 	if (p.chanceJailCard) {
-		if (HTML === "") {
-			firstproperty = 41;
-			HTML += "<table>";
-		}
-		HTML += "<tr class='property-cell-row'><td class='propertycellcheckbox'><input type='checkbox' id='propertycheckbox41' /></td><td class='propertycellcolor' style='background: white;'></td><td class='propertycellname'>Get Out of Jail Free Card</td></tr>";
+		if (HTML === "") { firstproperty = 41; HTML += "<table style='width:100%;border-collapse:collapse;'>"; }
+		HTML += "<tr class='property-cell-row'><td class='propertycellcheckbox'><input type='checkbox' id='propertycheckbox41' /></td><td class='propertycellcolor' style='background: white;'></td><td class='propertycellname'>🎫 免费出狱卡 (机会)</td></tr>";
 	}
 
 	if (HTML === "") {
-		HTML = p.name + ", you don't have any properties.";
+		HTML = "<div style='color:#94a3b8;font-size:12px;padding:8px;'>" + p.name + "，你名下暂未拥有任何房产地产。</div>";
 		$("#option").hide();
 	} else {
 		HTML += "</table>";
@@ -1519,234 +1207,162 @@ function updateOwned() {
 
 	document.getElementById("owned").innerHTML = HTML;
 
-	// Select previously selected property.
 	if (checkedproperty > -1 && document.getElementById("propertycheckbox" + checkedproperty)) {
 		document.getElementById("propertycheckbox" + checkedproperty).checked = true;
-	} else if (firstproperty > -1) {
+	} else if (firstproperty > -1 && document.getElementById("propertycheckbox" + firstproperty)) {
 		document.getElementById("propertycheckbox" + firstproperty).checked = true;
 	}
+
 	$(".property-cell-row").click(function() {
 		var row = this;
-
-		// Toggle check the current checkbox.
 		$(this).find(".propertycellcheckbox > input").prop("checked", function(index, val) {
 			return !val;
 		});
-
-		// Set all other checkboxes to false.
 		$(".propertycellcheckbox > input").prop("checked", function(index, val) {
-			if (!$.contains(row, this)) {
-				return false;
-			}
+			if (!$.contains(row, this)) return false;
+			return val;
 		});
-
 		updateOption();
 	});
+
 	updateOption();
 }
 
 function updateOption() {
-	$("#option").show();
-
-	var allGroupUninproved = true;
-	var allGroupUnmortgaged = true;
 	var checkedproperty = getCheckedProperty();
-
 	if (checkedproperty < 0 || checkedproperty >= 40) {
-		$("#buyhousebutton").hide();
-		$("#sellhousebutton").hide();
-		$("#mortgagebutton").hide();
-
-
-		var housesum = 32;
-		var hotelsum = 12;
-
-		for (var i = 0; i < 40; i++) {
-			s = square[i];
-			if (s.hotel == 1)
-				hotelsum--;
-			else
-				housesum -= s.house;
-		}
-
-		$("#buildings").show();
-		document.getElementById("buildings").innerHTML = "<img src='images/house.png' alt='' title='House' class='house' />:&nbsp;" + housesum + "&nbsp;&nbsp;<img src='images/hotel.png' alt='' title='Hotel' class='hotel' />:&nbsp;" + hotelsum;
-
+		$("#buyhousebutton, #sellhousebutton, #mortgagebutton").hide();
 		return;
 	}
 
-	$("#buildings").hide();
 	var sq = square[checkedproperty];
+	var p = player[sq.owner];
 
-	buyhousebutton = document.getElementById("buyhousebutton");
-	sellhousebutton = document.getElementById("sellhousebutton");
+	if (sq.groupNumber >= 3) {
+		var allGroupOwned = true;
+		var max = sq.group.length;
+		for (var i = 0; i < max; i++) {
+			if (square[sq.group[i]].owner !== sq.owner) {
+				allGroupOwned = false;
+				break;
+			}
+		}
 
-	$("#mortgagebutton").show();
-	document.getElementById("mortgagebutton").disabled = false;
-
-	if (sq.mortgage) {
-		document.getElementById("mortgagebutton").value = "Unmortgage ($" + Math.round(sq.price * 0.55) + ")";
-		document.getElementById("mortgagebutton").title = "Unmortgage " + sq.name + " for $" + Math.round(sq.price * 0.55) + ".";
-		$("#buyhousebutton").hide();
-		$("#sellhousebutton").hide();
-
-		allGroupUnmortgaged = false;
-	} else {
-		document.getElementById("mortgagebutton").value = "Mortgage ($" + (sq.price * 0.5) + ")";
-		document.getElementById("mortgagebutton").title = "Mortgage " + sq.name + " for $" + (sq.price * 0.5) + ".";
-
-		if (sq.groupNumber >= 3) {
+		if (allGroupOwned && !sq.mortgage) {
 			$("#buyhousebutton").show();
-			$("#sellhousebutton").show();
-			buyhousebutton.disabled = false;
-			sellhousebutton.disabled = false;
-
-			buyhousebutton.value = "Buy house ($" + sq.houseprice + ")";
-			sellhousebutton.value = "Sell house ($" + (sq.houseprice * 0.5) + ")";
-			buyhousebutton.title = "Buy a house for $" + sq.houseprice;
-			sellhousebutton.title = "Sell a house for $" + (sq.houseprice * 0.5);
-
-			if (sq.house == 4) {
-				buyhousebutton.value = "Buy hotel ($" + sq.houseprice + ")";
-				buyhousebutton.title = "Buy a hotel for $" + sq.houseprice;
-			}
-			if (sq.hotel == 1) {
-				$("#buyhousebutton").hide();
-				sellhousebutton.value = "Sell hotel ($" + (sq.houseprice * 0.5) + ")";
-				sellhousebutton.title = "Sell a hotel for $" + (sq.houseprice * 0.5);
-			}
-
-			var maxhouse = 0;
-			var minhouse = 5;
-
-			for (var j = 0; j < max; j++) {
-
-				if (square[currentSquare.group[j]].house > 0) {
-					allGroupUninproved = false;
-					break;
-				}
-			}
-
-			var max = sq.group.length;
-			for (var i = 0; i < max; i++) {
-				s = square[sq.group[i]];
-
-				if (s.owner !== sq.owner) {
-					buyhousebutton.disabled = true;
-					sellhousebutton.disabled = true;
-					buyhousebutton.title = "Before you can buy a house, you must own all the properties of this color-group.";
-				} else {
-
-					if (s.house > maxhouse) {
-						maxhouse = s.house;
-					}
-
-					if (s.house < minhouse) {
-						minhouse = s.house;
-					}
-
-					if (s.house > 0) {
-						allGroupUninproved = false;
-					}
-
-					if (s.mortgage) {
-						allGroupUnmortgaged = false;
-					}
-				}
-			}
-
-			if (!allGroupUnmortgaged) {
-				buyhousebutton.disabled = true;
-				buyhousebutton.title = "Before you can buy a house, you must unmortgage all the properties of this color-group.";
-			}
-
-			// Force even building
-			if (sq.house > minhouse) {
-				buyhousebutton.disabled = true;
-
-				if (sq.house == 1) {
-					buyhousebutton.title = "Before you can buy another house, the other properties of this color-group must all have one house.";
-				} else if (sq.house == 4) {
-					buyhousebutton.title = "Before you can buy a hotel, the other properties of this color-group must all have 4 houses.";
-				} else {
-					buyhousebutton.title = "Before you can buy a house, the other properties of this color-group must all have " + sq.house + " houses.";
-				}
-			}
-			if (sq.house < maxhouse) {
-				sellhousebutton.disabled = true;
-
-				if (sq.house == 1) {
-					sellhousebutton.title = "Before you can sell house, the other properties of this color-group must all have one house.";
-				} else {
-					sellhousebutton.title = "Before you can sell a house, the other properties of this color-group must all have " + sq.house + " houses.";
-				}
-			}
-
-			if (sq.house === 0 && sq.hotel === 0) {
-				$("#sellhousebutton").hide();
-
+			if (sq.house < 4) {
+				document.getElementById("buyhousebutton").value = "🏠 盖房屋 ($" + sq.houseprice + ")";
 			} else {
-				$("#mortgagebutton").hide();
-
+				document.getElementById("buyhousebutton").value = "🏨 升级酒店 ($" + sq.houseprice + ")";
 			}
-
-			// Before a property can be mortgaged or sold, all the properties of its color-group must unimproved.
-			if (!allGroupUninproved) {
-				document.getElementById("mortgagebutton").title = "Before a property can be mortgaged, all the properties of its color-group must unimproved.";
-				document.getElementById("mortgagebutton").disabled = true;
-			}
-
 		} else {
 			$("#buyhousebutton").hide();
+		}
+
+		if (sq.house > 0) {
+			$("#sellhousebutton").show();
+			document.getElementById("sellhousebutton").value = "拆售房屋 (返还 $" + (sq.houseprice * 0.5) + ")";
+		} else {
 			$("#sellhousebutton").hide();
 		}
+	} else {
+		$("#buyhousebutton").hide();
+		$("#sellhousebutton").hide();
+	}
+
+	$("#mortgagebutton").show();
+	if (sq.mortgage) {
+		document.getElementById("mortgagebutton").value = "💰 赎回地产 ($" + Math.round(sq.price * 0.55) + ")";
+	} else {
+		document.getElementById("mortgagebutton").value = "💰 抵押地产 (获 $" + Math.round(sq.price * 0.5) + ")";
+	}
+
+	var housesum = 0, hotelsum = 0;
+	for (var i = 0; i < 40; i++) {
+		if (square[i].hotel === 1) hotelsum++;
+		else housesum += square[i].house;
+	}
+	var bldEl = document.getElementById("buildings");
+	if (bldEl) {
+		bldEl.innerHTML = "<div style='font-size:11px;color:#94a3b8;margin-bottom:6px;'>市场余量：房屋 " + (32 - housesum) + "/32 · 酒店 " + (12 - hotelsum) + "/12</div>";
 	}
 }
 
 function chanceCommunityChest() {
 	var p = player[turn];
+	var isLocalTurn = true;
+	if (window.MONOPOLY_ONLINE && MONOPOLY_ONLINE.state.isOnline) {
+		isLocalTurn = (turn === MONOPOLY_ONLINE.state.mySlot) || (MONOPOLY_ONLINE.state.myRole === 'host' && !p.human);
+	}
 
-	// Community Chest
 	if (p.position === 2 || p.position === 17 || p.position === 33) {
+		if (window.MONOPOLY_ONLINE && MONOPOLY_ONLINE.state.isOnline && !isLocalTurn) {
+			return;
+		}
+
 		var communityChestIndex = communityChestCards.deck[communityChestCards.index];
-
-		// Remove the get out of jail free card from the deck.
-		if (communityChestIndex === 0) {
-			communityChestCards.deck.splice(communityChestCards.index, 1);
-		}
-
-		popup("<img src='images/community_chest_icon.png' style='height: 50px; width: 53px; float: left; margin: 8px 8px 8px 0px;' /><div style='font-weight: bold; font-size: 16px; '>Community Chest:</div><div style='text-align: justify;'>" + communityChestCards[communityChestIndex].text + "</div>", function() {
-			communityChestAction(communityChestIndex);
-		});
-
+		if (communityChestIndex === 0) communityChestCards.deck.splice(communityChestCards.index, 1);
 		communityChestCards.index++;
+		if (communityChestCards.index >= communityChestCards.deck.length) communityChestCards.index = 0;
 
-		if (communityChestCards.index >= communityChestCards.deck.length) {
-			communityChestCards.index = 0;
+		if (window.MONOPOLY_ONLINE && MONOPOLY_ONLINE.state.isOnline) {
+			MONOPOLY_ONLINE.broadcastCardDraw('communityChest', communityChestIndex);
 		}
 
-	// Chance
+		if (p.human) {
+			popup("<div style='display:flex;align-items:center;gap:10px;margin-bottom:8px;'>" +
+				"<img src='images/community_chest_icon.png' style='height: 42px; width: 44px;' />" +
+				"<div style='font-weight: 900; font-size: 16px; color: #38bdf8;'>命运宝箱 (Community Chest)</div>" +
+				"</div><div style='line-height:1.6;font-size:14px;color:#f8fafc;'>" + communityChestCards[communityChestIndex].text + "</div>", function() {
+				if (window.MONOPOLY_ONLINE && MONOPOLY_ONLINE.state.isOnline) {
+					MONOPOLY_ONLINE.broadcastCardAction('communityChest', communityChestIndex);
+				}
+				communityChestAction(communityChestIndex);
+			});
+		} else {
+			if (window.MONOPOLY_ONLINE && MONOPOLY_ONLINE.state.isOnline) {
+				MONOPOLY_ONLINE.broadcastCardAction('communityChest', communityChestIndex);
+			}
+			setTimeout(function() {
+				communityChestAction(communityChestIndex);
+			}, 600);
+		}
+
 	} else if (p.position === 7 || p.position === 22 || p.position === 36) {
-		var chanceIndex = chanceCards.deck[chanceCards.index];
-
-		// Remove the get out of jail free card from the deck.
-		if (chanceIndex === 0) {
-			chanceCards.deck.splice(chanceCards.index, 1);
+		if (window.MONOPOLY_ONLINE && MONOPOLY_ONLINE.state.isOnline && !isLocalTurn) {
+			return;
 		}
 
-		popup("<img src='images/chance_icon.png' style='height: 50px; width: 26px; float: left; margin: 8px 8px 8px 0px;' /><div style='font-weight: bold; font-size: 16px; '>Chance:</div><div style='text-align: justify;'>" + chanceCards[chanceIndex].text + "</div>", function() {
-			chanceAction(chanceIndex);
-		});
-
+		var chanceIndex = chanceCards.deck[chanceCards.index];
+		if (chanceIndex === 0) chanceCards.deck.splice(chanceCards.index, 1);
 		chanceCards.index++;
+		if (chanceCards.index >= chanceCards.deck.length) chanceCards.index = 0;
 
-		if (chanceCards.index >= chanceCards.deck.length) {
-			chanceCards.index = 0;
+		if (window.MONOPOLY_ONLINE && MONOPOLY_ONLINE.state.isOnline) {
+			MONOPOLY_ONLINE.broadcastCardDraw('chance', chanceIndex);
+		}
+
+		if (p.human) {
+			popup("<div style='display:flex;align-items:center;gap:10px;margin-bottom:8px;'>" +
+				"<img src='images/chance_icon.png' style='height: 42px; width: 22px;' />" +
+				"<div style='font-weight: 900; font-size: 16px; color: #f59e0b;'>机会 (Chance)</div>" +
+				"</div><div style='line-height:1.6;font-size:14px;color:#f8fafc;'>" + chanceCards[chanceIndex].text + "</div>", function() {
+				if (window.MONOPOLY_ONLINE && MONOPOLY_ONLINE.state.isOnline) {
+					MONOPOLY_ONLINE.broadcastCardAction('chance', chanceIndex);
+				}
+				chanceAction(chanceIndex);
+			});
+		} else {
+			if (window.MONOPOLY_ONLINE && MONOPOLY_ONLINE.state.isOnline) {
+				MONOPOLY_ONLINE.broadcastCardAction('chance', chanceIndex);
+			}
+			setTimeout(function() {
+				chanceAction(chanceIndex);
+			}, 600);
 		}
 	} else {
-		if (!p.human) {
+		if (shouldRunAi(p)) {
 			p.AI.alertList = "";
-
 			if (!p.AI.onLand()) {
 				game.next();
 			}
@@ -1755,107 +1371,91 @@ function chanceCommunityChest() {
 }
 
 function chanceAction(chanceIndex) {
-	var p = player[turn]; // This is needed for reference in action() method.
-
-	// $('#popupbackground').hide();
-	// $('#popupwrap').hide();
+	var p = player[turn];
 	chanceCards[chanceIndex].action(p);
-
 	updateMoney();
-
-	if (chanceIndex !== 15 && !p.human) {
+	if (shouldRunAi(p)) {
 		p.AI.alertList = "";
-		game.next();
+		if (!p.AI.onLand()) {
+			setTimeout(function() { game.next(); }, 500);
+		}
 	}
 }
 
 function communityChestAction(communityChestIndex) {
-	var p = player[turn]; // This is needed for reference in action() method.
-
-	// $('#popupbackground').hide();
-	// $('#popupwrap').hide();
+	var p = player[turn];
 	communityChestCards[communityChestIndex].action(p);
-
 	updateMoney();
-
-	if (communityChestIndex !== 15 && !p.human) {
+	if (shouldRunAi(p)) {
 		p.AI.alertList = "";
-		game.next();
+		if (!p.AI.onLand()) {
+			setTimeout(function() { game.next(); }, 500);
+		}
 	}
 }
 
 function addamount(amount, cause) {
 	var p = player[turn];
-
 	p.money += amount;
-
-	addAlert(p.name + " received $" + amount + " from " + cause + ".");
+	addAlert("玩家 " + p.name + " 因【" + cause + "】获得了 $" + amount + "。");
+	if (window.AUDIO) window.AUDIO.play('win');
+	updateMoney();
 }
 
 function subtractamount(amount, cause) {
 	var p = player[turn];
-
 	p.pay(amount, 0);
-
-	addAlert(p.name + " lost $" + amount + " from " + cause + ".");
+	addAlert("玩家 " + p.name + " 因【" + cause + "】支付了 $" + amount + "。");
+	updateMoney();
 }
 
 function gotojail() {
 	var p = player[turn];
-	addAlert(p.name + " was sent directly to jail.");
-	document.getElementById("landed").innerHTML = "You are in jail.";
+	addAlert("玩家 " + p.name + " 被直接送入监狱服刑！");
+	document.getElementById("landed").innerHTML = "你正在监狱中服刑。";
 
 	p.jail = true;
+	p.position = 10;
 	doublecount = 0;
+	window.doublecount = doublecount;
+	document.getElementById("nextbutton").value = "结束回合 ⏭";
 
-	document.getElementById("nextbutton").value = "End turn";
-	document.getElementById("nextbutton").title = "End turn and advance to the next player.";
-
-	if (p.human) {
-		document.getElementById("nextbutton").focus();
-	}
-
+	if (p.human) document.getElementById("nextbutton").focus();
 	updatePosition();
 	updateOwned();
 
-	if (!p.human) {
-		popup(p.AI.alertList, game.next);
+	if (shouldRunAi(p)) {
 		p.AI.alertList = "";
+		setTimeout(function() { game.next(); }, 600);
 	}
 }
 
 function gobackthreespaces() {
 	var p = player[turn];
-
 	p.position -= 3;
-
 	land();
 }
 
 function payeachplayer(amount, cause) {
 	var p = player[turn];
 	var total = 0;
-
 	for (var i = 1; i <= pcount; i++) {
 		if (i != turn) {
 			player[i].money += amount;
 			total += amount;
-			creditor = p.money >= 0 ? i : creditor;
-
-			p.pay(amount, creditor);
+			var cred = p.money >= 0 ? i : p.creditor;
+			p.pay(amount, cred);
 		}
 	}
-
-	addAlert(p.name + " lost $" + total + " from " + cause + ".");
+	addAlert("玩家 " + p.name + " 因【" + cause + "】向每位其他玩家共计支付了 $" + total + "。");
 }
 
 function collectfromeachplayer(amount, cause) {
 	var p = player[turn];
 	var total = 0;
-
 	for (var i = 1; i <= pcount; i++) {
 		if (i != turn) {
-			money = player[i].money;
+			var money = player[i].money;
 			if (money < amount) {
 				p.money += money;
 				total += money;
@@ -1867,65 +1467,42 @@ function collectfromeachplayer(amount, cause) {
 			}
 		}
 	}
-
-	addAlert(p.name + " received $" + total + " from " + cause + ".");
+	addAlert("玩家 " + p.name + " 因【" + cause + "】向其他玩家共计收取了 $" + total + " 礼金。");
+	if (window.AUDIO) window.AUDIO.play('win');
 }
 
 function advance(destination, pass) {
 	var p = player[turn];
-
 	if (typeof pass === "number") {
-		if (p.position < pass) {
-			p.position = pass;
-		} else {
-			p.position = pass;
+		if (p.position >= pass) {
 			p.money += 200;
-			addAlert(p.name + " collected a $200 salary for passing GO.");
+			addAlert("玩家 " + p.name + " 经过起点，领取了 $200 薪资！");
+			if (window.AUDIO) window.AUDIO.play('drop');
 		}
 	}
-	if (p.position < destination) {
-		p.position = destination;
-	} else {
-		p.position = destination;
+	if (p.position > destination) {
 		p.money += 200;
-		addAlert(p.name + " collected a $200 salary for passing GO.");
+		addAlert("玩家 " + p.name + " 经过起点，领取了 $200 薪资！");
+		if (window.AUDIO) window.AUDIO.play('drop');
 	}
-
+	p.position = destination;
 	land();
 }
 
 function advanceToNearestUtility() {
 	var p = player[turn];
-
-	if (p.position < 12) {
-		p.position = 12;
-	} else if (p.position >= 12 && p.position < 28) {
-		p.position = 28;
-	} else if (p.position >= 28) {
-		p.position = 12;
-		p.money += 200;
-		addAlert(p.name + " collected a $200 salary for passing GO.");
-	}
-
-	land(true);
+	if (p.position < 12) advance(12);
+	else if (p.position >= 12 && p.position < 28) advance(28);
+	else advance(12);
 }
 
 function advanceToNearestRailroad() {
 	var p = player[turn];
-
-	updatePosition();
-
-	if (p.position < 15) {
-		p.position = 15;
-	} else if (p.position >= 15 && p.position < 25) {
-		p.position = 25;
-	} else if (p.position >= 35) {
-		p.position = 5;
-		p.money += 200;
-		addAlert(p.name + " collected a $200 salary for passing GO.");
-	}
-
-	land(true);
+	if (p.position < 5) advance(5);
+	else if (p.position >= 5 && p.position < 15) advance(15);
+	else if (p.position >= 15 && p.position < 25) advance(25);
+	else if (p.position >= 25 && p.position < 35) advance(35);
+	else advance(5);
 }
 
 function streetrepairs(houseprice, hotelprice) {
@@ -1933,253 +1510,188 @@ function streetrepairs(houseprice, hotelprice) {
 	for (var i = 0; i < 40; i++) {
 		var s = square[i];
 		if (s.owner == turn) {
-			if (s.hotel == 1)
-				cost += hotelprice;
-			else
-				cost += s.house * houseprice;
+			if (s.hotel == 1) cost += hotelprice;
+			else cost += s.house * houseprice;
 		}
 	}
-
 	var p = player[turn];
-
 	if (cost > 0) {
 		p.pay(cost, 0);
-
-		// If function was called by Community Chest.
-		if (houseprice === 40) {
-			addAlert(p.name + " lost $" + cost + " to Community Chest.");
-		} else {
-			addAlert(p.name + " lost $" + cost + " to Chance.");
-		}
+		addAlert("玩家 " + p.name + " 缴纳了名下房产翻修维护费共计 $" + cost + "。");
 	}
-
 }
 
-function payfifty() {
+function payfifty(fromNetwork) {
 	var p = player[turn];
-
-	document.getElementById("jail").style.border = '1px solid black';
-	document.getElementById("cell11").style.border = '2px solid ' + p.color;
+	var jailEl = document.getElementById("jail");
+	if (jailEl) jailEl.style.border = '1.5px solid rgba(255,255,255,0.3)';
 
 	$("#landed").hide();
 	doublecount = 0;
-
 	p.jail = false;
 	p.jailroll = 0;
 	p.position = 10;
 	p.pay(50, 0);
 
-	addAlert(p.name + " paid the $50 fine to get out of jail.");
+	if (window.MONOPOLY_ONLINE && MONOPOLY_ONLINE.state.isOnline && !fromNetwork) {
+		MONOPOLY_ONLINE.broadcastBail(false);
+	}
+
+	addAlert("玩家 " + p.name + " 支付了 $50 保释金，重获自由！");
 	updateMoney();
 	updatePosition();
 }
 
-function useJailCard() {
+function useJailCard(fromNetwork) {
 	var p = player[turn];
-
-	document.getElementById("jail").style.border = '1px solid black';
-	document.getElementById("cell11").style.border = '2px solid ' + p.color;
+	var jailEl = document.getElementById("jail");
+	if (jailEl) jailEl.style.border = '1.5px solid rgba(255,255,255,0.3)';
 
 	$("#landed").hide();
 	p.jail = false;
 	p.jailroll = 0;
-
 	p.position = 10;
-
 	doublecount = 0;
 
 	if (p.communityChestJailCard) {
 		p.communityChestJailCard = false;
-
-		// Insert the get out of jail free card back into the community chest deck.
-		communityChestCards.deck.splice(communityChestCards.index, 0, 0);
-
-		communityChestCards.index++;
-
-		if (communityChestCards.index >= communityChestCards.deck.length) {
-			communityChestCards.index = 0;
-		}
+		communityChestCards.deck.push(0);
 	} else if (p.chanceJailCard) {
 		p.chanceJailCard = false;
-
-		// Insert the get out of jail free card back into the chance deck.
-		chanceCards.deck.splice(chanceCards.index, 0, 0);
-
-		chanceCards.index++;
-
-		if (chanceCards.index >= chanceCards.deck.length) {
-			chanceCards.index = 0;
-		}
+		chanceCards.deck.push(0);
 	}
 
-	addAlert(p.name + " used a \"Get Out of Jail Free\" card.");
+	if (window.MONOPOLY_ONLINE && MONOPOLY_ONLINE.state.isOnline && !fromNetwork) {
+		MONOPOLY_ONLINE.broadcastBail(true);
+	}
+
+	addAlert("玩家 " + p.name + " 使用了【免费出狱卡】，立即出狱！");
 	updateOwned();
 	updatePosition();
 }
 
-function buyHouse(index) {
+function buyHouse(index, fromNetwork) {
 	var sq = square[index];
 	var p = player[sq.owner];
-	var houseSum = 0;
-	var hotelSum = 0;
+	var houseSum = 0, hotelSum = 0;
 
-	if (p.money - sq.houseprice < 0) {
-		if (sq.house == 4) {
-			return false;
-		} else {
-			return false;
-		}
+	if (p.money - sq.houseprice < 0) return false;
 
-	} else {
-		for (var i = 0; i < 40; i++) {
-			if (square[i].hotel === 1) {
-				hotelSum++;
-			} else {
-				houseSum += square[i].house;
-			}
-		}
-
-		if (sq.house < 4) {
-			if (houseSum >= 32) {
-				return false;
-
-			} else {
-				sq.house++;
-				addAlert(p.name + " placed a house on " + sq.name + ".");
-			}
-
-		} else {
-			if (hotelSum >= 12) {
-				return;
-
-			} else {
-				sq.house = 5;
-				sq.hotel = 1;
-				addAlert(p.name + " placed a hotel on " + sq.name + ".");
-			}
-		}
-
-		p.pay(sq.houseprice, 0);
-
-		updateOwned();
-		updateMoney();
+	for (var i = 0; i < 40; i++) {
+		if (square[i].hotel === 1) hotelSum++;
+		else houseSum += square[i].house;
 	}
+
+	if (sq.house < 4) {
+		if (houseSum >= 32) return false;
+		sq.house++;
+		addAlert("玩家 " + p.name + " 在【" + sq.name + "】建造了 1 套房屋。");
+	} else {
+		if (hotelSum >= 12) return false;
+		sq.house = 5;
+		sq.hotel = 1;
+		addAlert("玩家 " + p.name + " 在【" + sq.name + "】升级建成了豪华酒店！");
+	}
+
+	p.pay(sq.houseprice, 0);
+
+	if (window.MONOPOLY_ONLINE && MONOPOLY_ONLINE.state.isOnline && !fromNetwork) {
+		MONOPOLY_ONLINE.broadcastBuild(index);
+	}
+
+	if (window.AUDIO) window.AUDIO.play('card_play');
+
+	updateOwned();
+	updateMoney();
 }
 
-function sellHouse(index) {
-	sq = square[index];
-	p = player[sq.owner];
+function sellHouse(index, fromNetwork) {
+	var sq = square[index];
+	var p = player[sq.owner];
 
 	if (sq.hotel === 1) {
 		sq.hotel = 0;
 		sq.house = 4;
-		addAlert(p.name + " sold the hotel on " + sq.name + ".");
+		addAlert("玩家 " + p.name + " 拆售了【" + sq.name + "】的豪华酒店。");
 	} else {
 		sq.house--;
-		addAlert(p.name + " sold a house on " + sq.name + ".");
+		addAlert("玩家 " + p.name + " 拆售了【" + sq.name + "】的一套房屋。");
 	}
 
 	p.money += sq.houseprice * 0.5;
+
+	if (window.MONOPOLY_ONLINE && MONOPOLY_ONLINE.state.isOnline && !fromNetwork) {
+		MONOPOLY_ONLINE.broadcastSell(index);
+	}
+
 	updateOwned();
 	updateMoney();
 }
 
 function showStats() {
-	var HTML, sq, p;
-	var mortgagetext,
-	housetext;
-	var write;
-	HTML = "<table align='center'><tr>";
+	var HTML = "<div style='font-size:18px;font-weight:900;margin-bottom:12px;color:#38bdf8;'>📊 玩家资产全景总览</div><table style='width:100%;border-collapse:collapse;'>";
+	HTML += "<tr style='background:rgba(255,255,255,0.08);color:#94a3b8;font-size:12px;'><th style='padding:6px;text-align:left;'>玩家</th><th style='padding:6px;'>现金</th><th style='padding:6px;'>房产地皮</th><th style='padding:6px;'>建筑 (房/店)</th><th style='padding:6px;'>出狱卡</th></tr>";
 
 	for (var x = 1; x <= pcount; x++) {
-		write = false;
-		p = player[x];
-		if (x == 5) {
-			HTML += "</tr><tr>";
-		}
-		HTML += "<td class='statscell' id='statscell" + x + "' style='border: 2px solid " + p.color + "' ><div class='statsplayername'>" + p.name + "</div>";
+		var p = player[x];
+		var propNames = [];
+		var houses = 0, hotels = 0;
 
 		for (var i = 0; i < 40; i++) {
-			sq = square[i];
-
-			if (sq.owner == x) {
-				mortgagetext = "",
-				housetext = "";
-
-				if (sq.mortgage) {
-					mortgagetext = "title='Mortgaged' style='color: grey;'";
-				}
-
-				if (!write) {
-					write = true;
-					HTML += "<table>";
-				}
-
-				if (sq.house == 5) {
-					housetext += "<span style='float: right; font-weight: bold;'>1&nbsp;x&nbsp;<img src='images/hotel.png' alt='' title='Hotel' class='hotel' style='float: none;' /></span>";
-				} else if (sq.house > 0 && sq.house < 5) {
-					housetext += "<span style='float: right; font-weight: bold;'>" + sq.house + "&nbsp;x&nbsp;<img src='images/house.png' alt='' title='House' class='house' style='float: none;' /></span>";
-				}
-
-				HTML += "<tr><td class='statscellcolor' style='background: " + sq.color + ";";
-
-				if (sq.groupNumber == 1 || sq.groupNumber == 2) {
-					HTML += " border: 1px solid grey;";
-				}
-
-				HTML += "' onmouseover='showdeed(" + i + ");' onmouseout='hidedeed();'></td><td class='statscellname' " + mortgagetext + ">" + sq.name + housetext + "</td></tr>";
+			var sq = square[i];
+			if (sq.owner === x) {
+				propNames.push(sq.name + (sq.mortgage ? "(抵押)" : ""));
+				if (sq.hotel) hotels++;
+				else houses += sq.house;
 			}
 		}
 
-		if (p.communityChestJailCard) {
-			if (!write) {
-				write = true;
-				HTML += "<table>";
-			}
-			HTML += "<tr><td class='statscellcolor'></td><td class='statscellname'>Get Out of Jail Free Card</td></tr>";
+		var cardText = (p.communityChestJailCard ? "命运 " : "") + (p.chanceJailCard ? "机会" : "");
+		if (!cardText) cardText = "-";
 
-		}
-		if (p.chanceJailCard) {
-			if (!write) {
-				write = true;
-				HTML += "<table>";
-			}
-			HTML += "<tr><td class='statscellcolor'></td><td class='statscellname'>Get Out of Jail Free Card</td></tr>";
-
-		}
-
-		if (!write) {
-			HTML += p.name + " dosen't have any properties.";
-		} else {
-			HTML += "</table>";
-		}
-
-		HTML += "</td>";
+		HTML += "<tr style='border-bottom:1px solid rgba(255,255,255,0.08);font-size:12px;'>" +
+			"<td style='padding:8px 6px;text-align:left;font-weight:bold;color:" + p.color + ";'>" + p.name + "</td>" +
+			"<td style='padding:8px 6px;font-weight:bold;color:#10b981;'>$" + p.money + "</td>" +
+			"<td style='padding:8px 6px;max-width:180px;font-size:11px;color:#cbd5e1;'>" + (propNames.length ? propNames.join("、") : "无") + "</td>" +
+			"<td style='padding:8px 6px;'>" + (houses ? "🏠x" + houses + " " : "") + (hotels ? "🏨x" + hotels : (houses ? "" : "-")) + "</td>" +
+			"<td style='padding:8px 6px;color:#38bdf8;'>" + cardText + "</td>" +
+			"</tr>";
 	}
-	HTML += "</tr></table><div id='titledeed'></div>";
+	HTML += "</table>";
 
 	document.getElementById("statstext").innerHTML = HTML;
-	// Show using animation.
-	$("#statsbackground").fadeIn(400, function() {
+	$("#statsbackground").fadeIn(250, function() {
 		$("#statswrap").show();
 	});
 }
 
-function showdeed(property) {
+function showdeed(property, e) {
 	var sq = square[property];
-	$("#deed").show();
+	if (!sq) return;
+	var deedEl = document.getElementById("deed");
+	if (!deedEl) return;
 
-	$("#deed-normal").hide();
-	$("#deed-mortgaged").hide();
-	$("#deed-special").hide();
+	$("#deed").show();
+	$("#deed-normal, #deed-mortgaged, #deed-special").hide();
+
+	if (e && typeof e.clientX === "number") {
+		var deedW = 240, deedH = 280;
+		var x = e.clientX + 14;
+		var y = e.clientY + 14;
+		if (x + deedW > window.innerWidth) x = e.clientX - deedW - 14;
+		if (y + deedH > window.innerHeight) y = Math.max(10, window.innerHeight - deedH - 10);
+		deedEl.style.left = Math.max(10, x) + "px";
+		deedEl.style.top = Math.max(10, y) + "px";
+	} else if (!deedEl.style.left || deedEl.style.left === "0px" || deedEl.style.left === "") {
+		deedEl.style.left = Math.max(10, Math.round((window.innerWidth - 240) / 2)) + "px";
+		deedEl.style.top = Math.max(60, Math.round((window.innerHeight - 280) / 2)) + "px";
+	}
 
 	if (sq.mortgage) {
 		$("#deed-mortgaged").show();
 		document.getElementById("deed-mortgaged-name").textContent = sq.name;
 		document.getElementById("deed-mortgaged-mortgage").textContent = (sq.price / 2);
-
 	} else {
-
 		if (sq.groupNumber >= 3) {
 			$("#deed-normal").show();
 			document.getElementById("deed-header").style.backgroundColor = sq.color;
@@ -2193,13 +1705,11 @@ function showdeed(property) {
 			document.getElementById("deed-mortgage").textContent = (sq.price / 2);
 			document.getElementById("deed-houseprice").textContent = sq.houseprice;
 			document.getElementById("deed-hotelprice").textContent = sq.houseprice;
-
 		} else if (sq.groupNumber == 2) {
 			$("#deed-special").show();
 			document.getElementById("deed-special-name").textContent = sq.name;
 			document.getElementById("deed-special-text").innerHTML = utiltext();
 			document.getElementById("deed-special-mortgage").textContent = (sq.price / 2);
-
 		} else if (sq.groupNumber == 1) {
 			$("#deed-special").show();
 			document.getElementById("deed-special-name").textContent = sq.name;
@@ -2213,259 +1723,257 @@ function hidedeed() {
 	$("#deed").hide();
 }
 
-function buy() {
+function buy(fromNetwork) {
 	var p = player[turn];
 	var property = square[p.position];
 	var cost = property.price;
 
 	if (p.money >= cost) {
 		p.pay(cost, 0);
-
 		property.owner = turn;
 		updateMoney();
-		addAlert(p.name + " bought " + property.name + " for " + property.pricetext + ".");
+		addAlert("玩家 " + p.name + " 以 " + property.pricetext + " 购买了【" + property.name + "】！");
 
+		if (window.MONOPOLY_ONLINE && MONOPOLY_ONLINE.state.isOnline && !fromNetwork) {
+			MONOPOLY_ONLINE.broadcastBuy(p.position);
+		}
+
+		if (window.AUDIO) window.AUDIO.play('card_play');
 		updateOwned();
-
 		$("#landed").hide();
-
 	} else {
-		popup("<p>" + p.name + ", you need $" + (property.price - p.money) + " more to buy " + property.name + ".</p>");
+		popup("<p>资金不足！玩家 " + p.name + " 还差 $" + (property.price - p.money) + " 才能购买【" + property.name + "】。</p>");
 	}
 }
 
-function mortgage(index) {
+function mortgage(index, fromNetwork) {
 	var sq = square[index];
 	var p = player[sq.owner];
 
-	if (sq.house > 0 || sq.hotel > 0 || sq.mortgage) {
-		return false;
-	}
+	if (sq.house > 0 || sq.hotel > 0 || sq.mortgage) return false;
 
 	var mortgagePrice = Math.round(sq.price * 0.5);
-	var unmortgagePrice = Math.round(sq.price * 0.55);
-
 	sq.mortgage = true;
 	p.money += mortgagePrice;
 
-	document.getElementById("mortgagebutton").value = "Unmortgage for $" + unmortgagePrice;
-	document.getElementById("mortgagebutton").title = "Unmortgage " + sq.name + " for $" + unmortgagePrice + ".";
+	if (window.MONOPOLY_ONLINE && MONOPOLY_ONLINE.state.isOnline && !fromNetwork) {
+		MONOPOLY_ONLINE.broadcastMortgage(index, 'mortgage');
+	}
 
-	addAlert(p.name + " mortgaged " + sq.name + " for $" + mortgagePrice + ".");
+	addAlert("玩家 " + p.name + " 抵押了【" + sq.name + "】，获得抵押款 $" + mortgagePrice + "。");
 	updateOwned();
 	updateMoney();
-
 	return true;
 }
 
-function unmortgage(index) {
+function unmortgage(index, fromNetwork) {
 	var sq = square[index];
 	var p = player[sq.owner];
 	var unmortgagePrice = Math.round(sq.price * 0.55);
-	var mortgagePrice = Math.round(sq.price * 0.5);
 
-	if (unmortgagePrice > p.money || !sq.mortgage) {
-		return false;
-	}
+	if (unmortgagePrice > p.money || !sq.mortgage) return false;
 
 	p.pay(unmortgagePrice, 0);
 	sq.mortgage = false;
-	document.getElementById("mortgagebutton").value = "Mortgage for $" + mortgagePrice;
-	document.getElementById("mortgagebutton").title = "Mortgage " + sq.name + " for $" + mortgagePrice + ".";
 
-	addAlert(p.name + " unmortgaged " + sq.name + " for $" + unmortgagePrice + ".");
+	if (window.MONOPOLY_ONLINE && MONOPOLY_ONLINE.state.isOnline && !fromNetwork) {
+		MONOPOLY_ONLINE.broadcastMortgage(index, 'unmortgage');
+	}
+
+	addAlert("玩家 " + p.name + " 支付 $" + unmortgagePrice + " 赎回了【" + sq.name + "】。");
 	updateOwned();
+	updateMoney();
 	return true;
 }
 
-
 function land(increasedRent) {
-	increasedRent = !!increasedRent; // Cast increasedRent to a boolean value. It is used for the ADVANCE TO THE NEAREST RAILROAD/UTILITY Chance cards.
-
+	increasedRent = !!increasedRent;
 	var p = player[turn];
 	var s = square[p.position];
-
 	var die1 = game.getDie(1);
 	var die2 = game.getDie(2);
 
 	$("#landed").show();
-	document.getElementById("landed").innerHTML = "You landed on " + s.name + ".";
+	document.getElementById("landed").innerHTML = "你到达了【" + s.name + "】。";
 	s.landcount++;
-	addAlert(p.name + " landed on " + s.name + ".");
+	addAlert("玩家 " + p.name + " 到达了【" + s.name + "】。");
 
-	// Allow player to buy the property on which he landed.
+	// 允许玩家购买停留的地产
 	if (s.price !== 0 && s.owner === 0) {
-
 		if (!p.human) {
-
-			if (p.AI.buyProperty(p.position)) {
+			if (shouldRunAi(p) && p.AI && p.AI.buyProperty(p.position)) {
 				buy();
 			}
 		} else {
-			document.getElementById("landed").innerHTML = "<div>You landed on <a href='javascript:void(0);' onmouseover='showdeed(" + p.position + ");' onmouseout='hidedeed();' class='statscellcolor'>" + s.name + "</a>.<input type='button' onclick='buy();' value='Buy ($" + s.price + ")' title='Buy " + s.name + " for " + s.pricetext + ".'/></div>";
+			var isLocalTurn = true;
+			if (window.MONOPOLY_ONLINE && MONOPOLY_ONLINE.state.isOnline) {
+				isLocalTurn = (turn === MONOPOLY_ONLINE.state.mySlot);
+			}
+			if (isLocalTurn) {
+				document.getElementById("landed").innerHTML = "<div>你到达了 <a href='javascript:void(0);' onmouseover='showdeed(" + p.position + ");' onmouseout='hidedeed();' class='statscellcolor' style='color:#38bdf8;text-decoration:none;font-weight:bold;'>【" + s.name + "】</a>。" +
+					"<input type='button' class='btn-action' onclick='buy();' value='购买地皮 (" + s.pricetext + ")' style='margin-left:8px;' /></div>";
+			} else {
+				document.getElementById("landed").innerHTML = "<div>玩家【" + p.name + "】到达了 <a href='javascript:void(0);' onmouseover='showdeed(" + p.position + ");' onmouseout='hidedeed();' class='statscellcolor' style='color:#38bdf8;text-decoration:none;font-weight:bold;'>【" + s.name + "】</a>，正在考虑是否购买...</div>";
+			}
 		}
-
-
 		game.addPropertyToAuctionQueue(p.position);
 	}
 
-	// Collect rent
+	// 收取租金
 	if (s.owner !== 0 && s.owner != turn && !s.mortgage) {
 		var groupowned = true;
 		var rent;
 
-		// Railroads
 		if (p.position == 5 || p.position == 15 || p.position == 25 || p.position == 35) {
-			if (increasedRent) {
-				rent = 25;
-			} else {
-				rent = 12.5;
-			}
+			rent = increasedRent ? 25 : 12.5;
+			if (s.owner == square[5].owner) rent *= 2;
+			if (s.owner == square[15].owner) rent *= 2;
+			if (s.owner == square[25].owner) rent *= 2;
+			if (s.owner == square[35].owner) rent *= 2;
 
-			if (s.owner == square[5].owner) {
-				rent *= 2;
-			}
-			if (s.owner == square[15].owner) {
-				rent *= 2;
-			}
-			if (s.owner == square[25].owner) {
-				rent *= 2;
-			}
-			if (s.owner == square[35].owner) {
-				rent *= 2;
-			}
-
-		} else if (p.position === 12) {
-			if (increasedRent || square[28].owner == s.owner) {
-				rent = (die1 + die2) * 10;
-			} else {
-				rent = (die1 + die2) * 4;
-			}
-
-		} else if (p.position === 28) {
-			if (increasedRent || square[12].owner == s.owner) {
+		} else if (p.position === 12 || p.position === 28) {
+			if (increasedRent || square[12].owner == square[28].owner) {
 				rent = (die1 + die2) * 10;
 			} else {
 				rent = (die1 + die2) * 4;
 			}
 
 		} else {
-
 			for (var i = 0; i < 40; i++) {
-				sq = square[i];
+				var sq = square[i];
 				if (sq.groupNumber == s.groupNumber && sq.owner != s.owner) {
 					groupowned = false;
 				}
 			}
-
 			if (!groupowned) {
 				rent = s.baserent;
 			} else {
-				if (s.house === 0) {
-					rent = s.baserent * 2;
-				} else {
-					rent = s["rent" + s.house];
-				}
+				rent = (s.house === 0) ? (s.baserent * 2) : s["rent" + s.house];
 			}
 		}
 
-		addAlert(p.name + " paid $" + rent + " rent to " + player[s.owner].name + ".");
+		addAlert("玩家 " + p.name + " 向 玩家 " + player[s.owner].name + " 支付了 $" + rent + " 过路租金。");
 		p.pay(rent, s.owner);
 		player[s.owner].money += rent;
 
-		document.getElementById("landed").innerHTML = "You landed on " + s.name + ". " + player[s.owner].name + " collected $" + rent + " rent.";
+		var isLocalTurn = true;
+		if (window.MONOPOLY_ONLINE && MONOPOLY_ONLINE.state.isOnline) {
+			isLocalTurn = (turn === MONOPOLY_ONLINE.state.mySlot);
+		}
+		if (isLocalTurn) {
+			document.getElementById("landed").innerHTML = "你到达了【" + s.name + "】。玩家 " + player[s.owner].name + " 向你收取了 $" + rent + " 过路租金。";
+		} else {
+			document.getElementById("landed").innerHTML = "玩家【" + p.name + "】到达了【" + s.name + "】，向 玩家 " + player[s.owner].name + " 支付了 $" + rent + " 过路租金。";
+		}
+		if (window.AUDIO) window.AUDIO.play('slice');
+
 	} else if (s.owner > 0 && s.owner != turn && s.mortgage) {
-		document.getElementById("landed").innerHTML = "You landed on " + s.name + ". Property is mortgaged; no rent was collected.";
+		document.getElementById("landed").innerHTML = "到达了【" + s.name + "】。该地产处于抵押中，免收过路费。";
 	}
 
-	// City Tax
-	if (p.position === 4) {
-		citytax();
-	}
-
-	// Go to jail. Go directly to Jail. Do not pass GO. Do not collect $200.
+	if (p.position === 4) citytax();
 	if (p.position === 30) {
 		updateMoney();
 		updatePosition();
-
-		if (p.human) {
-			popup("<div>Go to jail. Go directly to Jail. Do not pass GO. Do not collect $200.</div>", gotojail);
-		} else {
-			gotojail();
+		var isLocalTurn = true;
+		if (window.MONOPOLY_ONLINE && MONOPOLY_ONLINE.state.isOnline) {
+			isLocalTurn = (turn === MONOPOLY_ONLINE.state.mySlot);
 		}
-
+		if (p.human && isLocalTurn) popup("<div>直接前往监狱！不得经过起点，不领 $200 薪资。</div>", gotojail);
+		else gotojail();
 		return;
 	}
-
-	// Luxury Tax
-	if (p.position === 38) {
-		luxurytax();
-	}
+	if (p.position === 38) luxurytax();
 
 	updateMoney();
 	updatePosition();
 	updateOwned();
 
-	if (!p.human) {
-		popup(p.AI.alertList, chanceCommunityChest);
-		p.AI.alertList = "";
+	if (!p.human && p.AI) {
+		if (shouldRunAi(p)) {
+			chanceCommunityChest();
+		}
 	} else {
 		chanceCommunityChest();
 	}
 }
 
-function roll() {
+function roll(forcedDie1, forcedDie2, fromNetwork) {
 	var p = player[turn];
 
-	$("#option").hide();
+	if (window.MONOPOLY_ONLINE && MONOPOLY_ONLINE.state.isOnline && !fromNetwork) {
+		var isMyTurn = (turn === MONOPOLY_ONLINE.state.mySlot);
+		var isAi = !p.human;
+		if (!isMyTurn && !(isAi && MONOPOLY_ONLINE.state.myRole === 'host')) {
+			return;
+		}
+	}
+
+	$("#option, #manage").hide();
 	$("#buy").show();
-	$("#manage").hide();
 
 	if (p.human) {
 		document.getElementById("nextbutton").focus();
 	}
-	document.getElementById("nextbutton").value = "End turn";
-	document.getElementById("nextbutton").title = "End turn and advance to the next player.";
+	document.getElementById("nextbutton").value = "结束回合 ⏭";
 
-	game.rollDice();
+	if (forcedDie1 && forcedDie2) {
+		game.setDice(forcedDie1, forcedDie2);
+	} else {
+		game.rollDice();
+	}
+
 	var die1 = game.getDie(1);
 	var die2 = game.getDie(2);
 
+	if (window.MONOPOLY_ONLINE && MONOPOLY_ONLINE.state.isOnline && !fromNetwork) {
+		MONOPOLY_ONLINE.broadcastRoll(die1, die2);
+	}
+
 	doublecount++;
 
+	// 播放骰子滚动动画与拟真音效
+	var el0 = document.getElementById("die0");
+	var el1 = document.getElementById("die1");
+	if (el0) el0.classList.add("rolling");
+	if (el1) el1.classList.add("rolling");
+
+	if (window.AUDIO) window.AUDIO.play('dice_roll');
+
+	setTimeout(function() {
+		if (el0) el0.classList.remove("rolling");
+		if (el1) el1.classList.remove("rolling");
+		if (window.AUDIO) window.AUDIO.play('cup_slam');
+	}, 350);
+
 	if (die1 == die2) {
-		addAlert(p.name + " rolled " + (die1 + die2) + " - doubles.");
+		addAlert("玩家 " + p.name + " 掷出了 " + (die1 + die2) + " 点（双数点）！");
 	} else {
-		addAlert(p.name + " rolled " + (die1 + die2) + ".");
+		addAlert("玩家 " + p.name + " 掷出了 " + (die1 + die2) + " 点。");
 	}
 
 	if (die1 == die2 && !p.jail) {
 		updateDice(die1, die2);
-
 		if (doublecount < 3) {
-			document.getElementById("nextbutton").value = "Roll again";
-			document.getElementById("nextbutton").title = "You threw doubles. Roll again.";
-
-		// If player rolls doubles three times in a row, send him to jail
+			document.getElementById("nextbutton").value = "🎲 双数点！再掷一次";
 		} else if (doublecount === 3) {
 			p.jail = true;
 			doublecount = 0;
-			addAlert(p.name + " rolled doubles three times in a row.");
+			window.doublecount = doublecount;
+			addAlert("玩家 " + p.name + " 连续 3 次掷出双数点，涉嫌违规被押送监狱！");
 			updateMoney();
-
-
-			if (p.human) {
-				popup("You rolled doubles three times in a row. Go to jail.", gotojail);
-			} else {
-				gotojail();
+			var isLocalTurn = true;
+			if (window.MONOPOLY_ONLINE && MONOPOLY_ONLINE.state.isOnline) {
+				isLocalTurn = (turn === MONOPOLY_ONLINE.state.mySlot);
 			}
-
+			if (p.human && isLocalTurn) popup("你连续 3 次掷出双数点，涉嫌违规，必须立即前往监狱！", gotojail);
+			else gotojail();
 			return;
 		}
 	} else {
-		document.getElementById("nextbutton").value = "End turn";
-		document.getElementById("nextbutton").title = "End turn and advance to the next player.";
+		document.getElementById("nextbutton").value = "结束回合 ⏭";
 		doublecount = 0;
+		window.doublecount = doublecount;
 	}
 
 	updatePosition();
@@ -2474,30 +1982,34 @@ function roll() {
 
 	if (p.jail === true) {
 		p.jailroll++;
-
 		updateDice(die1, die2);
-		if (die1 == die2) {
-			document.getElementById("jail").style.border = "1px solid black";
-			document.getElementById("cell11").style.border = "2px solid " + p.color;
-			$("#landed").hide();
 
+		if (die1 == die2) {
 			p.jail = false;
 			p.jailroll = 0;
 			p.position = 10 + die1 + die2;
 			doublecount = 0;
-
-			addAlert(p.name + " rolled doubles to get out of jail.");
-
+			window.doublecount = doublecount;
+			addAlert("玩家 " + p.name + " 掷出双数点，成功破除监狱！");
 			land();
 		} else {
 			if (p.jailroll === 3) {
-
 				if (p.human) {
-					popup("<p>You must pay the $50 fine.</p>", function() {
+					var isLocalTurn = true;
+					if (window.MONOPOLY_ONLINE && MONOPOLY_ONLINE.state.isOnline) {
+						isLocalTurn = (turn === MONOPOLY_ONLINE.state.mySlot);
+					}
+					if (isLocalTurn) {
+						popup("<p>服刑期满 3 次，必须缴纳 $50 罚金出狱。</p>", function() {
+							payfifty();
+							player[turn].position = 10 + die1 + die2;
+							land();
+						});
+					} else {
 						payfifty();
-						player[turn].position=10 + die1 + die2;
+						player[turn].position = 10 + die1 + die2;
 						land();
-					});
+					}
 				} else {
 					payfifty();
 					p.position = 10 + die1 + die2;
@@ -2505,91 +2017,95 @@ function roll() {
 				}
 			} else {
 				$("#landed").show();
-				document.getElementById("landed").innerHTML = "You are in jail.";
-
-				if (!p.human) {
-					popup(p.AI.alertList, game.next);
+				var isLocalTurn = true;
+				if (window.MONOPOLY_ONLINE && MONOPOLY_ONLINE.state.isOnline) {
+					isLocalTurn = (turn === MONOPOLY_ONLINE.state.mySlot);
+				}
+				if (isLocalTurn) {
+					document.getElementById("landed").innerHTML = "你正在监狱中服刑。";
+				} else {
+					document.getElementById("landed").innerHTML = "玩家【" + p.name + "】正在监狱中服刑。";
+				}
+				if (shouldRunAi(p)) {
 					p.AI.alertList = "";
+					setTimeout(function() { game.next(); }, 600);
 				}
 			}
 		}
-
-
 	} else {
 		updateDice(die1, die2);
-
-		// Move player
 		p.position += die1 + die2;
 
-		// Collect $200 salary as you pass GO
 		if (p.position >= 40) {
 			p.position -= 40;
 			p.money += 200;
-			addAlert(p.name + " collected a $200 salary for passing GO.");
+			addAlert("玩家 " + p.name + " 经过或到达【起点】，领取了 $200 薪资！");
+			if (window.AUDIO) window.AUDIO.play('drop');
 		}
 
 		land();
 	}
 }
 
-function play() {
-	if (game.auction()) {
-		return;
-	}
+function play(fromNetwork) {
+	if (game.auction()) return;
 
 	turn++;
 	if (turn > pcount) {
 		turn -= pcount;
 	}
+	window.turn = turn;
 
 	var p = player[turn];
 	game.resetDice();
 
-	document.getElementById("pname").innerHTML = p.name;
+	document.getElementById("pname").innerHTML = p.name + " 的回合";
+	addAlert("现在轮到 玩家 " + p.name + " 的回合。");
 
-	addAlert("It is " + p.name + "'s turn.");
-
-	// Check for bankruptcy.
 	p.pay(0, p.creditor);
 
 	$("#landed, #option, #manage").hide();
-	$("#board, #control, #moneybar, #viewstats, #buy").show();
+	$("#board-container, #control, #buy").show();
 
 	doublecount = 0;
+	window.doublecount = doublecount;
+
 	if (p.human) {
 		document.getElementById("nextbutton").focus();
 	}
-	document.getElementById("nextbutton").value = "Roll Dice";
-	document.getElementById("nextbutton").title = "Roll the dice and move your token accordingly.";
+	document.getElementById("nextbutton").value = "🎲 掷骰子";
 
-	$("#die0").hide();
-	$("#die1").hide();
+	$("#die0, #die1").hide();
+
+	var isLocalTurn = true;
+	if (window.MONOPOLY_ONLINE && MONOPOLY_ONLINE.state.isOnline) {
+		isLocalTurn = (turn === MONOPOLY_ONLINE.state.mySlot);
+	}
 
 	if (p.jail) {
 		$("#landed").show();
-		document.getElementById("landed").innerHTML = "You are in jail.<input type='button' title='Pay $50 fine to get out of jail immediately.' value='Pay $50 fine' onclick='payfifty();' />";
+		if (isLocalTurn) {
+			document.getElementById("landed").innerHTML = "你正在监狱服刑。<input type='button' class='btn-action' value='支付 $50 保释出狱' onclick='payfifty();' style='margin-left:8px;' />";
 
-		if (p.communityChestJailCard || p.chanceJailCard) {
-			document.getElementById("landed").innerHTML += "<input type='button' id='gojfbutton' title='Use &quot;Get Out of Jail Free&quot; card.' onclick='useJailCard();' value='Use Card' />";
-		}
-
-		document.getElementById("nextbutton").title = "Roll the dice. If you throw doubles, you will get out of jail.";
-
-		if (p.jailroll === 0)
-			addAlert("This is " + p.name + "'s first turn in jail.");
-		else if (p.jailroll === 1)
-			addAlert("This is " + p.name + "'s second turn in jail.");
-		else if (p.jailroll === 2) {
-			document.getElementById("landed").innerHTML += "<div>NOTE: If you do not throw doubles after this roll, you <i>must</i> pay the $50 fine.</div>";
-			addAlert("This is " + p.name + "'s third turn in jail.");
-		}
-
-		if (!p.human && p.AI.postBail()) {
 			if (p.communityChestJailCard || p.chanceJailCard) {
-				useJailCard();
-			} else {
-				payfifty();
+				document.getElementById("landed").innerHTML += "<input type='button' class='btn-action' id='gojfbutton' value='使用免罪卡' onclick='useJailCard();' style='margin-left:6px;' />";
 			}
+		} else {
+			document.getElementById("landed").innerHTML = "玩家【" + p.name + "】正在监狱服刑。";
+		}
+
+		if (p.jailroll === 0) addAlert("这是 玩家 " + p.name + " 在监狱中的第 1 回合。");
+		else if (p.jailroll === 1) addAlert("这是 玩家 " + p.name + " 在监狱中的第 2 回合。");
+		else if (p.jailroll === 2) {
+			if (isLocalTurn) {
+				document.getElementById("landed").innerHTML += "<div>提示：本次若未掷出双数点，必须强制缴纳 $50 出狱。</div>";
+			}
+			addAlert("这是 玩家 " + p.name + " 在监狱中的第 3 回合。");
+		}
+
+		if (shouldRunAi(p) && p.AI.postBail()) {
+			if (p.communityChestJailCard || p.chanceJailCard) useJailCard();
+			else payfifty();
 		}
 	}
 
@@ -2597,113 +2113,230 @@ function play() {
 	updatePosition();
 	updateOwned();
 
-	$(".money-bar-arrow").hide();
-	$("#p" + turn + "arrow").show();
+	if (window.MONOPOLY_ONLINE && MONOPOLY_ONLINE.state.isOnline) {
+		MONOPOLY_ONLINE.updateTurnControls();
+	}
 
-	if (!p.human) {
-		if (!p.AI.beforeTurn()) {
-			game.next();
-		}
+	if (shouldRunAi(p)) {
+		setTimeout(function() {
+			if (!p.AI.beforeTurn()) game.next();
+		}, window.MONOPOLY_ONLINE && MONOPOLY_ONLINE.state.isOnline ? 600 : 400);
 	}
 }
 
 function setup() {
 	pcount = parseInt(document.getElementById("playernumber").value, 10);
+	window.pcount = pcount;
+	if (typeof globalThis !== 'undefined') globalThis.pcount = pcount;
+	turn = 0;
+	doublecount = 0;
+	window.turn = 0;
+	window.doublecount = 0;
 
 	var playerArray = new Array(pcount);
-	var p;
 
-	playerArray.randomize();
+	for (var i = 0; i < pcount; i++) {
+		playerArray[i] = i + 1;
+	}
 
 	for (var i = 1; i <= pcount; i++) {
-		p = player[playerArray[i - 1]];
+		var p = player[i];
+		var colorEl = document.getElementById("player" + i + "color");
+		p.color = colorEl ? colorEl.value.toLowerCase() : '#38bdf8';
 
+		var aiEl = document.getElementById("player" + i + "ai");
+		var nameEl = document.getElementById("player" + i + "name");
 
-		p.color = document.getElementById("player" + i + "color").value.toLowerCase();
-
-		if (document.getElementById("player" + i + "ai").value === "0") {
-			p.name = document.getElementById("player" + i + "name").value;
+		if (aiEl && aiEl.value === "0") {
+			p.name = nameEl ? nameEl.value : ("玩家 " + i);
 			p.human = true;
-		} else if (document.getElementById("player" + i + "ai").value === "1") {
+		} else {
+			p.name = nameEl ? nameEl.value : ("电脑 AI " + i);
 			p.human = false;
 			p.AI = new AITest(p);
 		}
 	}
 
-	$("#board, #moneybar").show();
+	$("#board-container, #control").show();
 	$("#setup").hide();
 
-	if (pcount === 2) {
-		document.getElementById("stats").style.width = "454px";
-	} else if (pcount === 3) {
-		document.getElementById("stats").style.width = "686px";
-	}
-
-	document.getElementById("stats").style.top = "0px";
-	document.getElementById("stats").style.left = "0px";
-
+	resizeBoard();
 	play();
 }
 
-// function togglecheck(elementid) {
-	// element = document.getElementById(elementid);
-
-	// if (window.event.srcElement.id == elementid)
-		// return;
-
-	// if (element.checked) {
-		// element.checked = false;
-	// } else {
-		// element.checked = true;
-	// }
-// }
-
 function getCheckedProperty() {
 	for (var i = 0; i < 42; i++) {
-		if (document.getElementById("propertycheckbox" + i) && document.getElementById("propertycheckbox" + i).checked) {
-			return i;
-		}
+		var el = document.getElementById("propertycheckbox" + i);
+		if (el && el.checked) return i;
 	}
-	return -1; // No property is checked.
+	return -1;
 }
-
-// function propertycell_onclick(element, num) {
-	// togglecheck("propertycheckbox" + num);
-	// if (document.getElementById("propertycheckbox" + num).checked) {
-
-		// // Uncheck all other boxes.
-		// for (var i = 0; i < 40; i++) {
-			// if (i !== num && document.getElementById("propertycheckbox" + i)) {
-				// document.getElementById("propertycheckbox" + i).checked = false;
-			// }
-		// }
-	// }
-
-	// updateOption();
-// }
 
 function playernumber_onchange() {
 	pcount = parseInt(document.getElementById("playernumber").value, 10);
-
 	$(".player-input").hide();
-
 	for (var i = 1; i <= pcount; i++) {
 		$("#player" + i + "input").show();
 	}
 }
 
-function menuitem_onmouseover(element) {
-	element.className = "menuitem menuitem_hover";
-	return;
+function resizeBoard() {
+	var container = document.getElementById("board-container");
+	var boardWrap = document.getElementById("board-wrapper");
+	if (!container || !boardWrap) return;
+
+	var availW = Math.min(window.innerWidth - 20, 720);
+	var availH = window.innerHeight - 100;
+	var targetSize = Math.max(280, Math.min(availW, availH, 660));
+
+	var scale = targetSize / 660;
+	boardWrap.style.transform = "scale(" + scale + ")";
+	container.style.width = targetSize + "px";
+	container.style.height = targetSize + "px";
 }
 
-function menuitem_onmouseout(element) {
-	element.className = "menuitem";
-	return;
-}
+window.startOnlineMonopolyGame = function(playerList, count) {
+	pcount = count;
+	window.pcount = pcount;
+	if (typeof globalThis !== 'undefined') globalThis.pcount = pcount;
+	turn = 0;
+	doublecount = 0;
+	window.turn = 0;
+	window.doublecount = 0;
+
+	for (var i = 1; i <= count; i++) {
+		var p = player[i];
+		var data = playerList[i - 1];
+		p.name = data.name;
+		p.color = data.color;
+		p.human = !data.isAi;
+		if (data.isAi) {
+			p.AI = new AITest(p);
+		}
+	}
+
+	$("#board-container, #control").show();
+	$("#setup").hide();
+
+	resizeBoard();
+	play();
+};
+
+window.executeOnlineRoll = function(d1, d2) { roll(d1, d2, true); };
+window.executeOnlineBuy = function(propIdx) { buy(true); };
+window.executeOnlineBuild = function(propIdx) { buyHouse(propIdx, true); };
+window.executeOnlineSell = function(propIdx) { sellHouse(propIdx, true); };
+window.executeOnlineMortgage = function(propIdx, action) {
+	if (action === 'mortgage') mortgage(propIdx, true);
+	else unmortgage(propIdx, true);
+};
+window.executeOnlineBail = function(useCard) {
+	if (useCard) useJailCard(true);
+	else payfifty(true);
+};
+window.executeOnlineEndTurn = function() { play(true); };
+window.executeOnlineResign = function() { game.bankruptcy(true); };
+
+window.executeOnlineCardDraw = function(deck, index) {
+	var p = player[turn];
+	var card = deck === 'chance' ? chanceCards[index] : communityChestCards[index];
+	var deckName = deck === 'chance' ? '机会卡' : '命运宝箱';
+	addAlert("玩家 " + p.name + " 抽取了【" + deckName + "】：" + (card ? card.text : ''));
+	if (window.showToast) window.showToast("玩家【" + p.name + "】抽中【" + deckName + "】");
+};
+
+window.executeOnlineCardAction = function(deck, index) {
+	if (deck === 'chance') {
+		chanceAction(index);
+	} else {
+		communityChestAction(index);
+	}
+};
+
+window.applyOnlineSyncState = function(stateData) {
+	if (!stateData) return;
+	if (stateData.pcount) {
+		pcount = stateData.pcount;
+		window.pcount = pcount;
+		if (typeof globalThis !== 'undefined') globalThis.pcount = pcount;
+	}
+	if (typeof stateData.turn === 'number') {
+		turn = stateData.turn;
+		window.turn = turn;
+		if (typeof globalThis !== 'undefined') globalThis.turn = turn;
+	}
+	if (typeof stateData.doublecount === 'number') {
+		doublecount = stateData.doublecount;
+		window.doublecount = doublecount;
+		if (typeof globalThis !== 'undefined') globalThis.doublecount = doublecount;
+	}
+	if (stateData.players) {
+		stateData.players.forEach(function(pd) {
+			var p = player[pd.index];
+			if (p) {
+				p.money = pd.money;
+				p.position = pd.position;
+				p.jail = pd.jail;
+				p.jailroll = pd.jailroll;
+				p.communityChestJailCard = pd.communityChestJailCard;
+				p.chanceJailCard = pd.chanceJailCard;
+			}
+		});
+	}
+	if (stateData.squares) {
+		stateData.squares.forEach(function(sd) {
+			var sq = square[sd.index];
+			if (sq) {
+				sq.owner = sd.owner;
+				sq.house = sd.house;
+				sq.hotel = sd.hotel;
+				sq.mortgage = sd.mortgage;
+			}
+		});
+	}
+	updateMoney();
+	updatePosition();
+	updateOwned();
+	if (window.MONOPOLY_ONLINE) {
+		MONOPOLY_ONLINE.updateTurnControls();
+	}
+};
+
+window.executeOnlineTradePropose = function(tradeData) {
+	var initP = player[tradeData.initiator];
+	var recipP = player[tradeData.recipient];
+	if (!initP || !recipP) return;
+
+	var tradeObj = new Trade(initP, recipP, tradeData.money, tradeData.property, tradeData.communityChestJailCard, tradeData.chanceJailCard);
+	game.trade(tradeObj);
+
+	var reversedProp = [];
+	for (var i = 0; i < 40; i++) {
+		reversedProp[i] = -tradeObj.getProperty(i);
+	}
+	var reversedTrade = new Trade(recipP, initP, -tradeData.money, reversedProp, 0, 0);
+	writeTrade(reversedTrade);
+
+	$("#proposetradebutton, #canceltradebutton").hide();
+	$("#accepttradebutton, #rejecttradebutton").show();
+
+	popup("<p>玩家【" + initP.name + "】向你发起了商业资产交易提案！<br/>请核对出让与索取资产，点击接受或拒绝：</p>");
+};
+
+window.executeOnlineTradeResp = function(accept) {
+	if (accept) {
+		popup("<p>🎉 交易达成！对方已同意并签署了商业资产置换协议！</p>");
+		game.acceptTrade();
+	} else {
+		popup("<p>对方拒绝了本次资产交易提案。</p>");
+		game.cancelTrade();
+	}
+};
 
 window.onload = function() {
 	game = new Game();
+	if (typeof window !== 'undefined') window.game = game;
+	if (typeof globalThis !== 'undefined') globalThis.game = game;
 
 	for (var i = 0; i <= 8; i++) {
 		player[i] = new Player("", "");
@@ -2711,38 +2344,26 @@ window.onload = function() {
 	}
 
 	var groupPropertyArray = [];
-	var groupNumber;
-
 	for (var i = 0; i < 40; i++) {
-		groupNumber = square[i].groupNumber;
-
+		var groupNumber = square[i].groupNumber;
 		if (groupNumber > 0) {
-			if (!groupPropertyArray[groupNumber]) {
-				groupPropertyArray[groupNumber] = [];
-			}
-
+			if (!groupPropertyArray[groupNumber]) groupPropertyArray[groupNumber] = [];
 			groupPropertyArray[groupNumber].push(i);
 		}
 	}
 
 	for (var i = 0; i < 40; i++) {
-		groupNumber = square[i].groupNumber;
-
-		if (groupNumber > 0) {
-			square[i].group = groupPropertyArray[groupNumber];
-		}
-
+		var groupNumber = square[i].groupNumber;
+		if (groupNumber > 0) square[i].group = groupPropertyArray[groupNumber];
 		square[i].index = i;
 	}
 
 	AITest.count = 0;
-
 	player[1].human = true;
-	player[0].name = "the bank";
+	player[0].name = "银行系统";
 
 	communityChestCards.index = 0;
 	chanceCards.index = 0;
-
 	communityChestCards.deck = [];
 	chanceCards.deck = [];
 
@@ -2751,262 +2372,194 @@ window.onload = function() {
 		communityChestCards.deck[i] = i;
 	}
 
-	// Shuffle Chance and Community Chest decks.
-	chanceCards.deck.sort(function() {return Math.random() - 0.5;});
-	communityChestCards.deck.sort(function() {return Math.random() - 0.5;});
+	chanceCards.deck.sort(function() { return Math.random() - 0.5; });
+	communityChestCards.deck.sort(function() { return Math.random() - 0.5; });
 
 	$("#playernumber").on("change", playernumber_onchange);
 	playernumber_onchange();
 
-	$("#nextbutton").click(game.next);
+	$("#nextbutton").click(function() { game.next(); });
 	$("#noscript").hide();
-	$("#setup, #noF5").show();
+	$("#setup").show();
 
-	var enlargeWrap = document.body.appendChild(document.createElement("div"));
-
-	enlargeWrap.id = "enlarge-wrap";
-
-	var HTML = "";
+	// 构建棋盘格内部元素
 	for (var i = 0; i < 40; i++) {
-		HTML += "<div id='enlarge" + i + "' class='enlarge'>";
-		HTML += "<div id='enlarge" + i + "color' class='enlarge-color'></div><br /><div id='enlarge" + i + "name' class='enlarge-name'></div>";
-		HTML += "<br /><div id='enlarge" + i + "price' class='enlarge-price'></div>";
-		HTML += "<br /><div id='enlarge" + i + "token' class='enlarge-token'></div></div>";
-	}
+		var s = square[i];
+		var currentCell = document.getElementById("cell" + i);
+		if (!currentCell) continue;
 
-	enlargeWrap.innerHTML = HTML;
-
-	var currentCell;
-	var currentCellAnchor;
-	var currentCellPositionHolder;
-	var currentCellName;
-	var currentCellOwner;
-
-	for (var i = 0; i < 40; i++) {
-		s = square[i];
-
-		currentCell = document.getElementById("cell" + i);
-
-		currentCellAnchor = currentCell.appendChild(document.createElement("div"));
+		var currentCellAnchor = currentCell.appendChild(document.createElement("div"));
 		currentCellAnchor.id = "cell" + i + "anchor";
 		currentCellAnchor.className = "cell-anchor";
 
-		currentCellPositionHolder = currentCellAnchor.appendChild(document.createElement("div"));
+		var currentCellPositionHolder = currentCellAnchor.appendChild(document.createElement("div"));
 		currentCellPositionHolder.id = "cell" + i + "positionholder";
 		currentCellPositionHolder.className = "cell-position-holder";
 		currentCellPositionHolder.enlargeId = "enlarge" + i;
 
-		currentCellName = currentCellAnchor.appendChild(document.createElement("div"));
+		var currentCellName = currentCellAnchor.appendChild(document.createElement("div"));
 		currentCellName.id = "cell" + i + "name";
 		currentCellName.className = "cell-name";
 		currentCellName.textContent = s.name;
 
 		if (square[i].groupNumber) {
-			currentCellOwner = currentCellAnchor.appendChild(document.createElement("div"));
+			var currentCellOwner = currentCellAnchor.appendChild(document.createElement("div"));
 			currentCellOwner.id = "cell" + i + "owner";
 			currentCellOwner.className = "cell-owner";
 		}
-
-		document.getElementById("enlarge" + i + "color").style.backgroundColor = s.color;
-		document.getElementById("enlarge" + i + "name").textContent = s.name;
-		document.getElementById("enlarge" + i + "price").textContent = s.pricetext;
 	}
-
-
-	// Add images to enlarges.
-	document.getElementById("enlarge0token").innerHTML += '<img src="images/arrow_icon.png" height="40" width="136" alt="" />';
-	document.getElementById("enlarge20price").innerHTML += "<img src='images/free_parking_icon.png' height='80' width='72' alt='' style='position: relative; top: -20px;' />";
-	document.getElementById("enlarge38token").innerHTML += '<img src="images/tax_icon.png" height="60" width="70" alt="" style="position: relative; top: -20px;" />';
 
 	corrections();
 
-	// Jail corrections
-	$("<div>", {id: "jailpositionholder" }).appendTo("#jail");
-	$("<span>").text("Jail").appendTo("#jail");
+	// 监狱地格校准
+	var jailEl = document.getElementById("jail");
+	if (jailEl) {
+		$("<div>", {id: "jailpositionholder" }).appendTo("#jail");
+		$("<span>").text("探监 / 服刑").appendTo("#jail");
+	}
 
-	document.getElementById("jail").enlargeId = "enlarge40";
+	// 鼠标悬停放大与地契预览跟随
+	$(document).on("mousemove", function(e) {
+		var deedEl = document.getElementById("deed");
+		if (!deedEl || deedEl.style.display === "none") return;
+		var deedW = 240, deedH = 280;
+		var x = e.clientX + 14;
+		var y = e.clientY + 14;
+		if (x + deedW > window.innerWidth) x = e.clientX - deedW - 14;
+		if (y + deedH > window.innerHeight) y = Math.max(10, window.innerHeight - deedH - 10);
+		deedEl.style.left = Math.max(8, x) + "px";
+		deedEl.style.top = Math.max(8, y) + "px";
+	});
 
-	document.getElementById("enlarge-wrap").innerHTML += "<div id='enlarge40' class='enlarge'><div id='enlarge40color' class='enlarge-color'></div><br /><div id='enlarge40name' class='enlarge-name'>Jail</div><br /><div id='enlarge40price' class='enlarge-price'><img src='images/jake_icon.png' height='80' width='80' alt='' style='position: relative; top: -20px;' /></div><br /><div id='enlarge40token' class='enlarge-token'></div></div>";
-
-	document.getElementById("enlarge40name").innerHTML = "Jail";
-
-	// Create event handlers for hovering and draging.
-
-	var drag, dragX, dragY, dragObj, dragTop, dragLeft;
-
-	$(".cell-position-holder, #jail").on("mouseover", function(){
-		$("#" + this.enlargeId).show();
-
+	$(".cell").on("mouseover", function(e) {
+		var cellId = this.id.replace("cell", "");
+		var idx = parseInt(cellId, 10);
+		if (!isNaN(idx)) showdeed(idx, e);
 	}).on("mouseout", function() {
-		$("#" + this.enlargeId).hide();
-
-	}).on("mousemove", function(e) {
-		var element = document.getElementById(this.enlargeId);
-
-		if (e.clientY + 20 > window.innerHeight - 204) {
-			element.style.top = (window.innerHeight - 204) + "px";
-		} else {
-			element.style.top = (e.clientY + 20) + "px";
-		}
-
-		element.style.left = (e.clientX + 10) + "px";
+		hidedeed();
 	});
 
-
-	$("body").on("mousemove", function(e) {
-		var object;
-
-		if (e.target) {
-			object = e.target;
-		} else if (window.event && window.event.srcElement) {
-			object = window.event.srcElement;
-		}
-
-
-		if (object.classList.contains("propertycellcolor") || object.classList.contains("statscellcolor")) {
-			if (e.clientY + 20 > window.innerHeight - 279) {
-				document.getElementById("deed").style.top = (window.innerHeight - 279) + "px";
-			} else {
-				document.getElementById("deed").style.top = (e.clientY + 20) + "px";
-			}
-			document.getElementById("deed").style.left = (e.clientX + 10) + "px";
-
-
-		} else if (drag) {
-			if (e) {
-				dragObj.style.left = (dragLeft + e.clientX - dragX) + "px";
-				dragObj.style.top = (dragTop + e.clientY - dragY) + "px";
-
-			} else if (window.event) {
-				dragObj.style.left = (dragLeft + window.event.clientX - dragX) + "px";
-				dragObj.style.top = (dragTop + window.event.clientY - dragY) + "px";
-			}
-		}
-	});
-
-
-	$("body").on("mouseup", function() {
-
-		drag = false;
-	});
-	document.getElementById("statsdrag").onmousedown = function(e) {
-		dragObj = document.getElementById("stats");
-		dragObj.style.position = "relative";
-
-		dragTop = parseInt(dragObj.style.top, 10) || 0;
-		dragLeft = parseInt(dragObj.style.left, 10) || 0;
-
-		if (window.event) {
-			dragX = window.event.clientX;
-			dragY = window.event.clientY;
-		} else if (e) {
-			dragX = e.clientX;
-			dragY = e.clientY;
-		}
-
-		drag = true;
-	};
-
-	document.getElementById("popupdrag").onmousedown = function(e) {
-		dragObj = document.getElementById("popup");
-		dragObj.style.position = "relative";
-
-		dragTop = parseInt(dragObj.style.top, 10) || 0;
-		dragLeft = parseInt(dragObj.style.left, 10) || 0;
-
-		if (window.event) {
-			dragX = window.event.clientX;
-			dragY = window.event.clientY;
-		} else if (e) {
-			dragX = e.clientX;
-			dragY = e.clientY;
-		}
-
-		drag = true;
-	};
+	$("#deed").on("click", hidedeed);
 
 	$("#mortgagebutton").click(function() {
 		var checkedProperty = getCheckedProperty();
 		var s = square[checkedProperty];
+		if (!s) return;
 
 		if (s.mortgage) {
 			if (player[s.owner].money < Math.round(s.price * 0.55)) {
-				popup("<p>You need $" + (Math.round(s.price * 0.55) - player[s.owner].money) + " more to unmortgage " + s.name + ".</p>");
-
+				popup("<p>资金不足！还需要 $" + (Math.round(s.price * 0.55) - player[s.owner].money) + " 才能赎回【" + s.name + "】。</p>");
 			} else {
-				popup("<p>" + player[s.owner].name + ", are you sure you want to unmortgage " + s.name + " for $" + Math.round(s.price * 0.55) + "?</p>", function() {
+				popup("<p>确定要支付 $" + Math.round(s.price * 0.55) + " 赎回【" + s.name + "】吗？</p>", function() {
 					unmortgage(checkedProperty);
 				}, "Yes/No");
 			}
 		} else {
-			popup("<p>" + player[s.owner].name + ", are you sure you want to mortgage " + s.name + " for $" + Math.round(s.price * 0.5) + "?</p>", function() {
+			popup("<p>确定要抵押【" + s.name + "】以获取 $" + Math.round(s.price * 0.5) + " 现金吗？</p>", function() {
 				mortgage(checkedProperty);
 			}, "Yes/No");
 		}
-
 	});
 
 	$("#buyhousebutton").on("click", function() {
 		var checkedProperty = getCheckedProperty();
 		var s = square[checkedProperty];
+		if (!s) return;
 		var p = player[s.owner];
-		var houseSum = 0;
-		var hotelSum = 0;
 
 		if (p.money < s.houseprice) {
-			if (s.house === 4) {
-				popup("<p>You need $" + (s.houseprice - player[s.owner].money) + " more to buy a hotel for " + s.name + ".</p>");
-				return;
-			} else {
-				popup("<p>You need $" + (s.houseprice - player[s.owner].money) + " more to buy a house for " + s.name + ".</p>");
-				return;
-			}
-		}
-
-		for (var i = 0; i < 40; i++) {
-			if (square[i].hotel === 1) {
-				hotelSum++;
-			} else {
-				houseSum += square[i].house;
-			}
-		}
-
-		if (s.house < 4 && houseSum >= 32) {
-			popup("<p>All 32 houses are owned. You must wait until one becomes available.</p>");
-			return;
-		} else if (s.house === 4 && hotelSum >= 12) {
-			popup("<p>All 12 hotels are owned. You must wait until one becomes available.</p>");
+			popup("<p>资金不足！还需要 $" + (s.houseprice - p.money) + " 才能加建建筑。</p>");
 			return;
 		}
 
 		buyHouse(checkedProperty);
-
 	});
 
-	$("#sellhousebutton").click(function() { sellHouse(getCheckedProperty()); });
+	$("#sellhousebutton").click(function() {
+		sellHouse(getCheckedProperty());
+	});
 
 	$("#viewstats").on("click", showStats);
 	$("#statsclose, #statsbackground").on("click", function() {
 		$("#statswrap").hide();
-		$("#statsbackground").fadeOut(400);
+		$("#statsbackground").fadeOut(250);
 	});
 
 	$("#buy-menu-item").click(function() {
 		$("#buy").show();
 		$("#manage").hide();
-
-		// Scroll alerts to bottom.
 		$("#alert").scrollTop($("#alert").prop("scrollHeight"));
 	});
-
 
 	$("#manage-menu-item").click(function() {
 		$("#manage").show();
 		$("#buy").hide();
 	});
 
-
 	$("#trade-menu-item").click(game.trade);
 
+	// 初始化在线联机网络模块
+	if (window.MONOPOLY_ONLINE) {
+		MONOPOLY_ONLINE.init();
+	}
 
+	if (typeof window !== 'undefined' && window.addEventListener) {
+		window.addEventListener("resize", resizeBoard);
+	}
+	resizeBoard();
 };
+
+if (typeof globalThis !== 'undefined') {
+	globalThis.player = player;
+	globalThis.pcount = pcount;
+	globalThis.turn = turn;
+	globalThis.doublecount = doublecount;
+	globalThis.game = game;
+	globalThis.Game = Game;
+	globalThis.Player = Player;
+	globalThis.Trade = Trade;
+	globalThis.setup = setup;
+	globalThis.play = play;
+	globalThis.roll = roll;
+	globalThis.buy = buy;
+	globalThis.buyHouse = buyHouse;
+	globalThis.sellHouse = sellHouse;
+	globalThis.mortgage = mortgage;
+	globalThis.unmortgage = unmortgage;
+	globalThis.payfifty = payfifty;
+	globalThis.useJailCard = useJailCard;
+	globalThis.gotojail = gotojail;
+	globalThis.addamount = addamount;
+	globalThis.subtractamount = subtractamount;
+	globalThis.advance = advance;
+	globalThis.gobackthreespaces = gobackthreespaces;
+	globalThis.advanceToNearestUtility = advanceToNearestUtility;
+	globalThis.advanceToNearestRailroad = advanceToNearestRailroad;
+	globalThis.payeachplayer = payeachplayer;
+	globalThis.collectfromeachplayer = collectfromeachplayer;
+	globalThis.streetrepairs = streetrepairs;
+	globalThis.chanceCommunityChest = chanceCommunityChest;
+	globalThis.chanceAction = chanceAction;
+	globalThis.communityChestAction = communityChestAction;
+	globalThis.updateMoney = updateMoney;
+	globalThis.updatePosition = updatePosition;
+	globalThis.updateOwned = updateOwned;
+	globalThis.resizeBoard = resizeBoard;
+	globalThis.showdeed = showdeed;
+	globalThis.hidedeed = hidedeed;
+	globalThis.showStats = showStats;
+	globalThis.popup = popup;
+	globalThis.addAlert = addAlert;
+}
+if (typeof module !== 'undefined' && module.exports) {
+	module.exports = {
+		player, pcount, turn, doublecount, game, Game, Player, Trade,
+		setup, play, roll, buy, buyHouse, sellHouse, mortgage, unmortgage,
+		payfifty, useJailCard, gotojail, addamount, subtractamount, advance,
+		gobackthreespaces, advanceToNearestUtility, advanceToNearestRailroad,
+		payeachplayer, collectfromeachplayer, streetrepairs,
+		chanceCommunityChest, chanceAction, communityChestAction,
+		updateMoney, updatePosition, updateOwned, resizeBoard, showdeed, hidedeed,
+		showStats, popup, addAlert
+	};
+}

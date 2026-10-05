@@ -5,7 +5,9 @@ function AITest(p) {
 	// This variable is static, it is not related to each instance.
 	this.constructor.count++;
 
-	p.name = "AI Test " + this.constructor.count;
+	if (!p.name || p.name.indexOf("AI Test") !== -1) {
+		p.name = "电脑 AI " + this.constructor.count;
+	}
 
 	// Decide whether to buy a property the AI landed on.
 	// Return: boolean (true to buy).
@@ -206,4 +208,14 @@ function AITest(p) {
 		}
 
 	}
+}
+
+if (typeof window !== 'undefined') {
+	window.AITest = AITest;
+}
+if (typeof globalThis !== 'undefined') {
+	globalThis.AITest = AITest;
+}
+if (typeof module !== 'undefined' && module.exports) {
+	module.exports = { AITest };
 }
