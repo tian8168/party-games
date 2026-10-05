@@ -1,4 +1,4 @@
-﻿# 运行时依赖
+# 运行时依赖
 node_modules/
 
 # Cloudflare 构建缓存与中间产物
@@ -17,3 +17,5 @@ Thumbs.db
 *.tmp
 .vscode/
 .idea/
+.temp*
+tools/__pycache__/

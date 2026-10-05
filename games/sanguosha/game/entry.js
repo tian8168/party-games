@@ -1,6 +1,10 @@
 import { game, get, lib, boot, onload } from "../noname.js";
 import { canUseHttpProtocol, sendUpdate } from "../noname/init/index.js";
 
+window.game = game;
+window.get = get;
+window.lib = lib;
+
 let [core, version] = get.coreInfo();
 
 /**

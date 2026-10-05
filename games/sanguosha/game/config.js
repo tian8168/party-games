@@ -16,8 +16,8 @@ window.config = {
 	zhinang_tricks: ["guohe", "wuxie", "wuzhong", "dongzhuxianji"],
 	connect_zhinang_tricks: ["guohe", "wuxie", "wuzhong", "dongzhuxianji"],
 	all: {
-		sgscharacters: ["standard", "shenhua", "refresh", "yijiang", "newjiang", "sixiang", "sp", "sp2", "xianding", "huicui", "extra", "old", "mobile", "shiji", "tw", "yingbian", "offline", "jsrg", "sxrm", "sb", "clan", "collab", "onlyOL"],
-		sgscards: ["standard", "extra", "sp", "guozhan", "zhulu", "yingbian", "yongjian"],
+		sgscharacters: ["standard", "shenhua", "refresh", "yijiang", "extra", "sp"],
+		sgscards: ["standard", "extra"],
 		sgsmodes: ["identity", "guozhan", "versus", "doudizhu", "single", "brawl", "connect"],
 		stockmode: ["identity", "guozhan", "versus", "boss", "doudizhu", "single", "chess", "stone", "connect", "brawl", "tafang"],
 		stockextension: ["boss", "cardpile", "coin"],
@@ -64,8 +64,12 @@ window.config = {
 	extensionInfo: {},
 	autoskilllist: [],
 	hiddenModePack: [],
-	hiddenCharacterPack: [],
-	hiddenCardPack: [],
+	hiddenCharacterPack: [
+		"sp2", "newjiang", "onlyOL", "yingbian", "clan", "huicui", "xianding",
+		"mobile", "shiji", "sb", "tw", "collab", "old", "offline", "jsrg",
+		"sxrm", "sixiang", "diy", "key"
+	],
+	hiddenCardPack: ["yingbian", "yongjian", "zhulu", "huodong", "xianxia", "sp"],
 	hiddenPlayPack: [],
 	hiddenBackgroundPack: [],
 	customBackgroundPack: [],
@@ -75,9 +79,9 @@ window.config = {
 	brokenFile: [],
 
 	max_loadtime: "20000",
-	theme: "woodden",
-	layout: "long2",
-	card_style: "default",
+	theme: "simple",
+	layout: "mobile",
+	card_style: "ol",
 	cardback_style: "official",
 	cardshape: "oblong",
 	hp_style: "glass",
@@ -86,7 +90,7 @@ window.config = {
 	radius_size: "reduce",
 
 	image_character: "default",
-	image_background: "default",
+	image_background: "ol_bg",
 
 	asset_image: true,
 	asset_font: false,
@@ -133,7 +137,7 @@ window.config = {
 	sort: "type_sort",
 
 	cards: ["standard", "extra"],
-	characters: ["standard", "shenhua", "sp", "sp2", "yijiang", "newjiang", "sixiang", "refresh", "mobile", "extra", "yingbian", "sb", "tw", "offline", "clan", "collab", "xianding", "huicui", "shiji", "jsrg", "sxrm", "onlyOL"],
+	characters: ["standard", "refresh", "shenhua", "yijiang"],
 	moderned_chracters: ["standard", "shenhua", "sp", "sp2", "yijiang", "newjiang", "sixiang", "refresh", "mobile", "extra", "yingbian", "sb", "tw", "offline", "clan", "collab", "xianding", "huicui", "shiji", "onlyOL", "jsrg", "sxrm", "old", "diy", "key"],
 	moderned_modes: ["guozhan"],
 	connect_characters: ["diy"],

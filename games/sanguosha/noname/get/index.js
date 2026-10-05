@@ -3469,8 +3469,6 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		if (typeof item == "string" || typeof item == "symbol") {
 			const info = Reflect.get(lib.skill, item);
 			if (!info) {
-				const str = typeof item == "string" ? item : `[${item.toString()}]`;
-				console.warn(`孩子，你的技能${str}是不是忘写了什么？！`);
 				return {};
 			}
 			return info;

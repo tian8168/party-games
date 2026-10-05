@@ -244,7 +244,18 @@ Reflect.defineProperty(HTMLDivElement.prototype, "setBackground", {
 		if (type === "character") {
 			const nameinfo = get.character(name);
 			const sex = nameinfo && ["male", "female", "double"].includes(nameinfo[0]) ? nameinfo[0] : "male";
-			this.setBackgroundImage([src, `${lib.characterDefaultPicturePath}${sex}${ext}`]);
+			const group = nameinfo && nameinfo[1] ? nameinfo[1] : "";
+			const candidateList = [];
+			const baseName = name.replace(/^(?:[a-z0-9]+_)+/, "");
+			if (baseName && baseName !== name) {
+				candidateList.push(`image/character/${baseName}${ext}`);
+			}
+			candidateList.push(src);
+			if (group) {
+				candidateList.push(`image/character/default_silhouette_${group}${ext}`);
+			}
+			candidateList.push(`${lib.characterDefaultPicturePath}${sex}${ext}`);
+			this.setBackgroundImage(candidateList);
 		} else {
 			this.setBackgroundImage(src);
 		}

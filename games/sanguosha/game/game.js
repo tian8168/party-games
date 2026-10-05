@@ -35,11 +35,6 @@
 		return alert(globalText.REDIRECT_TIP);
 	}
 
-	// 必须启用serviceWorker
-	if (!("serviceWorker" in navigator)) {
-		return alert(globalText.SERVICE_WORKER_NOT_SUPPORT);
-	}
-
 	// 检查 window 对象中是否存在 "__core-js_shared__" 属性
 	if (!("__core-js_shared__" in window)) {
 		// 如果不存在，则执行以下操作
@@ -56,22 +51,11 @@
 		});
 	}
 
-	// 检查是否已经显示过GPL许可协议警告
-	if (!localStorage.getItem("gplv3_noname_alerted")) {
-		// 判断游戏是否已经初始化过
-		const gameIntialized = nonameInitialized && nonameInitialized.length > 0;
-
-		// 如果满足以下条件之一，则显示GPL许可协议警告:
-		// 1. 已经初始化过
-		// 2. 用户确认显示GPL许可协议警告
-		if (gameIntialized || confirm(globalText.GPL_ALERT)) {
-			// 记录已显示过GPL许可协议警告
-			localStorage.setItem("gplv3_noname_alerted", String(true));
-		} else {
-			// 如果用户拒绝显示GPL许可协议警告，则退出程序
-			game.exit();
-		}
-	}
+	// 聚会大厅环境自动确认许可
+	try {
+		localStorage.setItem("gplv3_noname_alerted", "true");
+		sessionStorage.setItem("canUseTs", "1");
+	} catch (e) {}
 
 	window["bannedExtensions"] = [
 		"\u4fa0\u4e49",
@@ -153,44 +137,28 @@
 		};
 	}
 
-	// 使serviceWorker加载完成后，再加载entry.js
-	if ("serviceWorker" in navigator) {
-		let scope = new URL("./", location.href).toString();
-		let registrations = await navigator.serviceWorker.getRegistrations();
-		let findServiceWorker = registrations.find(registration => {
-			return registration && registration.active && registration.active.scriptURL == `${scope}service-worker.js`;
-		});
-
+	// 尝试注册 serviceWorker（用于拓展动态编译），若不支持或失败则优雅降级直接运行
+	if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
 		try {
+			let scope = new URL("./", location.href).toString();
 			const registration_1 = await navigator.serviceWorker.register(`${scope}service-worker.js`, {
 				type: "module",
 				updateViaCache: "all",
 				scope,
+			}).catch(e => {
+				console.warn("ServiceWorker registration skipped (static mode active):", e);
+				return null;
 			});
-			// 初次加载worker，需要重新启动一次
-			if (!findServiceWorker) {
-				location.reload();
-			}
-			// 接收消息
-			navigator.serviceWorker.addEventListener("message", e => {
-				if (e.data?.type === "reload") {
-					window.location.reload();
-				}
-			});
-			// 发送消息
-			// navigator.serviceWorker.controller.postMessage({ action: "reload" });
-			registration_1.update().catch(e => console.error("worker update失败", e));
-			if (!sessionStorage.getItem("canUseTs")) {
-				await import("./canUse.ts")
-					.then(({ text }) => console.log(text))
-					.catch(() => {
-						sessionStorage.setItem("canUseTs", "1");
-						location.reload();
-					});
+			if (registration_1) {
+				navigator.serviceWorker.addEventListener("message", e => {
+					if (e.data?.type === "reload") {
+						window.location.reload();
+					}
+				});
+				registration_1.update().catch(() => {});
 			}
 		} catch (e_1) {
-			console.log("serviceWorker加载失败: ", e_1);
-			return alert(globalText.SERVICE_WORKER_LOAD_FAILED);
+			console.warn("serviceWorker optional notice: ", e_1);
 		}
 	}
 
