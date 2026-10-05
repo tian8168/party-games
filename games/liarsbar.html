@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>骗子酒馆 · Liar's Bar - 聚会游戏大厅</title>
+  <link rel="stylesheet" href="../common/common.css">
+  <link rel="stylesheet" href="../common/cards.css">
+  <style>
+    :root {
+      --bar-bg: #090a0f;
+      --table-wood: #1e130c;
+      --neon-red: #ef4444;
+      --neon-gold: #f59e0b;
+      --neon-cyan: #06b6d4;
+      --smoke-glow: rgba(239, 68, 68, 0.25);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      background: radial-gradient(circle at 50% 30%, #1a101f 0%, #0d0c14 60%, #050508 100%);
+      color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-x: hidden;
+      padding-bottom: 24px;
+    }
+
+    .game-container {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px 14px;
+      gap: 12px;
+      position: relative;
+    }
+
+    /* 顶部联机状态栏 */
+    .online-bar {
+      width: 100%;
+      background: rgba(26, 20, 35, 0.85);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      border-radius: 14px;
+      padding: 8px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.88rem;
+      backdrop-filter: blur(12px);
+    }
+
+    .room-badge {
+      background: rgba(245, 158, 11, 0.2);
+      border: 1px solid #f59e0b;
+      color: #fbbf24;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-weight: 800;
+      font-family: monospace;
+      letter-spacing: 1px;
+    }
+
+    /* 酒馆吧台主桌面 */
+    .pub-table {
+      width: 100%;
+      min-height: 420px;
+      background: radial-gradient(ellipse at 50% 50%, #2a1b15 0%, #170e0a 70%, #0a0604 100%);
+      border: 6px solid #3d271d;
+      border-radius: 40px;
+      box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.9), 0 12px 35px rgba(0, 0, 0, 0.7), 0 0 30px rgba(239, 68, 68, 0.15);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px;
+      overflow: hidden;
+    }
+
+    /* 烟雾与暗光质感 */
+    .pub-table::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(circle at 50% 50%, rgba(245, 158, 11, 0.06) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    /* 酒馆中央区域: 目标牌与弃牌堆 */
+    .table-center-hub {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin: auto 0;
+      z-index: 2;
+    }
+
+    .target-card-banner {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.25), rgba(245, 158, 11, 0.25));
+      border: 1px solid rgba(245, 158, 11, 0.5);
+      border-radius: 20px;
+      padding: 6px 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    }
+
+    .target-title {
+      font-size: 0.85rem;
+      color: #cbd5e1;
+      font-weight: 600;
+    }
+
+    .target-rank-pill {
+      font-size: 1.25rem;
+      font-weight: 900;
+      color: #fbbf24;
+      text-shadow: 0 0 10px rgba(245, 158, 11, 0.6);
+    }
+
+    .table-pot-wrapper {
+      position: relative;
+      width: 140px;
+      height: 105px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .pot-claim-badge {
+      position: absolute;
+      bottom: -10px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 12px;
+      padding: 3px 10px;
+      font-size: 0.78rem;
+      color: #94a3b8;
+      white-space: nowrap;
+      z-index: 5;
+    }
+
+    /* 四周席位 (Players Around Table) */
+    .seat-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 2;
+    }
+
+    .seat-top {
+      width: 100%;
+      display: flex;
+      justify-content: space-around;
+    }
+
+    .player-slot {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      background: rgba(20, 15, 28, 0.75);
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 8px 12px;
+      min-width: 110px;
+      backdrop-filter: blur(8px);
+      transition: all 0.25s ease;
+      position: relative;
+    }
+
+    .player-slot.active-turn {
+      border-color: #f59e0b;
+      box-shadow: 0 0 18px rgba(245, 158, 11, 0.5), inset 0 0 10px rgba(245, 158, 11, 0.2);
+      transform: scale(1.05);
+    }
+
+    .player-slot.dead {
+      opacity: 0.45;
+      filter: grayscale(100%);
+      border-color: #dc2626;
+    }
+
+    .slot-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #334155;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      position: relative;
+    }
+
+    .revolver-chamber-tag {
+      position: absolute;
+      top: -6px;
+      right: -8px;
+      background: #dc2626;
+      color: #fff;
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 1px 5px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+    }
+
+    .slot-name {
+      font-size: 0.82rem;
+      font-weight: 700;
+      max-width: 90px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .slot-card-count {
+      font-size: 0.74rem;
+      color: #94a3b8;
+    }
+
+    /* 底部玩家自身控制面板 (Bottom Player Deck & Actions) */
+    .my-dashboard {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      z-index: 5;
+    }
+
+    .my-hand-wrapper {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      min-height: 110px;
+    }
+
+    /* 快捷操作栏 */
+    .action-controls {
+      display: flex;
+      gap: 12px;
+      width: 100%;
+      max-width: 460px;
+      justify-content: center;
+    }
+
+    .btn-bar {
+      flex: 1;
+      padding: 12px 16px;
+      font-size: 1rem;
+      font-weight: 800;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.16s ease;
+      touch-action: manipulation;
+    }
+
+    .btn-play {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #ffffff;
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-play:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6);
+    }
+
+    .btn-liar {
+      background: linear-gradient(135deg, #ef4444, #b91c1c);
+      color: #ffffff;
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+    }
+
+    .btn-liar:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(239, 68, 68, 0.6);
+    }
+
+    .btn-bar:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    /* 俄罗斯轮盘弹窗与音画动效 (Revolver Modal) */
+    .revolver-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.88);
+      z-index: 1000;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding: 20px;
+    }
+
+    .revolver-overlay.show {
+      display: flex;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .revolver-box {
+      background: radial-gradient(circle at 50% 40%, #1e1329 0%, #0d0a14 100%);
+      border: 2px solid #ef4444;
+      border-radius: 24px;
+      padding: 28px 24px;
+      width: 100%;
+      max-width: 420px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      text-align: center;
+      box-shadow: 0 0 40px rgba(239, 68, 68, 0.45);
+    }
+
+    .revolver-icon {
+      font-size: 4rem;
+      filter: drop-shadow(0 0 15px rgba(239, 68, 68, 0.6));
+      animation: pulse 1.2s infinite;
+    }
+
+    .cylinder-display {
+      display: flex;
+      gap: 8px;
+      margin: 8px 0;
+    }
+
+    .chamber-hole {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      background: #1e293b;
+    }
+
+    .chamber-hole.fired {
+      background: #475569;
+      border-color: #64748b;
+      opacity: 0.5;
+    }
+
+    .chamber-hole.bullet {
+      background: #ef4444;
+      border-color: #fca5a5;
+      box-shadow: 0 0 10px #ef4444;
+    }
+
+    /* 牌局战报日志 */
+    .game-log {
+      width: 100%;
+      max-width: 700px;
+      height: 68px;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 6px 12px;
+      overflow-y: auto;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .log-item.highlight {
+      color: #f59e0b;
+      font-weight: 700;
+    }
+
+    .log-item.danger {
+      color: #ef4444;
+      font-weight: 700;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 通用游戏顶栏 -->
+  <header class="game-header">
+    <div class="header-left">
+      <a href="../index.html" class="nav-back" title="返回游戏大厅">
+        <span class="back-arrow">◀</span>
+        <span class="back-text">大厅</span>
+      </a>
+      <h1 class="game-title">🍺 骗子酒馆 <span class="badge" style="background:#dc2626; color:#fff;">Liar's Bar</span></h1>
+    </div>
+    <div class="header-right">
+      <button id="btn-sound-toggle" class="btn-icon" title="切换音效">🔊</button>
+      <button id="btn-rules-header" class="btn-icon" title="查看游戏规则">📖</button>
+      <button id="restart-btn" class="btn-icon" title="重新开始">🔄</button>
+    </div>
+  </header>
+
+  <main class="game-container">
+    <!-- 在线联机中枢状态条 -->
+    <div class="online-bar">
+      <div>
+        模式: <b id="mode-text" style="color:var(--neon-cyan)">单机人机对战</b>
+        <span id="room-info" style="display:none; margin-left:8px;">房间: <span id="room-code-tag" class="room-badge">----</span></span>
+      </div>
+      <div>
+        <button id="btn-create-room" class="btn-sm" style="background:#3b82f6; color:#fff; border:none; padding:4px 10px; border-radius:6px; cursor:pointer;">👥 创建房间</button>
+        <button id="btn-join-room" class="btn-sm" style="background:#10b981; color:#fff; border:none; padding:4px 10px; border-radius:6px; cursor:pointer; margin-left:6px;">🔗 加入房间</button>
+        <button id="btn-share-link" class="btn-sm" style="display:none; background:#f59e0b; color:#fff; border:none; padding:4px 10px; border-radius:6px; cursor:pointer; margin-left:6px;">📋 复制链接</button>
+      </div>
+    </div>
+
+    <!-- 吧台主桌面 -->
+    <div class="pub-table">
+      <!-- 上方对手席位 (P2, P3, P4) -->
+      <div class="seat-top">
+        <div id="slot-2" class="player-slot">
+          <div class="slot-avatar">🤖<span class="revolver-chamber-tag" id="chamber-2">1/6</span></div>
+          <div class="slot-name" id="name-2">野猪阿强</div>
+          <div class="slot-card-count" id="cards-count-2">手牌: 5张</div>
+        </div>
+        <div id="slot-3" class="player-slot">
+          <div class="slot-avatar">🐺<span class="revolver-chamber-tag" id="chamber-3">1/6</span></div>
+          <div class="slot-name" id="name-3">孤狼霍克</div>
+          <div class="slot-card-count" id="cards-count-3">手牌: 5张</div>
+        </div>
+        <div id="slot-4" class="player-slot">
+          <div class="slot-avatar">🦊<span class="revolver-chamber-tag" id="chamber-4">1/6</span></div>
+          <div class="slot-name" id="name-4">狐狸老千</div>
+          <div class="slot-card-count" id="cards-count-4">手牌: 5张</div>
+        </div>
+      </div>
+
+      <!-- 中央目标牌与出牌堆 -->
+      <div class="table-center-hub">
+        <div class="target-card-banner">
+          <span class="target-title">🎯 本轮指定牌面:</span>
+          <span id="target-rank-display" class="target-rank-pill">【 K 】</span>
+          <span style="font-size:0.75rem; color:#94a3b8;">(魔鬼王牌 Joker 百搭)</span>
+        </div>
+
+        <div class="table-pot-wrapper">
+          <div id="table-pot-cards" class="poker-play-zone">
+            <!-- 桌面扣下的暗牌 -->
+          </div>
+          <div id="pot-claim-badge" class="pot-claim-badge">桌面上暂无出牌</div>
+        </div>
+      </div>
+
+      <!-- 底部玩家自身控制台 -->
+      <div class="my-dashboard">
+        <div id="slot-1" class="player-slot" style="min-width: 140px; border-color: rgba(56, 189, 248, 0.4);">
+          <div class="slot-avatar" style="background:#0284c7;">🤠<span class="revolver-chamber-tag" id="chamber-1">1/6</span></div>
+          <div class="slot-name" id="name-1" style="color:#38bdf8;">你 (神枪手)</div>
+          <div class="slot-card-count" id="cards-count-1">手牌: 5张</div>
+        </div>
+
+        <!-- 玩家手牌 -->
+        <div id="my-hand" class="poker-hand-container">
+          <!-- 动态注入手牌 -->
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="action-controls">
+          <button id="btn-play-cards" class="btn-bar btn-play" disabled>
+            <span>🃏 扣牌出牌 (<span id="selected-count">0</span>/3)</span>
+          </button>
+          <button id="btn-call-liar" class="btn-bar btn-liar" disabled>
+            <span>🚨 抓谎！(质疑上一位)</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 牌局战报日志 -->
+    <div id="game-log" class="game-log">
+      <div class="log-item highlight">🍺 欢迎来到骗子酒馆！每人手握 5 张牌与一把 6 发左轮手枪。</div>
+      <div class="log-item">谎言与心理战正式开始，请诚实出牌，或者巧妙吹牛！</div>
+    </div>
+  </main>
+
+  <!-- 俄罗斯轮盘赌惊魂扣动弹窗 -->
+  <div id="revolver-modal" class="revolver-overlay">
+    <div class="revolver-box">
+      <div class="revolver-icon">🔫</div>
+      <h2 id="roulette-punish-title" style="color:#ef4444; font-size:1.4rem;">抓谎裁决！轮盘赌惩罚</h2>
+      <p id="roulette-punish-desc" style="color:#cbd5e1; font-size:0.95rem; line-height:1.5;">
+        质疑失败！[玩家] 必须拿起左轮手枪，对准自己扣动扳机！
+      </p>
+      <div id="cylinder-holes" class="cylinder-display">
+        <!-- 弹巢孔 -->
+      </div>
+      <div id="roulette-trigger-status" style="font-weight:900; font-size:1.3rem; min-height:36px; color:#fbbf24;">
+        准备扣动扳机...
+      </div>
+    </div>
+  </div>
+
+  <script src="../mqtt.min.js"></script>
+  <script src="../common/audio.js"></script>
+  <script src="../common/common.js"></script>
+  <script src="../common/network-multi.js"></script>
+  <script>
+    /**
+     * 🍺 骗子酒馆 (Liar's Bar) 核心游戏状态引擎
+     */
+    const TARGET_RANKS = ['Q', 'K', 'A'];
+    const SUITS = ['spade', 'heart', 'club', 'diamond'];
+
+    const GAME = {
+      isOnline: false,
+      net: null,
+      mySlot: 1,
+      turnSlot: 1,
+      targetRank: 'K',
+      players: [
+        { slot: 1, name: '你 (神枪手)', avatar: '🤠', isAi: false, cards: [], alive: true, chamberProgress: 1 },
+        { slot: 2, name: '野猪阿强', avatar: '🐗', isAi: true, cards: [], alive: true, chamberProgress: 1 },
+        { slot: 3, name: '孤狼霍克', avatar: '🐺', isAi: true, cards: [], alive: true, chamberProgress: 1 },
+        { slot: 4, name: '狐狸老千', avatar: '🦊', isAi: true, cards: [], alive: true, chamberProgress: 1 }
+      ],
+      deck: [],
+      tablePot: [], // 扣在桌面上的牌: [{ card, playedBySlot }]
+      lastPlayClaim: null, // { slot, count, targetRank, actualCards }
+      selectedCardIndices: [],
+      isProcessingRoulette: false
+    };
+
+    // 初始化牌库 (20张: 6 Q, 6 K, 6 A, 2 Joker)
+    function buildDeck() {
+      const deck = [];
+      ['Q', 'K', 'A'].forEach(rank => {
+        for (let i = 0; i < 6; i++) {
+          const suit = SUITS[i % 4];
+          deck.push({ rank, suit, isJoker: false, id: `${rank}_${suit}_${i}` });
+        }
+      });
+      deck.push({ rank: 'JOKER', suit: 'joker-black', isJoker: true, id: 'joker_1' });
+      deck.push({ rank: 'JOKER', suit: 'joker-red', isJoker: true, id: 'joker_2' });
+      return shuffle(deck);
+    }
+
+    function shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function log(msg, type = 'normal') {
+      const box = document.getElementById('game-log');
+      const item = document.createElement('div');
+      item.className = 'log-item ' + (type === 'highlight' ? 'highlight' : type === 'danger' ? 'danger' : '');
+      item.textContent = `[${new Date().toLocaleTimeString().split(' ')[0]}] ${msg}`;
+      box.appendChild(item);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    // 开始全新对局
+    function startNewGame() {
+      GAME.players.forEach(p => {
+        p.alive = true;
+        p.chamberProgress = 1; // 1/6
+        p.cards = [];
+      });
+      startNewRound();
+    }
+
+    // 开始新一轮 (发牌、抽目标牌)
+    function startNewRound() {
+      GAME.deck = buildDeck();
+      GAME.tablePot = [];
+      GAME.lastPlayClaim = null;
+      GAME.selectedCardIndices = [];
+      GAME.isProcessingRoulette = false;
+
+      // 随机本轮目标牌
+      GAME.targetRank = TARGET_RANKS[Math.floor(Math.random() * TARGET_RANKS.length)];
+      document.getElementById('target-rank-display').textContent = `【 ${GAME.targetRank} 】`;
+
+      // 发牌给存活玩家 (每人 5 张)
+      const alivePlayers = GAME.players.filter(p => p.alive);
+      alivePlayers.forEach(p => {
+        p.cards = [];
+        for (let i = 0; i < 5; i++) {
+          if (GAME.deck.length > 0) p.cards.push(GAME.deck.pop());
+        }
+        // 理牌
+        p.cards.sort((a, b) => (a.rank > b.rank ? 1 : -1));
+      });
+
+      // 顺延到下一个存活玩家先手
+      let nextTurn = GAME.turnSlot;
+      while (!GAME.players.find(p => p.slot === nextTurn && p.alive)) {
+        nextTurn = (nextTurn % 4) + 1;
+      }
+      GAME.turnSlot = nextTurn;
+
+      log(`🔔 新一轮开始！指定牌面为【${GAME.targetRank}】，每人已补满手牌！`, 'highlight');
+      if (window.AUDIO) window.AUDIO.play('card_draw');
+
+      renderAll();
+      checkTurnAction();
+    }
+
+    // 渲染全盘
+    function renderAll() {
+      renderSeats();
+      renderPot();
+      renderMyHand();
+      updateButtons();
+    }
+
+    function renderSeats() {
+      GAME.players.forEach(p => {
+        const slotEl = document.getElementById(`slot-${p.slot}`);
+        if (!slotEl) return;
+
+        if (!p.alive) {
+          slotEl.className = 'player-slot dead';
+        } else if (p.slot === GAME.turnSlot) {
+          slotEl.className = 'player-slot active-turn';
+        } else {
+          slotEl.className = 'player-slot';
+        }
+
+        const countEl = document.getElementById(`cards-count-${p.slot}`);
+        if (countEl) countEl.textContent = p.alive ? `手牌: ${p.cards.length}张` : '💀 已阵亡';
+
+        const chamberEl = document.getElementById(`chamber-${p.slot}`);
+        if (chamberEl) {
+          chamberEl.textContent = `${p.chamberProgress}/6`;
+        }
+      });
+    }
+
+    function renderPot() {
+      const potEl = document.getElementById('table-pot-cards');
+      potEl.innerHTML = '';
+
+      GAME.tablePot.forEach((item, idx) => {
+        const cardEl = document.createElement('div');
+        cardEl.className = 'poker-card card-back';
+        cardEl.style.transform = `rotate(${(idx - GAME.tablePot.length / 2) * 6}deg)`;
+        potEl.appendChild(cardEl);
+      });
+
+      const badge = document.getElementById('pot-claim-badge');
+      if (!GAME.lastPlayClaim) {
+        badge.textContent = '桌面上暂无出牌';
+      } else {
+        const player = GAME.players.find(p => p.slot === GAME.lastPlayClaim.slot);
+        badge.innerHTML = `上一位 <b>${player.name}</b> 宣称扣了 <b style="color:#fbbf24">${GAME.lastPlayClaim.count}张 【${GAME.lastPlayClaim.targetRank}】</b>`;
+      }
+    }
+
+    function renderMyHand() {
+      const handEl = document.getElementById('my-hand');
+      handEl.innerHTML = '';
+
+      const me = GAME.players.find(p => p.slot === GAME.mySlot);
+      if (!me || !me.alive) {
+        handEl.innerHTML = '<div style="color:#94a3b8; font-weight:700; margin:auto;">你已中弹淘汰，正在观战中...</div>';
+        return;
+      }
+
+      me.cards.forEach((card, idx) => {
+        const isSelected = GAME.selectedCardIndices.includes(idx);
+        const cardEl = document.createElement('div');
+        const suitClass = card.isJoker ? card.suit : card.suit;
+        cardEl.className = `poker-card ${suitClass} ${isSelected ? 'selected' : ''}`;
+
+        const suitSymbol = card.suit === 'spade' ? '♠' : card.suit === 'heart' ? '♥' : card.suit === 'club' ? '♣' : card.suit === 'diamond' ? '♦' : '🃏';
+
+        cardEl.innerHTML = `
+          <div class="poker-corner-top">
+            <span class="poker-rank">${card.isJoker ? 'J' : card.rank}</span>
+            <span class="poker-suit-mini">${suitSymbol}</span>
+          </div>
+          <div class="poker-center">${card.isJoker ? '🃏<div style="font-size:0.65rem">JOKER</div>' : suitSymbol}</div>
+          <div class="poker-corner-bottom">
+            <span class="poker-rank">${card.isJoker ? 'J' : card.rank}</span>
+            <span class="poker-suit-mini">${suitSymbol}</span>
+          </div>
+        `;
+
+        cardEl.onclick = () => toggleSelectCard(idx);
+        handEl.appendChild(cardEl);
+      });
+    }
+
+    function toggleSelectCard(idx) {
+      if (GAME.turnSlot !== GAME.mySlot || GAME.isProcessingRoulette) return;
+
+      const pos = GAME.selectedCardIndices.indexOf(idx);
+      if (pos > -1) {
+        GAME.selectedCardIndices.splice(pos, 1);
+      } else {
+        if (GAME.selectedCardIndices.length >= 3) {
+          if (window.showToast) window.showToast('每次出牌最多选择 3 张！');
+          return;
+        }
+        GAME.selectedCardIndices.push(idx);
+      }
+
+      if (window.AUDIO) window.AUDIO.play('click');
+      renderMyHand();
+      updateButtons();
+    }
+
+    function updateButtons() {
+      const isMyTurn = (GAME.turnSlot === GAME.mySlot) && !GAME.isProcessingRoulette;
+      const me = GAME.players.find(p => p.slot === GAME.mySlot);
+      const amIAlive = me && me.alive;
+
+      const playBtn = document.getElementById('btn-play-cards');
+      const liarBtn = document.getElementById('btn-call-liar');
+      const countSpan = document.getElementById('selected-count');
+
+      countSpan.textContent = GAME.selectedCardIndices.length;
+
+      playBtn.disabled = !isMyTurn || !amIAlive || GAME.selectedCardIndices.length === 0;
+      liarBtn.disabled = !isMyTurn || !amIAlive || !GAME.lastPlayClaim;
+    }
+
+    // 玩家出牌 (宣称是目标牌)
+    function executePlay(slot, selectedCards) {
+      const player = GAME.players.find(p => p.slot === slot);
+      if (!player) return;
+
+      // 从玩家手牌移除
+      selectedCards.forEach(c => {
+        const idx = player.cards.findIndex(card => card.id === c.id);
+        if (idx > -1) player.cards.splice(idx, 1);
+      });
+
+      // 放入桌面堆
+      selectedCards.forEach(c => {
+        GAME.tablePot.push({ card: c, playedBySlot: slot });
+      });
+
+      GAME.lastPlayClaim = {
+        slot: slot,
+        count: selectedCards.length,
+        targetRank: GAME.targetRank,
+        actualCards: [...selectedCards]
+      };
+
+      log(`🃏 [${player.name}] 扣下 ${selectedCards.length} 张牌，声称是【${GAME.targetRank}】。`);
+      if (window.AUDIO) window.AUDIO.play('card_play');
+
+      // 清空选中
+      GAME.selectedCardIndices = [];
+
+      // 检查该玩家手牌是否出完 (胜局判定)
+      if (player.cards.length === 0) {
+        log(`✨ [${player.name}] 手牌全部出尽！`);
+      }
+
+      advanceTurn();
+    }
+
+    // 切换至下一位存活玩家
+    function advanceTurn() {
+      let next = (GAME.turnSlot % 4) + 1;
+      let loopCount = 0;
+      while (!GAME.players.find(p => p.slot === next && p.alive)) {
+        next = (next % 4) + 1;
+        loopCount++;
+        if (loopCount > 8) break;
+      }
+      GAME.turnSlot = next;
+      renderAll();
+      checkTurnAction();
+    }
+
+    // 抓谎！质疑上一位出牌者
+    function executeCallLiar(challengerSlot) {
+      if (!GAME.lastPlayClaim || GAME.isProcessingRoulette) return;
+
+      GAME.isProcessingRoulette = true;
+      const challenger = GAME.players.find(p => p.slot === challengerSlot);
+      const bluffer = GAME.players.find(p => p.slot === GAME.lastPlayClaim.slot);
+
+      log(`🚨 [${challenger.name}] 拍桌质疑上一位 [${bluffer.name}] 是个骗子！准备翻开底牌！`, 'danger');
+      if (window.AUDIO) window.AUDIO.play('bid');
+
+      // 掀开被质疑者的牌
+      revealClaimCards(bluffer, challenger);
+    }
+
+    function revealClaimCards(bluffer, challenger) {
+      const cards = GAME.lastPlayClaim.actualCards;
+      const targetRank = GAME.lastPlayClaim.targetRank;
+
+      // 判定是否撒谎
+      const hasLie = cards.some(c => c.rank !== targetRank && !c.isJoker);
+
+      setTimeout(() => {
+        // 展示揭开结果
+        const cardNames = cards.map(c => c.isJoker ? '魔鬼王牌(Joker)' : `${c.rank}`).join('、');
+
+        if (hasLie) {
+          log(`💥 铁证如山！[${bluffer.name}] 实际出了 [${cardNames}]！谎言被当场戳穿！`, 'danger');
+          triggerRouletteShowdown(bluffer, `🚨 撒谎被揭穿！[${bluffer.name}] 必须接受俄罗斯轮盘赌惩罚！`);
+        } else {
+          log(`🛡️ 诚实无欺！[${bluffer.name}] 确实出了 [${cardNames}]！[${challenger.name}] 抓谎失败！`, 'highlight');
+          triggerRouletteShowdown(challenger, `🤦 抓谎失败！[${challenger.name}] 必须接受俄罗斯轮盘赌惩罚！`);
+        }
+      }, 900);
+    }
+
+    // 俄罗斯轮盘赌流程
+    function triggerRouletteShowdown(punishedPlayer, descText) {
+      const modal = document.getElementById('revolver-modal');
+      const descEl = document.getElementById('roulette-punish-desc');
+      const statusEl = document.getElementById('roulette-trigger-status');
+      const holesEl = document.getElementById('cylinder-holes');
+
+      descEl.textContent = descText;
+      statusEl.textContent = '装填弹药... 旋转转轮...';
+      holesEl.innerHTML = '';
+
+      for (let i = 1; i <= 6; i++) {
+        const hole = document.createElement('div');
+        hole.className = 'chamber-hole ' + (i < punishedPlayer.chamberProgress ? 'fired' : '');
+        holesEl.appendChild(hole);
+      }
+
+      modal.classList.add('show');
+      if (window.AUDIO) window.AUDIO.play('rack');
+
+      setTimeout(() => {
+        statusEl.textContent = '扣动扳机中... 3... 2... 1...';
+        if (window.AUDIO) window.AUDIO.play('heartbeat');
+
+        setTimeout(() => {
+          // 判定中弹: 概率 = 1 / (7 - chamberProgress)
+          const remainingChambers = 7 - punishedPlayer.chamberProgress;
+          const isHit = Math.random() < (1 / remainingChambers);
+
+          if (isHit) {
+            // 中弹身亡
+            if (window.AUDIO) window.AUDIO.play('shot');
+            statusEl.innerHTML = '<span style="color:#ef4444">💥 砰！！！枪声炸响！中弹阵亡！</span>';
+            punishedPlayer.alive = false;
+            log(`💀 惨烈！[${punishedPlayer.name}] 在第 ${punishedPlayer.chamberProgress} 发轮盘赌中不幸中弹，遗憾出局！`, 'danger');
+          } else {
+            // 空膛存活
+            if (window.AUDIO) window.AUDIO.play('blank');
+            statusEl.innerHTML = '<span style="color:#10b981">💨 咔哒！空膛！大难不死！</span>';
+            punishedPlayer.chamberProgress++;
+            log(`🍀 命硬！[${punishedPlayer.name}] 扣动扳机只发出一声清脆咔哒，侥幸捡回一命！当前弹巢: ${punishedPlayer.chamberProgress}/6。`, 'highlight');
+          }
+
+          setTimeout(() => {
+            modal.classList.remove('show');
+            checkRoundOrGameOver();
+          }, 2400);
+
+        }, 1600);
+      }, 1200);
+    }
+
+    function checkRoundOrGameOver() {
+      const alivePlayers = GAME.players.filter(p => p.alive);
+      if (alivePlayers.length <= 1) {
+        // 游戏决出最终胜者
+        const winner = alivePlayers[0] || GAME.players[0];
+        log(`🏆 终局荣耀！[${winner.name}] 凭借高超的心理战术与逆天运气，成为骗子酒馆的最终生还者！`, 'highlight');
+        if (window.AUDIO) window.AUDIO.play('win');
+        if (window.showModal) {
+          window.showModal('🏆 酒馆枪王生还者诞生！', `
+            <div style="text-align:center; padding:10px;">
+              <div style="font-size:3rem; margin-bottom:8px;">👑</div>
+              <h3 style="color:#fbbf24; font-size:1.3rem;">恭喜 ${winner.name} 胜出！</h3>
+              <p style="color:#cbd5e1; margin-top:8px;">全场其余赌徒均已中弹淘汰，你是唯一的酒馆传奇！</p>
+            </div>
+          `, startNewGame);
+        }
+      } else {
+        // 进入下一轮
+        startNewRound();
+      }
+    }
+
+    // 检查轮到当前玩家还是 AI
+    function checkTurnAction() {
+      const current = GAME.players.find(p => p.slot === GAME.turnSlot);
+      if (!current || !current.alive) return;
+
+      if (current.isAi) {
+        handleAiTurn(current);
+      }
+    }
+
+    // 启发式智能 AI 决策
+    function handleAiTurn(ai) {
+      setTimeout(() => {
+        if (GAME.turnSlot !== ai.slot || GAME.isProcessingRoulette) return;
+
+        // 1. 评估是否质疑上一位
+        if (GAME.lastPlayClaim) {
+          const claim = GAME.lastPlayClaim;
+          const mySameRankCards = ai.cards.filter(c => c.rank === claim.targetRank || c.isJoker);
+          
+          // 如果我自己手里有 3~4 张目标牌，对手还声称出了 2~3 张 -> 绝大概率是骗子！
+          let suspicion = 0.15; // 基础怀疑度
+          if (claim.count === 3) suspicion += 0.45;
+          if (mySameRankCards.length >= 3) suspicion += 0.5;
+          if (mySameRankCards.length >= 2 && claim.count >= 2) suspicion += 0.35;
+
+          if (Math.random() < suspicion) {
+            executeCallLiar(ai.slot);
+            return;
+          }
+        }
+
+        // 2. 选择出牌
+        const matchingCards = ai.cards.filter(c => c.rank === GAME.targetRank || c.isJoker);
+        let cardsToPlay = [];
+
+        if (matchingCards.length > 0 && Math.random() < 0.75) {
+          // 诚实出牌: 出 1 到 2 张真牌
+          const num = Math.min(matchingCards.length, Math.random() > 0.6 ? 2 : 1);
+          cardsToPlay = matchingCards.slice(0, num);
+        } else {
+          // 吹牛撒谎: 拿其他杂牌混充
+          const nonMatching = ai.cards.filter(c => c.rank !== GAME.targetRank && !c.isJoker);
+          if (nonMatching.length > 0) {
+            const num = Math.min(nonMatching.length, Math.random() > 0.7 ? 2 : 1);
+            cardsToPlay = nonMatching.slice(0, num);
+          } else {
+            cardsToPlay = ai.cards.slice(0, 1);
+          }
+        }
+
+        executePlay(ai.slot, cardsToPlay);
+      }, 1000 + Math.random() * 800);
+    }
+
+    // 用户操作绑定
+    document.getElementById('btn-play-cards').onclick = () => {
+      if (GAME.selectedCardIndices.length === 0) return;
+      const me = GAME.players.find(p => p.slot === GAME.mySlot);
+      const chosen = GAME.selectedCardIndices.map(i => me.cards[i]);
+      executePlay(GAME.mySlot, chosen);
+    };
+
+    document.getElementById('btn-call-liar').onclick = () => {
+      executeCallLiar(GAME.mySlot);
+    };
+
+    // ==========================================================================
+    // 🌐 多人在线联机中枢绑定 (Multiplayer Network Integration)
+    // ==========================================================================
+    const net = new MultiPlayerNetwork({
+      game: 'liarsbar',
+      maxPlayers: 4,
+      onConnect: (roomId, role) => {
+        document.getElementById('mode-text').innerHTML = `<b style="color:#10b981">在线联机 (${role === 'host' ? '房主' : '客方'})</b>`;
+        document.getElementById('room-info').style.display = 'inline';
+        document.getElementById('room-code-tag').textContent = roomId;
+        document.getElementById('btn-share-link').style.display = 'inline-block';
+      },
+      onSeatUpdate: (seats, mySlot) => {
+        GAME.mySlot = mySlot;
+        seats.forEach(s => {
+          const p = GAME.players.find(player => player.slot === s.slot);
+          if (p) {
+            p.name = s.name;
+            p.isAi = s.isAi;
+            p.avatar = s.isAi ? ['🤖','🐺','🦊'][s.slot - 2] || '👤' : (s.slot === mySlot ? '🤠' : '😎');
+            const nameEl = document.getElementById(`name-${s.slot}`);
+            if (nameEl) nameEl.textContent = s.name;
+          }
+        });
+        renderSeats();
+      }
+    });
+
+    document.getElementById('btn-create-room').onclick = () => {
+      const room = net.createRoom(4, '玩家 1 (房主)');
+      if (room) {
+        GAME.isOnline = true;
+        log(`🌐 房间 [${room}] 已创建！其他好友输入房间号即可进入同台博弈。`, 'highlight');
+      }
+    };
+
+    document.getElementById('btn-join-room').onclick = () => {
+      const r = prompt('请输入 4 位骗子酒馆房间号:');
+      if (r) {
+        net.joinRoom(r, '神秘赌徒');
+        GAME.isOnline = true;
+      }
+    };
+
+    document.getElementById('btn-share-link').onclick = () => {
+      net.copyShareLink();
+    };
+
+    // 检查 URL 直达房间
+    const urlParams = MultiPlayerNetwork.checkUrlRoom();
+    if (urlParams.room) {
+      net.joinRoom(urlParams.room);
+      GAME.isOnline = true;
+    }
+
+    // 绑定规则与顶栏
+    initCommonHeader(
+      '🍺 骗子酒馆 (Liar\'s Bar) 规则与技巧',
+      `
+      <div style="line-height:1.7; font-size:0.92rem;">
+        <p><b>1. 目标牌与出牌：</b>系统每轮随机指定目标牌 (Q、K、A)。輪到你时，必须扣下 1~3 张手牌，并宣称它们全部是指定目标牌。魔鬼王牌 (Joker) 为万能百搭牌。</p>
+        <p style="margin-top:8px;"><b>2. 心理战与吹牛：</b>你可以诚实出牌，也可以扣下其他杂牌混充吹牛欺诈。</p>
+        <p style="margin-top:8px;"><b>3. 抓谎与质疑：</b>下一位玩家可以相信并继续出牌，或选择拍桌<b>【抓谎】</b>！一旦抓谎，上一位扣下的牌将被公开展出。</p>
+        <p style="margin-top:8px;"><b>4. 俄罗斯轮盘赌：</b>
+          - 若被质疑者撒谎：被质疑者接受左轮手枪惩罚！<br>
+          - 若被质疑者诚实：质疑者抓谎失败，接受左轮手枪惩罚！<br>
+          左轮共有 6 个弹巢，含 1 发实弹。空膛侥幸存活，中弹当场淘汰！坚持到最后的胜者赢得一切！
+        </p>
+      </div>
+      `,
+      startNewGame
+    );
+
+    // 启动初始单机局
+    startNewGame();
+  </script>
+</body>
+</html>

@@ -1,0 +1,279 @@
+/**
+ * 🃏 聚会游戏大厅 · 通用高清矢量扑克组件库 (Universal Playing Cards Styling)
+ * 纯 CSS 矢量与响应式排版，无需加载外部 54 张散装图片，0 延迟、0 白块、高分屏无损！
+ * 包含：手牌重叠流式排版、防挤爆负边距自适应、点击弹起 (Elevation)、滑动连选高亮、出牌飞行手感
+ */
+
+/* ==========================================================================
+   1. 单张扑克牌基础样式 (Card Foundation)
+   ========================================================================== */
+.poker-card {
+  position: relative;
+  width: 68px;
+  height: 98px;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.28), 0 1px 2px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 5px 6px;
+  box-sizing: border-box;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: pointer;
+  transition: transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.16s ease, border-color 0.16s ease;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  flex-shrink: 0;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+@media (max-width: 600px) {
+  .poker-card {
+    width: 54px;
+    height: 78px;
+    border-radius: 6px;
+    padding: 3px 4px;
+  }
+}
+
+@media (max-width: 380px) {
+  .poker-card {
+    width: 46px;
+    height: 66px;
+    padding: 2px 3px;
+  }
+}
+
+/* 花色与点数颜色 */
+.poker-card.heart,
+.poker-card.diamond,
+.poker-card.joker-red {
+  color: #dc2626; /* 鲜明正红色 */
+}
+
+.poker-card.spade,
+.poker-card.club,
+.poker-card.joker-black {
+  color: #1e293b; /* 优雅深石墨黑 */
+}
+
+/* 牌角点数与小花色 */
+.poker-corner-top,
+.poker-corner-bottom {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+  width: 18px;
+}
+
+.poker-corner-bottom {
+  transform: rotate(180deg);
+  align-self: flex-end;
+}
+
+.poker-rank {
+  font-size: 1.15rem;
+  font-weight: 900;
+  letter-spacing: -0.05em;
+}
+
+@media (max-width: 600px) {
+  .poker-rank {
+    font-size: 0.95rem;
+  }
+}
+@media (max-width: 380px) {
+  .poker-rank {
+    font-size: 0.82rem;
+  }
+}
+
+.poker-suit-mini {
+  font-size: 0.85rem;
+  margin-top: 1px;
+}
+@media (max-width: 600px) {
+  .poker-suit-mini {
+    font-size: 0.7rem;
+  }
+}
+
+/* 牌面中心大花色 / 纹理 */
+.poker-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2.2rem;
+  opacity: 0.85;
+  pointer-events: none;
+}
+@media (max-width: 600px) {
+  .poker-center {
+    font-size: 1.6rem;
+  }
+}
+
+/* 王牌 / 大小王特写 */
+.poker-card.joker-red .poker-center,
+.poker-card.joker-black .poker-center {
+  font-size: 1.1rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-align: center;
+}
+
+/* 牌背样式 (Card Back) */
+.poker-card.card-back {
+  background: linear-gradient(135deg, #1e3a8a 0%, #172554 100%);
+  border: 2px solid #ffffff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+}
+
+.poker-card.card-back::before {
+  content: "";
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  right: 4px;
+  border: 1px dashed rgba(255, 255, 255, 0.35);
+  border-radius: 4px;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.15) 1px, transparent 1px);
+  background-size: 6px 6px;
+}
+
+.poker-card.card-back::after {
+  content: "♠";
+  position: relative;
+  font-size: 1.8rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* ==========================================================================
+   2. 交互状态 (Selected / Active / Disabled)
+   ========================================================================== */
+.poker-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.35);
+}
+
+/* 选中弹起状态 */
+.poker-card.selected {
+  transform: translateY(-20px) !important;
+  border-color: #f59e0b !important;
+  box-shadow: 0 10px 20px rgba(245, 158, 11, 0.45), 0 0 10px rgba(245, 158, 11, 0.6) !important;
+}
+
+@media (max-width: 600px) {
+  .poker-card.selected {
+    transform: translateY(-15px) !important;
+  }
+}
+
+/* 禁用置灰状态 */
+.poker-card.disabled {
+  opacity: 0.45;
+  filter: grayscale(80%);
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* 地主专属角标 */
+.poker-badge-landlord {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: linear-gradient(135deg, #ef4444, #f59e0b);
+  color: #ffffff;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  z-index: 5;
+}
+
+/* ==========================================================================
+   3. 手牌流式排列容器 (Hand Stack & Flow Layout)
+   ========================================================================== */
+.poker-hand-container {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  position: relative;
+  padding: 24px 10px 8px;
+  min-height: 120px;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: visible;
+}
+
+/* 叠牌重叠负边距 - 自动防挤出屏幕 */
+.poker-hand-container .poker-card:not(:first-child) {
+  margin-left: -32px;
+}
+
+@media (max-width: 768px) {
+  .poker-hand-container .poker-card:not(:first-child) {
+    margin-left: -26px;
+  }
+}
+
+@media (max-width: 480px) {
+  .poker-hand-container .poker-card:not(:first-child) {
+    margin-left: -21px;
+  }
+}
+
+/* 极多手牌时的极限紧凑模式 */
+.poker-hand-container.compact .poker-card:not(:first-child) {
+  margin-left: -38px;
+}
+@media (max-width: 480px) {
+  .poker-hand-container.compact .poker-card:not(:first-child) {
+    margin-left: -28px;
+  }
+}
+
+/* 出牌展示区 (Played Cards Zone) */
+.poker-play-zone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 105px;
+  margin: 10px 0;
+  perspective: 600px;
+}
+
+.poker-play-zone .poker-card {
+  cursor: default;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  animation: cardPlayFly 0.22s ease-out;
+}
+
+.poker-play-zone .poker-card:hover {
+  transform: none;
+}
+
+.poker-play-zone .poker-card:not(:first-child) {
+  margin-left: -24px;
+}
+
+@keyframes cardPlayFly {
+  from {
+    opacity: 0;
+    transform: scale(1.15) translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}

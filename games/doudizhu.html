@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>经典斗地主 · Fight the Landlord - 聚会游戏大厅</title>
+  <link rel="stylesheet" href="../common/common.css">
+  <link rel="stylesheet" href="../common/cards.css">
+  <style>
+    :root {
+      --table-green: #064e3b;
+      --table-border: #047857;
+      --gold: #f59e0b;
+      --p1-blue: #38bdf8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      background: radial-gradient(circle at 50% 20%, #064e3b 0%, #022c22 70%, #01140f 100%);
+      color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-x: hidden;
+      padding-bottom: 24px;
+    }
+
+    .game-container {
+      width: 100%;
+      max-width: 960px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px 14px;
+      gap: 10px;
+      position: relative;
+    }
+
+    /* 联机与房间栏 */
+    .online-bar {
+      width: 100%;
+      background: rgba(4, 40, 30, 0.85);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 14px;
+      padding: 8px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.88rem;
+      backdrop-filter: blur(12px);
+    }
+
+    .room-badge {
+      background: rgba(16, 185, 129, 0.2);
+      border: 1px solid #10b981;
+      color: #34d399;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-weight: 800;
+      font-family: monospace;
+    }
+
+    /* 斗地主竞技主牌桌 */
+    .poker-table {
+      width: 100%;
+      min-height: 480px;
+      background: radial-gradient(ellipse at 50% 45%, #065f46 0%, #064e3b 65%, #022c22 100%);
+      border: 6px solid #047857;
+      border-radius: 40px;
+      box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.6), 0 12px 35px rgba(0, 0, 0, 0.6), 0 0 25px rgba(16, 185, 129, 0.2);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px;
+      overflow: hidden;
+    }
+
+    /* 顶部 3 张底牌区域 */
+    .bottom-cards-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(2, 44, 34, 0.85);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      border-radius: 20px;
+      padding: 6px 14px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35);
+      z-index: 5;
+    }
+
+    .bottom-cards-bar .poker-card {
+      width: 44px;
+      height: 64px;
+      font-size: 0.75rem;
+      padding: 2px 3px;
+    }
+
+    .bottom-cards-bar .poker-card .poker-rank {
+      font-size: 0.8rem;
+    }
+
+    .bottom-cards-bar .poker-card .poker-center {
+      font-size: 1.1rem;
+    }
+
+    /* 左右对手面板 */
+    .table-opponents {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 0 10px;
+      z-index: 2;
+    }
+
+    .opponent-seat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      background: rgba(3, 35, 26, 0.8);
+      border: 2px solid rgba(255, 255, 255, 0.12);
+      border-radius: 18px;
+      padding: 8px 14px;
+      min-width: 115px;
+      backdrop-filter: blur(8px);
+      position: relative;
+      transition: all 0.2s ease;
+    }
+
+    .opponent-seat.active-turn {
+      border-color: #f59e0b;
+      box-shadow: 0 0 18px rgba(245, 158, 11, 0.6);
+      transform: scale(1.05);
+    }
+
+    .role-badge {
+      position: absolute;
+      top: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.68rem;
+      font-weight: 800;
+      padding: 1px 7px;
+      border-radius: 8px;
+      white-space: nowrap;
+    }
+
+    .role-badge.landlord {
+      background: linear-gradient(135deg, #ef4444, #f59e0b);
+      color: #fff;
+      box-shadow: 0 2px 6px rgba(239, 68, 68, 0.5);
+    }
+
+    .role-badge.peasant {
+      background: linear-gradient(135deg, #3b82f6, #06b6d4);
+      color: #fff;
+    }
+
+    /* 牌桌中央出牌展示区 (Tricks Playfield) */
+    .table-center-playfield {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 120px;
+      position: relative;
+      margin: 10px 0;
+    }
+
+    .played-trick-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .trick-source-tag {
+      font-size: 0.76rem;
+      color: #94a3b8;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+
+    .pass-banner {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #cbd5e1;
+      padding: 6px 16px;
+      background: rgba(15, 23, 42, 0.7);
+      border-radius: 12px;
+      letter-spacing: 2px;
+    }
+
+    /* 底部玩家控制中心 */
+    .my-play-zone {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      z-index: 5;
+    }
+
+    .my-info-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* 叫分与出牌操作栏 */
+    .controls-panel {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      flex-wrap: wrap;
+    }
+
+    .btn-action {
+      padding: 10px 18px;
+      font-size: 0.95rem;
+      font-weight: 800;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.16s ease;
+      touch-action: manipulation;
+    }
+
+    .btn-bid {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
+    }
+
+    .btn-pass-bid {
+      background: #475569;
+      color: #e2e8f0;
+    }
+
+    .btn-play-card {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-pass-play {
+      background: #64748b;
+      color: #f1f5f9;
+    }
+
+    .btn-hint {
+      background: #3b82f6;
+      color: #fff;
+    }
+
+    .btn-action:hover:not(:disabled) {
+      transform: translateY(-2px);
+      filter: brightness(1.1);
+    }
+
+    .btn-action:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    /* 战报栏 */
+    .game-log {
+      width: 100%;
+      max-width: 720px;
+      height: 60px;
+      background: rgba(4, 35, 26, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 6px 12px;
+      overflow-y: auto;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 通用游戏顶栏 -->
+  <header class="game-header">
+    <div class="header-left">
+      <a href="../index.html" class="nav-back" title="返回游戏大厅">
+        <span class="back-arrow">◀</span>
+        <span class="back-text">大厅</span>
+      </a>
+      <h1 class="game-title">👑 经典斗地主 <span class="badge" style="background:#f59e0b; color:#fff;">Doudizhu</span></h1>
+    </div>
+    <div class="header-right">
+      <button id="btn-sound-toggle" class="btn-icon" title="切换音效">🔊</button>
+      <button id="btn-rules-header" class="btn-icon" title="查看规则">📖</button>
+      <button id="restart-btn" class="btn-icon" title="重新开始">🔄</button>
+    </div>
+  </header>
+
+  <main class="game-container">
+    <!-- 在线联机状态栏 -->
+    <div class="online-bar">
+      <div>
+        模式: <b id="mode-text" style="color:var(--p1-blue)">单机休闲对战</b>
+        <span id="room-info" style="display:none; margin-left:8px;">房间: <span id="room-code-tag" class="room-badge">----</span></span>
+      </div>
+      <div>
+        <button id="btn-create-room" class="btn-sm" style="background:#3b82f6; color:#fff; border:none; padding:4px 10px; border-radius:6px; cursor:pointer;">👥 创建房间</button>
+        <button id="btn-join-room" class="btn-sm" style="background:#10b981; color:#fff; border:none; padding:4px 10px; border-radius:6px; cursor:pointer; margin-left:6px;">🔗 加入房间</button>
+        <button id="btn-share-link" class="btn-sm" style="display:none; background:#f59e0b; color:#fff; border:none; padding:4px 10px; border-radius:6px; cursor:pointer; margin-left:6px;">📋 复制链接</button>
+      </div>
+    </div>
+
+    <!-- 牌桌主体 -->
+    <div class="poker-table">
+      <!-- 顶部 3 张公共底牌 -->
+      <div class="bottom-cards-bar">
+        <span style="font-size:0.75rem; color:#cbd5e1; font-weight:700;">底牌:</span>
+        <div id="bottom-cards-wrapper" style="display:flex; gap:6px;">
+          <div class="poker-card card-back"></div>
+          <div class="poker-card card-back"></div>
+          <div class="poker-card card-back"></div>
+        </div>
+      </div>
+
+      <!-- 左右两家对手 (P3 左家, P2 右家) -->
+      <div class="table-opponents">
+        <!-- 左家 (P3) -->
+        <div id="seat-3" class="opponent-seat">
+          <div id="role-tag-3" class="role-badge peasant">农民</div>
+          <div style="font-size:1.6rem;">🤖</div>
+          <div id="name-3" style="font-size:0.85rem; font-weight:700;">电脑 AI (左)</div>
+          <div id="count-3" style="font-size:0.75rem; color:#cbd5e1;">手牌: 17张</div>
+          <div id="status-3" style="font-size:0.74rem; color:#f59e0b; font-weight:800; min-height:16px;"></div>
+        </div>
+
+        <!-- 右家 (P2) -->
+        <div id="seat-2" class="opponent-seat">
+          <div id="role-tag-2" class="role-badge peasant">农民</div>
+          <div style="font-size:1.6rem;">🤖</div>
+          <div id="name-2" style="font-size:0.85rem; font-weight:700;">电脑 AI (右)</div>
+          <div id="count-2" style="font-size:0.75rem; color:#cbd5e1;">手牌: 17张</div>
+          <div id="status-2" style="font-size:0.74rem; color:#f59e0b; font-weight:800; min-height:16px;"></div>
+        </div>
+      </div>
+
+      <!-- 中央出牌区 (Tricks Area) -->
+      <div class="table-center-playfield">
+        <div id="last-trick-zone" class="poker-play-zone">
+          <!-- 当前场上压着的牌 -->
+        </div>
+        <div id="trick-author-tag" class="trick-source-tag" style="display:none;"></div>
+      </div>
+
+      <!-- 底部本家控制台 -->
+      <div class="my-play-zone">
+        <div class="my-info-bar">
+          <div id="role-tag-1" class="role-badge peasant" style="position:static; transform:none;">农民</div>
+          <div id="name-1" style="font-size:0.9rem; font-weight:800; color:#38bdf8;">你 (玩家 1)</div>
+          <div id="count-1" style="font-size:0.8rem; color:#94a3b8;">剩余: 17张</div>
+        </div>
+
+        <!-- 动态交互操作控制台 -->
+        <div id="controls-container" class="controls-panel">
+          <!-- 叫地主 / 抢地主 / 出牌按钮 -->
+        </div>
+
+        <!-- 玩家自己的手牌区 -->
+        <div id="my-hand" class="poker-hand-container">
+          <!-- 手牌流 -->
+        </div>
+      </div>
+    </div>
+
+    <!-- 牌局战报日志 -->
+    <div id="game-log" class="game-log">
+      <div>👑 经典斗地主就绪！洗牌发牌完毕，准备叫地主。</div>
+    </div>
+  </main>
+
+  <script src="../mqtt.min.js"></script>
+  <script src="../common/audio.js"></script>
+  <script src="../common/common.js"></script>
+  <script src="../common/network-multi.js"></script>
+  <script>
+    /**
+     * 👑 经典斗地主 (Fight the Landlord) 纯纯正正全套牌型判定与游戏状态机
+     */
+
+    const RANKS = ['3','4','5','6','7','8','9','10','J','Q','K','A','2'];
+    const SUITS = ['spade', 'heart', 'club', 'diamond'];
+
+    // 点数权重: 3 -> 3 ... 2 -> 15, 小王 -> 16, 大王 -> 17
+    function getCardWeight(rank) {
+      if (rank === 'SMALL_JOKER') return 16;
+      if (rank === 'BIG_JOKER') return 17;
+      if (rank === '2') return 15;
+      if (rank === 'A') return 14;
+      if (rank === 'K') return 13;
+      if (rank === 'Q') return 12;
+      if (rank === 'J') return 11;
+      return parseInt(rank, 10);
+    }
+
+    const DOUDZ = {
+      isOnline: false,
+      net: null,
+      mySlot: 1,
+      phase: 'BID', // 'BID' | 'PLAY' | 'OVER'
+      turnSlot: 1,
+      landlordSlot: null,
+      bidScore: 0,
+      bidTurnCount: 0,
+      bottomCards: [],
+      players: [
+        { slot: 1, name: '你 (玩家 1)', isAi: false, role: 'peasant', cards: [] },
+        { slot: 2, name: '电脑 AI (右)', isAi: true, role: 'peasant', cards: [] },
+        { slot: 3, name: '电脑 AI (左)', isAi: true, role: 'peasant', cards: [] }
+      ],
+      selectedIndices: [],
+      lastValidPlay: null, // { slot, cards, pattern }
+      consecutivePassCount: 0
+    };
+
+    // 构建完整 54 张牌
+    function createFullDeck() {
+      const deck = [];
+      RANKS.forEach(rank => {
+        SUITS.forEach(suit => {
+          deck.push({
+            rank: rank,
+            suit: suit,
+            weight: getCardWeight(rank),
+            id: `${suit}_${rank}`
+          });
+        });
+      });
+      deck.push({ rank: 'SMALL_JOKER', suit: 'joker-black', weight: 16, id: 'joker_black' });
+      deck.push({ rank: 'BIG_JOKER', suit: 'joker-red', weight: 17, id: 'joker_red' });
+      return shuffle(deck);
+    }
+
+    function shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function sortCards(cards) {
+      return cards.sort((a, b) => b.weight - a.weight);
+    }
+
+    function log(msg) {
+      const box = document.getElementById('game-log');
+      const item = document.createElement('div');
+      item.textContent = `[${new Date().toLocaleTimeString().split(' ')[0]}] ${msg}`;
+      box.appendChild(item);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    // ==========================================================================
+    // 🧠 严谨完整的斗地主合法牌型解析器 (Hand Pattern Engine)
+    // ==========================================================================
+    function analyzePattern(cards) {
+      if (!cards || cards.length === 0) return null;
+      const len = cards.length;
+      const sorted = [...cards].sort((a, b) => a.weight - b.weight);
+
+      // 1. 王炸 / 火箭 (2张)
+      if (len === 2 && sorted[0].weight === 16 && sorted[1].weight === 17) {
+        return { type: 'ROCKET', weight: 17, len: 2 };
+      }
+
+      // 统计每个点数的张数
+      const countMap = {};
+      sorted.forEach(c => {
+        countMap[c.weight] = (countMap[c.weight] || 0) + 1;
+      });
+      const counts = Object.entries(countMap).map(([w, cnt]) => ({ weight: parseInt(w, 10), count: cnt }));
+      counts.sort((a, b) => b.count - a.count || b.weight - a.weight);
+
+      // 2. 单张 (1张)
+      if (len === 1) {
+        return { type: 'SINGLE', weight: sorted[0].weight, len: 1 };
+      }
+
+      // 3. 对子 (2张)
+      if (len === 2 && counts[0].count === 2) {
+        return { type: 'PAIR', weight: counts[0].weight, len: 2 };
+      }
+
+      // 4. 三张 (3张)
+      if (len === 3 && counts[0].count === 3) {
+        return { type: 'TRIPLET', weight: counts[0].weight, len: 3 };
+      }
+
+      // 5. 炸弹 (4张同点数)
+      if (len === 4 && counts[0].count === 4) {
+        return { type: 'BOMB', weight: counts[0].weight, len: 4 };
+      }
+
+      // 6. 三带一 (4张)
+      if (len === 4 && counts[0].count === 3 && counts[1].count === 1) {
+        return { type: 'TRIPLET_ONE', weight: counts[0].weight, len: 4 };
+      }
+
+      // 7. 三带二 / 三带一对 (5张)
+      if (len === 5 && counts[0].count === 3 && counts[1].count === 2) {
+        return { type: 'TRIPLET_PAIR', weight: counts[0].weight, len: 5 };
+      }
+
+      // 8. 四带二 (6张: 四带两单 / 8张: 四带两对)
+      if (len === 6 && counts[0].count === 4) {
+        return { type: 'FOUR_TWO_SINGLES', weight: counts[0].weight, len: 6 };
+      }
+      if (len === 8 && counts[0].count === 4 && counts[1].count === 2 && counts[2].count === 2) {
+        return { type: 'FOUR_TWO_PAIRS', weight: counts[0].weight, len: 8 };
+      }
+
+      // 9. 单顺子 (5张及以上连续，不能含 2 或王)
+      if (len >= 5 && counts.every(c => c.count === 1) && sorted[len - 1].weight <= 14) {
+        let isStraight = true;
+        for (let i = 0; i < len - 1; i++) {
+          if (sorted[i + 1].weight !== sorted[i].weight + 1) {
+            isStraight = false; break;
+          }
+        }
+        if (isStraight) {
+          return { type: 'STRAIGHT', weight: sorted[0].weight, len: len };
+        }
+      }
+
+      // 10. 双顺 / 连对 (3对及以上连续，不能含 2 或王)
+      if (len >= 6 && len % 2 === 0 && counts.every(c => c.count === 2) && counts[0].weight <= 14) {
+        const sortedPairs = counts.map(c => c.weight).sort((a, b) => a - b);
+        let isStraightPair = true;
+        for (let i = 0; i < sortedPairs.length - 1; i++) {
+          if (sortedPairs[i + 1] !== sortedPairs[i] + 1) {
+            isStraightPair = false; break;
+          }
+        }
+        if (isStraightPair) {
+          return { type: 'CONSECUTIVE_PAIRS', weight: sortedPairs[0], len: len };
+        }
+      }
+
+      // 11. 飞机 / 三顺 (2个及以上连续三张，可带单或对)
+      const triplets = counts.filter(c => c.count === 3 && c.weight <= 14).map(c => c.weight).sort((a, b) => a - b);
+      if (triplets.length >= 2) {
+        // 查找最长连续
+        let consecutiveTriplets = [];
+        for (let i = 0; i < triplets.length; i++) {
+          let curr = [triplets[i]];
+          for (let j = i + 1; j < triplets.length; j++) {
+            if (triplets[j] === curr[curr.length - 1] + 1) {
+              curr.push(triplets[j]);
+            } else break;
+          }
+          if (curr.length > consecutiveTriplets.length) {
+            consecutiveTriplets = curr;
+          }
+        }
+
+        const tCount = consecutiveTriplets.length;
+        if (tCount >= 2) {
+          // 纯飞机 (例如 333444, len = 6)
+          if (len === tCount * 3) {
+            return { type: 'AIRPLANE', weight: consecutiveTriplets[0], len: len };
+          }
+          // 飞机带翅膀单牌 (例如 333444+56, len = tCount * 4)
+          if (len === tCount * 4) {
+            return { type: 'AIRPLANE_WINGS_SINGLE', weight: consecutiveTriplets[0], len: len };
+          }
+          // 飞机带对子 (例如 333444+5566, len = tCount * 5)
+          const nonTriplets = counts.filter(c => !consecutiveTriplets.includes(c.weight));
+          if (len === tCount * 5 && nonTriplets.every(c => c.count === 2)) {
+            return { type: 'AIRPLANE_WINGS_PAIR', weight: consecutiveTriplets[0], len: len };
+          }
+        }
+      }
+
+      return null; // 非法牌型
+    }
+
+    // 牌型比较器: a 是否能压过 b
+    function canBeat(a, b) {
+      if (!a) return false;
+      if (!b) return true; // 领出牌
+
+      if (a.type === 'ROCKET') return true;
+      if (b.type === 'ROCKET') return false;
+
+      if (a.type === 'BOMB') {
+        if (b.type === 'BOMB') return a.weight > b.weight;
+        return true; // 炸弹压一切普通牌
+      }
+
+      if (a.type === b.type && a.len === b.len) {
+        return a.weight > b.weight;
+      }
+
+      return false;
+    }
+
+    // ==========================================================================
+    // 🎮 游戏核心流程 (Game Flow Machine)
+    // ==========================================================================
+    function startNewGame() {
+      const deck = createFullDeck();
+      DOUDZ.bottomCards = deck.slice(0, 3);
+      const dealt = deck.slice(3);
+
+      DOUDZ.players[0].cards = sortCards(dealt.slice(0, 17));
+      DOUDZ.players[1].cards = sortCards(dealt.slice(17, 34));
+      DOUDZ.players[2].cards = sortCards(dealt.slice(34, 51));
+
+      DOUDZ.players.forEach(p => p.role = 'peasant');
+      DOUDZ.phase = 'BID';
+      DOUDZ.bidScore = 0;
+      DOUDZ.bidTurnCount = 0;
+      DOUDZ.turnSlot = Math.floor(Math.random() * 3) + 1;
+      DOUDZ.landlordSlot = null;
+      DOUDZ.selectedIndices = [];
+      DOUDZ.lastValidPlay = null;
+      DOUDZ.consecutivePassCount = 0;
+
+      // 隐藏底牌
+      renderBottomCards(false);
+      log(`🔀 重新洗牌！底牌已扣置，[${DOUDZ.players.find(p => p.slot === DOUDZ.turnSlot).name}] 获得首叫权！`);
+      if (window.AUDIO) window.AUDIO.play('card_draw');
+
+      renderAll();
+      checkTurnAction();
+    }
+
+    function renderBottomCards(revealed) {
+      const wrapper = document.getElementById('bottom-cards-wrapper');
+      wrapper.innerHTML = '';
+      DOUDZ.bottomCards.forEach(c => {
+        const el = document.createElement('div');
+        if (!revealed) {
+          el.className = 'poker-card card-back';
+        } else {
+          const isJoker = c.weight >= 16;
+          const suitSym = c.suit === 'spade' ? '♠' : c.suit === 'heart' ? '♥' : c.suit === 'club' ? '♣' : c.suit === 'diamond' ? '♦' : '🃏';
+          el.className = `poker-card ${c.suit}`;
+          el.innerHTML = `
+            <div class="poker-corner-top">
+              <span class="poker-rank">${isJoker ? (c.weight === 17 ? '王' : '王') : c.rank}</span>
+              <span class="poker-suit-mini">${suitSym}</span>
+            </div>
+            <div class="poker-center">${suitSym}</div>
+          `;
+        }
+        wrapper.appendChild(el);
+      });
+    }
+
+    function renderAll() {
+      renderSeats();
+      renderMyHand();
+      renderControls();
+      renderTrickZone();
+    }
+
+    function renderSeats() {
+      DOUDZ.players.forEach(p => {
+        const seatEl = document.getElementById(`seat-${p.slot}`);
+        if (seatEl) {
+          seatEl.className = 'opponent-seat ' + (p.slot === DOUDZ.turnSlot ? 'active-turn' : '');
+        }
+
+        const countEl = document.getElementById(`count-${p.slot}`);
+        if (countEl) countEl.textContent = `剩余: ${p.cards.length}张`;
+
+        const roleTag = document.getElementById(`role-tag-${p.slot}`);
+        if (roleTag) {
+          roleTag.className = `role-badge ${p.role}`;
+          roleTag.textContent = p.role === 'landlord' ? '👑 地主' : '农民';
+        }
+      });
+    }
+
+    function renderMyHand() {
+      const handEl = document.getElementById('my-hand');
+      handEl.innerHTML = '';
+      const me = DOUDZ.players[0];
+
+      me.cards.forEach((c, idx) => {
+        const isSelected = DOUDZ.selectedIndices.includes(idx);
+        const el = document.createElement('div');
+        const isJoker = c.weight >= 16;
+        const suitSym = c.suit === 'spade' ? '♠' : c.suit === 'heart' ? '♥' : c.suit === 'club' ? '♣' : c.suit === 'diamond' ? '♦' : '🃏';
+        el.className = `poker-card ${c.suit} ${isSelected ? 'selected' : ''}`;
+
+        el.innerHTML = `
+          <div class="poker-corner-top">
+            <span class="poker-rank">${isJoker ? (c.weight === 17 ? '大王' : '小王') : c.rank}</span>
+            <span class="poker-suit-mini">${suitSym}</span>
+          </div>
+          <div class="poker-center">${isJoker ? '🃏' : suitSym}</div>
+          <div class="poker-corner-bottom">
+            <span class="poker-rank">${isJoker ? (c.weight === 17 ? '大王' : '小王') : c.rank}</span>
+            <span class="poker-suit-mini">${suitSym}</span>
+          </div>
+        `;
+
+        el.onclick = () => toggleSelectCard(idx);
+        handEl.appendChild(el);
+      });
+    }
+
+    function toggleSelectCard(idx) {
+      if (DOUDZ.phase !== 'PLAY' || DOUDZ.turnSlot !== 1) return;
+      const pos = DOUDZ.selectedIndices.indexOf(idx);
+      if (pos > -1) {
+        DOUDZ.selectedIndices.splice(pos, 1);
+      } else {
+        DOUDZ.selectedIndices.push(idx);
+      }
+      if (window.AUDIO) window.AUDIO.play('click');
+      renderMyHand();
+      renderControls();
+    }
+
+    function renderControls() {
+      const ctrl = document.getElementById('controls-container');
+      ctrl.innerHTML = '';
+
+      if (DOUDZ.turnSlot !== 1) return; // 轮到对手
+
+      if (DOUDZ.phase === 'BID') {
+        // 叫地主阶段
+        const b1 = document.createElement('button');
+        b1.className = 'btn-action btn-bid';
+        b1.textContent = '叫地主 (1分)';
+        b1.onclick = () => handleBidAction(1, 1);
+
+        const b2 = document.createElement('button');
+        b2.className = 'btn-action btn-bid';
+        b2.textContent = '抢地主 (2分)';
+        b2.disabled = DOUDZ.bidScore >= 2;
+        b2.onclick = () => handleBidAction(1, 2);
+
+        const b3 = document.createElement('button');
+        b3.className = 'btn-action btn-bid';
+        b3.textContent = '绝杀 (3分)';
+        b3.disabled = DOUDZ.bidScore >= 3;
+        b3.onclick = () => handleBidAction(1, 3);
+
+        const bPass = document.createElement('button');
+        bPass.className = 'btn-action btn-pass-bid';
+        bPass.textContent = '不叫';
+        bPass.onclick = () => handleBidAction(1, 0);
+
+        ctrl.appendChild(b1);
+        ctrl.appendChild(b2);
+        ctrl.appendChild(b3);
+        ctrl.appendChild(bPass);
+      } else if (DOUDZ.phase === 'PLAY') {
+        // 出牌阶段
+        const me = DOUDZ.players[0];
+        const selectedCards = DOUDZ.selectedIndices.map(i => me.cards[i]);
+        const pattern = analyzePattern(selectedCards);
+        const target = DOUDZ.lastValidPlay ? DOUDZ.lastValidPlay.pattern : null;
+        const valid = pattern && canBeat(pattern, target);
+
+        const btnPlay = document.createElement('button');
+        btnPlay.className = 'btn-action btn-play-card';
+        btnPlay.textContent = '出牌';
+        btnPlay.disabled = !valid;
+        btnPlay.onclick = () => handlePlayAction(1, selectedCards, pattern);
+
+        const btnHint = document.createElement('button');
+        btnHint.className = 'btn-action btn-hint';
+        btnHint.textContent = '提示';
+        btnHint.onclick = () => autoHint();
+
+        const btnPass = document.createElement('button');
+        btnPass.className = 'btn-action btn-pass-play';
+        btnPass.textContent = '不出 / 过';
+        btnPass.disabled = !DOUDZ.lastValidPlay || DOUDZ.consecutivePassCount >= 2;
+        btnPass.onclick = () => handlePassAction(1);
+
+        ctrl.appendChild(btnPlay);
+        ctrl.appendChild(btnHint);
+        ctrl.appendChild(btnPass);
+      }
+    }
+
+    function renderTrickZone() {
+      const trickZone = document.getElementById('last-trick-zone');
+      const authorTag = document.getElementById('trick-author-tag');
+
+      if (!DOUDZ.lastValidPlay) {
+        trickZone.innerHTML = '<span style="color:#6ee7b7; font-size:0.88rem; opacity:0.8;">【等待领牌出击】</span>';
+        authorTag.style.display = 'none';
+        return;
+      }
+
+      trickZone.innerHTML = '';
+      authorTag.style.display = 'block';
+      const player = DOUDZ.players.find(p => p.slot === DOUDZ.lastValidPlay.slot);
+      authorTag.textContent = `${player.name} 出牌:`;
+
+      DOUDZ.lastValidPlay.cards.forEach(c => {
+        const el = document.createElement('div');
+        const isJoker = c.weight >= 16;
+        const suitSym = c.suit === 'spade' ? '♠' : c.suit === 'heart' ? '♥' : c.suit === 'club' ? '♣' : c.suit === 'diamond' ? '♦' : '🃏';
+        el.className = `poker-card ${c.suit}`;
+        el.innerHTML = `
+          <div class="poker-corner-top">
+            <span class="poker-rank">${isJoker ? (c.weight === 17 ? '大王' : '小王') : c.rank}</span>
+            <span class="poker-suit-mini">${suitSym}</span>
+          </div>
+          <div class="poker-center">${isJoker ? '🃏' : suitSym}</div>
+        `;
+        trickZone.appendChild(el);
+      });
+    }
+
+    // 叫地主处理
+    function handleBidAction(slot, score) {
+      const p = DOUDZ.players.find(player => player.slot === slot);
+      if (score > DOUDZ.bidScore) {
+        DOUDZ.bidScore = score;
+        DOUDZ.landlordSlot = slot;
+        log(`📢 [${p.name}] 叫出 ${score} 分！`);
+      } else {
+        log(`⚪ [${p.name}] 选择不叫。`);
+      }
+
+      DOUDZ.bidTurnCount++;
+
+      // 若直接叫 3 分或 3 人均已表态
+      if (score === 3 || DOUDZ.bidTurnCount >= 3) {
+        finalizeLandlord();
+        return;
+      }
+
+      DOUDZ.turnSlot = (slot % 3) + 1;
+      renderAll();
+      checkTurnAction();
+    }
+
+    function finalizeLandlord() {
+      if (!DOUDZ.landlordSlot) {
+        log(`⚠️ 3 位玩家均未叫牌，流局重新发牌！`);
+        setTimeout(startNewGame, 1000);
+        return;
+      }
+
+      const landlord = DOUDZ.players.find(p => p.slot === DOUDZ.landlordSlot);
+      landlord.role = 'landlord';
+      landlord.cards.push(...DOUDZ.bottomCards);
+      landlord.cards = sortCards(landlord.cards);
+
+      DOUDZ.players.forEach(p => {
+        if (p.slot !== DOUDZ.landlordSlot) p.role = 'peasant';
+      });
+
+      DOUDZ.phase = 'PLAY';
+      DOUDZ.turnSlot = DOUDZ.landlordSlot;
+      renderBottomCards(true);
+
+      log(`👑 [${landlord.name}] 成为地主！获得 3 张底牌并率先出牌！`);
+      if (window.AUDIO) window.AUDIO.play('rack');
+
+      renderAll();
+      checkTurnAction();
+    }
+
+    // 出牌动作
+    function handlePlayAction(slot, cards, pattern) {
+      const p = DOUDZ.players.find(player => player.slot === slot);
+      
+      // 扣除手牌
+      cards.forEach(c => {
+        const idx = p.cards.findIndex(card => card.id === c.id);
+        if (idx > -1) p.cards.splice(idx, 1);
+      });
+
+      DOUDZ.lastValidPlay = { slot, cards, pattern };
+      DOUDZ.consecutivePassCount = 0;
+      DOUDZ.selectedIndices = [];
+
+      log(`🎴 [${p.name}] 打出 ${cards.length} 张牌 [${pattern.type}]！剩余 ${p.cards.length} 张。`);
+
+      if (pattern.type === 'BOMB' || pattern.type === 'ROCKET') {
+        if (window.AUDIO) window.AUDIO.play('contra_explode');
+      } else {
+        if (window.AUDIO) window.AUDIO.play('card_play');
+      }
+
+      // 检查胜负
+      if (p.cards.length === 0) {
+        handleGameOver(p);
+        return;
+      }
+
+      DOUDZ.turnSlot = (slot % 3) + 1;
+      renderAll();
+      checkTurnAction();
+    }
+
+    // 不出 / 过牌
+    function handlePassAction(slot) {
+      const p = DOUDZ.players.find(player => player.slot === slot);
+      log(`💨 [${p.name}] 要不起，过！`);
+      if (window.AUDIO) window.AUDIO.play('click');
+
+      DOUDZ.consecutivePassCount++;
+      if (DOUDZ.consecutivePassCount >= 2) {
+        DOUDZ.lastValidPlay = null; // 两家均过，下一位重新领出
+        DOUDZ.consecutivePassCount = 0;
+        log(`🔄 其余两家均不出，新一轮领牌！`);
+      }
+
+      DOUDZ.selectedIndices = [];
+      DOUDZ.turnSlot = (slot % 3) + 1;
+      renderAll();
+      checkTurnAction();
+    }
+
+    // 智能提示算法 (Auto Hint)
+    function autoHint() {
+      const me = DOUDZ.players[0];
+      const target = DOUDZ.lastValidPlay ? DOUDZ.lastValidPlay.pattern : null;
+      DOUDZ.selectedIndices = [];
+
+      if (!target) {
+        // 领出牌: 提示最小单张
+        if (me.cards.length > 0) DOUDZ.selectedIndices = [me.cards.length - 1];
+        renderMyHand();
+        renderControls();
+        return;
+      }
+
+      // 尝试匹配同张数/同类型
+      for (let i = me.cards.length - 1; i >= 0; i--) {
+        // 1. 尝试单张
+        if (target.type === 'SINGLE') {
+          if (me.cards[i].weight > target.weight) {
+            DOUDZ.selectedIndices = [i];
+            break;
+          }
+        }
+        // 2. 尝试对子
+        if (target.type === 'PAIR' && i >= 1) {
+          if (me.cards[i].weight === me.cards[i - 1].weight && me.cards[i].weight > target.weight) {
+            DOUDZ.selectedIndices = [i, i - 1];
+            break;
+          }
+        }
+      }
+
+      // 3. 若普通牌压不过，尝试找炸弹
+      if (DOUDZ.selectedIndices.length === 0) {
+        const counts = {};
+        me.cards.forEach((c, idx) => {
+          counts[c.weight] = counts[c.weight] || [];
+          counts[c.weight].push(idx);
+        });
+        for (let w in counts) {
+          if (counts[w].length === 4) {
+            if (target.type !== 'BOMB' || parseInt(w, 10) > target.weight) {
+              DOUDZ.selectedIndices = counts[w];
+              break;
+            }
+          }
+        }
+      }
+
+      if (DOUDZ.selectedIndices.length > 0) {
+        if (window.AUDIO) window.AUDIO.play('click');
+      } else {
+        if (window.showToast) window.showToast('手中没有能压过上家的合法牌型');
+      }
+      renderMyHand();
+      renderControls();
+    }
+
+    // 胜局结算
+    function handleGameOver(winner) {
+      DOUDZ.phase = 'OVER';
+      renderAll();
+
+      const isLandlordWin = (winner.role === 'landlord');
+      const amILandlord = (DOUDZ.players[0].role === 'landlord');
+      const didIWin = (isLandlordWin && amILandlord) || (!isLandlordWin && !amILandlord);
+
+      log(`🏆 对局结束！[${winner.name}] 率先出完手牌！${isLandlordWin ? '地主完胜！' : '农民起义大胜利！'}`);
+
+      if (didIWin) {
+        if (window.AUDIO) window.AUDIO.play('win');
+      }
+
+      if (window.showModal) {
+        window.showModal(
+          didIWin ? '🎉 恭喜获胜！' : '🏁 惜败，对局结束',
+          `
+          <div style="text-align:center; padding:12px;">
+            <div style="font-size:3rem; margin-bottom:8px;">${didIWin ? '🏆' : '👏'}</div>
+            <h3 style="color:#fbbf24; font-size:1.3rem;">${isLandlordWin ? '👑 地主取得胜利！' : '🌾 农民同盟取得胜利！'}</h3>
+            <p style="color:#cbd5e1; margin-top:8px;">赢家: <b>${winner.name}</b></p>
+          </div>
+          `,
+          startNewGame
+        );
+      }
+    }
+
+    // 检查是否轮到 AI
+    function checkTurnAction() {
+      const current = DOUDZ.players.find(p => p.slot === DOUDZ.turnSlot);
+      if (!current || !current.isAi) return;
+
+      setTimeout(() => {
+        if (DOUDZ.phase === 'BID') {
+          // AI 叫地主: 简单看手中有无大牌 (2, Joker, 炸弹)
+          const bigCards = current.cards.filter(c => c.weight >= 15);
+          let bid = 0;
+          if (bigCards.length >= 3) bid = 3;
+          else if (bigCards.length >= 2) bid = 2;
+          else if (bigCards.length >= 1) bid = 1;
+
+          if (bid <= DOUDZ.bidScore) bid = 0;
+          handleBidAction(current.slot, bid);
+        } else if (DOUDZ.phase === 'PLAY') {
+          // AI 出牌: 贪心出最小能压过的牌
+          const target = DOUDZ.lastValidPlay ? DOUDZ.lastValidPlay.pattern : null;
+          let played = false;
+
+          if (!target) {
+            // 领出: 出最小单张
+            const card = current.cards[current.cards.length - 1];
+            handlePlayAction(current.slot, [card], analyzePattern([card]));
+            played = true;
+          } else {
+            // 尝试单张
+            if (target.type === 'SINGLE') {
+              for (let i = current.cards.length - 1; i >= 0; i--) {
+                if (current.cards[i].weight > target.weight) {
+                  const c = current.cards[i];
+                  handlePlayAction(current.slot, [c], analyzePattern([c]));
+                  played = true;
+                  break;
+                }
+              }
+            }
+            // 尝试对子
+            else if (target.type === 'PAIR') {
+              for (let i = current.cards.length - 1; i >= 1; i--) {
+                if (current.cards[i].weight === current.cards[i - 1].weight && current.cards[i].weight > target.weight) {
+                  const pair = [current.cards[i], current.cards[i - 1]];
+                  handlePlayAction(current.slot, pair, analyzePattern(pair));
+                  played = true;
+                  break;
+                }
+              }
+            }
+          }
+
+          if (!played) {
+            handlePassAction(current.slot);
+          }
+        }
+      }, 900 + Math.random() * 600);
+    }
+
+    // ==========================================================================
+    // 🌐 多人在线联机中枢绑定 (Multiplayer Network Integration)
+    // ==========================================================================
+    const net = new MultiPlayerNetwork({
+      game: 'doudizhu',
+      maxPlayers: 3,
+      onConnect: (roomId, role) => {
+        document.getElementById('mode-text').innerHTML = `<b style="color:#10b981">在线对战 (${role === 'host' ? '房主' : '客方'})</b>`;
+        document.getElementById('room-info').style.display = 'inline';
+        document.getElementById('room-code-tag').textContent = roomId;
+        document.getElementById('btn-share-link').style.display = 'inline-block';
+      },
+      onSeatUpdate: (seats, mySlot) => {
+        DOUDZ.mySlot = mySlot;
+        seats.forEach(s => {
+          const p = DOUDZ.players.find(player => player.slot === s.slot);
+          if (p) {
+            p.name = s.name;
+            p.isAi = s.isAi;
+            const nameEl = document.getElementById(`name-${s.slot}`);
+            if (nameEl) nameEl.textContent = s.name;
+          }
+        });
+        renderSeats();
+      }
+    });
+
+    document.getElementById('btn-create-room').onclick = () => {
+      const room = net.createRoom(3, '玩家 1 (房主)');
+      if (room) {
+        DOUDZ.isOnline = true;
+        log(`🌐 房间 [${room}] 已创建！3 位玩家凑齐即可在线联机斗地主。`);
+      }
+    };
+
+    document.getElementById('btn-join-room').onclick = () => {
+      const r = prompt('请输入 4 位斗地主房间号:');
+      if (r) {
+        net.joinRoom(r, '神秘牌友');
+        DOUDZ.isOnline = true;
+      }
+    };
+
+    document.getElementById('btn-share-link').onclick = () => {
+      net.copyShareLink();
+    };
+
+    // 检查 URL 直达房间
+    const urlParams = MultiPlayerNetwork.checkUrlRoom();
+    if (urlParams.room) {
+      net.joinRoom(urlParams.room);
+      DOUDZ.isOnline = true;
+    }
+
+    // 绑定规则与顶栏
+    initCommonHeader(
+      '👑 经典斗地主 规则说明',
+      `
+      <div style="line-height:1.7; font-size:0.92rem;">
+        <p><b>1. 发牌与叫地主：</b>一副 54 张扑克，3 人每人发 17 张，留 3 张底牌。顺时针叫分 (1/2/3分)，最高分者成为地主并拿走底牌。</p>
+        <p style="margin-top:8px;"><b>2. 阵营对抗：</b>地主独战两名农民同盟。率先出完所有手牌的一方阵营全员获胜！</p>
+        <p style="margin-top:8px;"><b>3. 牌型规则：</b>支持单张、对子、三张、三带一、三带对、单顺 (5张起)、双顺 (3对起)、飞机带翅膀、四带二、炸弹 (四张) 与王炸 (大小王)。</p>
+      </div>
+      `,
+      startNewGame
+    );
+
+    // 启动初始单机局
+    startNewGame();
+  </script>
+</body>
+</html>

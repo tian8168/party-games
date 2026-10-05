@@ -1435,7 +1435,7 @@
         <span class="logo-icon">🕹️</span>
         <div class="brand-text">
           <h1>聚会游戏大厅</h1>
-          <span class="sub-title">24 款经典对战 · 原生秒开</span>
+          <span class="sub-title">26 款经典对战 · 原生秒开</span>
         </div>
       </div>
       <div class="header-right">
@@ -1545,10 +1545,10 @@
           <div class="filter-axis-row">
             <span class="axis-label"><span class="axis-icon">👥</span>人数:</span>
             <div class="filter-pills-group" id="filter-player-group">
-              <button class="filter-pill active" data-player-filter="ALL" onclick="setPlayerFilter('ALL')">全部 <span class="pill-count">(24)</span></button>
+              <button class="filter-pill active" data-player-filter="ALL" onclick="setPlayerFilter('ALL')">全部 <span class="pill-count">(26)</span></button>
               <button class="filter-pill" data-player-filter="1" onclick="setPlayerFilter('1')">👤 单人挑战 <span class="pill-count">(1)</span></button>
               <button class="filter-pill" data-player-filter="2" onclick="setPlayerFilter('2')">👥 双人死斗 <span class="pill-count">(14)</span></button>
-              <button class="filter-pill" data-player-filter="4" data-alias="4人大乱斗 (9)" onclick="setPlayerFilter('4')">👥👥 4人大乱斗 <span class="pill-count">(9)</span><!-- 4人大乱斗 (9) --></button>
+              <button class="filter-pill" data-player-filter="4" data-alias="4人大乱斗 (11)" onclick="setPlayerFilter('4')">👥👥 4人大乱斗 <span class="pill-count">(11)</span><!-- 4人大乱斗 (11) --></button>
             </div>
           </div>
 
@@ -1556,10 +1556,10 @@
           <div class="filter-axis-row">
             <span class="axis-label"><span class="axis-icon">🏷️</span>类型:</span>
             <div class="filter-pills-group" id="filter-cat-group">
-              <button class="filter-pill category-pill active" data-cat-filter="ALL" data-cat-pill="ALL" onclick="setCategoryFilter('ALL')">全部 <span class="pill-count">(24)</span><!-- 全部 (24) --></button>
+              <button class="filter-pill category-pill active" data-cat-filter="ALL" data-cat-pill="ALL" onclick="setCategoryFilter('ALL')">全部 <span class="pill-count">(26)</span><!-- 全部 (26) --></button>
               <button class="filter-pill category-pill" data-cat-filter="PHYSICS" data-cat-pill="PHYSICS" onclick="setCategoryFilter('PHYSICS')">⚡ 物理对抗 <span class="pill-count">(8)</span><!-- 物理对抗 (8) --></button>
               <button class="filter-pill category-pill" data-cat-filter="STRATEGY" data-cat-pill="STRATEGY" onclick="setCategoryFilter('STRATEGY')">🧠 策略博弈 <span class="pill-count">(11)</span><!-- 策略博弈 (11) --></button>
-              <button class="filter-pill category-pill" data-cat-filter="MIND" data-cat-pill="MIND" data-alias="心理暗牌 (3)" onclick="setCategoryFilter('MIND')">💣 心理暗牌 <span class="pill-count">(3)</span><!-- 心理暗牌 (3) --></button>
+              <button class="filter-pill category-pill" data-cat-filter="MIND" data-cat-pill="MIND" data-alias="心理暗牌 (5)" onclick="setCategoryFilter('MIND')">💣 心理暗牌 <span class="pill-count">(5)</span><!-- 心理暗牌 (5) --></button>
               <button class="filter-pill category-pill" data-cat-filter="REFLEX" data-cat-pill="REFLEX" onclick="setCategoryFilter('REFLEX')">⚡ 极限手速 <span class="pill-count">(2)</span><!-- 极限手速 (2) --></button>
             </div>
           </div>
@@ -2712,6 +2712,115 @@
       </div>
     </div>
   
+    <!-- 🍺 骗子酒馆 (Liar's Bar / 谎言酒馆) -->
+    <div class="game-card hero-card" data-cat="MIND" data-players="4" data-game-key="LIARSBAR" data-keywords="liarsbar liars bar 骗子酒馆 谎言酒馆 俄罗斯轮盘 轮盘赌 左轮 吹牛 心理 欺诈 暗牌 2人 3人 4人 pzjg" onclick="enterGame('LIARSBAR')" style="border: 1px solid rgba(239, 68, 68, 0.45); box-shadow: 0 4px 20px rgba(239, 68, 68, 0.18);">
+      <div class="card-cover-wrapper">
+        <div class="card-art-canvas">
+          <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="lbBg" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#2a0808"/>
+                <stop offset="50%" stop-color="#180b1e"/>
+                <stop offset="100%" stop-color="#0a050d"/>
+              </linearGradient>
+              <radialGradient id="lbRedGlow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#ef4444" stop-opacity="0.4"/>
+                <stop offset="100%" stop-color="#dc2626" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+            <rect width="320" height="180" fill="url(#lbBg)"/>
+            <circle cx="160" cy="90" r="75" fill="url(#lbRedGlow)"/>
+            <g transform="translate(160, 85)">
+              <rect x="-45" y="-35" width="40" height="58" rx="4" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5" transform="rotate(-15)"/>
+              <text x="-25" y="-5" font-size="20" fill="#dc2626" font-weight="900" text-anchor="middle" transform="rotate(-15)">K</text>
+              <rect x="5" y="-35" width="40" height="58" rx="4" fill="#1e293b" stroke="#f59e0b" stroke-width="2" transform="rotate(15)"/>
+              <text x="25" y="-5" font-size="22" fill="#fbbf24" font-weight="900" text-anchor="middle" transform="rotate(15)">🃏</text>
+              <circle cx="0" cy="30" r="14" fill="#0f172a" stroke="#ef4444" stroke-width="2.5"/>
+              <circle cx="-5" cy="25" r="3" fill="#ef4444"/>
+              <circle cx="5" cy="25" r="3" fill="#64748b"/>
+              <circle cx="7" cy="35" r="3" fill="#64748b"/>
+              <circle cx="-7" cy="35" r="3" fill="#64748b"/>
+            </g>
+          </svg>
+        </div>
+        <div class="card-badges-row">
+          <span class="badge-pill tag-hot" style="background:linear-gradient(135deg,#ef4444,#dc2626);">🔥 2026现象爆款</span>
+          <span class="badge-pill tag-players">👥 2-4人</span>
+          <span class="badge-pill tag-online" style="background:linear-gradient(135deg,#10b981,#059669); color:#fff;">🌐 支持联机</span>
+        </div>
+      </div>
+      <div class="card-content">
+        <div class="card-main-meta">
+          <div class="card-titles">
+            <div class="card-title">
+              <span>骗子酒馆 (Liar's Bar)</span>
+              <span class="card-sub" style="color:#f87171;">BLUFF & RUSSIAN ROULETTE · 2-4P</span>
+            </div>
+            <div class="card-tagline">心理欺诈神作 · 谎言抓伪对决 · 致命俄罗斯轮盘赌音效</div>
+          </div>
+          <div class="btn-play-action" style="background:linear-gradient(135deg,#dc2626,#991b1b); color:#fff; border-color:#f87171;">开玩 ▶</div>
+        </div>
+        <div class="card-meta-chips">
+          <span class="meta-chip">⏱️ 10-20分钟</span>
+          <span class="meta-chip">心理 ⭐⭐⭐⭐⭐</span>
+          <span class="meta-chip accent" style="background:rgba(239,68,68,0.15); border-color:rgba(239,68,68,0.35); color:#fca5a5;">2-4人同屏/联机 · 6发左轮拟真声 · 极速破冰</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 👑 经典斗地主 (Fight the Landlord) -->
+    <div class="game-card hero-card" data-cat="MIND" data-players="4" data-game-key="DOUDIZHU" data-keywords="doudizhu 斗地主 经典斗地主 扑克 叫地主 抢地主 农民 炸弹 王炸 顺子 飞机 3人 4人 ddz" onclick="enterGame('DOUDIZHU')" style="border: 1px solid rgba(16, 185, 129, 0.45); box-shadow: 0 4px 20px rgba(16, 185, 129, 0.18);">
+      <div class="card-cover-wrapper">
+        <div class="card-art-canvas">
+          <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="ddzBg" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#064e3b"/>
+                <stop offset="50%" stop-color="#022c22"/>
+                <stop offset="100%" stop-color="#01140f"/>
+              </linearGradient>
+              <radialGradient id="ddzGoldGlow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.35"/>
+                <stop offset="100%" stop-color="#d97706" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+            <rect width="320" height="180" fill="url(#ddzBg)"/>
+            <circle cx="160" cy="90" r="75" fill="url(#ddzGoldGlow)"/>
+            <g transform="translate(160, 85)">
+              <rect x="-50" y="-35" width="36" height="54" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2" transform="rotate(-18)"/>
+              <text x="-32" y="-8" font-size="16" fill="#dc2626" font-weight="900" text-anchor="middle" transform="rotate(-18)">♥A</text>
+              <rect x="-18" y="-38" width="36" height="54" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+              <text x="0" y="-11" font-size="16" fill="#1e293b" font-weight="900" text-anchor="middle">♠2</text>
+              <rect x="14" y="-35" width="36" height="54" rx="4" fill="#ffffff" stroke="#f59e0b" stroke-width="2" transform="rotate(18)"/>
+              <text x="32" y="-8" font-size="16" fill="#dc2626" font-weight="900" text-anchor="middle" transform="rotate(18)">大王</text>
+              <path d="M -22 18 L -14 36 L 14 36 L 22 18 L 6 26 L 0 14 L -6 26 Z" fill="#f59e0b" stroke="#fef08a" stroke-width="1.5"/>
+            </g>
+          </svg>
+        </div>
+        <div class="card-badges-row">
+          <span class="badge-pill tag-hot" style="background:linear-gradient(135deg,#f59e0b,#d97706);">👑 国民级经典</span>
+          <span class="badge-pill tag-players">👥 3人</span>
+          <span class="badge-pill tag-online" style="background:linear-gradient(135deg,#10b981,#059669); color:#fff;">🌐 支持联机</span>
+        </div>
+      </div>
+      <div class="card-content">
+        <div class="card-main-meta">
+          <div class="card-titles">
+            <div class="card-title">
+              <span>经典斗地主 (Doudizhu)</span>
+              <span class="card-sub" style="color:#6ee7b7;">FIGHT THE LANDLORD · 3P</span>
+            </div>
+            <div class="card-tagline">国民棋牌第一IP · 54张完整规则 · 智能叫地主与出牌压制</div>
+          </div>
+          <div class="btn-play-action" style="background:linear-gradient(135deg,#10b981,#059669); color:#fff; border-color:#6ee7b7;">开玩 ▶</div>
+        </div>
+        <div class="card-meta-chips">
+          <span class="meta-chip">⏱️ 5-15分钟</span>
+          <span class="meta-chip">卡牌 ⭐⭐⭐⭐⭐</span>
+          <span class="meta-chip accent" style="background:rgba(16,185,129,0.15); border-color:rgba(16,185,129,0.35); color:#6ee7b7;">3人同屏/联机 · 飞机炸弹全牌型 · 启发式AI</span>
+        </div>
+      </div>
+    </div>
 
     <div class="game-card hero-card" data-cat="PHYSICS" data-players="2" data-game-key="TANKTROUBLE" data-keywords="tanktrouble 坦克动荡 坦克 弹射 炮弹 物理 迷宫 反弹 双人 2人 二人 人机 tk" onclick="enterGame('TANKTROUBLE')">
       <div class="card-cover-wrapper">
@@ -3532,7 +3641,9 @@
       'TRON': 'tron.html',
       'BOMBERMAN': 'bomberman.html',
       'BOMBCAT': 'bombcat.html',
-      'UNO': 'uno.html'
+      'UNO': 'uno.html',
+      'LIARSBAR': 'liarsbar.html',
+      'DOUDIZHU': 'doudizhu.html'
     };
 
     const prefetchedLinks = new Set();
@@ -3698,7 +3809,9 @@
         'TANKTROUBLE': '🛡️ 坦克震荡 (Tank Trouble)',
         'TRON': '🏍️ 极光光轮摩托 (Tron Light 4P)',
         'BOMBCAT': '💣 疯狂拆弹猫 (Bomb Cat)',
-        'UNO': '🌈 彩虹乌诺牌 (UNO Party)'
+        'UNO': '🌈 彩虹乌诺牌 (UNO Party)',
+        'LIARSBAR': '🍺 骗子酒馆 (Liar\'s Bar)',
+        'DOUDIZHU': '👑 经典斗地主 (Doudizhu)'
       };
       const titleName = titles[chosen] || chosen;
       showToast('🎲 聚会天命摇中：【' + titleName + '】！即刻启程！', 2000);
@@ -3762,7 +3875,9 @@
           'TANKTROUBLE': '🛡️ 坦克震荡',
           'TRON': '🏍️ 光轮摩托',
           'BOMBCAT': '💣 拆弹猫',
-          'UNO': '🌈 乌诺牌'
+          'UNO': '🌈 乌诺牌',
+          'LIARSBAR': '🍺 骗子酒馆',
+          'DOUDIZHU': '👑 斗地主'
         };
         recents.forEach(key => {
           if (!titles[key]) return;
