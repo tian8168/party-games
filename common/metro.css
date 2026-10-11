@@ -1,0 +1,704 @@
+/**
+ * 🪟 Windows Modern UI / Live Tiles 专属样式库 (Metro Stylesheet)
+ * 深度适配 Windows Phone (移动端横竖屏) 与 Surface 平板 / 桌面 (全景分组与语义缩放)
+ */
+
+/* ==========================================================================
+   1. Metro Design Tokens & Accent Colors
+   ========================================================================== */
+:root {
+  --metro-bg: #030712;
+  --metro-sub-bg: #0b1120;
+  --metro-text-main: #ffffff;
+  --metro-text-muted: rgba(255, 255, 255, 0.65);
+  --metro-tile-border: rgba(255, 255, 255, 0.08);
+  
+  /* Windows Phone / Windows 8 经典 Accent 调色板 */
+  --metro-cobalt: #0050ef;
+  --metro-crimson: #d80027;
+  --metro-mango: #fa6800;
+  --metro-emerald: #107c10;
+  --metro-cyan: #00aba9;
+  --metro-magenta: #d80073;
+  --metro-purple: #6a00ff;
+  --metro-amber: #e3a21a;
+  --metro-steel: #2b5797;
+  --metro-teal: #008272;
+  --metro-violet: #aa00ff;
+  --metro-indigo: #4f46e5;
+  --metro-rose: #e11d48;
+}
+
+/* ==========================================================================
+   2. Metro 大厅顶层容器切换
+   ========================================================================== */
+body.metro-active {
+  background: var(--metro-bg) !important;
+  color: var(--metro-text-main);
+  overflow-x: hidden;
+}
+
+/* 顶部 Metro 经典无衬线大字标题 */
+.metro-header-banner {
+  display: none;
+  width: 100%;
+  max-width: 1400px;
+  padding: 8px 12px 14px;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+body.metro-active .metro-header-banner {
+  display: flex;
+}
+
+.metro-title-large {
+  font-family: "Segoe UI Light", "Segoe UI", -apple-system, sans-serif;
+  font-size: 2.8rem;
+  font-weight: 300;
+  letter-spacing: -0.5px;
+  color: #ffffff;
+  line-height: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.metro-title-sub {
+  font-size: 1.1rem;
+  color: var(--metro-text-muted);
+  font-weight: 400;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.metro-actions-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.metro-btn-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  color: #ffffff;
+  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  touch-action: manipulation;
+}
+
+.metro-btn-circle:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: #ffffff;
+  transform: scale(1.06);
+}
+
+.metro-btn-circle:active {
+  transform: scale(0.92);
+  background: #ffffff;
+  color: #000000;
+}
+
+/* 在 Metro 模式下隐藏原有海报大图轮播条，使其融入磁贴网格 */
+body.metro-active .hero-spotlight-wrapper {
+  display: none !important;
+}
+
+/* ==========================================================================
+   3. 核心网格与分组系统 (Display Contents 渐进兼容)
+   ========================================================================== */
+/* 非 Metro 模式下，.metro-group 与 .metro-tile-flipper 穿透透明，不破坏原有海报/紧凑网格 */
+.game-grid:not(.metro-mode) .metro-group,
+.game-grid:not(.metro-mode) .metro-group-body,
+.game-grid:not(.metro-mode) .metro-tile-flipper,
+.game-grid:not(.metro-mode) .metro-tile-front {
+  display: contents !important;
+}
+
+.game-grid:not(.metro-mode) .metro-group-header,
+.game-grid:not(.metro-mode) .metro-tile-back,
+.game-grid:not(.metro-mode) .tile-info-overlay {
+  display: none !important;
+}
+
+/* Metro 模式下隐藏原有海报大图专用 DOM */
+.game-grid.metro-mode .card-body,
+.game-grid.metro-mode .card-content,
+.game-grid.metro-mode .card-info,
+.game-grid.metro-mode .cover-badges,
+.game-grid.metro-mode .card-badges-row,
+.game-grid.metro-mode .cover-overlay {
+  display: none !important;
+}
+
+.game-grid.metro-mode .card-cover-wrapper {
+  width: 100% !important;
+  height: 100% !important;
+  aspect-ratio: auto !important;
+  position: absolute !important;
+  inset: 0 !important;
+}
+
+.game-grid.metro-mode .card-art-canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* ==========================================================================
+   4. 平板与桌面宽屏 (Surface Pro / Windows 8.1 横向全景分组)
+   ========================================================================== */
+@media (min-width: 901px) {
+  body.metro-active .container {
+    max-width: 100vw !important;
+    width: 100% !important;
+    padding-left: 28px;
+    padding-right: 28px;
+  }
+
+  .game-grid.metro-mode {
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scroll-behavior: smooth;
+    gap: 36px !important;
+    padding: 10px 10px 36px !important;
+    width: 100% !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+  }
+
+  .game-grid.metro-mode::-webkit-scrollbar {
+    height: 6px;
+  }
+  .game-grid.metro-mode::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 3px;
+  }
+
+  .game-grid.metro-mode .metro-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  .game-grid.metro-mode .metro-group-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: "Segoe UI Light", "Segoe UI", sans-serif;
+    font-size: 1.45rem;
+    font-weight: 300;
+    color: rgba(255, 255, 255, 0.85);
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+
+  .game-grid.metro-mode .metro-group-header:hover {
+    color: #38bdf8;
+  }
+
+  .game-grid.metro-mode .metro-group-body {
+    display: grid;
+    grid-template-rows: repeat(3, 116px);
+    grid-auto-flow: column;
+    grid-auto-columns: 116px;
+    gap: 10px;
+  }
+}
+
+/* ==========================================================================
+   5. 移动端横屏 (Mobile Landscape - Windows Phone 横屏全景流)
+   ========================================================================== */
+@media (max-width: 900px) and (orientation: landscape) {
+  body.metro-active {
+    padding: 6px 12px 16px !important;
+  }
+
+  body.metro-active .container {
+    max-width: 100vw !important;
+    width: 100% !important;
+  }
+
+  .game-grid.metro-mode {
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    gap: 20px !important;
+    padding: 6px 6px 18px !important;
+    width: 100% !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .game-grid.metro-mode .metro-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .game-grid.metro-mode .metro-group-header {
+    display: flex;
+    font-size: 1.05rem;
+    font-family: "Segoe UI Light", sans-serif;
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  .game-grid.metro-mode .metro-group-body {
+    display: grid;
+    grid-template-rows: repeat(2, 96px);
+    grid-auto-flow: column;
+    grid-auto-columns: 96px;
+    gap: 8px;
+  }
+}
+
+/* ==========================================================================
+   6. 移动端竖屏 (Mobile Portrait - Windows Phone 经典纵向流)
+   ========================================================================== */
+@media (max-width: 768px) and (orientation: portrait) {
+  body.metro-active {
+    background: #000000 !important;
+    padding-bottom: 74px !important; /* 给 Application Bar 留出安全高度 */
+  }
+
+  .metro-title-large {
+    font-size: 2.2rem;
+  }
+
+  .game-grid.metro-mode {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 18px !important;
+    width: 100% !important;
+    overflow-x: hidden !important;
+    overflow-y: visible !important;
+  }
+
+  .game-grid.metro-mode .metro-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .game-grid.metro-mode .metro-group-header {
+    display: flex;
+    font-size: 1.15rem;
+    font-weight: 300;
+    font-family: "Segoe UI Light", sans-serif;
+    color: rgba(255, 255, 255, 0.7);
+    padding-left: 2px;
+  }
+
+  .game-grid.metro-mode .metro-group-body {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-auto-rows: 76px;
+    gap: 8px;
+    width: 100%;
+  }
+}
+
+/* ==========================================================================
+   7. 磁贴三维尺寸规格与自适应 (Tile Sizes)
+   ========================================================================== */
+.game-grid.metro-mode .game-card {
+  margin: 0;
+  border-radius: 0 !important; /* Metro 标志性直角方块，极简纯粹 */
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  perspective: 1000px;
+  position: relative;
+  touch-action: manipulation;
+}
+
+/* 尺寸规格：中号方块 (1x1 Unit) */
+.game-grid.metro-mode .tile-medium {
+  grid-column: span 1;
+  grid-row: span 1;
+}
+
+/* 尺寸规格：宽磁贴 (2x1 Unit) */
+.game-grid.metro-mode .tile-wide {
+  grid-column: span 2;
+  grid-row: span 1;
+}
+
+/* 尺寸规格：大号方块 (2x2 Unit) */
+.game-grid.metro-mode .tile-large {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+
+/* 移动端竖屏下的跨列映射 */
+@media (max-width: 768px) and (orientation: portrait) {
+  .game-grid.metro-mode .tile-medium {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+  .game-grid.metro-mode .tile-wide {
+    grid-column: span 4;
+    grid-row: span 2;
+  }
+  .game-grid.metro-mode .tile-large {
+    grid-column: span 4;
+    grid-row: span 4;
+  }
+  .game-grid.metro-mode .tile-small {
+    grid-column: span 1;
+    grid-row: span 1;
+  }
+}
+
+/* ==========================================================================
+   8. 3D 翻转容器 (Live Tile Flip Structure)
+   ========================================================================== */
+.metro-tile-flipper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
+  transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+.game-card.is-flipped .metro-tile-flipper {
+  transform: rotateY(180deg);
+}
+
+.metro-tile-front,
+.metro-tile-back {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+.metro-tile-back {
+  transform: rotateY(180deg);
+  background: #111827 !important;
+  color: #f8fafc;
+  padding: 10px;
+  justify-content: space-between;
+}
+
+/* ==========================================================================
+   9. 磁贴正面元素排版与视觉标识 (Metro Tile Front)
+   ========================================================================== */
+.metro-tile-front .tile-art-box {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.metro-tile-front .tile-art-box svg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.game-card:hover .metro-tile-front .tile-art-box svg {
+  transform: scale(1.05);
+}
+
+/* 磁贴左下角标题与标识条 */
+.metro-tile-front .tile-info-overlay {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  padding: 8px 10px;
+  background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.75) 100%);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.tile-title-text {
+  font-family: "Segoe UI", -apple-system, sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #ffffff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 75%;
+}
+
+.tile-badge-num {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #ffffff;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 1px 5px;
+  border-radius: 2px;
+}
+
+/* ==========================================================================
+   10. 磁贴反面实时数据面 (Metro Tile Back - Live Telemetry)
+   ========================================================================== */
+.tile-back-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  padding-bottom: 4px;
+}
+
+.tile-back-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #38bdf8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tile-back-status {
+  font-size: 0.65rem;
+  background: rgba(56, 189, 248, 0.2);
+  color: #38bdf8;
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+
+.tile-back-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  color: #94a3b8;
+  padding: 4px 0;
+}
+
+.tile-stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tile-stat-val {
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.tile-back-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.tile-btn-launch {
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: #2563eb;
+  color: #ffffff;
+  padding: 3px 8px;
+  border-radius: 2px;
+  border: none;
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   11. 3D Tilt 按压倾斜物理反馈 (Pointer Tilt)
+   ========================================================================== */
+.game-card.is-tilting {
+  transition: transform 0.06s ease-out !important;
+}
+
+/* ==========================================================================
+   12. 经典 Windows Phone Application Bar
+   ========================================================================== */
+.wp-app-bar {
+  display: none;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 60px;
+  background: #111111;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  z-index: 9999;
+  justify-content: space-around;
+  align-items: center;
+  padding: 0 16px;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.7);
+}
+
+@media (max-width: 768px) and (orientation: portrait) {
+  body.metro-active .wp-app-bar {
+    display: flex;
+  }
+  body.metro-active .mobile-dock {
+    display: none !important; /* 在 WP 模式下隐藏默认 Dock，使用原生 AppBar */
+  }
+}
+
+.wp-app-bar-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.wp-app-bar-circle {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+}
+
+.wp-app-bar-text {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-family: "Segoe UI", sans-serif;
+}
+
+/* ==========================================================================
+   13. 语义缩放全景视图 (Semantic Zoom Overlay)
+   ========================================================================== */
+.metro-semantic-zoom {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 7, 18, 0.96);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  z-index: 10000;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: zoomFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.metro-semantic-zoom.active {
+  display: flex;
+}
+
+@keyframes zoomFadeIn {
+  from { opacity: 0; transform: scale(1.08); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.semantic-zoom-header {
+  font-family: "Segoe UI Light", sans-serif;
+  font-size: 2rem;
+  color: #ffffff;
+  margin-bottom: 24px;
+}
+
+.semantic-zoom-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(200px, 280px));
+  gap: 20px;
+}
+
+@media (max-width: 600px) {
+  .semantic-zoom-grid {
+    grid-template-columns: 1fr;
+    width: 100%;
+    max-width: 320px;
+  }
+}
+
+.semantic-zoom-card {
+  height: 140px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 16px;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  transition: transform 0.2s, box-shadow 0.2s;
+  border-left: 4px solid #ffffff;
+}
+
+.semantic-zoom-card:hover {
+  transform: scale(1.03);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.8);
+}
+
+.semantic-zoom-card .cat-name {
+  font-family: "Segoe UI Light", sans-serif;
+  font-size: 1.4rem;
+  color: #ffffff;
+}
+
+.semantic-zoom-card .cat-count {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* ==========================================================================
+   14. 各游戏 Accent 主题背景着色器
+   ========================================================================== */
+.tile-accent-tron       { background-color: #0050ef; }
+.tile-accent-bombcat    { background-color: #d80027; }
+.tile-accent-nes        { background-color: #4f46e5; }
+.tile-accent-contra     { background-color: #e11d48; }
+.tile-accent-quoridor   { background-color: #107c10; }
+.tile-accent-aeroplane  { background-color: #fa6800; }
+.tile-accent-go         { background-color: #d97706; }
+.tile-accent-kaya       { background-color: #059669; }
+.tile-accent-tanktrouble{ background-color: #0284c7; }
+.tile-accent-hockey     { background-color: #00aba9; }
+.tile-accent-gravity    { background-color: #2563eb; }
+.tile-accent-gravity4   { background-color: #d80073; }
+.tile-accent-gravity3d  { background-color: #6a00ff; }
+.tile-accent-gravity3d4 { background-color: #aa00ff; }
+.tile-accent-iaido      { background-color: #dc2626; }
+.tile-accent-liarsdice  { background-color: #b45309; }
+.tile-accent-sumo       { background-color: #ea580c; }
+.tile-accent-tank       { background-color: #4338ca; }
+.tile-accent-stack      { background-color: #008272; }
+.tile-accent-uno        { background-color: #d80027; }
+.tile-accent-bomberman  { background-color: #7e3878; }
+.tile-accent-sanguosha  { background-color: #991b1b; }
+.tile-accent-monopoly   { background-color: #107c10; }
+.tile-accent-splendor   { background-color: #d97706; }
+.tile-accent-liarsbar   { background-color: #78350f; }
+.tile-accent-doudizhu   { background-color: #b91c1c; }

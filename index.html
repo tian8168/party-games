@@ -13,6 +13,7 @@
   <link rel="icon" type="image/svg+xml" href="./icons/icon.svg">
   <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
   <link rel="stylesheet" href="common/common.css">
+  <link rel="stylesheet" href="common/metro.css">
   <style>
     :root {
       --bg-gradient: radial-gradient(circle at 50% 0%, #1e293b 0%, #0f172a 60%, #090d16 100%);
@@ -1630,7 +1631,11 @@
             </div>
 
             <div class="view-mode-toggle" id="view-mode-toggle">
-              <button class="btn-view-mode active" id="view-mode-poster" onclick="setViewMode('poster', true)" title="海报大图模式">
+              <button class="btn-view-mode active" id="view-mode-metro" onclick="setViewMode('metro', true)" title="Windows Metro 动态磁贴模式">
+              <span>🪟</span>
+              <span>Metro</span>
+            </button>
+            <button class="btn-view-mode" id="view-mode-poster" onclick="setViewMode('poster', true)" title="海报大图模式">
                 <span>▦</span>
                 <span>海报</span>
               </button>
@@ -1665,11 +1670,37 @@
       </div>
 
       <!-- 主机大比例海报瀑布流 (Console Game Grid) -->
-      <div class="game-grid" id="lobby-game-grid">
+            <!-- Windows Metro 专属大字标题与快捷操作栏 -->
+      <div class="metro-header-banner" id="metro-header-banner">
+        <div class="metro-title-large">
+          <span>games</span>
+          <span class="metro-title-sub">Arcade Hub</span>
+        </div>
+        <div class="metro-actions-bar">
+          <button class="metro-btn-circle" onclick="toggleSemanticZoom()" title="分类概览 (Semantic Zoom)" aria-label="分类概览">
+            <span>🔍</span>
+          </button>
+          <button class="metro-btn-circle" onclick="pickRandomGame()" title="天命随机" aria-label="天命随机">
+            <span>🎲</span>
+          </button>
+        </div>
+      </div>
+
+<div class="game-grid" id="lobby-game-grid">
 
     <!-- 🏍️ 极光光轮摩托 (Tron Light Cycles 4P) -->
-    <div class="game-card hero-card" data-cat="PHYSICS" data-players="4" data-game-key="TRON" data-keywords="tron 极光光轮摩托 光轮摩托 摩托 道具大乱斗 飞弹 幽灵 emp 赛博 物理 封路 4人 4player 四人 glmt 极速 单人 人机" onclick="enterGame('TRON')" data-genre="ARCADE" data-online="false">
-      <div class="card-cover-wrapper">
+    
+      <!-- Metro 分组: FEATURED -->
+      <div class="metro-group" data-group="FEATURED">
+        <div class="metro-group-header" onclick="jumpToCategoryGroup('FEATURED')">
+          <span>🌟 精选对决 · FEATURED</span>
+        </div>
+        <div class="metro-group-body">
+          <div class="game-card hero-card tile-wide tile-accent-tron" data-cat="PHYSICS" data-players="4" data-game-key="TRON" data-keywords="tron 极光光轮摩托 光轮摩托 摩托 道具大乱斗 飞弹 幽灵 emp 赛博 物理 封路 4人 4player 四人 glmt 极速 单人 人机" onclick="enterGame('TRON')" data-genre="ARCADE" data-online="false">
+
+        <div class="metro-tile-flipper">
+          <div class="metro-tile-front">
+            <div class="card-cover-wrapper">
         <div class="card-art-canvas">
           <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
             <defs>
@@ -1707,7 +1738,26 @@
         </div>
         <div class="cover-overlay"></div>
       </div>
-      <div class="card-body">
+            <div class="tile-info-overlay">
+              <span class="tile-title-text">极光光轮摩托</span>
+              <span class="tile-badge-num">👥 4P</span>
+            </div>
+          </div>
+          <div class="metro-tile-back">
+            <div class="tile-back-header">
+              <span class="tile-back-title">极光光轮摩托</span>
+              <span class="tile-back-status">未开始</span>
+            </div>
+            <div class="tile-back-body">
+              <div class="tile-stat-row"><span>支持模式:</span> <span class="tile-stat-val">1-4人同屏 / AI</span></div>
+              <div class="tile-stat-row"><span>历史战局:</span> <span class="tile-stat-val tile-stat-val-plays">0 局</span></div>
+              <div class="tile-stat-row"><span>特色机制:</span> <span class="tile-stat-val">60FPS 连通域AI</span></div>
+            </div>
+            <div class="tile-back-footer">
+              <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('TRON')">开战 ▶</button>
+            </div>
+          </div>
+          <div class="card-body">
         <div class="card-header-row">
           <div class="title-group">
             <div class="card-main-title">
@@ -1726,158 +1776,15 @@
       </div>
     </div>
 
-    <!-- 💣 疯狂拆弹猫 (Bomb Cat) -->
-    <div class="game-card hero-card" data-cat="MIND" data-players="4" data-game-key="BOMBCAT" data-keywords="bombcat bomb cat 疯狂拆弹猫 拆弹 猫 爆炸 桌游 心理 暗牌 心机 4人 4player 四人 cdm" onclick="enterGame('BOMBCAT')" data-genre="BOARD" data-online="false">
-      <div class="card-cover-wrapper">
-        <div class="card-art-canvas">
-          <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="bombcatBg" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="#581c1c"/>
-                <stop offset="50%" stop-color="#991b1b"/>
-                <stop offset="100%" stop-color="#dc2626"/>
-              </linearGradient>
-              <radialGradient id="bombGlow" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stop-color="#f59e0b"/>
-                <stop offset="50%" stop-color="#ef4444"/>
-                <stop offset="100%" stop-color="transparent"/>
-              </radialGradient>
-            </defs>
-            <rect width="320" height="180" fill="url(#bombcatBg)"/>
-            <!-- Bomb burst halo -->
-            <circle cx="160" cy="85" r="60" fill="url(#bombGlow)" opacity="0.35"/>
-            <!-- Ticking Bomb with Cat Ears -->
-            <circle cx="160" cy="95" r="38" fill="#1e1b2e" stroke="#ef4444" stroke-width="3"/>
-            <!-- Cat Ears -->
-            <polygon points="135,65 148,42 154,62" fill="#ef4444"/>
-            <polygon points="166,62 172,42 185,65" fill="#ef4444"/>
-            <!-- Fuse & Spark -->
-            <path d="M160,57 Q160,35 180,30" stroke="#fbbf24" stroke-width="3" fill="none" stroke-linecap="round"/>
-            <circle cx="182" cy="29" r="6" fill="#f59e0b"/>
-            <circle cx="182" cy="29" r="3" fill="#ffffff"/>
-            <!-- Cat Face & Bomb Timer on Belly -->
-            <circle cx="148" cy="90" r="4.5" fill="#ffffff"/>
-            <circle cx="149" cy="90" r="2.5" fill="#000000"/>
-            <circle cx="172" cy="90" r="4.5" fill="#ffffff"/>
-            <circle cx="171" cy="90" r="2.5" fill="#000000"/>
-            <!-- Whiskers -->
-            <line x1="130" y1="95" x2="142" y2="97" stroke="#cbd5e1" stroke-width="1.5"/>
-            <line x1="130" y1="102" x2="142" y2="101" stroke="#cbd5e1" stroke-width="1.5"/>
-            <line x1="178" y1="97" x2="190" y2="95" stroke="#cbd5e1" stroke-width="1.5"/>
-            <line x1="178" y1="101" x2="190" y2="102" stroke="#cbd5e1" stroke-width="1.5"/>
-            <!-- Timer countdown -->
-            <rect x="146" y="110" width="28" height="14" rx="4" fill="#0f172a" stroke="#f59e0b" stroke-width="1"/>
-            <text x="160" y="121" font-family="monospace" font-size="10" font-weight="900" fill="#ef4444" text-anchor="middle">00:01</text>
-            <!-- Title -->
-            <text x="160" y="162" font-family="'Segoe UI', sans-serif" font-size="12" font-weight="900" fill="#f87171" letter-spacing="2" text-anchor="middle">BOMB CAT · 疯狂拆弹猫</text>
-          </svg>
-        </div>
-        <div class="cover-badges">
-          <span class="badge-pill players-4">👥👥 1-4人桌游</span>
-          <span class="badge-pill tag-hot" style="background:linear-gradient(135deg,#ef4444,#dc2626);">💣 心理博弈陷害</span>
-        </div>
-        <div class="cover-overlay"></div>
-      </div>
-      <div class="card-body">
-        <div class="card-header-row">
-          <div class="title-group">
-            <div class="card-main-title">
-              <span>疯狂拆弹猫</span>
-              <span class="card-sub" style="color:#f87171;">BOMB CAT LITE</span>
-            </div>
-            <div class="card-tagline">甩锅跳过与秘密埋雷 · 防偷看长按手牌与全矢量桌游</div>
-          </div>
-          <div class="btn-play-action" style="background:linear-gradient(135deg,#dc2626,#991b1b); box-shadow:0 4px 14px rgba(220,38,38,0.5);">拆弹开玩 ▶</div>
-        </div>
-        <div class="card-meta-chips">
-          <span class="meta-chip">🧯 7大精炼战术卡牌</span>
-          <span class="meta-chip">本地同屏防窥遮罩</span>
-          <span class="meta-chip accent">暗算埋雷心机博弈</span>
+    <!-- 💣 疯狂拆弹猫 (Bomb Ca
         </div>
       </div>
-    </div>
 
-    <!-- 🌈 彩虹乌诺牌 (UNO Party 4P) -->
-    <div class="game-card hero-card" data-cat="MIND" data-players="4" data-game-key="UNO" data-keywords="uno 乌诺牌 优诺 纸牌 桌游 聚会 变色 叠牌 4人 4player 四人 wnp" onclick="enterGame('UNO')" data-genre="BOARD" data-online="true">
-      <div class="card-cover-wrapper">
-        <div class="card-art-canvas">
-          <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="unoBgGrad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="#1e1b4b"/>
-                <stop offset="50%" stop-color="#2e1065"/>
-                <stop offset="100%" stop-color="#4c1d95"/>
-              </linearGradient>
-              <radialGradient id="unoCenterGlow" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.8"/>
-                <stop offset="60%" stop-color="#ec4899" stop-opacity="0.4"/>
-                <stop offset="100%" stop-color="transparent"/>
-              </radialGradient>
-              <filter id="unoCardGlow">
-                <feGaussianBlur stdDeviation="3.5" result="glow"/>
-                <feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
-              </filter>
-            </defs>
-            <rect width="320" height="180" fill="url(#unoBgGrad)"/>
-            <!-- Ambient glow -->
-            <circle cx="160" cy="85" r="70" fill="url(#unoCenterGlow)"/>
-            <!-- 4 Fanned Cards: Blue, Green, Yellow, Red -->
-            <g transform="translate(100, 45) rotate(-22)">
-              <rect x="0" y="0" width="46" height="70" rx="8" fill="#3b82f6" stroke="#ffffff" stroke-width="2"/>
-              <ellipse cx="23" cy="35" rx="14" ry="22" fill="#ffffff" transform="rotate(-20, 23, 35)"/>
-              <text x="23" y="42" font-family="'Segoe UI', sans-serif" font-size="20" font-weight="900" fill="#3b82f6" text-anchor="middle">7</text>
-            </g>
-            <g transform="translate(130, 36) rotate(-8)">
-              <rect x="0" y="0" width="46" height="70" rx="8" fill="#22c55e" stroke="#ffffff" stroke-width="2"/>
-              <ellipse cx="23" cy="35" rx="14" ry="22" fill="#ffffff" transform="rotate(-20, 23, 35)"/>
-              <text x="23" y="42" font-family="'Segoe UI', sans-serif" font-size="18" font-weight="900" fill="#22c55e" text-anchor="middle">+2</text>
-            </g>
-            <g transform="translate(162, 38) rotate(8)">
-              <rect x="0" y="0" width="46" height="70" rx="8" fill="#eab308" stroke="#ffffff" stroke-width="2"/>
-              <ellipse cx="23" cy="35" rx="14" ry="22" fill="#ffffff" transform="rotate(-20, 23, 35)"/>
-              <text x="23" y="42" font-family="'Segoe UI', sans-serif" font-size="18" font-weight="900" fill="#eab308" text-anchor="middle">🔄</text>
-            </g>
-            <g transform="translate(192, 50) rotate(24)">
-              <rect x="0" y="0" width="46" height="70" rx="8" fill="#ef4444" stroke="#ffffff" stroke-width="2"/>
-              <ellipse cx="23" cy="35" rx="14" ry="22" fill="#ffffff" transform="rotate(-20, 23, 35)"/>
-              <text x="23" y="42" font-family="'Segoe UI', sans-serif" font-size="18" font-weight="900" fill="#ef4444" text-anchor="middle">+4</text>
-            </g>
-            <!-- UNO 3D Text -->
-            <g transform="translate(160, 115)">
-              <text x="0" y="0" font-family="'Impact', sans-serif" font-size="28" font-weight="900" fill="#f59e0b" text-anchor="middle" filter="url(#unoCardGlow)" letter-spacing="3" transform="skewX(-10)">UNO!</text>
-            </g>
-            <!-- Subtitle -->
-            <text x="160" y="165" font-family="'Segoe UI', sans-serif" font-size="11" font-weight="900" fill="#c084fc" letter-spacing="2" text-anchor="middle">UNO PARTY · 彩虹乌诺牌 4P</text>
-          </svg>
-        </div>
-        <div class="cover-badges">
-          <span class="badge-pill players-4">👥👥 1-4人桌游</span>
-          <span class="badge-pill tag-hot" style="background:linear-gradient(135deg,#f59e0b,#ea580c);">🌈 变色狂欢</span>
-        </div>
-        <div class="cover-overlay"></div>
-      </div>
-      <div class="card-body">
-        <div class="card-header-row">
-          <div class="title-group">
-            <div class="card-main-title">
-              <span>彩虹乌诺牌</span>
-              <span class="card-sub" style="color:#fbbf24;">UNO PARTY 4P</span>
-            </div>
-            <div class="card-tagline">108张正统乌诺 · 连环+2叠牌反弹 · 喊UNO与抓漏举报</div>
-          </div>
-          <div class="btn-play-action" style="background:linear-gradient(135deg,#f59e0b,#ea580c); box-shadow:0 4px 14px rgba(245,158,11,0.5);">出牌开玩 ▶</div>
-        </div>
-        <div class="card-meta-chips">
-          <span class="meta-chip">🌈 108张正统牌组</span>
-          <span class="meta-chip">⚡ 连环叠牌反弹</span>
-          <span class="meta-chip accent">📣 喊UNO与抓漏</span>
-        </div>
-      </div>
-    </div>
+          <div class="game-card hero-card tile-wide tile-accent-bomberman" data-cat="PHYSICS" data-players="4" data-game-key="BOMBERMAN" data-keywords="bomberman 极光炸弹人 炸弹人 炸弹 neon 道具 踢弹 连环爆 末日突袭 物理 4人 4player 四人 合体 爆破 zdm" onclick="enterGame('BOMBERMAN')" data-genre="ARCADE" data-online="false">
 
-    <!-- 💣 极光炸弹人大乱斗 (Neon Bomberman 4P) -->
-    <div class="game-card hero-card" data-cat="PHYSICS" data-players="4" data-game-key="BOMBERMAN" data-keywords="bomberman 极光炸弹人 炸弹人 炸弹 neon 道具 踢弹 连环爆 末日突袭 物理 4人 4player 四人 合体 爆破 zdm" onclick="enterGame('BOMBERMAN')" data-genre="ARCADE" data-online="false">
-      <div class="card-cover-wrapper">
+        <div class="metro-tile-flipper">
+          <div class="metro-tile-front">
+            <div class="card-cover-wrapper">
         <div class="card-art-canvas">
           <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
             <defs>
@@ -1936,7 +1843,26 @@
         </div>
         <div class="cover-overlay"></div>
       </div>
-      <div class="card-body">
+            <div class="tile-info-overlay">
+              <span class="tile-title-text">极光炸弹人大乱斗</span>
+              <span class="tile-badge-num">💣 4P</span>
+            </div>
+          </div>
+          <div class="metro-tile-back">
+            <div class="tile-back-header">
+              <span class="tile-back-title">极光炸弹人大乱斗</span>
+              <span class="tile-back-status">未开始</span>
+            </div>
+            <div class="tile-back-body">
+              <div class="tile-stat-row"><span>支持模式:</span> <span class="tile-stat-val">1-4人同屏 / AI</span></div>
+              <div class="tile-stat-row"><span>历史战局:</span> <span class="tile-stat-val tile-stat-val-plays">0 局</span></div>
+              <div class="tile-stat-row"><span>特色机制:</span> <span class="tile-stat-val">6大道具体系/螺旋毒圈</span></div>
+            </div>
+            <div class="tile-back-footer">
+              <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('BOMBERMAN')">开战 ▶</button>
+            </div>
+          </div>
+          <div class="card-body">
         <div class="card-header-row">
           <div class="title-group">
             <div class="card-main-title">
@@ -1955,9 +1881,111 @@
       </div>
     </div>
 
-    <!-- 🕹️ FC 怀旧红白机厅 (800+ 经典原版) -->
-    <div class="game-card hero-card" data-cat="PHYSICS" data-players="2" data-game-key="NES" data-keywords="nes fc 怀旧红白机厅 街机 红白机 800 876 经典 双人 2人 二人 物理 模拟器 hbj" onclick="enterGame('NES')" style="background: linear-gradient(135deg, rgba(30, 27, 75, 0.8), rgba(15, 23, 42, 0.9)); border: 1px solid #6366f1;" data-genre="ARCADE" data-online="true">
-      <div class="card-cover-wrapper">
+    <!-- 🕹️ FC 怀旧红白机厅 (800+ 经典原
+        </div>
+      </div>
+
+          <div class="game-card hero-card tile-medium tile-accent-bombcat" data-cat="MIND" data-players="4" data-game-key="BOMBCAT" data-keywords="bombcat bomb cat 疯狂拆弹猫 拆弹 猫 爆炸 桌游 心理 暗牌 心机 4人 4player 四人 cdm" onclick="enterGame('BOMBCAT')" data-genre="BOARD" data-online="false">
+
+        <div class="metro-tile-flipper">
+          <div class="metro-tile-front">
+            <div class="card-cover-wrapper">
+        <div class="card-art-canvas">
+          <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="bombcatBg" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#581c1c"/>
+                <stop offset="50%" stop-color="#991b1b"/>
+                <stop offset="100%" stop-color="#dc2626"/>
+              </linearGradient>
+              <radialGradient id="bombGlow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#f59e0b"/>
+                <stop offset="50%" stop-color="#ef4444"/>
+                <stop offset="100%" stop-color="transparent"/>
+              </radialGradient>
+            </defs>
+            <rect width="320" height="180" fill="url(#bombcatBg)"/>
+            <!-- Bomb burst halo -->
+            <circle cx="160" cy="85" r="60" fill="url(#bombGlow)" opacity="0.35"/>
+            <!-- Ticking Bomb with Cat Ears -->
+            <circle cx="160" cy="95" r="38" fill="#1e1b2e" stroke="#ef4444" stroke-width="3"/>
+            <!-- Cat Ears -->
+            <polygon points="135,65 148,42 154,62" fill="#ef4444"/>
+            <polygon points="166,62 172,42 185,65" fill="#ef4444"/>
+            <!-- Fuse & Spark -->
+            <path d="M160,57 Q160,35 180,30" stroke="#fbbf24" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <circle cx="182" cy="29" r="6" fill="#f59e0b"/>
+            <circle cx="182" cy="29" r="3" fill="#ffffff"/>
+            <!-- Cat Face & Bomb Timer on Belly -->
+            <circle cx="148" cy="90" r="4.5" fill="#ffffff"/>
+            <circle cx="149" cy="90" r="2.5" fill="#000000"/>
+            <circle cx="172" cy="90" r="4.5" fill="#ffffff"/>
+            <circle cx="171" cy="90" r="2.5" fill="#000000"/>
+            <!-- Whiskers -->
+            <line x1="130" y1="95" x2="142" y2="97" stroke="#cbd5e1" stroke-width="1.5"/>
+            <line x1="130" y1="102" x2="142" y2="101" stroke="#cbd5e1" stroke-width="1.5"/>
+            <line x1="178" y1="97" x2="190" y2="95" stroke="#cbd5e1" stroke-width="1.5"/>
+            <line x1="178" y1="101" x2="190" y2="102" stroke="#cbd5e1" stroke-width="1.5"/>
+            <!-- Timer countdown -->
+            <rect x="146" y="110" width="28" height="14" rx="4" fill="#0f172a" stroke="#f59e0b" stroke-width="1"/>
+            <text x="160" y="121" font-family="monospace" font-size="10" font-weight="900" fill="#ef4444" text-anchor="middle">00:01</text>
+            <!-- Title -->
+            <text x="160" y="162" font-family="'Segoe UI', sans-serif" font-size="12" font-weight="900" fill="#f87171" letter-spacing="2" text-anchor="middle">BOMB CAT · 疯狂拆弹猫</text>
+          </svg>
+        </div>
+        <div class="cover-badges">
+          <span class="badge-pill players-4">👥👥 1-4人桌游</span>
+          <span class="badge-pill tag-hot" style="background:linear-gradient(135deg,#ef4444,#dc2626);">💣 心理博弈陷害</span>
+        </div>
+        <div class="cover-overlay"></div>
+      </div>
+            <div class="tile-info-overlay">
+              <span class="tile-title-text">疯狂拆弹猫</span>
+              <span class="tile-badge-num">👥 4P</span>
+            </div>
+          </div>
+          <div class="metro-tile-back">
+            <div class="tile-back-header">
+              <span class="tile-back-title">疯狂拆弹猫</span>
+              <span class="tile-back-status">未开始</span>
+            </div>
+            <div class="tile-back-body">
+              <div class="tile-stat-row"><span>支持模式:</span> <span class="tile-stat-val">2-4人暗牌 / AI</span></div>
+              <div class="tile-stat-row"><span>历史战局:</span> <span class="tile-stat-val tile-stat-val-plays">0 局</span></div>
+              <div class="tile-stat-row"><span>特色机制:</span> <span class="tile-stat-val">心理博弈/自救</span></div>
+            </div>
+            <div class="tile-back-footer">
+              <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('BOMBCAT')">开战 ▶</button>
+            </div>
+          </div>
+          <div class="card-body">
+        <div class="card-header-row">
+          <div class="title-group">
+            <div class="card-main-title">
+              <span>疯狂拆弹猫</span>
+              <span class="card-sub" style="color:#f87171;">BOMB CAT LITE</span>
+            </div>
+            <div class="card-tagline">甩锅跳过与秘密埋雷 · 防偷看长按手牌与全矢量桌游</div>
+          </div>
+          <div class="btn-play-action" style="background:linear-gradient(135deg,#dc2626,#991b1b); box-shadow:0 4px 14px rgba(220,38,38,0.5);">拆弹开玩 ▶</div>
+        </div>
+        <div class="card-meta-chips">
+          <span class="meta-chip">🧯 7大精炼战术卡牌</span>
+          <span class="meta-chip">本地同屏防窥遮罩</span>
+          <span class="meta-chip accent">暗算埋雷心机博弈</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 🌈 彩虹乌诺牌 (UNO Party 4
+        </div>
+      </div>
+
+          <div class="game-card hero-card tile-large tile-accent-nes" data-cat="PHYSICS" data-players="2" data-game-key="NES" data-keywords="nes fc 怀旧红白机厅 街机 红白机 800 876 经典 双人 2人 二人 物理 模拟器 hbj" onclick="enterGame('NES')" style="background: linear-gradient(135deg, rgba(30, 27, 75, 0.8), rgba(15, 23, 42, 0.9)); border: 1px solid #6366f1;" data-genre="ARCADE" data-online="true">
+
+        <div class="metro-tile-flipper">
+          <div class="metro-tile-front">
+            <div class="card-cover-wrapper">
         <div class="card-art-canvas">
           <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
             <defs>
@@ -1985,7 +2013,26 @@
         </div>
         <div class="cover-overlay"></div>
       </div>
-      <div class="card-body">
+            <div class="tile-info-overlay">
+              <span class="tile-title-text">FC 怀旧红白机厅</span>
+              <span class="tile-badge-num">🕹️ 800+</span>
+            </div>
+          </div>
+          <div class="metro-tile-back">
+            <div class="tile-back-header">
+              <span class="tile-back-title">FC 怀旧红白机厅</span>
+              <span class="tile-back-status">未开始</span>
+            </div>
+            <div class="tile-back-body">
+              <div class="tile-stat-row"><span>支持模式:</span> <span class="tile-stat-val">双人同屏 / 单人</span></div>
+              <div class="tile-stat-row"><span>历史战局:</span> <span class="tile-stat-val tile-stat-val-plays">0 局</span></div>
+              <div class="tile-stat-row"><span>特色机制:</span> <span class="tile-stat-val">870+原版ROM</span></div>
+            </div>
+            <div class="tile-back-footer">
+              <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('NES')">开战 ▶</button>
+            </div>
+          </div>
+          <div class="card-body">
         <div class="card-header-row">
           <div class="title-group">
             <div class="card-main-title">
@@ -2002,10 +2049,14 @@
           <span class="meta-chip accent">原汁原味硬件模拟</span>
         </div>
       </div>
-    </div>
+        </div>
+      </div>
 
-    <div class="game-card hero-card" data-cat="PHYSICS" data-players="2" data-game-key="CONTRA" data-keywords="contra 魂斗罗 双人 2人 二人 射击 经典 物理 闯关 8条命 30条命 hdl" onclick="enterGame('CONTRA')" data-genre="ARCADE" data-online="true">
-      <div class="card-cover-wrapper">
+          <div class="game-card hero-card tile-wide tile-accent-contra" data-cat="PHYSICS" data-players="2" data-game-key="CONTRA" data-keywords="contra 魂斗罗 双人 2人 二人 射击 经典 物理 闯关 8条命 30条命 hdl" onclick="enterGame('CONTRA')" data-genre="ARCADE" data-online="true">
+
+        <div class="metro-tile-flipper">
+          <div class="metro-tile-front">
+            <div class="card-cover-wrapper">
         <div class="card-art-canvas">
           
   <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
@@ -2066,7 +2117,26 @@
         </div>
         <div class="cover-overlay"></div>
       </div>
-      <div class="card-body">
+            <div class="tile-info-overlay">
+              <span class="tile-title-text">魂斗罗</span>
+              <span class="tile-badge-num">💥 经典</span>
+            </div>
+          </div>
+          <div class="metro-tile-back">
+            <div class="tile-back-header">
+              <span class="tile-back-title">魂斗罗</span>
+              <span class="tile-back-status">未开始</span>
+            </div>
+            <div class="tile-back-body">
+              <div class="tile-stat-row"><span>支持模式:</span> <span class="tile-stat-val">双人同屏 / 30命</span></div>
+              <div class="tile-stat-row"><span>历史战局:</span> <span class="tile-stat-val tile-stat-val-plays">0 局</span></div>
+              <div class="tile-stat-row"><span>特色机制:</span> <span class="tile-stat-val">8向弹道/S散弹</span></div>
+            </div>
+            <div class="tile-back-footer">
+              <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('CONTRA')">开战 ▶</button>
+            </div>
+          </div>
+          <div class="card-body">
         <div class="card-header-row">
           <div class="title-group">
             <div class="card-main-title">
@@ -2084,491 +2154,14 @@
           <span class="meta-chip" style="background:rgba(139,92,246,0.2);color:#c084fc;border-color:rgba(139,92,246,0.4);" onclick="event.stopPropagation(); launchGame('CONTRA_CANVAS', event);">🚀 无限远征版</span>
         </div>
       </div>
-    </div>
-  
-
-    <div class="game-card hero-card" data-cat="STRATEGY" data-players="4" data-game-key="QUORIDOR" data-keywords="quoridor 步步为营 挡板 迷宫 策略 博弈 4人 4player 四人 双人 2人 二人 桌游 bbwy" onclick="enterGame('QUORIDOR')" data-genre="CHESS" data-online="true">
-      <div class="card-cover-wrapper">
-        <div class="card-art-canvas">
-          
-  <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <linearGradient id="qBg" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="#3b0764"/>
-                <stop offset="50%" stop-color="#6b21a8"/>
-                <stop offset="100%" stop-color="#9333ea"/>
-              </linearGradient>
-      <linearGradient id="woodWall" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#f59e0b"/>
-        <stop offset="100%" stop-color="#b45309"/>
-      </linearGradient>
-      <filter id="qGlow">
-        <feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-      </filter>
-    </defs>
-    <rect width="320" height="180" fill="url(#qBg)"/>
-    <!-- 3D 等距投影棋盘 -->
-    <g transform="translate(160, 92) scale(1.05, 0.6) rotate(45)">
-      <!-- 棋盘底座 -->
-      <rect x="-85" y="-85" width="170" height="170" rx="14" fill="#1e293b" stroke="#334155" stroke-width="3"/>
-      <!-- 棋盘格点 -->
-      <g stroke="#475569" stroke-width="1" fill="#0f172a">
-        <rect x="-70" y="-70" width="30" height="30" rx="4"/>
-        <rect x="-30" y="-70" width="30" height="30" rx="4"/>
-        <rect x="10" y="-70" width="30" height="30" rx="4"/>
-        <rect x="50" y="-70" width="30" height="30" rx="4"/>
-        
-        <rect x="-70" y="-30" width="30" height="30" rx="4"/>
-        <rect x="-30" y="-30" width="30" height="30" rx="4"/>
-        <rect x="10" y="-30" width="30" height="30" rx="4"/>
-        <rect x="50" y="-30" width="30" height="30" rx="4"/>
-
-        <rect x="-70" y="10" width="30" height="30" rx="4"/>
-        <rect x="-30" y="10" width="30" height="30" rx="4"/>
-        <rect x="10" y="10" width="30" height="30" rx="4"/>
-        <rect x="50" y="10" width="30" height="30" rx="4"/>
-
-        <rect x="-70" y="50" width="30" height="30" rx="4"/>
-        <rect x="-30" y="50" width="30" height="30" rx="4"/>
-        <rect x="10" y="50" width="30" height="30" rx="4"/>
-        <rect x="50" y="50" width="30" height="30" rx="4"/>
-      </g>
-      <!-- 四色棋子 -->
-      <circle cx="-55" cy="25" r="11" fill="#38bdf8" filter="url(#qGlow)"/> <!-- 蓝 -->
-      <circle cx="25" cy="-55" r="11" fill="#ef4444" filter="url(#qGlow)"/> <!-- 红 -->
-      <circle cx="-55" cy="-55" r="10" fill="#10b981"/> <!-- 绿 -->
-      <circle cx="25" cy="25" r="10" fill="#f59e0b"/> <!-- 黄 -->
-      <!-- 阻挡木墙 -->
-      <rect x="-35" y="-15" width="70" height="9" rx="2" fill="url(#woodWall)" stroke="#fef3c7" stroke-width="1.8" filter="url(#qGlow)"/>
-      <rect x="5" y="-65" width="9" height="60" rx="2" fill="url(#woodWall)" stroke="#fef3c7" stroke-width="1.8"/>
-    </g>
-  </svg>
-        </div>
-        <div class="cover-badges">
-          <span class="badge-pill players-4">👥👥 2-4人</span>
-          <span class="badge-pill tag-hot">🔥 4人大乱斗</span>
-        </div>
-        <div class="cover-overlay"></div>
-      </div>
-      <div class="card-body">
-        <div class="card-header-row">
-          <div class="title-group">
-            <div class="card-main-title">
-              <span>步步为营</span>
-              <span class="card-sub">QUORIDOR 4P</span>
-            </div>
-            <div class="card-tagline">门萨殿堂级博弈 · 筑墙截杀突围</div>
-          </div>
-          <div class="btn-play-action">开玩 ▶</div>
-        </div>
-        <div class="card-meta-chips">
-          <span class="meta-chip">⏱️ 2-4分钟</span>
-          <span class="meta-chip">烧脑 ⭐⭐⭐</span>
-          <span class="meta-chip accent">4人联机/AI混战</span>
         </div>
       </div>
-    </div>
-  
 
-    <div class="game-card hero-card" data-cat="STRATEGY" data-players="4" data-game-key="AEROPLANE" data-keywords="aeroplane 飞行棋 经典飞行棋 四人 4人 4player 双人 2人 二人 掷骰子 飞机 策略 桌游 fxq" onclick="enterGame('AEROPLANE')" data-genre="CHESS" data-online="true">
-      <div class="card-cover-wrapper">
-        <div class="card-art-canvas">
-          
-  <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <linearGradient id="aeroBg" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="#0369a1"/>
-                <stop offset="50%" stop-color="#0284c7"/>
-                <stop offset="100%" stop-color="#38bdf8"/>
-              </linearGradient>
-      <linearGradient id="diceGold" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="#fef08a"/>
-        <stop offset="100%" stop-color="#f59e0b"/>
-      </linearGradient>
-      <filter id="aeroGlow">
-        <feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-      </filter>
-    </defs>
-    <rect width="320" height="180" fill="url(#aeroBg)"/>
-    <!-- 棋盘跑道环线与十字导航航线 -->
-    <circle cx="160" cy="95" r="55" fill="none" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="6 4" opacity="0.4"/>
-    <line x1="160" y1="35" x2="160" y2="155" stroke="#f43f5e" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.5"/>
-    <line x1="100" y1="95" x2="220" y2="95" stroke="#facc15" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.5"/>
-    <!-- 四色停机坪角落 -->
-    <rect x="35" y="30" width="34" height="34" rx="8" fill="#10b981" opacity="0.3" stroke="#34d399" stroke-width="1.5"/>
-    <rect x="250" y="30" width="34" height="34" rx="8" fill="#3b82f6" opacity="0.3" stroke="#60a5fa" stroke-width="1.5"/>
-    <rect x="35" y="125" width="34" height="34" rx="8" fill="#f59e0b" opacity="0.3" stroke="#fbbf24" stroke-width="1.5"/>
-    <rect x="250" y="125" width="34" height="34" rx="8" fill="#ef4444" opacity="0.3" stroke="#f87171" stroke-width="1.5"/>
-    <!-- 飞行尾迹弧光 (Vapor trail) -->
-    <path d="M45,140 Q130,40 230,85" stroke="#ffffff" stroke-width="3" fill="none" opacity="0.75" filter="url(#aeroGlow)"/>
-    <path d="M45,140 Q130,40 230,85" stroke="#fef08a" stroke-width="1" fill="none"/>
-    <!-- 红色超音速战机 (正在疾速滑翔突进) -->
-    <g transform="translate(230, 85) rotate(25)">
-      <!-- 机翼与机身 -->
-      <polygon points="18,0 -12,-16 -4,0 -12,16" fill="#ef4444" stroke="#fecaca" stroke-width="1.5" filter="url(#aeroGlow)"/>
-      <polygon points="18,0 -6,-5 0,0 -6,5" fill="#ffffff"/>
-      <!-- 机尾喷射火焰 -->
-      <polygon points="-12,0 -22,-3 -18,0 -22,3" fill="#f97316"/>
-    </g>
-    <!-- 蓝色僚机 -->
-    <g transform="translate(95, 65) rotate(-35)">
-      <polygon points="14,0 -9,-12 -3,0 -9,12" fill="#38bdf8" stroke="#e0f2fe" stroke-width="1.2"/>
-    </g>
-    <!-- 幸运点数 6 金色飞行骰子 -->
-    <g transform="translate(142, 68)">
-      <rect x="0" y="0" width="36" height="36" rx="8" fill="url(#diceGold)" stroke="#ffffff" stroke-width="2" filter="url(#aeroGlow)"/>
-      <!-- 点数 6 -->
-      <circle cx="10" cy="9" r="2.8" fill="#ef4444"/>
-      <circle cx="10" cy="18" r="2.8" fill="#ef4444"/>
-      <circle cx="10" cy="27" r="2.8" fill="#ef4444"/>
-      <circle cx="26" cy="9" r="2.8" fill="#ef4444"/>
-      <circle cx="26" cy="18" r="2.8" fill="#ef4444"/>
-      <circle cx="26" cy="27" r="2.8" fill="#ef4444"/>
-    </g>
-    <!-- 胜利终点星芒 -->
-    <polygon points="160,20 163,27 170,27 165,32 167,39 160,35 153,39 155,32 150,27 157,27" fill="#facc15" filter="url(#aeroGlow)"/>
-  </svg>
-        </div>
-        <div class="cover-badges">
-          <span class="badge-pill players-4">👥👥 1-4人</span>
-          <span class="badge-pill tag-hot">✈️ 经典童年</span>
-        </div>
-        <div class="cover-overlay"></div>
-      </div>
-      <div class="card-body">
-        <div class="card-header-row">
-          <div class="title-group">
-            <div class="card-main-title">
-              <span>四人飞行棋</span>
-              <span class="card-sub">AEROPLANE CHESS</span>
-            </div>
-            <div class="card-tagline">投骰起飞撞机截杀 · 捷径飞越直通终点</div>
-          </div>
-          <div class="btn-play-action">开玩 ▶</div>
-        </div>
-        <div class="card-meta-chips">
-          <span class="meta-chip">⏱️ 3-8分钟</span>
-          <span class="meta-chip">欢乐 ⭐⭐⭐</span>
-          <span class="meta-chip accent">人机对战 / 同屏4人</span>
-        </div>
-      </div>
-    </div>
-  
+          <div class="game-card hero-card tile-large tile-accent-monopoly" data-cat="STRATEGY" data-players="4" data-game-key="MONOPOLY" data-keywords="monopoly 大富翁 强手棋 地产大亨 掷骰子 盖楼 买地 收租 破产 机会 命运 2人 4人 8人 策略 桌游 AI 人机 联机 在线 房间 dfw" onclick="enterGame('MONOPOLY')" style="border: 1px solid rgba(16, 185, 129, 0.45); box-shadow: 0 4px 20px rgba(16, 185, 129, 0.18);" data-genre="BOARD" data-online="true">
 
-    <div class="game-card hero-card" data-cat="STRATEGY" data-players="2" data-game-key="GO" data-keywords="go 围棋 玄素围棋 黑白棋 策略 博弈 双人 2人 二人 单人 人机 对弈 wq" onclick="enterGame('GO')" style="border: 1px solid rgba(245, 158, 11, 0.45); box-shadow: 0 4px 20px rgba(245, 158, 11, 0.15);" data-genre="CHESS" data-online="true">
-      <div class="card-cover-wrapper">
-        <div class="card-art-canvas">
-          
-  <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <radialGradient id="goWood" cx="50%" cy="50%" r="60%">
-        <stop offset="0%" stop-color="#dfa868"/>
-        <stop offset="60%" stop-color="#c68a4c"/>
-        <stop offset="100%" stop-color="#935b24"/>
-      </radialGradient>
-      <radialGradient id="blackStoneGrad" cx="35%" cy="35%" r="65%">
-        <stop offset="0%" stop-color="#555"/>
-        <stop offset="40%" stop-color="#222"/>
-        <stop offset="100%" stop-color="#0a0a0a"/>
-      </radialGradient>
-      <radialGradient id="whiteStoneGrad" cx="30%" cy="30%" r="70%">
-        <stop offset="0%" stop-color="#ffffff"/>
-        <stop offset="60%" stop-color="#f0f0f0"/>
-        <stop offset="100%" stop-color="#cbd5e1"/>
-      </radialGradient>
-      <filter id="stoneShadow" x="-20%" y="-20%" width="150%" height="150%">
-        <feDropShadow dx="2" dy="3" stdDeviation="2.5" flood-color="#000000" flood-opacity="0.6"/>
-      </filter>
-      <filter id="goGlow">
-        <feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-      </filter>
-    </defs>
-    <defs>
-              <linearGradient id="goCosmosBg" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="#451a03"/>
-                <stop offset="50%" stop-color="#78350f"/>
-                <stop offset="100%" stop-color="#b45309"/>
-              </linearGradient>
-            </defs>
-            <rect width="320" height="180" fill="url(#goCosmosBg)"/>
-    <g transform="translate(160, 95) scale(1.05, 0.75) rotate(-6)">
-      <polygon points="-125,-75 125,-75 132,-68 132,78 -118,78 -125,71" fill="#5c3815" opacity="0.8"/>
-      <polygon points="-125,71 125,71 125,82 -125,82" fill="#78471c"/>
-      <rect x="-125" y="-75" width="250" height="146" rx="6" fill="url(#goWood)" stroke="#5c3815" stroke-width="1.5"/>
-      <g stroke="#613b14" stroke-width="1.2" opacity="0.85">
-        <line x1="-105" y1="-55" x2="105" y2="-55"/>
-        <line x1="-105" y1="-30" x2="105" y2="-30"/>
-        <line x1="-105" y1="-5" x2="105" y2="-5"/>
-        <line x1="-105" y1="20" x2="105" y2="20"/>
-        <line x1="-105" y1="45" x2="105" y2="45"/>
-        <line x1="-105" y1="-55" x2="-105" y2="45"/>
-        <line x1="-63" y1="-55" x2="-63" y2="45"/>
-        <line x1="-21" y1="-55" x2="-21" y2="45"/>
-        <line x1="21" y1="-55" x2="21" y2="45"/>
-        <line x1="63" y1="-55" x2="63" y2="45"/>
-        <line x1="105" y1="-55" x2="105" y2="45"/>
-      </g>
-      <circle cx="-63" cy="-30" r="2.5" fill="#45270b"/>
-      <circle cx="63" cy="-30" r="2.5" fill="#45270b"/>
-      <circle cx="-21" cy="-5" r="2.8" fill="#45270b"/>
-      <circle cx="-63" cy="20" r="2.5" fill="#45270b"/>
-      <circle cx="63" cy="20" r="2.5" fill="#45270b"/>
-      <circle cx="-63" cy="-30" r="16" fill="url(#blackStoneGrad)" filter="url(#stoneShadow)"/>
-      <circle cx="21" cy="-30" r="16" fill="url(#blackStoneGrad)" filter="url(#stoneShadow)"/>
-      <circle cx="-21" cy="20" r="16" fill="url(#blackStoneGrad)" filter="url(#stoneShadow)"/>
-      <circle cx="63" cy="20" r="16" fill="url(#blackStoneGrad)" filter="url(#stoneShadow)"/>
-      <circle cx="-21" cy="-5" r="16" fill="url(#whiteStoneGrad)" filter="url(#stoneShadow)"/>
-      <circle cx="-21" cy="-30" r="16" fill="url(#whiteStoneGrad)" filter="url(#stoneShadow)"/>
-      <circle cx="21" cy="-5" r="16" fill="url(#whiteStoneGrad)" filter="url(#stoneShadow)"/>
-      <circle cx="21" cy="-5" r="17" fill="none" stroke="#38bdf8" stroke-width="2.5" filter="url(#goGlow)" opacity="0.8"/>
-    </g>
-    <path d="M30,150 Q160,110 290,30" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="6 4" fill="none" opacity="0.4" filter="url(#goGlow)"/>
-  </svg>
-        </div>
-        <div class="cover-badges">
-          <span class="badge-pill players">👥 1-2人</span>
-          <span class="badge-pill tag-new" style="background:linear-gradient(135deg,#f59e0b,#ef4444); color:#fff; font-weight:800;">✨ 崭新登场 · 围棋AI</span>
-        </div>
-        <div class="cover-overlay"></div>
-      </div>
-      <div class="card-body">
-        <div class="card-header-row">
-          <div class="title-group">
-            <div class="card-main-title">
-              <span>玄素围棋</span>
-              <span class="card-sub" style="color:#f59e0b;">THE GAME OF GO</span>
-            </div>
-            <div class="card-tagline">纵横十九路 · 气尽提子与多级蒙特卡洛AI对弈</div>
-          </div>
-          <div class="btn-play-action" style="background:linear-gradient(135deg,#f59e0b,#d97706); color:#fff; border-color:#fbbf24;">开玩 ▶</div>
-        </div>
-        <div class="card-meta-chips">
-          <span class="meta-chip">⏱️ 3-15分钟</span>
-          <span class="meta-chip">烧脑 ⭐⭐⭐⭐</span>
-          <span class="meta-chip accent">9/13/19路 + MCTS演算</span>
-        </div>
-      </div>
-    </div>
-  
-
-    <div class="game-card hero-card" data-cat="STRATEGY" data-players="2" data-game-key="KAYA" data-keywords="kaya kaya围棋 现代围棋 katago ai 策略 博弈 围棋 复盘 绝艺 双人 2人 二人 单人 人机" onclick="enterGame('KAYA')" style="border: 1px solid rgba(16, 185, 129, 0.45); box-shadow: 0 4px 20px rgba(16, 185, 129, 0.15);" data-genre="CHESS" data-online="false">
-      <div class="card-cover-wrapper">
-        <div class="card-art-canvas">
-          <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="kayaBgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#022c22"/>
-                <stop offset="50%" stop-color="#065f46"/>
-                <stop offset="100%" stop-color="#059669"/>
-              </linearGradient>
-              <radialGradient id="kayaWood" cx="45%" cy="45%" r="65%">
-                <stop offset="0%" stop-color="#f5d7a1"/>
-                <stop offset="50%" stop-color="#d9a766"/>
-                <stop offset="100%" stop-color="#8c5828"/>
-              </radialGradient>
-              <radialGradient id="kayaBlackStone" cx="35%" cy="30%" r="65%">
-                <stop offset="0%" stop-color="#555"/>
-                <stop offset="35%" stop-color="#1f2937"/>
-                <stop offset="100%" stop-color="#050811"/>
-              </radialGradient>
-              <radialGradient id="kayaWhiteStone" cx="30%" cy="30%" r="70%">
-                <stop offset="0%" stop-color="#ffffff"/>
-                <stop offset="65%" stop-color="#f1f5f9"/>
-                <stop offset="100%" stop-color="#cbd5e1"/>
-              </radialGradient>
-              <filter id="kayaShadow" x="-20%" y="-20%" width="150%" height="150%">
-                <feDropShadow dx="2" dy="4" stdDeviation="3" flood-color="#000000" flood-opacity="0.7"/>
-              </filter>
-              <filter id="aiGlow">
-                <feGaussianBlur stdDeviation="4" result="blur"/>
-                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-              </filter>
-            </defs>
-            <rect width="320" height="180" fill="url(#kayaBgGrad)"/>
-            <g opacity="0.35" stroke="#10b981" stroke-width="1.2">
-              <line x1="20" y1="30" x2="80" y2="70"/>
-              <line x1="80" y1="70" x2="140" y2="40"/>
-              <line x1="140" y1="40" x2="220" y2="80"/>
-              <line x1="220" y1="80" x2="290" y2="30"/>
-              <line x1="80" y1="70" x2="160" y2="120"/>
-              <line x1="160" y1="120" x2="250" y2="130"/>
-              <circle cx="20" cy="30" r="3" fill="#34d399"/>
-              <circle cx="80" cy="70" r="4" fill="#10b981" filter="url(#aiGlow)"/>
-              <circle cx="140" cy="40" r="3.5" fill="#34d399"/>
-              <circle cx="220" cy="80" r="4" fill="#10b981" filter="url(#aiGlow)"/>
-              <circle cx="290" cy="30" r="3" fill="#34d399"/>
-              <circle cx="160" cy="120" r="3.5" fill="#34d399"/>
-              <circle cx="250" cy="130" r="3" fill="#34d399"/>
-            </g>
-            <g transform="translate(160, 96) scale(1.08, 0.76) rotate(4)">
-              <polygon points="-120,-70 120,-70 128,-62 128,78 -112,78 -120,70" fill="#523214" opacity="0.85"/>
-              <polygon points="-120,70 120,70 120,84 -120,84" fill="#6d3f1a"/>
-              <rect x="-120" y="-70" width="240" height="142" rx="6" fill="url(#kayaWood)" stroke="#523214" stroke-width="1.6"/>
-              <g stroke="#5c3815" stroke-width="1.2" opacity="0.8">
-                <line x1="-100" y1="-50" x2="100" y2="-50"/>
-                <line x1="-100" y1="-25" x2="100" y2="-25"/>
-                <line x1="-100" y1="0" x2="100" y2="0"/>
-                <line x1="-100" y1="25" x2="100" y2="25"/>
-                <line x1="-100" y1="50" x2="100" y2="50"/>
-                <line x1="-100" y1="-50" x2="-100" y2="50"/>
-                <line x1="-50" y1="-50" x2="-50" y2="50"/>
-                <line x1="0" y1="-50" x2="0" y2="50"/>
-                <line x1="50" y1="-50" x2="50" y2="50"/>
-                <line x1="100" y1="-50" x2="100" y2="50"/>
-              </g>
-              <circle cx="-50" cy="-25" r="2.5" fill="#3d2208"/>
-              <circle cx="50" cy="-25" r="2.5" fill="#3d2208"/>
-              <circle cx="0" cy="0" r="3" fill="#3d2208"/>
-              <circle cx="-50" cy="25" r="2.5" fill="#3d2208"/>
-              <circle cx="50" cy="25" r="2.5" fill="#3d2208"/>
-              <circle cx="-50" cy="-25" r="16" fill="url(#kayaBlackStone)" filter="url(#kayaShadow)"/>
-              <circle cx="0" cy="-25" r="16" fill="url(#kayaWhiteStone)" filter="url(#kayaShadow)"/>
-              <circle cx="50" cy="-25" r="16" fill="url(#kayaBlackStone)" filter="url(#kayaShadow)"/>
-              <circle cx="-50" cy="25" r="16" fill="url(#kayaWhiteStone)" filter="url(#kayaShadow)"/>
-              <circle cx="0" cy="25" r="16" fill="url(#kayaBlackStone)" filter="url(#kayaShadow)"/>
-              <circle cx="50" cy="25" r="16" fill="url(#kayaWhiteStone)" filter="url(#kayaShadow)"/>
-              <circle cx="0" cy="0" r="16" fill="url(#kayaWhiteStone)" filter="url(#kayaShadow)"/>
-              <circle cx="0" cy="0" r="18" fill="none" stroke="#10b981" stroke-width="2.5" filter="url(#aiGlow)"/>
-              <circle cx="0" cy="0" r="22" stroke="#34d399" stroke-width="1.5" stroke-dasharray="4 4" fill="none" opacity="0.8"/>
-            </g>
-            <g transform="translate(18, 140)">
-              <rect width="90" height="24" rx="6" fill="rgba(15,23,42,0.85)" stroke="rgba(16,185,129,0.5)" stroke-width="1"/>
-              <text x="8" y="16" fill="#34d399" font-size="11" font-weight="700" font-family="system-ui, sans-serif">KataGo: 58.4%</text>
-            </g>
-          </svg>
-        </div>
-        <div class="cover-badges">
-          <span class="badge-pill players">👥 1-2人 / AI</span>
-          <span class="badge-pill tag-new" style="background:linear-gradient(135deg,#10b981,#059669); color:#fff; font-weight:800;">🌲 最新引入 · KataGo AI</span>
-        </div>
-        <div class="cover-overlay"></div>
-      </div>
-      <div class="card-body">
-        <div class="card-header-row">
-          <div class="title-group">
-            <div class="card-main-title">
-              <span>Kaya 现代围棋</span>
-              <span class="card-sub" style="color:#10b981;">KAYA GO & AI ANALYSIS</span>
-            </div>
-            <div class="card-tagline">深度 KataGo AI 引擎 · 现代美学棋盘与专业 SGF 研判</div>
-          </div>
-          <div class="btn-play-action" style="background:linear-gradient(135deg,#10b981,#059669); color:#fff; border-color:#34d399;">开玩 ▶</div>
-        </div>
-        <div class="card-meta-chips">
-          <span class="meta-chip">⏱️ 自由对弈</span>
-          <span class="meta-chip">专业 ⭐⭐⭐⭐⭐</span>
-          <span class="meta-chip accent" style="background:rgba(16,185,129,0.15); border-color:rgba(16,185,129,0.35); color:#34d399;">KataGo AI · SGF打谱研判</span>
-        </div>
-      </div>
-    </div>
-  
-
-    <!-- 🗡️ 三国杀 (Legends of the Three Kingdoms / Sanguosha) -->
-    <div class="game-card hero-card" data-cat="STRATEGY" data-players="4" data-game-key="SANGUOSHA" data-keywords="sanguosha sgs 三国杀 无名杀 杀 闪 桃 酒 决斗 万箭齐发 南蛮入侵 诸葛亮 曹操 刘备 孙权 关羽 军争 国战 身份局 1v1 单人 4人 8人 桌游 卡牌 策略 博弈 AI 人机" onclick="enterGame('SANGUOSHA')" style="border: 1px solid rgba(239, 68, 68, 0.45); box-shadow: 0 4px 20px rgba(239, 68, 68, 0.18);" data-genre="BOARD" data-online="false">
-      <div class="card-cover-wrapper">
-        <div class="card-art-canvas">
-          <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="sgsBgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#2a0808"/>
-                <stop offset="50%" stop-color="#450a0a"/>
-                <stop offset="100%" stop-color="#1c0404"/>
-              </linearGradient>
-              <linearGradient id="sgsGold" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#fef08a"/>
-                <stop offset="50%" stop-color="#eab308"/>
-                <stop offset="100%" stop-color="#854d0e"/>
-              </linearGradient>
-              <linearGradient id="sgsCardRed" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#ef4444"/>
-                <stop offset="100%" stop-color="#991b1b"/>
-              </linearGradient>
-              <radialGradient id="sgsFireGlow" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stop-color="#f97316" stop-opacity="0.6"/>
-                <stop offset="100%" stop-color="#ef4444" stop-opacity="0"/>
-              </radialGradient>
-              <filter id="sgsGlow">
-                <feGaussianBlur stdDeviation="3" result="blur"/>
-                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-              </filter>
-            </defs>
-            <rect width="320" height="180" fill="url(#sgsBgGrad)"/>
-            <circle cx="160" cy="90" r="85" fill="url(#sgsFireGlow)"/>
-            
-            <!-- 古典八卦金阵背景纹样 -->
-            <g stroke="#f59e0b" stroke-width="1" opacity="0.22" fill="none">
-              <circle cx="160" cy="85" r="70"/>
-              <circle cx="160" cy="85" r="54" stroke-dasharray="6 4"/>
-              <circle cx="160" cy="85" r="38"/>
-              <polygon points="160,25 210,120 110,120"/>
-              <polygon points="160,145 210,50 110,50"/>
-            </g>
-
-            <!-- 飞舞战牌展扇效果 (Card Fan) -->
-            <!-- 牌 1: 闪 (左倾) -->
-            <g transform="translate(108, 92) rotate(-16)">
-              <rect x="-22" y="-36" width="44" height="72" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.6"/>
-              <rect x="-18" y="-32" width="40" height="64" rx="2" fill="#0f172a" opacity="0.8"/>
-              <text x="0" y="-12" fill="#38bdf8" font-size="12" font-weight="900" text-anchor="middle" font-family="'PingFang SC','Microsoft YaHei',serif">闪</text>
-              <circle cx="0" cy="12" r="10" fill="none" stroke="#38bdf8" stroke-width="1" stroke-dasharray="2 2"/>
-              <text x="0" y="16" fill="#7dd3fc" font-size="9" font-weight="800" text-anchor="middle">DEF</text>
-            </g>
-
-            <!-- 牌 3: 桃 (右倾) -->
-            <g transform="translate(212, 92) rotate(16)">
-              <rect x="-22" y="-36" width="44" height="72" rx="4" fill="#1e293b" stroke="#ec4899" stroke-width="1.6"/>
-              <rect x="-18" y="-32" width="40" height="64" rx="2" fill="#0f172a" opacity="0.8"/>
-              <text x="0" y="-12" fill="#ec4899" font-size="12" font-weight="900" text-anchor="middle" font-family="'PingFang SC','Microsoft YaHei',serif">桃</text>
-              <circle cx="0" cy="12" r="10" fill="none" stroke="#ec4899" stroke-width="1" stroke-dasharray="2 2"/>
-              <text x="0" y="16" fill="#f472b6" font-size="9" font-weight="800" text-anchor="middle">HEAL</text>
-            </g>
-
-            <!-- 牌 2: 杀 (居中醒目主牌) -->
-            <g transform="translate(160, 84)">
-              <rect x="-26" y="-42" width="52" height="84" rx="5" fill="url(#sgsCardRed)" stroke="url(#sgsGold)" stroke-width="2.2" filter="url(#sgsGlow)"/>
-              <rect x="-22" y="-38" width="44" height="76" rx="3" fill="#450a0a" opacity="0.9"/>
-              <text x="0" y="-14" fill="#fef08a" font-size="18" font-weight="900" text-anchor="middle" font-family="'PingFang SC','Microsoft YaHei',serif">杀</text>
-              <line x1="-16" y1="4" x2="16" y2="4" stroke="#f59e0b" stroke-width="1.2"/>
-              <path d="M -12,14 L 0,30 L 12,14 Z" fill="#dc2626" stroke="#f59e0b" stroke-width="1"/>
-              <text x="0" y="24" fill="#ffffff" font-size="8" font-weight="900" text-anchor="middle">ATK</text>
-            </g>
-
-            <!-- 底部战力指示勋章 -->
-            <g transform="translate(18, 142)">
-              <rect width="128" height="24" rx="6" fill="rgba(15,23,42,0.88)" stroke="rgba(245,158,11,0.5)" stroke-width="1"/>
-              <text x="10" y="16" fill="#fef08a" font-size="11" font-weight="800" font-family="system-ui, sans-serif">⚔️ 身份/国战/军争篇</text>
-            </g>
-          </svg>
-        </div>
-        <div class="cover-badges">
-          <span class="badge-pill players">👥👥 1-8人 / AI</span>
-          <span class="badge-pill tag-new" style="background:linear-gradient(135deg,#dc2626,#b45309); color:#fff; font-weight:800;">👑 国民级桌游 · 全模式</span>
-        </div>
-        <div class="cover-overlay"></div>
-      </div>
-      <div class="card-body">
-        <div class="card-header-row">
-          <div class="title-group">
-            <div class="card-main-title">
-              <span>三国杀 (无名杀)</span>
-              <span class="card-sub" style="color:#f87171;">LEGENDS OF THE THREE KINGDOMS</span>
-            </div>
-            <div class="card-tagline">经典身份局 · 国战模式 · 军争篇 · 全武将阵营与智能 AI 对弈</div>
-          </div>
-          <div class="btn-play-action" style="background:linear-gradient(135deg,#dc2626,#b45309); color:#fff; border-color:#f59e0b;">开玩 ▶</div>
-        </div>
-        <div class="card-meta-chips">
-          <span class="meta-chip">⏱️ 10-30分钟</span>
-          <span class="meta-chip">博弈 ⭐⭐⭐⭐⭐</span>
-          <span class="meta-chip accent" style="background:rgba(239,68,68,0.15); border-color:rgba(239,68,68,0.35); color:#fca5a5;">全武将扩展 · 身份局/国战/1v1</span>
-        </div>
-      </div>
-    </div>
-  
-
-    <!-- 🎩 大富翁 (Monopoly / 强手棋) -->
-    <div class="game-card hero-card" data-cat="STRATEGY" data-players="4" data-game-key="MONOPOLY" data-keywords="monopoly 大富翁 强手棋 地产大亨 掷骰子 盖楼 买地 收租 破产 机会 命运 2人 4人 8人 策略 桌游 AI 人机 联机 在线 房间 dfw" onclick="enterGame('MONOPOLY')" style="border: 1px solid rgba(16, 185, 129, 0.45); box-shadow: 0 4px 20px rgba(16, 185, 129, 0.18);" data-genre="BOARD" data-online="true">
-      <div class="card-cover-wrapper">
+        <div class="metro-tile-flipper">
+          <div class="metro-tile-front">
+            <div class="card-cover-wrapper">
         <div class="card-art-canvas">
           <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
             <defs>
@@ -2669,7 +2262,26 @@
         </div>
         <div class="cover-overlay"></div>
       </div>
-      <div class="card-body">
+            <div class="tile-info-overlay">
+              <span class="tile-title-text">经典大富翁</span>
+              <span class="tile-badge-num">🎩 8P</span>
+            </div>
+          </div>
+          <div class="metro-tile-back">
+            <div class="tile-back-header">
+              <span class="tile-back-title">经典大富翁</span>
+              <span class="tile-back-status">未开始</span>
+            </div>
+            <div class="tile-back-body">
+              <div class="tile-stat-row"><span>支持模式:</span> <span class="tile-stat-val">2-8人 / 联机 / AI</span></div>
+              <div class="tile-stat-row"><span>历史战局:</span> <span class="tile-stat-val tile-stat-val-plays">0 局</span></div>
+              <div class="tile-stat-row"><span>特色机制:</span> <span class="tile-stat-val">40格强手棋/买地盖房</span></div>
+            </div>
+            <div class="tile-back-footer">
+              <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('MONOPOLY')">开战 ▶</button>
+            </div>
+          </div>
+          <div class="card-body">
         <div class="card-header-row">
           <div class="title-group">
             <div class="card-main-title">
@@ -2688,9 +2300,151 @@
       </div>
     </div>
 
-    <!-- 💎 璀璨宝石 (Splendor / 文艺复兴商战) -->
-    <div class="game-card hero-card" data-cat="STRATEGY" data-players="4" data-game-key="SPLENDOR" data-keywords="splendor 璀璨宝石 宝石商人 发展卡 贵族 筹码 翡翠 蓝宝石 红宝石 钻石 玛瑙 黄金 文艺复兴 2人 3人 4人 策略 桌游 ccbs" onclick="enterGame('SPLENDOR')" style="border: 1px solid rgba(168, 85, 247, 0.45); box-shadow: 0 4px 20px rgba(168, 85, 247, 0.18);" data-genre="BOARD" data-online="false">
-      <div class="card-cover-wrapper">
+    <!-- 💎 璀璨宝石 (Splendor / 文艺复兴商
+        </div>
+      </div>
+        </div>
+      </div>
+
+      <!-- Metro 分组: STRATEGY -->
+      <div class="metro-group" data-group="STRATEGY">
+        <div class="metro-group-header" onclick="jumpToCategoryGroup('STRATEGY')">
+          <span>🧠 策略博弈 · STRATEGY</span>
+        </div>
+        <div class="metro-group-body">
+          <div class="game-card hero-card tile-wide tile-accent-sanguosha" data-cat="STRATEGY" data-players="4" data-game-key="SANGUOSHA" data-keywords="sanguosha sgs 三国杀 无名杀 杀 闪 桃 酒 决斗 万箭齐发 南蛮入侵 诸葛亮 曹操 刘备 孙权 关羽 军争 国战 身份局 1v1 单人 4人 8人 桌游 卡牌 策略 博弈 AI 人机" onclick="enterGame('SANGUOSHA')" style="border: 1px solid rgba(239, 68, 68, 0.45); box-shadow: 0 4px 20px rgba(239, 68, 68, 0.18);" data-genre="BOARD" data-online="false">
+
+        <div class="metro-tile-flipper">
+          <div class="metro-tile-front">
+            <div class="card-cover-wrapper">
+        <div class="card-art-canvas">
+          <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="sgsBgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#2a0808"/>
+                <stop offset="50%" stop-color="#450a0a"/>
+                <stop offset="100%" stop-color="#1c0404"/>
+              </linearGradient>
+              <linearGradient id="sgsGold" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#fef08a"/>
+                <stop offset="50%" stop-color="#eab308"/>
+                <stop offset="100%" stop-color="#854d0e"/>
+              </linearGradient>
+              <linearGradient id="sgsCardRed" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#ef4444"/>
+                <stop offset="100%" stop-color="#991b1b"/>
+              </linearGradient>
+              <radialGradient id="sgsFireGlow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#f97316" stop-opacity="0.6"/>
+                <stop offset="100%" stop-color="#ef4444" stop-opacity="0"/>
+              </radialGradient>
+              <filter id="sgsGlow">
+                <feGaussianBlur stdDeviation="3" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+            <rect width="320" height="180" fill="url(#sgsBgGrad)"/>
+            <circle cx="160" cy="90" r="85" fill="url(#sgsFireGlow)"/>
+            
+            <!-- 古典八卦金阵背景纹样 -->
+            <g stroke="#f59e0b" stroke-width="1" opacity="0.22" fill="none">
+              <circle cx="160" cy="85" r="70"/>
+              <circle cx="160" cy="85" r="54" stroke-dasharray="6 4"/>
+              <circle cx="160" cy="85" r="38"/>
+              <polygon points="160,25 210,120 110,120"/>
+              <polygon points="160,145 210,50 110,50"/>
+            </g>
+
+            <!-- 飞舞战牌展扇效果 (Card Fan) -->
+            <!-- 牌 1: 闪 (左倾) -->
+            <g transform="translate(108, 92) rotate(-16)">
+              <rect x="-22" y="-36" width="44" height="72" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.6"/>
+              <rect x="-18" y="-32" width="40" height="64" rx="2" fill="#0f172a" opacity="0.8"/>
+              <text x="0" y="-12" fill="#38bdf8" font-size="12" font-weight="900" text-anchor="middle" font-family="'PingFang SC','Microsoft YaHei',serif">闪</text>
+              <circle cx="0" cy="12" r="10" fill="none" stroke="#38bdf8" stroke-width="1" stroke-dasharray="2 2"/>
+              <text x="0" y="16" fill="#7dd3fc" font-size="9" font-weight="800" text-anchor="middle">DEF</text>
+            </g>
+
+            <!-- 牌 3: 桃 (右倾) -->
+            <g transform="translate(212, 92) rotate(16)">
+              <rect x="-22" y="-36" width="44" height="72" rx="4" fill="#1e293b" stroke="#ec4899" stroke-width="1.6"/>
+              <rect x="-18" y="-32" width="40" height="64" rx="2" fill="#0f172a" opacity="0.8"/>
+              <text x="0" y="-12" fill="#ec4899" font-size="12" font-weight="900" text-anchor="middle" font-family="'PingFang SC','Microsoft YaHei',serif">桃</text>
+              <circle cx="0" cy="12" r="10" fill="none" stroke="#ec4899" stroke-width="1" stroke-dasharray="2 2"/>
+              <text x="0" y="16" fill="#f472b6" font-size="9" font-weight="800" text-anchor="middle">HEAL</text>
+            </g>
+
+            <!-- 牌 2: 杀 (居中醒目主牌) -->
+            <g transform="translate(160, 84)">
+              <rect x="-26" y="-42" width="52" height="84" rx="5" fill="url(#sgsCardRed)" stroke="url(#sgsGold)" stroke-width="2.2" filter="url(#sgsGlow)"/>
+              <rect x="-22" y="-38" width="44" height="76" rx="3" fill="#450a0a" opacity="0.9"/>
+              <text x="0" y="-14" fill="#fef08a" font-size="18" font-weight="900" text-anchor="middle" font-family="'PingFang SC','Microsoft YaHei',serif">杀</text>
+              <line x1="-16" y1="4" x2="16" y2="4" stroke="#f59e0b" stroke-width="1.2"/>
+              <path d="M -12,14 L 0,30 L 12,14 Z" fill="#dc2626" stroke="#f59e0b" stroke-width="1"/>
+              <text x="0" y="24" fill="#ffffff" font-size="8" font-weight="900" text-anchor="middle">ATK</text>
+            </g>
+
+            <!-- 底部战力指示勋章 -->
+            <g transform="translate(18, 142)">
+              <rect width="128" height="24" rx="6" fill="rgba(15,23,42,0.88)" stroke="rgba(245,158,11,0.5)" stroke-width="1"/>
+              <text x="10" y="16" fill="#fef08a" font-size="11" font-weight="800" font-family="system-ui, sans-serif">⚔️ 身份/国战/军争篇</text>
+            </g>
+          </svg>
+        </div>
+        <div class="cover-badges">
+          <span class="badge-pill players">👥👥 1-8人 / AI</span>
+          <span class="badge-pill tag-new" style="background:linear-gradient(135deg,#dc2626,#b45309); color:#fff; font-weight:800;">👑 国民级桌游 · 全模式</span>
+        </div>
+        <div class="cover-overlay"></div>
+      </div>
+            <div class="tile-info-overlay">
+              <span class="tile-title-text">三国杀</span>
+              <span class="tile-badge-num">🗡️ 8P</span>
+            </div>
+          </div>
+          <div class="metro-tile-back">
+            <div class="tile-back-header">
+              <span class="tile-back-title">三国杀</span>
+              <span class="tile-back-status">未开始</span>
+            </div>
+            <div class="tile-back-body">
+              <div class="tile-stat-row"><span>支持模式:</span> <span class="tile-stat-val">身份局 / 国战 / AI</span></div>
+              <div class="tile-stat-row"><span>历史战局:</span> <span class="tile-stat-val tile-stat-val-plays">0 局</span></div>
+              <div class="tile-stat-row"><span>特色机制:</span> <span class="tile-stat-val">全套武将/军争篇</span></div>
+            </div>
+            <div class="tile-back-footer">
+              <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('SANGUOSHA')">开战 ▶</button>
+            </div>
+          </div>
+          <div class="card-body">
+        <div class="card-header-row">
+          <div class="title-group">
+            <div class="card-main-title">
+              <span>三国杀 (无名杀)</span>
+              <span class="card-sub" style="color:#f87171;">LEGENDS OF THE THREE KINGDOMS</span>
+            </div>
+            <div class="card-tagline">经典身份局 · 国战模式 · 军争篇 · 全武将阵营与智能 AI 对弈</div>
+          </div>
+          <div class="btn-play-action" style="background:linear-gradient(135deg,#dc2626,#b45309); color:#fff; border-color:#f59e0b;">开玩 ▶</div>
+        </div>
+        <div class="card-meta-chips">
+          <span class="meta-chip">⏱️ 10-30分钟</span>
+          <span class="meta-chip">博弈 ⭐⭐⭐⭐⭐</span>
+          <span class="meta-chip accent" style="background:rgba(239,68,68,0.15); border-color:rgba(239,68,68,0.35); color:#fca5a5;">全武将扩展 · 身份局/国战/1v1</span>
+        </div>
+      </div>
+    </div>
+  
+
+    <!-- 🎩 大富翁 (Monopoly / 强手
+        </div>
+      </div>
+
+          <div class="game-card hero-card tile-medium tile-accent-splendor" data-cat="STRATEGY" data-players="4" data-game-key="SPLENDOR" data-keywords="splendor 璀璨宝石 宝石商人 发展卡 贵族 筹码 翡翠 蓝宝石 红宝石 钻石 玛瑙 黄金 文艺复兴 2人 3人 4人 策略 桌游 ccbs" onclick="enterGame('SPLENDOR')" style="border: 1px solid rgba(168, 85, 247, 0.45); box-shadow: 0 4px 20px rgba(168, 85, 247, 0.18);" data-genre="BOARD" data-online="false">
+
+        <div class="metro-tile-flipper">
+          <div class="metro-tile-front">
+            <div class="card-cover-wrapper">
         <div class="card-art-canvas">
           <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
             <defs>
@@ -2785,7 +2539,26 @@
         </div>
         <div class="cover-overlay"></div>
       </div>
-      <div class="card-body">
+            <div class="tile-info-overlay">
+              <span class="tile-title-text">璀璨宝石</span>
+              <span class="tile-badge-num">💎 4P</span>
+            </div>
+          </div>
+          <div class="metro-tile-back">
+            <div class="tile-back-header">
+              <span class="tile-back-title">璀璨宝石</span>
+              <span class="tile-back-status">未开始</span>
+            </div>
+            <div class="tile-back-body">
+              <div class="tile-stat-row"><span>支持模式:</span> <span class="tile-stat-val">2-4人 / 筹码交易</span></div>
+              <div class="tile-stat-row"><span>历史战局:</span> <span class="tile-stat-val tile-stat-val-plays">0 局</span></div>
+              <div class="tile-stat-row"><span>特色机制:</span> <span class="tile-stat-val">宝石引擎/贵族赞助</span></div>
+            </div>
+            <div class="tile-back-footer">
+              <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('SPLENDOR')">开战 ▶</button>
+            </div>
+          </div>
+          <div class="card-body">
         <div class="card-header-row">
           <div class="title-group">
             <div class="card-main-title">
@@ -2804,118 +2577,852 @@
       </div>
     </div>
   
-    <!-- 🍺 骗子酒馆 (Liar's Bar / 谎言酒馆) -->
-    <div class="game-card hero-card" data-cat="MIND" data-players="4" data-game-key="LIARSBAR" data-keywords="liarsbar liars bar 骗子酒馆 谎言酒馆 俄罗斯轮盘 轮盘赌 左轮 吹牛 心理 欺诈 暗牌 2人 3人 4人 pzjg" onclick="enterGame('LIARSBAR')" style="border: 1px solid rgba(239, 68, 68, 0.45); box-shadow: 0 4px 20px rgba(239, 68, 68, 0.18);" data-genre="BOARD" data-online="true">
-      <div class="card-cover-wrapper">
+    <!-- 🍺 骗子酒馆 (Liar's Bar / 谎言酒
+        </div>
+      </div>
+
+          <div class="game-card hero-card tile-wide tile-accent-aeroplane" data-cat="STRATEGY" data-players="4" data-game-key="AEROPLANE" data-keywords="aeroplane 飞行棋 经典飞行棋 四人 4人 4player 双人 2人 二人 掷骰子 飞机 策略 桌游 fxq" onclick="enterGame('AEROPLANE')" data-genre="CHESS" data-online="true">
+
+        <div class="metro-tile-flipper">
+          <div class="metro-tile-front">
+            <div class="card-cover-wrapper">
+        <div class="card-art-canvas">
+          
+  <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="aeroBg" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#0369a1"/>
+                <stop offset="50%" stop-color="#0284c7"/>
+                <stop offset="100%" stop-color="#38bdf8"/>
+              </linearGradient>
+      <linearGradient id="diceGold" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#fef08a"/>
+        <stop offset="100%" stop-color="#f59e0b"/>
+      </linearGradient>
+      <filter id="aeroGlow">
+        <feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <rect width="320" height="180" fill="url(#aeroBg)"/>
+    <!-- 棋盘跑道环线与十字导航航线 -->
+    <circle cx="160" cy="95" r="55" fill="none" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="6 4" opacity="0.4"/>
+    <line x1="160" y1="35" x2="160" y2="155" stroke="#f43f5e" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.5"/>
+    <line x1="100" y1="95" x2="220" y2="95" stroke="#facc15" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.5"/>
+    <!-- 四色停机坪角落 -->
+    <rect x="35" y="30" width="34" height="34" rx="8" fill="#10b981" opacity="0.3" stroke="#34d399" stroke-width="1.5"/>
+    <rect x="250" y="30" width="34" height="34" rx="8" fill="#3b82f6" opacity="0.3" stroke="#60a5fa" stroke-width="1.5"/>
+    <rect x="35" y="125" width="34" height="34" rx="8" fill="#f59e0b" opacity="0.3" stroke="#fbbf24" stroke-width="1.5"/>
+    <rect x="250" y="125" width="34" height="34" rx="8" fill="#ef4444" opacity="0.3" stroke="#f87171" stroke-width="1.5"/>
+    <!-- 飞行尾迹弧光 (Vapor trail) -->
+    <path d="M45,140 Q130,40 230,85" stroke="#ffffff" stroke-width="3" fill="none" opacity="0.75" filter="url(#aeroGlow)"/>
+    <path d="M45,140 Q130,40 230,85" stroke="#fef08a" stroke-width="1" fill="none"/>
+    <!-- 红色超音速战机 (正在疾速滑翔突进) -->
+    <g transform="translate(230, 85) rotate(25)">
+      <!-- 机翼与机身 -->
+      <polygon points="18,0 -12,-16 -4,0 -12,16" fill="#ef4444" stroke="#fecaca" stroke-width="1.5" filter="url(#aeroGlow)"/>
+      <polygon points="18,0 -6,-5 0,0 -6,5" fill="#ffffff"/>
+      <!-- 机尾喷射火焰 -->
+      <polygon points="-12,0 -22,-3 -18,0 -22,3" fill="#f97316"/>
+    </g>
+    <!-- 蓝色僚机 -->
+    <g transform="translate(95, 65) rotate(-35)">
+      <polygon points="14,0 -9,-12 -3,0 -9,12" fill="#38bdf8" stroke="#e0f2fe" stroke-width="1.2"/>
+    </g>
+    <!-- 幸运点数 6 金色飞行骰子 -->
+    <g transform="translate(142, 68)">
+      <rect x="0" y="0" width="36" height="36" rx="8" fill="url(#diceGold)" stroke="#ffffff" stroke-width="2" filter="url(#aeroGlow)"/>
+      <!-- 点数 6 -->
+      <circle cx="10" cy="9" r="2.8" fill="#ef4444"/>
+      <circle cx="10" cy="18" r="2.8" fill="#ef4444"/>
+      <circle cx="10" cy="27" r="2.8" fill="#ef4444"/>
+      <circle cx="26" cy="9" r="2.8" fill="#ef4444"/>
+      <circle cx="26" cy="18" r="2.8" fill="#ef4444"/>
+      <circle cx="26" cy="27" r="2.8" fill="#ef4444"/>
+    </g>
+    <!-- 胜利终点星芒 -->
+    <polygon points="160,20 163,27 170,27 165,32 167,39 160,35 153,39 155,32 150,27 157,27" fill="#facc15" filter="url(#aeroGlow)"/>
+  </svg>
+        </div>
+        <div class="cover-badges">
+          <span class="badge-pill players-4">👥👥 1-4人</span>
+          <span class="badge-pill tag-hot">✈️ 经典童年</span>
+        </div>
+        <div class="cover-overlay"></div>
+      </div>
+            <div class="tile-info-overlay">
+              <span class="tile-title-text">四人飞行棋</span>
+              <span class="tile-badge-num">✈️ 4P</span>
+            </div>
+          </div>
+          <div class="metro-tile-back">
+            <div class="tile-back-header">
+              <span class="tile-back-title">四人飞行棋</span>
+              <span class="tile-back-status">未开始</span>
+            </div>
+            <div class="tile-back-body">
+              <div class="tile-stat-row"><span>支持模式:</span> <span class="tile-stat-val">1-4人同屏 / AI</span></div>
+              <div class="tile-stat-row"><span>历史战局:</span> <span class="tile-stat-val tile-stat-val-plays">0 局</span></div>
+              <div class="tile-stat-row"><span>特色机制:</span> <span class="tile-stat-val">掷六起飞/跳跃</span></div>
+            </div>
+            <div class="tile-back-footer">
+              <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('AEROPLANE')">开战 ▶</button>
+            </div>
+          </div>
+          <div class="card-body">
+        <div class="card-header-row">
+          <div class="title-group">
+            <div class="card-main-title">
+              <span>四人飞行棋</span>
+              <span class="card-sub">AEROPLANE CHESS</span>
+            </div>
+            <div class="card-tagline">投骰起飞撞机截杀 · 捷径飞越直通终点</div>
+          </div>
+          <div class="btn-play-action">开玩 ▶</div>
+        </div>
+        <div class="card-meta-chips">
+          <span class="meta-chip">⏱️ 3-8分钟</span>
+          <span class="meta-chip">欢乐 ⭐⭐⭐</span>
+          <span class="meta-chip accent">人机对战 / 同屏4人</span>
+        </div>
+      </div>
+        </div>
+      </div>
+
+          <div class="game-card hero-card tile-medium tile-accent-quoridor" data-cat="STRATEGY" data-players="4" data-game-key="QUORIDOR" data-keywords="quoridor 步步为营 挡板 迷宫 策略 博弈 4人 4player 四人 双人 2人 二人 桌游 bbwy" onclick="enterGame('QUORIDOR')" data-genre="CHESS" data-online="true">
+
+        <div class="metro-tile-flipper">
+          <div class="metro-tile-front">
+            <div class="card-cover-wrapper">
+        <div class="card-art-canvas">
+          
+  <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="qBg" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#3b0764"/>
+                <stop offset="50%" stop-color="#6b21a8"/>
+                <stop offset="100%" stop-color="#9333ea"/>
+              </linearGradient>
+      <linearGradient id="woodWall" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#f59e0b"/>
+        <stop offset="100%" stop-color="#b45309"/>
+      </linearGradient>
+      <filter id="qGlow">
+        <feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <rect width="320" height="180" fill="url(#qBg)"/>
+    <!-- 3D 等距投影棋盘 -->
+    <g transform="translate(160, 92) scale(1.05, 0.6) rotate(45)">
+      <!-- 棋盘底座 -->
+      <rect x="-85" y="-85" width="170" height="170" rx="14" fill="#1e293b" stroke="#334155" stroke-width="3"/>
+      <!-- 棋盘格点 -->
+      <g stroke="#475569" stroke-width="1" fill="#0f172a">
+        <rect x="-70" y="-70" width="30" height="30" rx="4"/>
+        <rect x="-30" y="-70" width="30" height="30" rx="4"/>
+        <rect x="10" y="-70" width="30" height="30" rx="4"/>
+        <rect x="50" y="-70" width="30" height="30" rx="4"/>
+        
+        <rect x="-70" y="-30" width="30" height="30" rx="4"/>
+        <rect x="-30" y="-30" width="30" height="30" rx="4"/>
+        <rect x="10" y="-30" width="30" height="30" rx="4"/>
+        <rect x="50" y="-30" width="30" height="30" rx="4"/>
+
+        <rect x="-70" y="10" width="30" height="30" rx="4"/>
+        <rect x="-30" y="10" width="30" height="30" rx="4"/>
+        <rect x="10" y="10" width="30" height="30" rx="4"/>
+        <rect x="50" y="10" width="30" height="30" rx="4"/>
+
+        <rect x="-70" y="50" width="30" height="30" rx="4"/>
+        <rect x="-30" y="50" width="30" height="30" rx="4"/>
+        <rect x="10" y="50" width="30" height="30" rx="4"/>
+        <rect x="50" y="50" width="30" height="30" rx="4"/>
+      </g>
+      <!-- 四色棋子 -->
+      <circle cx="-55" cy="25" r="11" fill="#38bdf8" filter="url(#qGlow)"/> <!-- 蓝 -->
+      <circle cx="25" cy="-55" r="11" fill="#ef4444" filter="url(#qGlow)"/> <!-- 红 -->
+      <circle cx="-55" cy="-55" r="10" fill="#10b981"/> <!-- 绿 -->
+      <circle cx="25" cy="25" r="10" fill="#f59e0b"/> <!-- 黄 -->
+      <!-- 阻挡木墙 -->
+      <rect x="-35" y="-15" width="70" height="9" rx="2" fill="url(#woodWall)" stroke="#fef3c7" stroke-width="1.8" filter="url(#qGlow)"/>
+      <rect x="5" y="-65" width="9" height="60" rx="2" fill="url(#woodWall)" stroke="#fef3c7" stroke-width="1.8"/>
+    </g>
+  </svg>
+        </div>
+        <div class="cover-badges">
+          <span class="badge-pill players-4">👥👥 2-4人</span>
+          <span class="badge-pill tag-hot">🔥 4人大乱斗</span>
+        </div>
+        <div class="cover-overlay"></div>
+      </div>
+            <div class="tile-info-overlay">
+              <span class="tile-title-text">步步为营</span>
+              <span class="tile-badge-num">🧱 门萨</span>
+            </div>
+          </div>
+          <div class="metro-tile-back">
+            <div class="tile-back-header">
+              <span class="tile-back-title">步步为营</span>
+              <span class="tile-back-status">未开始</span>
+            </div>
+            <div class="tile-back-body">
+              <div class="tile-stat-row"><span>支持模式:</span> <span class="tile-stat-val">2-4人 / BFS AI</span></div>
+              <div class="tile-stat-row"><span>历史战局:</span> <span class="tile-stat-val tile-stat-val-plays">0 局</span></div>
+              <div class="tile-stat-row"><span>特色机制:</span> <span class="tile-stat-val">筑墙截杀突围</span></div>
+            </div>
+            <div class="tile-back-footer">
+              <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('QUORIDOR')">开战 ▶</button>
+            </div>
+          </div>
+          <div class="card-body">
+        <div class="card-header-row">
+          <div class="title-group">
+            <div class="card-main-title">
+              <span>步步为营</span>
+              <span class="card-sub">QUORIDOR 4P</span>
+            </div>
+            <div class="card-tagline">门萨殿堂级博弈 · 筑墙截杀突围</div>
+          </div>
+          <div class="btn-play-action">开玩 ▶</div>
+        </div>
+        <div class="card-meta-chips">
+          <span class="meta-chip">⏱️ 2-4分钟</span>
+          <span class="meta-chip">烧脑 ⭐⭐⭐</span>
+          <span class="meta-chip accent">4人联机/AI混战</span>
+        </div>
+      </div>
+        </div>
+      </div>
+
+          <div class="game-card hero-card tile-medium tile-accent-go" data-cat="STRATEGY" data-players="2" data-game-key="GO" data-keywords="go 围棋 玄素围棋 黑白棋 策略 博弈 双人 2人 二人 单人 人机 对弈 wq" onclick="enterGame('GO')" style="border: 1px solid rgba(245, 158, 11, 0.45); box-shadow: 0 4px 20px rgba(245, 158, 11, 0.15);" data-genre="CHESS" data-online="true">
+
+        <div class="metro-tile-flipper">
+          <div class="metro-tile-front">
+            <div class="card-cover-wrapper">
+        <div class="card-art-canvas">
+          
+  <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="goWood" cx="50%" cy="50%" r="60%">
+        <stop offset="0%" stop-color="#dfa868"/>
+        <stop offset="60%" stop-color="#c68a4c"/>
+        <stop offset="100%" stop-color="#935b24"/>
+      </radialGradient>
+      <radialGradient id="blackStoneGrad" cx="35%" cy="35%" r="65%">
+        <stop offset="0%" stop-color="#555"/>
+        <stop offset="40%" stop-color="#222"/>
+        <stop offset="100%" stop-color="#0a0a0a"/>
+      </radialGradient>
+      <radialGradient id="whiteStoneGrad" cx="30%" cy="30%" r="70%">
+        <stop offset="0%" stop-color="#ffffff"/>
+        <stop offset="60%" stop-color="#f0f0f0"/>
+        <stop offset="100%" stop-color="#cbd5e1"/>
+      </radialGradient>
+      <filter id="stoneShadow" x="-20%" y="-20%" width="150%" height="150%">
+        <feDropShadow dx="2" dy="3" stdDeviation="2.5" flood-color="#000000" flood-opacity="0.6"/>
+      </filter>
+      <filter id="goGlow">
+        <feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <defs>
+              <linearGradient id="goCosmosBg" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#451a03"/>
+                <stop offset="50%" stop-color="#78350f"/>
+                <stop offset="100%" stop-color="#b45309"/>
+              </linearGradient>
+            </defs>
+            <rect width="320" height="180" fill="url(#goCosmosBg)"/>
+    <g transform="translate(160, 95) scale(1.05, 0.75) rotate(-6)">
+      <polygon points="-125,-75 125,-75 132,-68 132,78 -118,78 -125,71" fill="#5c3815" opacity="0.8"/>
+      <polygon points="-125,71 125,71 125,82 -125,82" fill="#78471c"/>
+      <rect x="-125" y="-75" width="250" height="146" rx="6" fill="url(#goWood)" stroke="#5c3815" stroke-width="1.5"/>
+      <g stroke="#613b14" stroke-width="1.2" opacity="0.85">
+        <line x1="-105" y1="-55" x2="105" y2="-55"/>
+        <line x1="-105" y1="-30" x2="105" y2="-30"/>
+        <line x1="-105" y1="-5" x2="105" y2="-5"/>
+        <line x1="-105" y1="20" x2="105" y2="20"/>
+        <line x1="-105" y1="45" x2="105" y2="45"/>
+        <line x1="-105" y1="-55" x2="-105" y2="45"/>
+        <line x1="-63" y1="-55" x2="-63" y2="45"/>
+        <line x1="-21" y1="-55" x2="-21" y2="45"/>
+        <line x1="21" y1="-55" x2="21" y2="45"/>
+        <line x1="63" y1="-55" x2="63" y2="45"/>
+        <line x1="105" y1="-55" x2="105" y2="45"/>
+      </g>
+      <circle cx="-63" cy="-30" r="2.5" fill="#45270b"/>
+      <circle cx="63" cy="-30" r="2.5" fill="#45270b"/>
+      <circle cx="-21" cy="-5" r="2.8" fill="#45270b"/>
+      <circle cx="-63" cy="20" r="2.5" fill="#45270b"/>
+      <circle cx="63" cy="20" r="2.5" fill="#45270b"/>
+      <circle cx="-63" cy="-30" r="16" fill="url(#blackStoneGrad)" filter="url(#stoneShadow)"/>
+      <circle cx="21" cy="-30" r="16" fill="url(#blackStoneGrad)" filter="url(#stoneShadow)"/>
+      <circle cx="-21" cy="20" r="16" fill="url(#blackStoneGrad)" filter="url(#stoneShadow)"/>
+      <circle cx="63" cy="20" r="16" fill="url(#blackStoneGrad)" filter="url(#stoneShadow)"/>
+      <circle cx="-21" cy="-5" r="16" fill="url(#whiteStoneGrad)" filter="url(#stoneShadow)"/>
+      <circle cx="-21" cy="-30" r="16" fill="url(#whiteStoneGrad)" filter="url(#stoneShadow)"/>
+      <circle cx="21" cy="-5" r="16" fill="url(#whiteStoneGrad)" filter="url(#stoneShadow)"/>
+      <circle cx="21" cy="-5" r="17" fill="none" stroke="#38bdf8" stroke-width="2.5" filter="url(#goGlow)" opacity="0.8"/>
+    </g>
+    <path d="M30,150 Q160,110 290,30" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="6 4" fill="none" opacity="0.4" filter="url(#goGlow)"/>
+  </svg>
+        </div>
+        <div class="cover-badges">
+          <span class="badge-pill players">👥 1-2人</span>
+          <span class="badge-pill tag-new" style="background:linear-gradient(135deg,#f59e0b,#ef4444); color:#fff; font-weight:800;">✨ 崭新登场 · 围棋AI</span>
+        </div>
+        <div class="cover-overlay"></div>
+      </div>
+            <div class="tile-info-overlay">
+              <span class="tile-title-text">玄素围棋</span>
+              <span class="tile-badge-num">⚪⚫ 围棋</span>
+            </div>
+          </div>
+          <div class="metro-tile-back">
+            <div class="tile-back-header">
+              <span class="tile-back-title">玄素围棋</span>
+              <span class="tile-back-status">未开始</span>
+            </div>
+            <div class="tile-back-body">
+              <div class="tile-stat-row"><span>支持模式:</span> <span class="tile-stat-val">9/13/19路 / AI</span></div>
+              <div class="tile-stat-row"><span>历史战局:</span> <span class="tile-stat-val tile-stat-val-plays">0 局</span></div>
+              <div class="tile-stat-row"><span>特色机制:</span> <span class="tile-stat-val">MCTS 启发式 AI</span></div>
+            </div>
+            <div class="tile-back-footer">
+              <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('GO')">开战 ▶</button>
+            </div>
+          </div>
+          <div class="card-body">
+        <div class="card-header-row">
+          <div class="title-group">
+            <div class="card-main-title">
+              <span>玄素围棋</span>
+              <span class="card-sub" style="color:#f59e0b;">THE GAME OF GO</span>
+            </div>
+            <div class="card-tagline">纵横十九路 · 气尽提子与多级蒙特卡洛AI对弈</div>
+          </div>
+          <div class="btn-play-action" style="background:linear-gradient(135deg,#f59e0b,#d97706); color:#fff; border-color:#fbbf24;">开玩 ▶</div>
+        </div>
+        <div class="card-meta-chips">
+          <span class="meta-chip">⏱️ 3-15分钟</span>
+          <span class="meta-chip">烧脑 ⭐⭐⭐⭐</span>
+          <span class="meta-chip accent">9/13/19路 + MCTS演算</span>
+        </div>
+      </div>
+        </div>
+      </div>
+
+          <div class="game-card hero-card tile-medium tile-accent-kaya" data-cat="STRATEGY" data-players="2" data-game-key="KAYA" data-keywords="kaya kaya围棋 现代围棋 katago ai 策略 博弈 围棋 复盘 绝艺 双人 2人 二人 单人 人机" onclick="enterGame('KAYA')" style="border: 1px solid rgba(16, 185, 129, 0.45); box-shadow: 0 4px 20px rgba(16, 185, 129, 0.15);" data-genre="CHESS" data-online="false">
+
+        <div class="metro-tile-flipper">
+          <div class="metro-tile-front">
+            <div class="card-cover-wrapper">
         <div class="card-art-canvas">
           <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
             <defs>
-              <linearGradient id="lbBg" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#2a0808"/>
-                <stop offset="50%" stop-color="#180b1e"/>
-                <stop offset="100%" stop-color="#0a050d"/>
+              <linearGradient id="kayaBgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#022c22"/>
+                <stop offset="50%" stop-color="#065f46"/>
+                <stop offset="100%" stop-color="#059669"/>
               </linearGradient>
-              <radialGradient id="lbRedGlow" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stop-color="#ef4444" stop-opacity="0.4"/>
-                <stop offset="100%" stop-color="#dc2626" stop-opacity="0"/>
+              <radialGradient id="kayaWood" cx="45%" cy="45%" r="65%">
+                <stop offset="0%" stop-color="#f5d7a1"/>
+                <stop offset="50%" stop-color="#d9a766"/>
+                <stop offset="100%" stop-color="#8c5828"/>
               </radialGradient>
+              <radialGradient id="kayaBlackStone" cx="35%" cy="30%" r="65%">
+                <stop offset="0%" stop-color="#555"/>
+                <stop offset="35%" stop-color="#1f2937"/>
+                <stop offset="100%" stop-color="#050811"/>
+              </radialGradient>
+              <radialGradient id="kayaWhiteStone" cx="30%" cy="30%" r="70%">
+                <stop offset="0%" stop-color="#ffffff"/>
+                <stop offset="65%" stop-color="#f1f5f9"/>
+                <stop offset="100%" stop-color="#cbd5e1"/>
+              </radialGradient>
+              <filter id="kayaShadow" x="-20%" y="-20%" width="150%" height="150%">
+                <feDropShadow dx="2" dy="4" stdDeviation="3" flood-color="#000000" flood-opacity="0.7"/>
+              </filter>
+              <filter id="aiGlow">
+                <feGaussianBlur stdDeviation="4" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
             </defs>
-            <rect width="320" height="180" fill="url(#lbBg)"/>
-            <circle cx="160" cy="90" r="75" fill="url(#lbRedGlow)"/>
-            <g transform="translate(160, 85)">
-              <rect x="-45" y="-35" width="40" height="58" rx="4" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5" transform="rotate(-15)"/>
-              <text x="-25" y="-5" font-size="20" fill="#dc2626" font-weight="900" text-anchor="middle" transform="rotate(-15)">K</text>
-              <rect x="5" y="-35" width="40" height="58" rx="4" fill="#1e293b" stroke="#f59e0b" stroke-width="2" transform="rotate(15)"/>
-              <text x="25" y="-5" font-size="22" fill="#fbbf24" font-weight="900" text-anchor="middle" transform="rotate(15)">🃏</text>
-              <circle cx="0" cy="30" r="14" fill="#0f172a" stroke="#ef4444" stroke-width="2.5"/>
-              <circle cx="-5" cy="25" r="3" fill="#ef4444"/>
-              <circle cx="5" cy="25" r="3" fill="#64748b"/>
-              <circle cx="7" cy="35" r="3" fill="#64748b"/>
-              <circle cx="-7" cy="35" r="3" fill="#64748b"/>
+            <rect width="320" height="180" fill="url(#kayaBgGrad)"/>
+            <g opacity="0.35" stroke="#10b981" stroke-width="1.2">
+              <line x1="20" y1="30" x2="80" y2="70"/>
+              <line x1="80" y1="70" x2="140" y2="40"/>
+              <line x1="140" y1="40" x2="220" y2="80"/>
+              <line x1="220" y1="80" x2="290" y2="30"/>
+              <line x1="80" y1="70" x2="160" y2="120"/>
+              <line x1="160" y1="120" x2="250" y2="130"/>
+              <circle cx="20" cy="30" r="3" fill="#34d399"/>
+              <circle cx="80" cy="70" r="4" fill="#10b981" filter="url(#aiGlow)"/>
+              <circle cx="140" cy="40" r="3.5" fill="#34d399"/>
+              <circle cx="220" cy="80" r="4" fill="#10b981" filter="url(#aiGlow)"/>
+              <circle cx="290" cy="30" r="3" fill="#34d399"/>
+              <circle cx="160" cy="120" r="3.5" fill="#34d399"/>
+              <circle cx="250" cy="130" r="3" fill="#34d399"/>
+            </g>
+            <g transform="translate(160, 96) scale(1.08, 0.76) rotate(4)">
+              <polygon points="-120,-70 120,-70 128,-62 128,78 -112,78 -120,70" fill="#523214" opacity="0.85"/>
+              <polygon points="-120,70 120,70 120,84 -120,84" fill="#6d3f1a"/>
+              <rect x="-120" y="-70" width="240" height="142" rx="6" fill="url(#kayaWood)" stroke="#523214" stroke-width="1.6"/>
+              <g stroke="#5c3815" stroke-width="1.2" opacity="0.8">
+                <line x1="-100" y1="-50" x2="100" y2="-50"/>
+                <line x1="-100" y1="-25" x2="100" y2="-25"/>
+                <line x1="-100" y1="0" x2="100" y2="0"/>
+                <line x1="-100" y1="25" x2="100" y2="25"/>
+                <line x1="-100" y1="50" x2="100" y2="50"/>
+                <line x1="-100" y1="-50" x2="-100" y2="50"/>
+                <line x1="-50" y1="-50" x2="-50" y2="50"/>
+                <line x1="0" y1="-50" x2="0" y2="50"/>
+                <line x1="50" y1="-50" x2="50" y2="50"/>
+                <line x1="100" y1="-50" x2="100" y2="50"/>
+              </g>
+              <circle cx="-50" cy="-25" r="2.5" fill="#3d2208"/>
+              <circle cx="50" cy="-25" r="2.5" fill="#3d2208"/>
+              <circle cx="0" cy="0" r="3" fill="#3d2208"/>
+              <circle cx="-50" cy="25" r="2.5" fill="#3d2208"/>
+              <circle cx="50" cy="25" r="2.5" fill="#3d2208"/>
+              <circle cx="-50" cy="-25" r="16" fill="url(#kayaBlackStone)" filter="url(#kayaShadow)"/>
+              <circle cx="0" cy="-25" r="16" fill="url(#kayaWhiteStone)" filter="url(#kayaShadow)"/>
+              <circle cx="50" cy="-25" r="16" fill="url(#kayaBlackStone)" filter="url(#kayaShadow)"/>
+              <circle cx="-50" cy="25" r="16" fill="url(#kayaWhiteStone)" filter="url(#kayaShadow)"/>
+              <circle cx="0" cy="25" r="16" fill="url(#kayaBlackStone)" filter="url(#kayaShadow)"/>
+              <circle cx="50" cy="25" r="16" fill="url(#kayaWhiteStone)" filter="url(#kayaShadow)"/>
+              <circle cx="0" cy="0" r="16" fill="url(#kayaWhiteStone)" filter="url(#kayaShadow)"/>
+              <circle cx="0" cy="0" r="18" fill="none" stroke="#10b981" stroke-width="2.5" filter="url(#aiGlow)"/>
+              <circle cx="0" cy="0" r="22" stroke="#34d399" stroke-width="1.5" stroke-dasharray="4 4" fill="none" opacity="0.8"/>
+            </g>
+            <g transform="translate(18, 140)">
+              <rect width="90" height="24" rx="6" fill="rgba(15,23,42,0.85)" stroke="rgba(16,185,129,0.5)" stroke-width="1"/>
+              <text x="8" y="16" fill="#34d399" font-size="11" font-weight="700" font-family="system-ui, sans-serif">KataGo: 58.4%</text>
             </g>
           </svg>
         </div>
-        <div class="card-badges-row">
-          <span class="badge-pill tag-hot" style="background:linear-gradient(135deg,#ef4444,#dc2626);">🔥 2026现象爆款</span>
-          <span class="badge-pill tag-players">👥 2-4人</span>
-          <span class="badge-pill tag-online" style="background:linear-gradient(135deg,#10b981,#059669); color:#fff;">🌐 支持联机</span>
+        <div class="cover-badges">
+          <span class="badge-pill players">👥 1-2人 / AI</span>
+          <span class="badge-pill tag-new" style="background:linear-gradient(135deg,#10b981,#059669); color:#fff; font-weight:800;">🌲 最新引入 · KataGo AI</span>
         </div>
+        <div class="cover-overlay"></div>
       </div>
-      <div class="card-content">
-        <div class="card-main-meta">
-          <div class="card-titles">
-            <div class="card-title">
-              <span>骗子酒馆 (Liar's Bar)</span>
-              <span class="card-sub" style="color:#f87171;">BLUFF & RUSSIAN ROULETTE · 2-4P</span>
+            <div class="tile-info-overlay">
+              <span class="tile-title-text">Kaya 现代围棋</span>
+              <span class="tile-badge-num">🌲 KataGo</span>
             </div>
-            <div class="card-tagline">心理欺诈神作 · 谎言抓伪对决 · 致命俄罗斯轮盘赌音效</div>
           </div>
-          <div class="btn-play-action" style="background:linear-gradient(135deg,#dc2626,#991b1b); color:#fff; border-color:#f87171;">开玩 ▶</div>
+          <div class="metro-tile-back">
+            <div class="tile-back-header">
+              <span class="tile-back-title">Kaya 现代围棋</span>
+              <span class="tile-back-status">未开始</span>
+            </div>
+            <div class="tile-back-body">
+              <div class="tile-stat-row"><span>支持模式:</span> <span class="tile-stat-val">神经网络 AI</span></div>
+              <div class="tile-stat-row"><span>历史战局:</span> <span class="tile-stat-val tile-stat-val-plays">0 局</span></div>
+              <div class="tile-stat-row"><span>特色机制:</span> <span class="tile-stat-val">实时胜率/SGF</span></div>
+            </div>
+            <div class="tile-back-footer">
+              <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('KAYA')">开战 ▶</button>
+            </div>
+          </div>
+          <div class="card-body">
+        <div class="card-header-row">
+          <div class="title-group">
+            <div class="card-main-title">
+              <span>Kaya 现代围棋</span>
+              <span class="card-sub" style="color:#10b981;">KAYA GO & AI ANALYSIS</span>
+            </div>
+            <div class="card-tagline">深度 KataGo AI 引擎 · 现代美学棋盘与专业 SGF 研判</div>
+          </div>
+          <div class="btn-play-action" style="background:linear-gradient(135deg,#10b981,#059669); color:#fff; border-color:#34d399;">开玩 ▶</div>
         </div>
         <div class="card-meta-chips">
-          <span class="meta-chip">⏱️ 10-20分钟</span>
-          <span class="meta-chip">心理 ⭐⭐⭐⭐⭐</span>
-          <span class="meta-chip accent" style="background:rgba(239,68,68,0.15); border-color:rgba(239,68,68,0.35); color:#fca5a5;">2-4人同屏/联机 · 6发左轮拟真声 · 极速破冰</span>
+          <span class="meta-chip">⏱️ 自由对弈</span>
+          <span class="meta-chip">专业 ⭐⭐⭐⭐⭐</span>
+          <span class="meta-chip accent" style="background:rgba(16,185,129,0.15); border-color:rgba(16,185,129,0.35); color:#34d399;">KataGo AI · SGF打谱研判</span>
         </div>
       </div>
     </div>
+  
 
-    <!-- 👑 经典斗地主 (Fight the Landlord) -->
-    <div class="game-card hero-card" data-cat="MIND" data-players="4" data-game-key="DOUDIZHU" data-keywords="doudizhu 斗地主 经典斗地主 扑克 叫地主 抢地主 农民 炸弹 王炸 顺子 飞机 3人 4人 ddz" onclick="enterGame('DOUDIZHU')" style="border: 1px solid rgba(16, 185, 129, 0.45); box-shadow: 0 4px 20px rgba(16, 185, 129, 0.18);" data-genre="BOARD" data-online="true">
-      <div class="card-cover-wrapper">
+    <!-- 🗡️ 三国杀 (Legends of the Three Kingdoms / Sanguosh
+        </div>
+      </div>
+
+          <div class="game-card tile-medium tile-accent-gravity" data-cat="STRATEGY" data-players="2" data-game-key="GRAVITY" data-keywords="gravity 重力五子棋 五子棋 连珠 策略 双人 2人 二人 单人 人机 下落 wzq" onclick="enterGame('GRAVITY')" data-genre="CHESS" data-online="true">
+
+        <div class="metro-tile-flipper">
+          <div class="metro-tile-front">
+            <div class="card-cover-wrapper">
         <div class="card-art-canvas">
-          <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="ddzBg" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#064e3b"/>
-                <stop offset="50%" stop-color="#022c22"/>
-                <stop offset="100%" stop-color="#01140f"/>
+          
+  <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="gravBg" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#1e293b"/>
+                <stop offset="50%" stop-color="#334155"/>
+                <stop offset="100%" stop-color="#475569"/>
               </linearGradient>
-              <radialGradient id="ddzGoldGlow" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.35"/>
-                <stop offset="100%" stop-color="#d97706" stop-opacity="0"/>
-              </radialGradient>
-            </defs>
-            <rect width="320" height="180" fill="url(#ddzBg)"/>
-            <circle cx="160" cy="90" r="75" fill="url(#ddzGoldGlow)"/>
-            <g transform="translate(160, 85)">
-              <rect x="-50" y="-35" width="36" height="54" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2" transform="rotate(-18)"/>
-              <text x="-32" y="-8" font-size="16" fill="#dc2626" font-weight="900" text-anchor="middle" transform="rotate(-18)">♥A</text>
-              <rect x="-18" y="-38" width="36" height="54" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
-              <text x="0" y="-11" font-size="16" fill="#1e293b" font-weight="900" text-anchor="middle">♠2</text>
-              <rect x="14" y="-35" width="36" height="54" rx="4" fill="#ffffff" stroke="#f59e0b" stroke-width="2" transform="rotate(18)"/>
-              <text x="32" y="-8" font-size="16" fill="#dc2626" font-weight="900" text-anchor="middle" transform="rotate(18)">大王</text>
-              <path d="M -22 18 L -14 36 L 14 36 L 22 18 L 6 26 L 0 14 L -6 26 Z" fill="#f59e0b" stroke="#fef08a" stroke-width="1.5"/>
-            </g>
-          </svg>
+      <filter id="gravGlow">
+        <feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <rect width="320" height="180" fill="url(#gravBg)"/>
+    <!-- 垂直下落槽道 -->
+    <g stroke="#3a506b" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.5">
+      <line x1="80" y1="20" x2="80" y2="160"/>
+      <line x1="120" y1="20" x2="120" y2="160"/>
+      <line x1="160" y1="20" x2="160" y2="160"/>
+      <line x1="200" y1="20" x2="200" y2="160"/>
+      <line x1="240" y1="20" x2="240" y2="160"/>
+    </g>
+    <!-- 五连珠斜线光辉 -->
+    <line x1="75" y1="145" x2="245" y2="45" stroke="#38bdf8" stroke-width="4.5" filter="url(#gravGlow)" opacity="0.85"/>
+    <!-- 棋子排布 -->
+    <circle cx="80" cy="142" r="13" fill="#0284c7" stroke="#38bdf8" stroke-width="2" filter="url(#gravGlow)"/>
+    <circle cx="120" cy="117" r="13" fill="#0284c7" stroke="#38bdf8" stroke-width="2" filter="url(#gravGlow)"/>
+    <circle cx="160" cy="92" r="13" fill="#0284c7" stroke="#38bdf8" stroke-width="2" filter="url(#gravGlow)"/>
+    <circle cx="200" cy="67" r="13" fill="#0284c7" stroke="#38bdf8" stroke-width="2" filter="url(#gravGlow)"/>
+    <circle cx="240" cy="42" r="13" fill="#0284c7" stroke="#38bdf8" stroke-width="2" filter="url(#gravGlow)"/>
+    <!-- 对手金色棋子 -->
+    <circle cx="120" cy="142" r="12" fill="#d97706" stroke="#fbbf24" stroke-width="2"/>
+    <circle cx="160" cy="142" r="12" fill="#d97706" stroke="#fbbf24" stroke-width="2"/>
+    <circle cx="160" cy="117" r="12" fill="#d97706" stroke="#fbbf24" stroke-width="2"/>
+    <circle cx="200" cy="142" r="12" fill="#d97706" stroke="#fbbf24" stroke-width="2"/>
+    <!-- 正在下坠的棋子 -->
+    <circle cx="240" cy="20" r="10" fill="#38bdf8" opacity="0.8"/>
+    <line x1="240" y1="8" x2="240" y2="28" stroke="#fff" stroke-width="1.5"/>
+  </svg>
         </div>
-        <div class="card-badges-row">
-          <span class="badge-pill tag-hot" style="background:linear-gradient(135deg,#f59e0b,#d97706);">👑 国民级经典</span>
-          <span class="badge-pill tag-players">👥 3人</span>
-          <span class="badge-pill tag-online" style="background:linear-gradient(135deg,#10b981,#059669); color:#fff;">🌐 支持联机</span>
+        <div class="cover-badges">
+          <span class="badge-pill players">👥 1-2人</span>
+          <span class="badge-pill tag-hot">⬇️ 连珠创新</span>
         </div>
+        <div class="cover-overlay"></div>
       </div>
-      <div class="card-content">
-        <div class="card-main-meta">
-          <div class="card-titles">
-            <div class="card-title">
-              <span>经典斗地主 (Doudizhu)</span>
-              <span class="card-sub" style="color:#6ee7b7;">FIGHT THE LANDLORD · 3P</span>
+            <div class="tile-info-overlay">
+              <span class="tile-title-text">重力五子棋</span>
+              <span class="tile-badge-num">⬇️ 连珠</span>
             </div>
-            <div class="card-tagline">国民棋牌第一IP · 54张完整规则 · 智能叫地主与出牌压制</div>
           </div>
-          <div class="btn-play-action" style="background:linear-gradient(135deg,#10b981,#059669); color:#fff; border-color:#6ee7b7;">开玩 ▶</div>
+          <div class="metro-tile-back">
+            <div class="tile-back-header">
+              <span class="tile-back-title">重力五子棋</span>
+              <span class="tile-back-status">未开始</span>
+            </div>
+            <div class="tile-back-body">
+              <div class="tile-stat-row"><span>支持模式:</span> <span class="tile-stat-val">1-2人 / AI</span></div>
+              <div class="tile-stat-row"><span>历史战局:</span> <span class="tile-stat-val tile-stat-val-plays">0 局</span></div>
+              <div class="tile-stat-row"><span>特色机制:</span> <span class="tile-stat-val">纵向滑落堆叠</span></div>
+            </div>
+            <div class="tile-back-footer">
+              <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('GRAVITY')">开战 ▶</button>
+            </div>
+          </div>
+          <div class="card-body">
+        <div class="card-header-row">
+          <div class="title-group">
+            <div class="card-main-title">
+              <span>重力五子棋</span>
+              <span class="card-sub">GRAVITY GOMOKU</span>
+            </div>
+            <div class="card-tagline">纵向重力滑落连珠 · 谨防送绝杀底座</div>
+          </div>
+          <div class="btn-play-action">开玩 ▶</div>
         </div>
         <div class="card-meta-chips">
-          <span class="meta-chip">⏱️ 5-15分钟</span>
-          <span class="meta-chip">卡牌 ⭐⭐⭐⭐⭐</span>
-          <span class="meta-chip accent" style="background:rgba(16,185,129,0.15); border-color:rgba(16,185,129,0.35); color:#6ee7b7;">3人同屏/联机 · 飞机炸弹全牌型 · 启发式AI</span>
+          <span class="meta-chip">⏱️ 2分钟</span>
+          <span class="meta-chip">烧脑 ⭐⭐</span>
+          <span class="meta-chip accent">9×9 导轨下落</span>
         </div>
       </div>
-    </div>
+        </div>
+      </div>
 
-    <div class="game-card hero-card" data-cat="PHYSICS" data-players="2" data-game-key="TANKTROUBLE" data-keywords="tanktrouble 坦克动荡 坦克 弹射 炮弹 物理 迷宫 反弹 双人 2人 二人 人机 tk" onclick="enterGame('TANKTROUBLE')" data-genre="ARCADE" data-online="true">
-      <div class="card-cover-wrapper">
+          <div class="game-card tile-medium tile-accent-gravity4" data-cat="STRATEGY" data-players="2" data-game-key="GRAVITY4" data-keywords="gravity4 重力四子棋 四子棋 connect four 策略 双人 2人 二人 szq" onclick="enterGame('GRAVITY4')" data-genre="CHESS" data-online="true">
+
+        <div class="metro-tile-flipper">
+          <div class="metro-tile-front">
+            <div class="card-cover-wrapper">
+        <div class="card-art-canvas">
+          
+  <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="g4Bg" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#1e3a8a"/>
+                <stop offset="50%" stop-color="#2563eb"/>
+                <stop offset="100%" stop-color="#3b82f6"/>
+              </linearGradient>
+      <filter id="g4Glow">
+        <feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <rect width="320" height="180" fill="url(#g4Bg)"/>
+    <!-- 经典蓝色立式立架 -->
+    <g transform="translate(60, 22)">
+      <rect x="0" y="10" width="200" height="136" rx="14" fill="#2563eb" stroke="#60a5fa" stroke-width="2"/>
+      <path d="M-10,142 L210,142 L200,152 L0,152 Z" fill="#1d4ed8"/>
+      <!-- 圆孔与棋子 -->
+      <circle cx="30" cy="35" r="11" fill="#1e293b"/>
+      <circle cx="65" cy="35" r="11" fill="#1e293b"/>
+      <circle cx="100" cy="35" r="11" fill="#1e293b"/>
+      <circle cx="135" cy="35" r="11" fill="#fbbf24" filter="url(#g4Glow)"/>
+      <circle cx="170" cy="35" r="11" fill="#1e293b"/>
+
+      <circle cx="30" cy="65" r="11" fill="#1e293b"/>
+      <circle cx="65" cy="65" r="11" fill="#1e293b"/>
+      <circle cx="100" cy="65" r="11" fill="#fbbf24" filter="url(#g4Glow)"/>
+      <circle cx="135" cy="65" r="11" fill="#ef4444"/>
+      <circle cx="170" cy="65" r="11" fill="#1e293b"/>
+
+      <circle cx="30" cy="95" r="11" fill="#1e293b"/>
+      <circle cx="65" cy="95" r="11" fill="#fbbf24" filter="url(#g4Glow)"/>
+      <circle cx="100" cy="95" r="11" fill="#ef4444"/>
+      <circle cx="135" cy="95" r="11" fill="#ef4444"/>
+      <circle cx="170" cy="95" r="11" fill="#fbbf24"/>
+
+      <circle cx="30" cy="125" r="11" fill="#fbbf24" filter="url(#g4Glow)"/>
+      <circle cx="65" cy="125" r="11" fill="#ef4444"/>
+      <circle cx="100" cy="125" r="11" fill="#fbbf24"/>
+      <circle cx="135" cy="125" r="11" fill="#ef4444"/>
+      <circle cx="170" cy="125" r="11" fill="#fbbf24"/>
+
+      <!-- 连四贯穿线 -->
+      <line x1="30" y1="125" x2="135" y2="35" stroke="#fef08a" stroke-width="4" filter="url(#g4Glow)"/>
+    </g>
+  </svg>
+        </div>
+        <div class="cover-badges">
+          <span class="badge-pill players">👥 1-2人</span>
+          <span class="badge-pill tag-hot">🟡 经典名作</span>
+        </div>
+        <div class="cover-overlay"></div>
+      </div>
+            <div class="tile-info-overlay">
+              <span class="tile-title-text">重力四子棋</span>
+              <span class="tile-badge-num">🟡 经典</span>
+            </div>
+          </div>
+          <div class="metro-tile-back">
+            <div class="tile-back-header">
+              <span class="tile-back-title">重力四子棋</span>
+              <span class="tile-back-status">未开始</span>
+            </div>
+            <div class="tile-back-body">
+              <div class="tile-stat-row"><span>支持模式:</span> <span class="tile-stat-val">1-2人 / AI</span></div>
+              <div class="tile-stat-row"><span>历史战局:</span> <span class="tile-stat-val tile-stat-val-plays">0 局</span></div>
+              <div class="tile-stat-row"><span>特色机制:</span> <span class="tile-stat-val">黄金中路评估</span></div>
+            </div>
+            <div class="tile-back-footer">
+              <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('GRAVITY4')">开战 ▶</button>
+            </div>
+          </div>
+          <div class="card-body">
+        <div class="card-header-row">
+          <div class="title-group">
+            <div class="card-main-title">
+              <span>重力四子棋</span>
+              <span class="card-sub">CONNECT FOUR</span>
+            </div>
+            <div class="card-tagline">全球经典 7×6 连四棋 · 自由落体连珠</div>
+          </div>
+          <div class="btn-play-action">开玩 ▶</div>
+        </div>
+        <div class="card-meta-chips">
+          <span class="meta-chip">⏱️ 1分钟</span>
+          <span class="meta-chip">老少皆宜</span>
+          <span class="meta-chip accent">横竖斜连四获胜</span>
+        </div>
+      </div>
+        </div>
+      </div>
+
+          <div class="game-card tile-medium tile-accent-gravity3d" data-cat="STRATEGY" data-players="2" data-game-key="GRAVITY3D" data-keywords="gravity3d 3d立体五子棋 3d五子棋 立体 空间 策略 双人 2人 二人 wzq" onclick="enterGame('GRAVITY3D')" data-genre="CHESS" data-online="true">
+
+        <div class="metro-tile-flipper">
+          <div class="metro-tile-front">
+            <div class="card-cover-wrapper">
+        <div class="card-art-canvas">
+          
+  <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="g3dBg" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#312e81"/>
+                <stop offset="50%" stop-color="#4338ca"/>
+                <stop offset="100%" stop-color="#6366f1"/>
+              </linearGradient>
+      <filter id="g3dGlow">
+        <feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <rect width="320" height="180" fill="url(#g3dBg)"/>
+    <!-- 3D 等距木质底座 -->
+    <g transform="translate(160, 108)">
+      <polygon points="0,-35 105,0 0,35 -105,0" fill="#334155" stroke="#64748b" stroke-width="2"/>
+      <polygon points="-105,0 0,35 0,48 -105,13" fill="#1e293b"/>
+      <polygon points="0,35 105,0 105,13 0,48" fill="#0f172a"/>
+      <!-- 金属立柱点阵 -->
+      <g stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round">
+        <line x1="-60" y1="-10" x2="-60" y2="-68"/>
+        <line x1="-30" y1="0" x2="-30" y2="-58"/>
+        <line x1="0" y1="10" x2="0" y2="-48"/>
+        <line x1="30" y1="0" x2="30" y2="-58"/>
+        <line x1="60" y1="-10" x2="60" y2="-68"/>
+      </g>
+      <!-- 珠子 (穿串) -->
+      <circle cx="-60" cy="-20" r="8" fill="#34d399"/>
+      <circle cx="-60" cy="-36" r="8" fill="#fbbf24"/>
+      <circle cx="-30" cy="-10" r="8" fill="#fbbf24"/>
+      <circle cx="0" cy="0" r="8" fill="#34d399"/>
+      <circle cx="0" cy="-16" r="8" fill="#38bdf8" filter="url(#g3dGlow)"/>
+      <circle cx="30" cy="-32" r="8" fill="#38bdf8" filter="url(#g3dGlow)"/>
+      <circle cx="60" cy="-48" r="8" fill="#38bdf8" filter="url(#g3dGlow)"/>
+      <!-- 空间连线穿透光束 -->
+      <line x1="-60" y1="-16" x2="70" y2="-52" stroke="#38bdf8" stroke-width="3" filter="url(#g3dGlow)"/>
+    </g>
+  </svg>
+        </div>
+        <div class="cover-badges">
+          <span class="badge-pill players">👥 1-2人</span>
+          <span class="badge-pill tag-3d">🧊 3D空间</span>
+        </div>
+        <div class="cover-overlay"></div>
+      </div>
+            <div class="tile-info-overlay">
+              <span class="tile-title-text">3D 立体五子棋</span>
+              <span class="tile-badge-num">🧊 空间</span>
+            </div>
+          </div>
+          <div class="metro-tile-back">
+            <div class="tile-back-header">
+              <span class="tile-back-title">3D 立体五子棋</span>
+              <span class="tile-back-status">未开始</span>
+            </div>
+            <div class="tile-back-body">
+              <div class="tile-stat-row"><span>支持模式:</span> <span class="tile-stat-val">5×5×5 立体空间</span></div>
+              <div class="tile-stat-row"><span>历史战局:</span> <span class="tile-stat-val tile-stat-val-plays">0 局</span></div>
+              <div class="tile-stat-row"><span>特色机制:</span> <span class="tile-stat-val">13维空间胜线</span></div>
+            </div>
+            <div class="tile-back-footer">
+              <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('GRAVITY3D')">开战 ▶</button>
+            </div>
+          </div>
+          <div class="card-body">
+        <div class="card-header-row">
+          <div class="title-group">
+            <div class="card-main-title">
+              <span>3D 立体五子棋</span>
+              <span class="card-sub">3D GOMOKU</span>
+            </div>
+            <div class="card-tagline">5×5×5 空间胡桃木立柱 · 13维立体绝杀</div>
+          </div>
+          <div class="btn-play-action">开玩 ▶</div>
+        </div>
+        <div class="card-meta-chips">
+          <span class="meta-chip">⏱️ 3分钟</span>
+          <span class="meta-chip">难度 ⭐⭐⭐</span>
+          <span class="meta-chip accent">360°空间旋转</span>
+        </div>
+      </div>
+        </div>
+      </div>
+
+          <div class="game-card tile-medium tile-accent-gravity3d4" data-cat="STRATEGY" data-players="2" data-game-key="GRAVITY3D4" data-keywords="gravity3d4 3d立体四子棋 3d四子棋 立体 空间 策略 双人 2人 二人 szq" onclick="enterGame('GRAVITY3D4')" data-genre="CHESS" data-online="true">
+
+        <div class="metro-tile-flipper">
+          <div class="metro-tile-front">
+            <div class="card-cover-wrapper">
+        <div class="card-art-canvas">
+          
+  <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="g3d4Bg" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#581c87"/>
+                <stop offset="50%" stop-color="#7e22ce"/>
+                <stop offset="100%" stop-color="#a855f7"/>
+              </linearGradient>
+      <filter id="g3d4Glow">
+        <feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <rect width="320" height="180" fill="url(#g3d4Bg)"/>
+    <!-- 赛博 4x4x4 魔方空间 -->
+    <g transform="translate(160, 105)">
+      <polygon points="0,-30 90,0 0,30 -90,0" fill="#2e1065" stroke="#7e22ce" stroke-width="1.8"/>
+      <g stroke="#a855f7" stroke-width="1.5" opacity="0.7">
+        <line x1="-52" y1="-8" x2="-52" y2="-62"/>
+        <line x1="-16" y1="4" x2="-16" y2="-52"/>
+        <line x1="20" y1="4" x2="20" y2="-52"/>
+        <line x1="56" y1="-8" x2="56" y2="-62"/>
+      </g>
+      <!-- 霓虹紫与青色发光珠 -->
+      <circle cx="-52" cy="-22" r="8" fill="#a855f7" filter="url(#g3d4Glow)"/>
+      <circle cx="-16" cy="-32" r="8" fill="#06b6d4" filter="url(#g3d4Glow)"/>
+      <circle cx="20" cy="-42" r="8" fill="#a855f7" filter="url(#g3d4Glow)"/>
+      <circle cx="56" cy="-52" r="8" fill="#06b6d4" filter="url(#g3d4Glow)"/>
+      <!-- 76胜线空间折跃环 -->
+      <ellipse cx="0" cy="-36" rx="80" ry="24" fill="none" stroke="#f43f5e" stroke-width="1.2" stroke-dasharray="4 3"/>
+    </g>
+  </svg>
+        </div>
+        <div class="cover-badges">
+          <span class="badge-pill players">👥 1-2人</span>
+          <span class="badge-pill tag-3d">💜 3D空间</span>
+        </div>
+        <div class="cover-overlay"></div>
+      </div>
+            <div class="tile-info-overlay">
+              <span class="tile-title-text">3D 立体四子棋</span>
+              <span class="tile-badge-num">💜 魔方</span>
+            </div>
+          </div>
+          <div class="metro-tile-back">
+            <div class="tile-back-header">
+              <span class="tile-back-title">3D 立体四子棋</span>
+              <span class="tile-back-status">未开始</span>
+            </div>
+            <div class="tile-back-body">
+              <div class="tile-stat-row"><span>支持模式:</span> <span class="tile-stat-val">4×4×4 空间魔方</span></div>
+              <div class="tile-stat-row"><span>历史战局:</span> <span class="tile-stat-val tile-stat-val-plays">0 局</span></div>
+              <div class="tile-stat-row"><span>特色机制:</span> <span class="tile-stat-val">76条空间胜线</span></div>
+            </div>
+            <div class="tile-back-footer">
+              <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('GRAVITY3D4')">开战 ▶</button>
+            </div>
+          </div>
+          <div class="card-body">
+        <div class="card-header-row">
+          <div class="title-group">
+            <div class="card-main-title">
+              <span>3D 立体四子棋</span>
+              <span class="card-sub">CONNECT 3D-4</span>
+            </div>
+            <div class="card-tagline">4×4×4 魔方立体竞速 · 76条胜利线</div>
+          </div>
+          <div class="btn-play-action">开玩 ▶</div>
+        </div>
+        <div class="card-meta-chips">
+          <span class="meta-chip">⏱️ 2分钟</span>
+          <span class="meta-chip">难度 ⭐⭐⭐</span>
+          <span class="meta-chip accent">76条空间胜线</span>
+        </div>
+      </div>
+        </div>
+      </div>
+        </div>
+      </div>
+
+      <!-- Metro 分组: PHYSICS -->
+      <div class="metro-group" data-group="PHYSICS">
+        <div class="metro-group-header" onclick="jumpToCategoryGroup('PHYSICS')">
+          <span>⚔️ 物理对抗 · PHYSICS</span>
+        </div>
+        <div class="metro-group-body">
+          <div class="game-card hero-card tile-wide tile-accent-tanktrouble" data-cat="PHYSICS" data-players="2" data-game-key="TANKTROUBLE" data-keywords="tanktrouble 坦克动荡 坦克 弹射 炮弹 物理 迷宫 反弹 双人 2人 二人 人机 tk" onclick="enterGame('TANKTROUBLE')" data-genre="ARCADE" data-online="true">
+
+        <div class="metro-tile-flipper">
+          <div class="metro-tile-front">
+            <div class="card-cover-wrapper">
         <div class="card-art-canvas">
           
   <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
@@ -2971,7 +3478,26 @@
         </div>
         <div class="cover-overlay"></div>
       </div>
-      <div class="card-body">
+            <div class="tile-info-overlay">
+              <span class="tile-title-text">坦克动荡</span>
+              <span class="tile-badge-num">🛡️ 弹道</span>
+            </div>
+          </div>
+          <div class="metro-tile-back">
+            <div class="tile-back-header">
+              <span class="tile-back-title">坦克动荡</span>
+              <span class="tile-back-status">未开始</span>
+            </div>
+            <div class="tile-back-body">
+              <div class="tile-stat-row"><span>支持模式:</span> <span class="tile-stat-val">双人对轰 / AI</span></div>
+              <div class="tile-stat-row"><span>历史战局:</span> <span class="tile-stat-val tile-stat-val-plays">0 局</span></div>
+              <div class="tile-stat-row"><span>特色机制:</span> <span class="tile-stat-val">迷宫穿墙反弹</span></div>
+            </div>
+            <div class="tile-back-footer">
+              <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('TANKTROUBLE')">开战 ▶</button>
+            </div>
+          </div>
+          <div class="card-body">
         <div class="card-header-row">
           <div class="title-group">
             <div class="card-main-title">
@@ -2988,12 +3514,14 @@
           <span class="meta-chip accent">ESDF / 方向键 / 鼠标</span>
         </div>
       </div>
-    </div>
-  
+        </div>
+      </div>
 
+          <div class="game-card tile-medium tile-accent-hockey" data-cat="PHYSICS" data-players="2" data-game-key="HOCKEY" data-keywords="hockey 桌上冰球 极光桌上冰球 空气冰球 极光 碰撞 物理 双人 2人 二人 人机 反弹 bq" onclick="enterGame('HOCKEY')" data-genre="ARCADE" data-online="true">
 
-    <div class="game-card" data-cat="PHYSICS" data-players="2" data-game-key="HOCKEY" data-keywords="hockey 桌上冰球 极光桌上冰球 空气冰球 极光 碰撞 物理 双人 2人 二人 人机 反弹 bq" onclick="enterGame('HOCKEY')" data-genre="ARCADE" data-online="true">
-      <div class="card-cover-wrapper">
+        <div class="metro-tile-flipper">
+          <div class="metro-tile-front">
+            <div class="card-cover-wrapper">
         <div class="card-art-canvas">
           
   <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
@@ -3037,7 +3565,26 @@
         </div>
         <div class="cover-overlay"></div>
       </div>
-      <div class="card-body">
+            <div class="tile-info-overlay">
+              <span class="tile-title-text">极光桌上冰球</span>
+              <span class="tile-badge-num">🏒 极光</span>
+            </div>
+          </div>
+          <div class="metro-tile-back">
+            <div class="tile-back-header">
+              <span class="tile-back-title">极光桌上冰球</span>
+              <span class="tile-back-status">未开始</span>
+            </div>
+            <div class="tile-back-body">
+              <div class="tile-stat-row"><span>支持模式:</span> <span class="tile-stat-val">双人同屏 / AI</span></div>
+              <div class="tile-stat-row"><span>历史战局:</span> <span class="tile-stat-val tile-stat-val-plays">0 局</span></div>
+              <div class="tile-stat-row"><span>特色机制:</span> <span class="tile-stat-val">刚体弹性碰撞</span></div>
+            </div>
+            <div class="tile-back-footer">
+              <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('HOCKEY')">开战 ▶</button>
+            </div>
+          </div>
+          <div class="card-body">
         <div class="card-header-row">
           <div class="title-group">
             <div class="card-main-title">
@@ -3054,346 +3601,452 @@
           <span class="meta-chip accent">同屏双人对战</span>
         </div>
       </div>
-    </div>
-  
+        </div>
+      </div>
 
-    <div class="game-card" data-cat="STRATEGY" data-players="2" data-game-key="GRAVITY" data-keywords="gravity 重力五子棋 五子棋 连珠 策略 双人 2人 二人 单人 人机 下落 wzq" onclick="enterGame('GRAVITY')" data-genre="CHESS" data-online="true">
-      <div class="card-cover-wrapper">
+          <div class="game-card tile-medium tile-accent-sumo" data-cat="PHYSICS" data-players="2" data-game-key="SUMO" data-keywords="sumo 物理飞车相扑 飞车 相扑 撞击 物理 双人 2人 二人 竞技场 xp" onclick="enterGame('SUMO')" data-genre="ARCADE" data-online="true">
+
+        <div class="metro-tile-flipper">
+          <div class="metro-tile-front">
+            <div class="card-cover-wrapper">
         <div class="card-art-canvas">
           
   <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
     <defs>
-      <linearGradient id="gravBg" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="#1e293b"/>
-                <stop offset="50%" stop-color="#334155"/>
-                <stop offset="100%" stop-color="#475569"/>
+      <linearGradient id="sumoBg" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#4c0519"/>
+                <stop offset="50%" stop-color="#9f1239"/>
+                <stop offset="100%" stop-color="#e11d48"/>
               </linearGradient>
-      <filter id="gravGlow">
+      <filter id="sumoGlow">
         <feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
       </filter>
     </defs>
-    <rect width="320" height="180" fill="url(#gravBg)"/>
-    <!-- 垂直下落槽道 -->
-    <g stroke="#3a506b" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.5">
-      <line x1="80" y1="20" x2="80" y2="160"/>
-      <line x1="120" y1="20" x2="120" y2="160"/>
-      <line x1="160" y1="20" x2="160" y2="160"/>
-      <line x1="200" y1="20" x2="200" y2="160"/>
-      <line x1="240" y1="20" x2="240" y2="160"/>
+    <rect width="320" height="180" fill="url(#sumoBg)"/>
+    <!-- 圆形擂台台面 -->
+    <ellipse cx="160" cy="120" rx="130" ry="45" fill="#1e293b" stroke="#f59e0b" stroke-width="3"/>
+    <ellipse cx="160" cy="120" rx="100" ry="32" fill="#0f172a" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="5 5"/>
+    <!-- 碰撞爆裂火花与冲击波 -->
+    <polygon points="160,85 168,70 178,82 192,72 185,88 200,92 184,100 190,112 175,104 165,116 163,101 150,105 156,92 142,85 156,80" fill="#facc15" filter="url(#sumoGlow)"/>
+    <!-- 红车 (左) -->
+    <g transform="translate(105, 78) rotate(15)">
+      <rect x="0" y="0" width="38" height="22" rx="6" fill="#ef4444" stroke="#f87171" stroke-width="1.5"/>
+      <circle cx="8" cy="22" r="5" fill="#1e293b"/>
+      <circle cx="30" cy="22" r="5" fill="#1e293b"/>
+      <polygon points="-12,11 -2,7 -2,15" fill="#f97316"/>
     </g>
-    <!-- 五连珠斜线光辉 -->
-    <line x1="75" y1="145" x2="245" y2="45" stroke="#38bdf8" stroke-width="4.5" filter="url(#gravGlow)" opacity="0.85"/>
-    <!-- 棋子排布 -->
-    <circle cx="80" cy="142" r="13" fill="#0284c7" stroke="#38bdf8" stroke-width="2" filter="url(#gravGlow)"/>
-    <circle cx="120" cy="117" r="13" fill="#0284c7" stroke="#38bdf8" stroke-width="2" filter="url(#gravGlow)"/>
-    <circle cx="160" cy="92" r="13" fill="#0284c7" stroke="#38bdf8" stroke-width="2" filter="url(#gravGlow)"/>
-    <circle cx="200" cy="67" r="13" fill="#0284c7" stroke="#38bdf8" stroke-width="2" filter="url(#gravGlow)"/>
-    <circle cx="240" cy="42" r="13" fill="#0284c7" stroke="#38bdf8" stroke-width="2" filter="url(#gravGlow)"/>
-    <!-- 对手金色棋子 -->
-    <circle cx="120" cy="142" r="12" fill="#d97706" stroke="#fbbf24" stroke-width="2"/>
-    <circle cx="160" cy="142" r="12" fill="#d97706" stroke="#fbbf24" stroke-width="2"/>
-    <circle cx="160" cy="117" r="12" fill="#d97706" stroke="#fbbf24" stroke-width="2"/>
-    <circle cx="200" cy="142" r="12" fill="#d97706" stroke="#fbbf24" stroke-width="2"/>
-    <!-- 正在下坠的棋子 -->
-    <circle cx="240" cy="20" r="10" fill="#38bdf8" opacity="0.8"/>
-    <line x1="240" y1="8" x2="240" y2="28" stroke="#fff" stroke-width="1.5"/>
+    <!-- 蓝车 (右) -->
+    <g transform="translate(178, 88) rotate(-15)">
+      <rect x="0" y="0" width="38" height="22" rx="6" fill="#0284c7" stroke="#38bdf8" stroke-width="1.5"/>
+      <circle cx="8" cy="22" r="5" fill="#1e293b"/>
+      <circle cx="30" cy="22" r="5" fill="#1e293b"/>
+      <polygon points="50,11 40,7 40,15" fill="#38bdf8"/>
+    </g>
   </svg>
         </div>
         <div class="cover-badges">
           <span class="badge-pill players">👥 1-2人</span>
-          <span class="badge-pill tag-hot">⬇️ 连珠创新</span>
+          <span class="badge-pill tag-new">🚗 魔性乱斗</span>
         </div>
         <div class="cover-overlay"></div>
       </div>
-      <div class="card-body">
+            <div class="tile-info-overlay">
+              <span class="tile-title-text">物理飞车相扑</span>
+              <span class="tile-badge-num">🚗 擂台</span>
+            </div>
+          </div>
+          <div class="metro-tile-back">
+            <div class="tile-back-header">
+              <span class="tile-back-title">物理飞车相扑</span>
+              <span class="tile-back-status">未开始</span>
+            </div>
+            <div class="tile-back-body">
+              <div class="tile-stat-row"><span>支持模式:</span> <span class="tile-stat-val">旋转加速冲撞</span></div>
+              <div class="tile-stat-row"><span>历史战局:</span> <span class="tile-stat-val tile-stat-val-plays">0 局</span></div>
+              <div class="tile-stat-row"><span>特色机制:</span> <span class="tile-stat-val">边缘坠落检测</span></div>
+            </div>
+            <div class="tile-back-footer">
+              <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('SUMO')">开战 ▶</button>
+            </div>
+          </div>
+          <div class="card-body">
         <div class="card-header-row">
           <div class="title-group">
             <div class="card-main-title">
-              <span>重力五子棋</span>
-              <span class="card-sub">GRAVITY GOMOKU</span>
+              <span>物理飞车相扑</span>
+              <span class="card-sub">CAR SUMO</span>
             </div>
-            <div class="card-tagline">纵向重力滑落连珠 · 谨防送绝杀底座</div>
+            <div class="card-tagline">按住冲刺松开瞄准 · 把对手撞入深渊</div>
+          </div>
+          <div class="btn-play-action">开玩 ▶</div>
+        </div>
+        <div class="card-meta-chips">
+          <span class="meta-chip">⏱️ 30秒</span>
+          <span class="meta-chip">欢乐碰撞</span>
+          <span class="meta-chip accent">氮气加速漂移</span>
+        </div>
+      </div>
+        </div>
+      </div>
+
+          <div class="game-card tile-medium tile-accent-tank" data-cat="PHYSICS" data-players="2" data-game-key="TANK" data-keywords="tank 经典双人坦克 极限抛物线 坦克 炮击 抛物线 物理 双人 2人 二人" onclick="enterGame('TANK')" data-genre="ARCADE" data-online="true">
+
+        <div class="metro-tile-flipper">
+          <div class="metro-tile-front">
+            <div class="card-cover-wrapper">
+        <div class="card-art-canvas">
+          
+  <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="tBg" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#14532d"/>
+                <stop offset="50%" stop-color="#166534"/>
+                <stop offset="100%" stop-color="#15803d"/>
+              </linearGradient>
+      <filter id="tGlow">
+        <feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <rect width="320" height="180" fill="url(#tBg)"/>
+    <!-- 远山地形与破坏弹坑 -->
+    <path d="M0,140 Q60,115 110,135 T220,130 Q260,110 320,145 L320,180 L0,180 Z" fill="#1c1917"/>
+    <!-- 玩家坦克 1 (左侧山崖) -->
+    <g transform="translate(45, 115)">
+      <rect x="0" y="8" width="26" height="10" rx="3" fill="#15803d"/>
+      <ellipse cx="13" cy="8" rx="8" ry="5" fill="#22c55e"/>
+      <line x1="13" y1="7" x2="28" y2="-2" stroke="#4ade80" stroke-width="2.5" stroke-linecap="round"/>
+    </g>
+    <!-- 玩家坦克 2 (右侧山崖) -->
+    <g transform="translate(250, 118)">
+      <rect x="0" y="8" width="26" height="10" rx="3" fill="#b45309"/>
+      <ellipse cx="13" cy="8" rx="8" ry="5" fill="#f59e0b"/>
+      <line x1="13" y1="7" x2="-2" y2="-2" stroke="#fcd34d" stroke-width="2.5" stroke-linecap="round"/>
+    </g>
+    <!-- 抛物线轨迹 -->
+    <path d="M72,112 Q160,-10 248,118" stroke="#fef08a" stroke-width="2.5" stroke-dasharray="5 4" fill="none" filter="url(#tGlow)"/>
+    <!-- 命中火球 -->
+    <circle cx="248" cy="118" r="17" fill="#ef4444" filter="url(#tGlow)"/>
+    <circle cx="248" cy="118" r="9" fill="#facc15"/>
+  </svg>
+        </div>
+        <div class="cover-badges">
+          <span class="badge-pill players">👥 1-2人</span>
+          <span class="badge-pill tag-new">🎯 弹道对轰</span>
+        </div>
+        <div class="cover-overlay"></div>
+      </div>
+            <div class="tile-info-overlay">
+              <span class="tile-title-text">极限抛物线</span>
+              <span class="tile-badge-num">🎯 炮击</span>
+            </div>
+          </div>
+          <div class="metro-tile-back">
+            <div class="tile-back-header">
+              <span class="tile-back-title">极限抛物线</span>
+              <span class="tile-back-status">未开始</span>
+            </div>
+            <div class="tile-back-body">
+              <div class="tile-stat-row"><span>支持模式:</span> <span class="tile-stat-val">双人坦克对战</span></div>
+              <div class="tile-stat-row"><span>历史战局:</span> <span class="tile-stat-val tile-stat-val-plays">0 局</span></div>
+              <div class="tile-stat-row"><span>特色机制:</span> <span class="tile-stat-val">风力扰动与弹坑</span></div>
+            </div>
+            <div class="tile-back-footer">
+              <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('TANK')">开战 ▶</button>
+            </div>
+          </div>
+          <div class="card-body">
+        <div class="card-header-row">
+          <div class="title-group">
+            <div class="card-main-title">
+              <span>极限抛物线</span>
+              <span class="card-sub">TANK WARS</span>
+            </div>
+            <div class="card-tagline">地形破坏弹坑 · 测风向调仰角高抛炸毁</div>
           </div>
           <div class="btn-play-action">开玩 ▶</div>
         </div>
         <div class="card-meta-chips">
           <span class="meta-chip">⏱️ 2分钟</span>
-          <span class="meta-chip">烧脑 ⭐⭐</span>
-          <span class="meta-chip accent">9×9 导轨下落</span>
+          <span class="meta-chip">弹道计算</span>
+          <span class="meta-chip accent">经典百战天虫风</span>
+        </div>
+      </div>
+        </div>
+      </div>
+        </div>
+      </div>
+
+      <!-- Metro 分组: MIND_REFLEX -->
+      <div class="metro-group" data-group="MIND_REFLEX">
+        <div class="metro-group-header" onclick="jumpToCategoryGroup('MIND_REFLEX')">
+          <span>⚡ 心理与手速 · MIND & REFLEX</span>
+        </div>
+        <div class="metro-group-body">
+          <div class="game-card hero-card tile-wide tile-accent-liarsbar" data-cat="MIND" data-players="4" data-game-key="LIARSBAR" data-keywords="liarsbar liars bar 骗子酒馆 谎言酒馆 俄罗斯轮盘 轮盘赌 左轮 吹牛 心理 欺诈 暗牌 2人 3人 4人 pzjg" onclick="enterGame('LIARSBAR')" style="border: 1px solid rgba(239, 68, 68, 0.45); box-shadow: 0 4px 20px rgba(239, 68, 68, 0.18);" data-genre="BOARD" data-online="true">
+
+        <div class="metro-tile-flipper">
+          <div class="metro-tile-front">
+            <div class="card-cover-wrapper">
+        <div class="card-art-canvas">
+          <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="lbBg" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#2a0808"/>
+                <stop offset="50%" stop-color="#180b1e"/>
+                <stop offset="100%" stop-color="#0a050d"/>
+              </linearGradient>
+              <radialGradient id="lbRedGlow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#ef4444" stop-opacity="0.4"/>
+                <stop offset="100%" stop-color="#dc2626" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+            <rect width="320" height="180" fill="url(#lbBg)"/>
+            <circle cx="160" cy="90" r="75" fill="url(#lbRedGlow)"/>
+            <g transform="translate(160, 85)">
+              <rect x="-45" y="-35" width="40" height="58" rx="4" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5" transform="rotate(-15)"/>
+              <text x="-25" y="-5" font-size="20" fill="#dc2626" font-weight="900" text-anchor="middle" transform="rotate(-15)">K</text>
+              <rect x="5" y="-35" width="40" height="58" rx="4" fill="#1e293b" stroke="#f59e0b" stroke-width="2" transform="rotate(15)"/>
+              <text x="25" y="-5" font-size="22" fill="#fbbf24" font-weight="900" text-anchor="middle" transform="rotate(15)">🃏</text>
+              <circle cx="0" cy="30" r="14" fill="#0f172a" stroke="#ef4444" stroke-width="2.5"/>
+              <circle cx="-5" cy="25" r="3" fill="#ef4444"/>
+              <circle cx="5" cy="25" r="3" fill="#64748b"/>
+              <circle cx="7" cy="35" r="3" fill="#64748b"/>
+              <circle cx="-7" cy="35" r="3" fill="#64748b"/>
+            </g>
+          </svg>
+        </div>
+        <div class="card-badges-row">
+          <span class="badge-pill tag-hot" style="background:linear-gradient(135deg,#ef4444,#dc2626);">🔥 2026现象爆款</span>
+          <span class="badge-pill tag-players">👥 2-4人</span>
+          <span class="badge-pill tag-online" style="background:linear-gradient(135deg,#10b981,#059669); color:#fff;">🌐 支持联机</span>
+        </div>
+      </div>
+            <div class="tile-info-overlay">
+              <span class="tile-title-text">骗子酒馆</span>
+              <span class="tile-badge-num">🍺 4P</span>
+            </div>
+          </div>
+          <div class="metro-tile-back">
+            <div class="tile-back-header">
+              <span class="tile-back-title">骗子酒馆</span>
+              <span class="tile-back-status">未开始</span>
+            </div>
+            <div class="tile-back-body">
+              <div class="tile-stat-row"><span>支持模式:</span> <span class="tile-stat-val">2-4人 / 联机 / AI</span></div>
+              <div class="tile-stat-row"><span>历史战局:</span> <span class="tile-stat-val tile-stat-val-plays">0 局</span></div>
+              <div class="tile-stat-row"><span>特色机制:</span> <span class="tile-stat-val">叫牌抓谎/左轮手枪</span></div>
+            </div>
+            <div class="tile-back-footer">
+              <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('LIARSBAR')">开战 ▶</button>
+            </div>
+          </div>
+          <div class="card-content">
+        <div class="card-main-meta">
+          <div class="card-titles">
+            <div class="card-title">
+              <span>骗子酒馆 (Liar's Bar)</span>
+              <span class="card-sub" style="color:#f87171;">BLUFF & RUSSIAN ROULETTE · 2-4P</span>
+            </div>
+            <div class="card-tagline">心理欺诈神作 · 谎言抓伪对决 · 致命俄罗斯轮盘赌音效</div>
+          </div>
+          <div class="btn-play-action" style="background:linear-gradient(135deg,#dc2626,#991b1b); color:#fff; border-color:#f87171;">开玩 ▶</div>
+        </div>
+        <div class="card-meta-chips">
+          <span class="meta-chip">⏱️ 10-20分钟</span>
+          <span class="meta-chip">心理 ⭐⭐⭐⭐⭐</span>
+          <span class="meta-chip accent" style="background:rgba(239,68,68,0.15); border-color:rgba(239,68,68,0.35); color:#fca5a5;">2-4人同屏/联机 · 6发左轮拟真声 · 极速破冰</span>
         </div>
       </div>
     </div>
-  
 
-    <div class="game-card" data-cat="STRATEGY" data-players="2" data-game-key="GRAVITY4" data-keywords="gravity4 重力四子棋 四子棋 connect four 策略 双人 2人 二人 szq" onclick="enterGame('GRAVITY4')" data-genre="CHESS" data-online="true">
-      <div class="card-cover-wrapper">
+    <!-- 👑 经典斗地主 (Fight the Landlor
+        </div>
+      </div>
+
+          <div class="game-card hero-card tile-wide tile-accent-doudizhu" data-cat="MIND" data-players="4" data-game-key="DOUDIZHU" data-keywords="doudizhu 斗地主 经典斗地主 扑克 叫地主 抢地主 农民 炸弹 王炸 顺子 飞机 3人 4人 ddz" onclick="enterGame('DOUDIZHU')" style="border: 1px solid rgba(16, 185, 129, 0.45); box-shadow: 0 4px 20px rgba(16, 185, 129, 0.18);" data-genre="BOARD" data-online="true">
+
+        <div class="metro-tile-flipper">
+          <div class="metro-tile-front">
+            <div class="card-cover-wrapper">
         <div class="card-art-canvas">
-          
-  <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <linearGradient id="g4Bg" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="#1e3a8a"/>
-                <stop offset="50%" stop-color="#2563eb"/>
-                <stop offset="100%" stop-color="#3b82f6"/>
+          <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="ddzBg" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#064e3b"/>
+                <stop offset="50%" stop-color="#022c22"/>
+                <stop offset="100%" stop-color="#01140f"/>
               </linearGradient>
-      <filter id="g4Glow">
-        <feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-      </filter>
-    </defs>
-    <rect width="320" height="180" fill="url(#g4Bg)"/>
-    <!-- 经典蓝色立式立架 -->
-    <g transform="translate(60, 22)">
-      <rect x="0" y="10" width="200" height="136" rx="14" fill="#2563eb" stroke="#60a5fa" stroke-width="2"/>
-      <path d="M-10,142 L210,142 L200,152 L0,152 Z" fill="#1d4ed8"/>
-      <!-- 圆孔与棋子 -->
-      <circle cx="30" cy="35" r="11" fill="#1e293b"/>
-      <circle cx="65" cy="35" r="11" fill="#1e293b"/>
-      <circle cx="100" cy="35" r="11" fill="#1e293b"/>
-      <circle cx="135" cy="35" r="11" fill="#fbbf24" filter="url(#g4Glow)"/>
-      <circle cx="170" cy="35" r="11" fill="#1e293b"/>
+              <radialGradient id="ddzGoldGlow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.35"/>
+                <stop offset="100%" stop-color="#d97706" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+            <rect width="320" height="180" fill="url(#ddzBg)"/>
+            <circle cx="160" cy="90" r="75" fill="url(#ddzGoldGlow)"/>
+            <g transform="translate(160, 85)">
+              <rect x="-50" y="-35" width="36" height="54" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2" transform="rotate(-18)"/>
+              <text x="-32" y="-8" font-size="16" fill="#dc2626" font-weight="900" text-anchor="middle" transform="rotate(-18)">♥A</text>
+              <rect x="-18" y="-38" width="36" height="54" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+              <text x="0" y="-11" font-size="16" fill="#1e293b" font-weight="900" text-anchor="middle">♠2</text>
+              <rect x="14" y="-35" width="36" height="54" rx="4" fill="#ffffff" stroke="#f59e0b" stroke-width="2" transform="rotate(18)"/>
+              <text x="32" y="-8" font-size="16" fill="#dc2626" font-weight="900" text-anchor="middle" transform="rotate(18)">大王</text>
+              <path d="M -22 18 L -14 36 L 14 36 L 22 18 L 6 26 L 0 14 L -6 26 Z" fill="#f59e0b" stroke="#fef08a" stroke-width="1.5"/>
+            </g>
+          </svg>
+        </div>
+        <div class="card-badges-row">
+          <span class="badge-pill tag-hot" style="background:linear-gradient(135deg,#f59e0b,#d97706);">👑 国民级经典</span>
+          <span class="badge-pill tag-players">👥 3人</span>
+          <span class="badge-pill tag-online" style="background:linear-gradient(135deg,#10b981,#059669); color:#fff;">🌐 支持联机</span>
+        </div>
+      </div>
+            <div class="tile-info-overlay">
+              <span class="tile-title-text">经典斗地主</span>
+              <span class="tile-badge-num">👑 3P</span>
+            </div>
+          </div>
+          <div class="metro-tile-back">
+            <div class="tile-back-header">
+              <span class="tile-back-title">经典斗地主</span>
+              <span class="tile-back-status">未开始</span>
+            </div>
+            <div class="tile-back-body">
+              <div class="tile-stat-row"><span>支持模式:</span> <span class="tile-stat-val">3人 / 联机 / AI</span></div>
+              <div class="tile-stat-row"><span>历史战局:</span> <span class="tile-stat-val tile-stat-val-plays">0 局</span></div>
+              <div class="tile-stat-row"><span>特色机制:</span> <span class="tile-stat-val">叫抢地主/飞机炸弹</span></div>
+            </div>
+            <div class="tile-back-footer">
+              <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('DOUDIZHU')">开战 ▶</button>
+            </div>
+          </div>
+          <div class="card-content">
+        <div class="card-main-meta">
+          <div class="card-titles">
+            <div class="card-title">
+              <span>经典斗地主 (Doudizhu)</span>
+              <span class="card-sub" style="color:#6ee7b7;">FIGHT THE LANDLORD · 3P</span>
+            </div>
+            <div class="card-tagline">国民棋牌第一IP · 54张完整规则 · 智能叫地主与出牌压制</div>
+          </div>
+          <div class="btn-play-action" style="background:linear-gradient(135deg,#10b981,#059669); color:#fff; border-color:#6ee7b7;">开玩 ▶</div>
+        </div>
+        <div class="card-meta-chips">
+          <span class="meta-chip">⏱️ 5-15分钟</span>
+          <span class="meta-chip">卡牌 ⭐⭐⭐⭐⭐</span>
+          <span class="meta-chip accent" style="background:rgba(16,185,129,0.15); border-color:rgba(16,185,129,0.35); color:#6ee7b7;">3人同屏/联机 · 飞机炸弹全牌型 · 启发式AI</span>
+        </div>
+      </div>
+        </div>
+      </div>
 
-      <circle cx="30" cy="65" r="11" fill="#1e293b"/>
-      <circle cx="65" cy="65" r="11" fill="#1e293b"/>
-      <circle cx="100" cy="65" r="11" fill="#fbbf24" filter="url(#g4Glow)"/>
-      <circle cx="135" cy="65" r="11" fill="#ef4444"/>
-      <circle cx="170" cy="65" r="11" fill="#1e293b"/>
+          <div class="game-card hero-card tile-wide tile-accent-uno" data-cat="MIND" data-players="4" data-game-key="UNO" data-keywords="uno 乌诺牌 优诺 纸牌 桌游 聚会 变色 叠牌 4人 4player 四人 wnp" onclick="enterGame('UNO')" data-genre="BOARD" data-online="true">
 
-      <circle cx="30" cy="95" r="11" fill="#1e293b"/>
-      <circle cx="65" cy="95" r="11" fill="#fbbf24" filter="url(#g4Glow)"/>
-      <circle cx="100" cy="95" r="11" fill="#ef4444"/>
-      <circle cx="135" cy="95" r="11" fill="#ef4444"/>
-      <circle cx="170" cy="95" r="11" fill="#fbbf24"/>
-
-      <circle cx="30" cy="125" r="11" fill="#fbbf24" filter="url(#g4Glow)"/>
-      <circle cx="65" cy="125" r="11" fill="#ef4444"/>
-      <circle cx="100" cy="125" r="11" fill="#fbbf24"/>
-      <circle cx="135" cy="125" r="11" fill="#ef4444"/>
-      <circle cx="170" cy="125" r="11" fill="#fbbf24"/>
-
-      <!-- 连四贯穿线 -->
-      <line x1="30" y1="125" x2="135" y2="35" stroke="#fef08a" stroke-width="4" filter="url(#g4Glow)"/>
-    </g>
-  </svg>
+        <div class="metro-tile-flipper">
+          <div class="metro-tile-front">
+            <div class="card-cover-wrapper">
+        <div class="card-art-canvas">
+          <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="unoBgGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#1e1b4b"/>
+                <stop offset="50%" stop-color="#2e1065"/>
+                <stop offset="100%" stop-color="#4c1d95"/>
+              </linearGradient>
+              <radialGradient id="unoCenterGlow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.8"/>
+                <stop offset="60%" stop-color="#ec4899" stop-opacity="0.4"/>
+                <stop offset="100%" stop-color="transparent"/>
+              </radialGradient>
+              <filter id="unoCardGlow">
+                <feGaussianBlur stdDeviation="3.5" result="glow"/>
+                <feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+            <rect width="320" height="180" fill="url(#unoBgGrad)"/>
+            <!-- Ambient glow -->
+            <circle cx="160" cy="85" r="70" fill="url(#unoCenterGlow)"/>
+            <!-- 4 Fanned Cards: Blue, Green, Yellow, Red -->
+            <g transform="translate(100, 45) rotate(-22)">
+              <rect x="0" y="0" width="46" height="70" rx="8" fill="#3b82f6" stroke="#ffffff" stroke-width="2"/>
+              <ellipse cx="23" cy="35" rx="14" ry="22" fill="#ffffff" transform="rotate(-20, 23, 35)"/>
+              <text x="23" y="42" font-family="'Segoe UI', sans-serif" font-size="20" font-weight="900" fill="#3b82f6" text-anchor="middle">7</text>
+            </g>
+            <g transform="translate(130, 36) rotate(-8)">
+              <rect x="0" y="0" width="46" height="70" rx="8" fill="#22c55e" stroke="#ffffff" stroke-width="2"/>
+              <ellipse cx="23" cy="35" rx="14" ry="22" fill="#ffffff" transform="rotate(-20, 23, 35)"/>
+              <text x="23" y="42" font-family="'Segoe UI', sans-serif" font-size="18" font-weight="900" fill="#22c55e" text-anchor="middle">+2</text>
+            </g>
+            <g transform="translate(162, 38) rotate(8)">
+              <rect x="0" y="0" width="46" height="70" rx="8" fill="#eab308" stroke="#ffffff" stroke-width="2"/>
+              <ellipse cx="23" cy="35" rx="14" ry="22" fill="#ffffff" transform="rotate(-20, 23, 35)"/>
+              <text x="23" y="42" font-family="'Segoe UI', sans-serif" font-size="18" font-weight="900" fill="#eab308" text-anchor="middle">🔄</text>
+            </g>
+            <g transform="translate(192, 50) rotate(24)">
+              <rect x="0" y="0" width="46" height="70" rx="8" fill="#ef4444" stroke="#ffffff" stroke-width="2"/>
+              <ellipse cx="23" cy="35" rx="14" ry="22" fill="#ffffff" transform="rotate(-20, 23, 35)"/>
+              <text x="23" y="42" font-family="'Segoe UI', sans-serif" font-size="18" font-weight="900" fill="#ef4444" text-anchor="middle">+4</text>
+            </g>
+            <!-- UNO 3D Text -->
+            <g transform="translate(160, 115)">
+              <text x="0" y="0" font-family="'Impact', sans-serif" font-size="28" font-weight="900" fill="#f59e0b" text-anchor="middle" filter="url(#unoCardGlow)" letter-spacing="3" transform="skewX(-10)">UNO!</text>
+            </g>
+            <!-- Subtitle -->
+            <text x="160" y="165" font-family="'Segoe UI', sans-serif" font-size="11" font-weight="900" fill="#c084fc" letter-spacing="2" text-anchor="middle">UNO PARTY · 彩虹乌诺牌 4P</text>
+          </svg>
         </div>
         <div class="cover-badges">
-          <span class="badge-pill players">👥 1-2人</span>
-          <span class="badge-pill tag-hot">🟡 经典名作</span>
+          <span class="badge-pill players-4">👥👥 1-4人桌游</span>
+          <span class="badge-pill tag-hot" style="background:linear-gradient(135deg,#f59e0b,#ea580c);">🌈 变色狂欢</span>
         </div>
         <div class="cover-overlay"></div>
       </div>
-      <div class="card-body">
+            <div class="tile-info-overlay">
+              <span class="tile-title-text">彩虹乌诺牌</span>
+              <span class="tile-badge-num">🌈 4P</span>
+            </div>
+          </div>
+          <div class="metro-tile-back">
+            <div class="tile-back-header">
+              <span class="tile-back-title">彩虹乌诺牌</span>
+              <span class="tile-back-status">未开始</span>
+            </div>
+            <div class="tile-back-body">
+              <div class="tile-stat-row"><span>支持模式:</span> <span class="tile-stat-val">1-4人 / 智能AI</span></div>
+              <div class="tile-stat-row"><span>历史战局:</span> <span class="tile-stat-val tile-stat-val-plays">0 局</span></div>
+              <div class="tile-stat-row"><span>特色机制:</span> <span class="tile-stat-val">四色转盘/连环+4</span></div>
+            </div>
+            <div class="tile-back-footer">
+              <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('UNO')">开战 ▶</button>
+            </div>
+          </div>
+          <div class="card-body">
         <div class="card-header-row">
           <div class="title-group">
             <div class="card-main-title">
-              <span>重力四子棋</span>
-              <span class="card-sub">CONNECT FOUR</span>
+              <span>彩虹乌诺牌</span>
+              <span class="card-sub" style="color:#fbbf24;">UNO PARTY 4P</span>
             </div>
-            <div class="card-tagline">全球经典 7×6 连四棋 · 自由落体连珠</div>
+            <div class="card-tagline">108张正统乌诺 · 连环+2叠牌反弹 · 喊UNO与抓漏举报</div>
           </div>
-          <div class="btn-play-action">开玩 ▶</div>
+          <div class="btn-play-action" style="background:linear-gradient(135deg,#f59e0b,#ea580c); box-shadow:0 4px 14px rgba(245,158,11,0.5);">出牌开玩 ▶</div>
         </div>
         <div class="card-meta-chips">
-          <span class="meta-chip">⏱️ 1分钟</span>
-          <span class="meta-chip">老少皆宜</span>
-          <span class="meta-chip accent">横竖斜连四获胜</span>
+          <span class="meta-chip">🌈 108张正统牌组</span>
+          <span class="meta-chip">⚡ 连环叠牌反弹</span>
+          <span class="meta-chip accent">📣 喊UNO与抓漏</span>
         </div>
       </div>
     </div>
-  
 
-    <div class="game-card" data-cat="STRATEGY" data-players="2" data-game-key="GRAVITY3D" data-keywords="gravity3d 3d立体五子棋 3d五子棋 立体 空间 策略 双人 2人 二人 wzq" onclick="enterGame('GRAVITY3D')" data-genre="CHESS" data-online="true">
-      <div class="card-cover-wrapper">
-        <div class="card-art-canvas">
-          
-  <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <linearGradient id="g3dBg" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="#312e81"/>
-                <stop offset="50%" stop-color="#4338ca"/>
-                <stop offset="100%" stop-color="#6366f1"/>
-              </linearGradient>
-      <filter id="g3dGlow">
-        <feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-      </filter>
-    </defs>
-    <rect width="320" height="180" fill="url(#g3dBg)"/>
-    <!-- 3D 等距木质底座 -->
-    <g transform="translate(160, 108)">
-      <polygon points="0,-35 105,0 0,35 -105,0" fill="#334155" stroke="#64748b" stroke-width="2"/>
-      <polygon points="-105,0 0,35 0,48 -105,13" fill="#1e293b"/>
-      <polygon points="0,35 105,0 105,13 0,48" fill="#0f172a"/>
-      <!-- 金属立柱点阵 -->
-      <g stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round">
-        <line x1="-60" y1="-10" x2="-60" y2="-68"/>
-        <line x1="-30" y1="0" x2="-30" y2="-58"/>
-        <line x1="0" y1="10" x2="0" y2="-48"/>
-        <line x1="30" y1="0" x2="30" y2="-58"/>
-        <line x1="60" y1="-10" x2="60" y2="-68"/>
-      </g>
-      <!-- 珠子 (穿串) -->
-      <circle cx="-60" cy="-20" r="8" fill="#34d399"/>
-      <circle cx="-60" cy="-36" r="8" fill="#fbbf24"/>
-      <circle cx="-30" cy="-10" r="8" fill="#fbbf24"/>
-      <circle cx="0" cy="0" r="8" fill="#34d399"/>
-      <circle cx="0" cy="-16" r="8" fill="#38bdf8" filter="url(#g3dGlow)"/>
-      <circle cx="30" cy="-32" r="8" fill="#38bdf8" filter="url(#g3dGlow)"/>
-      <circle cx="60" cy="-48" r="8" fill="#38bdf8" filter="url(#g3dGlow)"/>
-      <!-- 空间连线穿透光束 -->
-      <line x1="-60" y1="-16" x2="70" y2="-52" stroke="#38bdf8" stroke-width="3" filter="url(#g3dGlow)"/>
-    </g>
-  </svg>
-        </div>
-        <div class="cover-badges">
-          <span class="badge-pill players">👥 1-2人</span>
-          <span class="badge-pill tag-3d">🧊 3D空间</span>
-        </div>
-        <div class="cover-overlay"></div>
-      </div>
-      <div class="card-body">
-        <div class="card-header-row">
-          <div class="title-group">
-            <div class="card-main-title">
-              <span>3D 立体五子棋</span>
-              <span class="card-sub">3D GOMOKU</span>
-            </div>
-            <div class="card-tagline">5×5×5 空间胡桃木立柱 · 13维立体绝杀</div>
-          </div>
-          <div class="btn-play-action">开玩 ▶</div>
-        </div>
-        <div class="card-meta-chips">
-          <span class="meta-chip">⏱️ 3分钟</span>
-          <span class="meta-chip">难度 ⭐⭐⭐</span>
-          <span class="meta-chip accent">360°空间旋转</span>
+    <!-- 💣 极光炸弹人大乱斗 (Neon Bomberman 4
         </div>
       </div>
-    </div>
-  
 
-    <div class="game-card" data-cat="STRATEGY" data-players="2" data-game-key="GRAVITY3D4" data-keywords="gravity3d4 3d立体四子棋 3d四子棋 立体 空间 策略 双人 2人 二人 szq" onclick="enterGame('GRAVITY3D4')" data-genre="CHESS" data-online="true">
-      <div class="card-cover-wrapper">
-        <div class="card-art-canvas">
-          
-  <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <linearGradient id="g3d4Bg" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="#581c87"/>
-                <stop offset="50%" stop-color="#7e22ce"/>
-                <stop offset="100%" stop-color="#a855f7"/>
-              </linearGradient>
-      <filter id="g3d4Glow">
-        <feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-      </filter>
-    </defs>
-    <rect width="320" height="180" fill="url(#g3d4Bg)"/>
-    <!-- 赛博 4x4x4 魔方空间 -->
-    <g transform="translate(160, 105)">
-      <polygon points="0,-30 90,0 0,30 -90,0" fill="#2e1065" stroke="#7e22ce" stroke-width="1.8"/>
-      <g stroke="#a855f7" stroke-width="1.5" opacity="0.7">
-        <line x1="-52" y1="-8" x2="-52" y2="-62"/>
-        <line x1="-16" y1="4" x2="-16" y2="-52"/>
-        <line x1="20" y1="4" x2="20" y2="-52"/>
-        <line x1="56" y1="-8" x2="56" y2="-62"/>
-      </g>
-      <!-- 霓虹紫与青色发光珠 -->
-      <circle cx="-52" cy="-22" r="8" fill="#a855f7" filter="url(#g3d4Glow)"/>
-      <circle cx="-16" cy="-32" r="8" fill="#06b6d4" filter="url(#g3d4Glow)"/>
-      <circle cx="20" cy="-42" r="8" fill="#a855f7" filter="url(#g3d4Glow)"/>
-      <circle cx="56" cy="-52" r="8" fill="#06b6d4" filter="url(#g3d4Glow)"/>
-      <!-- 76胜线空间折跃环 -->
-      <ellipse cx="0" cy="-36" rx="80" ry="24" fill="none" stroke="#f43f5e" stroke-width="1.2" stroke-dasharray="4 3"/>
-    </g>
-  </svg>
-        </div>
-        <div class="cover-badges">
-          <span class="badge-pill players">👥 1-2人</span>
-          <span class="badge-pill tag-3d">💜 3D空间</span>
-        </div>
-        <div class="cover-overlay"></div>
-      </div>
-      <div class="card-body">
-        <div class="card-header-row">
-          <div class="title-group">
-            <div class="card-main-title">
-              <span>3D 立体四子棋</span>
-              <span class="card-sub">CONNECT 3D-4</span>
-            </div>
-            <div class="card-tagline">4×4×4 魔方立体竞速 · 76条胜利线</div>
-          </div>
-          <div class="btn-play-action">开玩 ▶</div>
-        </div>
-        <div class="card-meta-chips">
-          <span class="meta-chip">⏱️ 2分钟</span>
-          <span class="meta-chip">难度 ⭐⭐⭐</span>
-          <span class="meta-chip accent">76条空间胜线</span>
-        </div>
-      </div>
-    </div>
-  
+          <div class="game-card tile-wide tile-accent-liarsdice" data-cat="MIND" data-players="2" data-game-key="LIARSDICE" data-keywords="liarsdice 吹牛骰子 皇家大话骰 大话骰 摇骰 心理 暗牌 博弈 双人 2人 二人 dhs" onclick="enterGame('LIARSDICE')" data-genre="PARTY" data-online="true">
 
-    <div class="game-card" data-cat="REFLEX" data-players="2" data-game-key="IAIDO" data-keywords="iaido 居合拔刀斩 居合 拔刀 武士 反应 手速 极限 决斗 双人 2人 二人 人机 bd" onclick="enterGame('IAIDO')" data-genre="PARTY" data-online="true">
-      <div class="card-cover-wrapper">
-        <div class="card-art-canvas">
-          
-  <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <linearGradient id="iaiBg" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="#450a0a"/>
-                <stop offset="50%" stop-color="#7f1d1d"/>
-                <stop offset="100%" stop-color="#991b1b"/>
-              </linearGradient>
-      <radialGradient id="moonGlow" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stop-color="#ef4444"/>
-        <stop offset="70%" stop-color="#991b1b"/>
-        <stop offset="100%" stop-color="#450a0a" stop-opacity="0.1"/>
-      </radialGradient>
-      <filter id="iaiGlow">
-        <feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-      </filter>
-    </defs>
-    <rect width="320" height="180" fill="url(#iaiBg)"/>
-    <!-- 血月 -->
-    <circle cx="160" cy="85" r="54" fill="url(#moonGlow)" opacity="0.85"/>
-    <circle cx="160" cy="85" r="48" fill="#b91c1c"/>
-    <!-- 狂风落樱 -->
-    <circle cx="60" cy="40" r="2.5" fill="#f43f5e"/>
-    <circle cx="90" cy="70" r="2" fill="#fda4af"/>
-    <circle cx="230" cy="50" r="3" fill="#fda4af"/>
-    <circle cx="270" cy="110" r="2" fill="#f43f5e"/>
-    <!-- 极速一闪刀光 -->
-    <path d="M10,150 Q160,50 310,25" stroke="#ffffff" stroke-width="4" fill="none" filter="url(#iaiGlow)"/>
-    <path d="M10,150 Q160,50 310,25" stroke="#fef08a" stroke-width="1.8" fill="none"/>
-    <!-- 巨大书法语“斬” -->
-    <text x="135" y="105" font-family="'SimSun', 'STSong', serif" font-size="56" font-weight="900" fill="#ffffff" filter="url(#iaiGlow)">斬</text>
-  </svg>
-        </div>
-        <div class="cover-badges">
-          <span class="badge-pill players">👥 1-2人</span>
-          <span class="badge-pill tag-reflex">⚡ 极限反应</span>
-        </div>
-        <div class="cover-overlay"></div>
-      </div>
-      <div class="card-body">
-        <div class="card-header-row">
-          <div class="title-group">
-            <div class="card-main-title">
-              <span>拔刀居合斩</span>
-              <span class="card-sub">IAIDO DUEL</span>
-            </div>
-            <div class="card-tagline">红光「斬」出鞘拼毫秒手速 · 抢跑直接判负</div>
-          </div>
-          <div class="btn-play-action">开玩 ▶</div>
-        </div>
-        <div class="card-meta-chips">
-          <span class="meta-chip">⏱️ 10秒</span>
-          <span class="meta-chip">手速 ⭐⭐⭐⭐</span>
-          <span class="meta-chip accent">聚会秒决胜负</span>
-        </div>
-      </div>
-    </div>
-  
-
-    <div class="game-card" data-cat="MIND" data-players="2" data-game-key="LIARSDICE" data-keywords="liarsdice 吹牛骰子 皇家大话骰 大话骰 摇骰 心理 暗牌 博弈 双人 2人 二人 dhs" onclick="enterGame('LIARSDICE')" data-genre="PARTY" data-online="true">
-      <div class="card-cover-wrapper">
+        <div class="metro-tile-flipper">
+          <div class="metro-tile-front">
+            <div class="card-cover-wrapper">
         <div class="card-art-canvas">
           
   <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
@@ -3450,7 +4103,26 @@
         </div>
         <div class="cover-overlay"></div>
       </div>
-      <div class="card-body">
+            <div class="tile-info-overlay">
+              <span class="tile-title-text">皇家大话骰</span>
+              <span class="tile-badge-num">🎲 吹牛</span>
+            </div>
+          </div>
+          <div class="metro-tile-back">
+            <div class="tile-back-header">
+              <span class="tile-back-title">皇家大话骰</span>
+              <span class="tile-back-status">未开始</span>
+            </div>
+            <div class="tile-back-body">
+              <div class="tile-stat-row"><span>支持模式:</span> <span class="tile-stat-val">双人同屏 / AI</span></div>
+              <div class="tile-stat-row"><span>历史战局:</span> <span class="tile-stat-val tile-stat-val-plays">0 局</span></div>
+              <div class="tile-stat-row"><span>特色机制:</span> <span class="tile-stat-val">斋飞转换与博弈</span></div>
+            </div>
+            <div class="tile-back-footer">
+              <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('LIARSDICE')">开战 ▶</button>
+            </div>
+          </div>
+          <div class="card-body">
         <div class="card-header-row">
           <div class="title-group">
             <div class="card-main-title">
@@ -3467,137 +4139,98 @@
           <span class="meta-chip accent">吹牛欺诈神作</span>
         </div>
       </div>
-    </div>
-  
+        </div>
+      </div>
 
-    <div class="game-card" data-cat="PHYSICS" data-players="2" data-game-key="SUMO" data-keywords="sumo 物理飞车相扑 飞车 相扑 撞击 物理 双人 2人 二人 竞技场 xp" onclick="enterGame('SUMO')" data-genre="ARCADE" data-online="true">
-      <div class="card-cover-wrapper">
+          <div class="game-card tile-medium tile-accent-iaido" data-cat="REFLEX" data-players="2" data-game-key="IAIDO" data-keywords="iaido 居合拔刀斩 居合 拔刀 武士 反应 手速 极限 决斗 双人 2人 二人 人机 bd" onclick="enterGame('IAIDO')" data-genre="PARTY" data-online="true">
+
+        <div class="metro-tile-flipper">
+          <div class="metro-tile-front">
+            <div class="card-cover-wrapper">
         <div class="card-art-canvas">
           
   <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
     <defs>
-      <linearGradient id="sumoBg" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="#4c0519"/>
-                <stop offset="50%" stop-color="#9f1239"/>
-                <stop offset="100%" stop-color="#e11d48"/>
+      <linearGradient id="iaiBg" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#450a0a"/>
+                <stop offset="50%" stop-color="#7f1d1d"/>
+                <stop offset="100%" stop-color="#991b1b"/>
               </linearGradient>
-      <filter id="sumoGlow">
+      <radialGradient id="moonGlow" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#ef4444"/>
+        <stop offset="70%" stop-color="#991b1b"/>
+        <stop offset="100%" stop-color="#450a0a" stop-opacity="0.1"/>
+      </radialGradient>
+      <filter id="iaiGlow">
         <feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
       </filter>
     </defs>
-    <rect width="320" height="180" fill="url(#sumoBg)"/>
-    <!-- 圆形擂台台面 -->
-    <ellipse cx="160" cy="120" rx="130" ry="45" fill="#1e293b" stroke="#f59e0b" stroke-width="3"/>
-    <ellipse cx="160" cy="120" rx="100" ry="32" fill="#0f172a" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="5 5"/>
-    <!-- 碰撞爆裂火花与冲击波 -->
-    <polygon points="160,85 168,70 178,82 192,72 185,88 200,92 184,100 190,112 175,104 165,116 163,101 150,105 156,92 142,85 156,80" fill="#facc15" filter="url(#sumoGlow)"/>
-    <!-- 红车 (左) -->
-    <g transform="translate(105, 78) rotate(15)">
-      <rect x="0" y="0" width="38" height="22" rx="6" fill="#ef4444" stroke="#f87171" stroke-width="1.5"/>
-      <circle cx="8" cy="22" r="5" fill="#1e293b"/>
-      <circle cx="30" cy="22" r="5" fill="#1e293b"/>
-      <polygon points="-12,11 -2,7 -2,15" fill="#f97316"/>
-    </g>
-    <!-- 蓝车 (右) -->
-    <g transform="translate(178, 88) rotate(-15)">
-      <rect x="0" y="0" width="38" height="22" rx="6" fill="#0284c7" stroke="#38bdf8" stroke-width="1.5"/>
-      <circle cx="8" cy="22" r="5" fill="#1e293b"/>
-      <circle cx="30" cy="22" r="5" fill="#1e293b"/>
-      <polygon points="50,11 40,7 40,15" fill="#38bdf8"/>
-    </g>
+    <rect width="320" height="180" fill="url(#iaiBg)"/>
+    <!-- 血月 -->
+    <circle cx="160" cy="85" r="54" fill="url(#moonGlow)" opacity="0.85"/>
+    <circle cx="160" cy="85" r="48" fill="#b91c1c"/>
+    <!-- 狂风落樱 -->
+    <circle cx="60" cy="40" r="2.5" fill="#f43f5e"/>
+    <circle cx="90" cy="70" r="2" fill="#fda4af"/>
+    <circle cx="230" cy="50" r="3" fill="#fda4af"/>
+    <circle cx="270" cy="110" r="2" fill="#f43f5e"/>
+    <!-- 极速一闪刀光 -->
+    <path d="M10,150 Q160,50 310,25" stroke="#ffffff" stroke-width="4" fill="none" filter="url(#iaiGlow)"/>
+    <path d="M10,150 Q160,50 310,25" stroke="#fef08a" stroke-width="1.8" fill="none"/>
+    <!-- 巨大书法语“斬” -->
+    <text x="135" y="105" font-family="'SimSun', 'STSong', serif" font-size="56" font-weight="900" fill="#ffffff" filter="url(#iaiGlow)">斬</text>
   </svg>
         </div>
         <div class="cover-badges">
           <span class="badge-pill players">👥 1-2人</span>
-          <span class="badge-pill tag-new">🚗 魔性乱斗</span>
+          <span class="badge-pill tag-reflex">⚡ 极限反应</span>
         </div>
         <div class="cover-overlay"></div>
       </div>
-      <div class="card-body">
+            <div class="tile-info-overlay">
+              <span class="tile-title-text">拔刀居合斩</span>
+              <span class="tile-badge-num">⚡ 毫秒</span>
+            </div>
+          </div>
+          <div class="metro-tile-back">
+            <div class="tile-back-header">
+              <span class="tile-back-title">拔刀居合斩</span>
+              <span class="tile-back-status">未开始</span>
+            </div>
+            <div class="tile-back-body">
+              <div class="tile-stat-row"><span>支持模式:</span> <span class="tile-stat-val">双人极限对决</span></div>
+              <div class="tile-stat-row"><span>历史战局:</span> <span class="tile-stat-val tile-stat-val-plays">0 局</span></div>
+              <div class="tile-stat-row"><span>特色机制:</span> <span class="tile-stat-val">抢跑失误判负</span></div>
+            </div>
+            <div class="tile-back-footer">
+              <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('IAIDO')">开战 ▶</button>
+            </div>
+          </div>
+          <div class="card-body">
         <div class="card-header-row">
           <div class="title-group">
             <div class="card-main-title">
-              <span>物理飞车相扑</span>
-              <span class="card-sub">CAR SUMO</span>
+              <span>拔刀居合斩</span>
+              <span class="card-sub">IAIDO DUEL</span>
             </div>
-            <div class="card-tagline">按住冲刺松开瞄准 · 把对手撞入深渊</div>
+            <div class="card-tagline">红光「斬」出鞘拼毫秒手速 · 抢跑直接判负</div>
           </div>
           <div class="btn-play-action">开玩 ▶</div>
         </div>
         <div class="card-meta-chips">
-          <span class="meta-chip">⏱️ 30秒</span>
-          <span class="meta-chip">欢乐碰撞</span>
-          <span class="meta-chip accent">氮气加速漂移</span>
+          <span class="meta-chip">⏱️ 10秒</span>
+          <span class="meta-chip">手速 ⭐⭐⭐⭐</span>
+          <span class="meta-chip accent">聚会秒决胜负</span>
         </div>
       </div>
-    </div>
-  
+        </div>
+      </div>
 
-    <div class="game-card" data-cat="PHYSICS" data-players="2" data-game-key="TANK" data-keywords="tank 经典双人坦克 极限抛物线 坦克 炮击 抛物线 物理 双人 2人 二人" onclick="enterGame('TANK')" data-genre="ARCADE" data-online="true">
-      <div class="card-cover-wrapper">
-        <div class="card-art-canvas">
-          
-  <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <linearGradient id="tBg" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#14532d"/>
-                <stop offset="50%" stop-color="#166534"/>
-                <stop offset="100%" stop-color="#15803d"/>
-              </linearGradient>
-      <filter id="tGlow">
-        <feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-      </filter>
-    </defs>
-    <rect width="320" height="180" fill="url(#tBg)"/>
-    <!-- 远山地形与破坏弹坑 -->
-    <path d="M0,140 Q60,115 110,135 T220,130 Q260,110 320,145 L320,180 L0,180 Z" fill="#1c1917"/>
-    <!-- 玩家坦克 1 (左侧山崖) -->
-    <g transform="translate(45, 115)">
-      <rect x="0" y="8" width="26" height="10" rx="3" fill="#15803d"/>
-      <ellipse cx="13" cy="8" rx="8" ry="5" fill="#22c55e"/>
-      <line x1="13" y1="7" x2="28" y2="-2" stroke="#4ade80" stroke-width="2.5" stroke-linecap="round"/>
-    </g>
-    <!-- 玩家坦克 2 (右侧山崖) -->
-    <g transform="translate(250, 118)">
-      <rect x="0" y="8" width="26" height="10" rx="3" fill="#b45309"/>
-      <ellipse cx="13" cy="8" rx="8" ry="5" fill="#f59e0b"/>
-      <line x1="13" y1="7" x2="-2" y2="-2" stroke="#fcd34d" stroke-width="2.5" stroke-linecap="round"/>
-    </g>
-    <!-- 抛物线轨迹 -->
-    <path d="M72,112 Q160,-10 248,118" stroke="#fef08a" stroke-width="2.5" stroke-dasharray="5 4" fill="none" filter="url(#tGlow)"/>
-    <!-- 命中火球 -->
-    <circle cx="248" cy="118" r="17" fill="#ef4444" filter="url(#tGlow)"/>
-    <circle cx="248" cy="118" r="9" fill="#facc15"/>
-  </svg>
-        </div>
-        <div class="cover-badges">
-          <span class="badge-pill players">👥 1-2人</span>
-          <span class="badge-pill tag-new">🎯 弹道对轰</span>
-        </div>
-        <div class="cover-overlay"></div>
-      </div>
-      <div class="card-body">
-        <div class="card-header-row">
-          <div class="title-group">
-            <div class="card-main-title">
-              <span>极限抛物线</span>
-              <span class="card-sub">TANK WARS</span>
-            </div>
-            <div class="card-tagline">地形破坏弹坑 · 测风向调仰角高抛炸毁</div>
-          </div>
-          <div class="btn-play-action">开玩 ▶</div>
-        </div>
-        <div class="card-meta-chips">
-          <span class="meta-chip">⏱️ 2分钟</span>
-          <span class="meta-chip">弹道计算</span>
-          <span class="meta-chip accent">经典百战天虫风</span>
-        </div>
-      </div>
-    </div>
-  
+          <div class="game-card tile-medium tile-accent-stack" data-cat="REFLEX" data-players="1" data-game-key="STACK" data-keywords="stack 3d霓虹叠高塔 极光叠叠高 叠高 反应 手速 单人 1人 极限 节奏 强迫症" onclick="enterGame('STACK')" data-genre="PARTY" data-online="true">
 
-    <div class="game-card" data-cat="REFLEX" data-players="1" data-game-key="STACK" data-keywords="stack 3d霓虹叠高塔 极光叠叠高 叠高 反应 手速 单人 1人 极限 节奏 强迫症" onclick="enterGame('STACK')" data-genre="PARTY" data-online="true">
-      <div class="card-cover-wrapper">
+        <div class="metro-tile-flipper">
+          <div class="metro-tile-front">
+            <div class="card-cover-wrapper">
         <div class="card-art-canvas">
           
   <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
@@ -3647,7 +4280,26 @@
         </div>
         <div class="cover-overlay"></div>
       </div>
-      <div class="card-body">
+            <div class="tile-info-overlay">
+              <span class="tile-title-text">极光叠叠高</span>
+              <span class="tile-badge-num">🥞 节奏</span>
+            </div>
+          </div>
+          <div class="metro-tile-back">
+            <div class="tile-back-header">
+              <span class="tile-back-title">极光叠叠高</span>
+              <span class="tile-back-status">未开始</span>
+            </div>
+            <div class="tile-back-body">
+              <div class="tile-stat-row"><span>支持模式:</span> <span class="tile-stat-val">单人解压挑战</span></div>
+              <div class="tile-stat-row"><span>历史战局:</span> <span class="tile-stat-val tile-stat-val-plays">0 局</span></div>
+              <div class="tile-stat-row"><span>特色机制:</span> <span class="tile-stat-val">八度天籁音阶</span></div>
+            </div>
+            <div class="tile-back-footer">
+              <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('STACK')">开战 ▶</button>
+            </div>
+          </div>
+          <div class="card-body">
         <div class="card-header-row">
           <div class="title-group">
             <div class="card-main-title">
@@ -3664,10 +4316,12 @@
           <span class="meta-chip accent">八度连击和弦</span>
         </div>
       </div>
-    </div>
-  
-        <!-- 搜索/筛选无结果空状态 -->
-        <div class="no-results-state" id="no-results-state" style="display: none;">
+        </div>
+      </div>
+        </div>
+      </div>
+
+      <div class="no-results-state" id="no-results-state" style="display: none;">
           <div class="no-results-icon">🛸</div>
           <div class="no-results-title">未找到匹配的游戏</div>
           <div class="no-results-desc">换个搜索词或调整人数/类型筛选试试看吧</div>
@@ -4307,6 +4961,12 @@
         }
       });
 
+      // Metro 模式下联动更新组可见性
+      document.querySelectorAll('.metro-group').forEach(grp => {
+        const visibleChild = grp.querySelector('.game-card:not([style*="display: none"])');
+        grp.style.display = visibleChild ? '' : 'none';
+      });
+
       const noResults = document.getElementById('no-results-state');
       if (noResults) {
         noResults.style.display = visibleCount === 0 ? 'flex' : 'none';
@@ -4424,7 +5084,7 @@
     function setViewMode(mode, playSound = false) {
       if (playSound && typeof triggerHaptic === 'function') triggerHaptic('light');
       if (playSound && window.AUDIO) try { window.AUDIO.play('click'); } catch(e) {}
-      const targetMode = mode === 'compact' ? 'compact' : 'poster';
+      const targetMode = (mode === 'compact' || mode === 'poster' || mode === 'metro') ? mode : 'metro';
       try {
         localStorage.setItem('arcade_view_mode', targetMode);
       } catch(e) {}
@@ -4432,11 +5092,17 @@
       const grid = document.getElementById('lobby-game-grid');
       const btnPoster = document.getElementById('view-mode-poster');
       const btnCompact = document.getElementById('view-mode-compact');
+      const btnMetro = document.getElementById('view-mode-metro');
 
       if (grid) {
-        if (targetMode === 'compact') {
+        if (targetMode === 'metro') {
+          grid.classList.remove('compact-mode');
+          if (window.MetroEngine) window.MetroEngine.activate();
+        } else if (targetMode === 'compact') {
+          if (window.MetroEngine) window.MetroEngine.deactivate();
           grid.classList.add('compact-mode');
         } else {
+          if (window.MetroEngine) window.MetroEngine.deactivate();
           grid.classList.remove('compact-mode');
         }
       }
@@ -4444,15 +5110,17 @@
       if (btnPoster && btnCompact) {
         btnPoster.classList.toggle('active', targetMode === 'poster');
         btnCompact.classList.toggle('active', targetMode === 'compact');
+        if (btnMetro) btnMetro.classList.toggle('active', targetMode === 'metro');
       }
     }
 
     function initViewMode() {
-      let saved = 'poster';
+      let saved = 'metro';
       try {
-        saved = localStorage.getItem('arcade_view_mode') || 'poster';
+        saved = localStorage.getItem('arcade_view_mode') || 'metro';
       } catch(e) {}
       setViewMode(saved, false);
+      if (window.MetroEngine) window.MetroEngine.init();
     }
 
     // ==========================================================================
@@ -4538,5 +5206,54 @@
     });
 
   </script>
+  <!-- ====================================================================
+       Windows Phone 经典 Application Bar
+       ==================================================================== -->
+  <nav class="wp-app-bar" id="wp-app-bar" aria-label="Windows Phone 操作栏">
+    <button class="wp-app-bar-btn" onclick="dockScrollToTop()" title="回顶部">
+      <div class="wp-app-bar-circle">🏠</div>
+      <div class="wp-app-bar-text">start</div>
+    </button>
+    <button class="wp-app-bar-btn" onclick="toggleSemanticZoom()" title="分类缩放">
+      <div class="wp-app-bar-circle">🔍</div>
+      <div class="wp-app-bar-text">zoom</div>
+    </button>
+    <button class="wp-app-bar-btn" onclick="pickRandomGame()" title="天命随机">
+      <div class="wp-app-bar-circle">🎲</div>
+      <div class="wp-app-bar-text">random</div>
+    </button>
+    <button class="wp-app-bar-btn" onclick="toggleSound()" title="音效开关">
+      <div class="wp-app-bar-circle" id="wp-sound-icon">🔊</div>
+      <div class="wp-app-bar-text">sound</div>
+    </button>
+  </nav>
+
+  <!-- ====================================================================
+       Windows 8 语义缩放全景覆盖层 (Semantic Zoom Overlay)
+       ==================================================================== -->
+  <div class="metro-semantic-zoom" id="metro-semantic-zoom">
+    <div class="semantic-zoom-header">分类概览 · Semantic Zoom</div>
+    <div class="semantic-zoom-grid">
+      <div class="semantic-zoom-card tile-accent-tron" onclick="jumpToCategoryGroup('FEATURED')">
+        <div class="cat-name">🌟 精选对决</div>
+        <div class="cat-count">6 款核心高频游戏</div>
+      </div>
+      <div class="semantic-zoom-card tile-accent-quoridor" onclick="jumpToCategoryGroup('STRATEGY')">
+        <div class="cat-name">🧠 策略博弈</div>
+        <div class="cat-count">10 款经典棋类与策略桌游</div>
+      </div>
+      <div class="semantic-zoom-card tile-accent-tanktrouble" onclick="jumpToCategoryGroup('PHYSICS')">
+        <div class="cat-name">⚔️ 物理对抗</div>
+        <div class="cat-count">4 款弹道射击与物理碰撞</div>
+      </div>
+      <div class="semantic-zoom-card tile-accent-bombcat" onclick="jumpToCategoryGroup('MIND_REFLEX')">
+        <div class="cat-name">⚡ 心理与手速</div>
+        <div class="cat-count">6 款心理暗牌与极限反应</div>
+      </div>
+    </div>
+    <button class="btn-reset-filters" onclick="toggleSemanticZoom(false)" style="margin-top: 24px; padding: 8px 24px; background: rgba(255,255,255,0.2); border: 1px solid #fff; color: #fff; border-radius: 2px; cursor: pointer;">返回大厅 ✕</button>
+  </div>
+
+  <script src="common/metro.js"></script>
 </body>
 </html>
