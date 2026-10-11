@@ -1,17 +1,28 @@
 /**
- * 🪟 Windows Modern UI / Live Tiles 调度引擎 (Metro Engine)
- * 包含：3D Pointer Tilt 倾斜物理反馈、呼吸式随机翻转调度器、Surface 滚轮横向平移与语义缩放 (Semantic Zoom)
+ * 🪟 Windows Modern UI / Live Tiles 核心交互与调度引擎 (Metro Engine)
+ * 严格支持：
+ * 1. 3D Perspective Tilt 触控/光标倾斜真实物理反馈
+ * 2. Surface & PC 横向滚轮与触控滑动平滑转换
+ * 3. 动态磁贴 (Live Tiles) 周期性随机平滑翻转调度
+ * 4. Windows 8 经典 Charm Bar 侧滑搜索与实时即时过滤
+ * 5. 5套官方壁纸主题秒级切换与持久化
+ * 6. 天命随机闪烁光圈巡检与直接开战
+ * 7. 语义缩放 (Semantic Zoom) 全景分组导航
  */
 
 (function(window) {
   'use strict';
 
+  const THEMES = ['theme-teal', 'theme-indigo', 'theme-slate', 'theme-emerald', 'theme-crimson'];
+
   const MetroEngine = {
     initialized: false,
-    active: false,
+    active: true,
     visibleCards: new Set(),
     flipIntervalId: null,
     observer: null,
+    currentThemeIndex: 0,
+    isRandomPicking: false,
 
     // ========================================================================
     // 1. 初始化入口
@@ -20,13 +31,15 @@
       if (this.initialized) return;
       this.initialized = true;
 
+      this.initTheme();
       this.initTiltPhysics();
       this.initIntersectionObserver();
       this.initHorizontalWheel();
       this.initSemanticZoom();
-      this.injectTelemetryData();
+      this.initCharmDrawer();
+      this.startTicker();
 
-      // 页面可见性感知：切后台休眠，回前台唤醒
+      // 页面可见性感知：切后台休眠省电，回前台唤醒
       document.addEventListener('visibilitychange', () => {
         if (document.hidden) {
           this.stopTicker();
@@ -35,40 +48,49 @@
         }
       });
 
-      console.log('[MetroEngine] Windows Live Tiles 引擎已就绪');
+      console.log('🪟 [MetroEngine] Windows 8 / Windows Phone 磁贴引擎已激活');
     },
 
     // ========================================================================
-    // 2. 模式激活与休眠控制
+    // 2. 主题壁纸切换系统
     // ========================================================================
-    activate() {
-      this.active = true;
-      document.body.classList.add('metro-active');
-      const grid = document.getElementById('lobby-game-grid');
-      if (grid) {
-        grid.classList.add('metro-mode');
-        grid.classList.remove('compact-mode');
+    initTheme() {
+      let saved = 'theme-teal';
+      try {
+        saved = localStorage.getItem('win8_metro_theme') || 'theme-teal';
+      } catch(e) {}
+      this.applyTheme(saved);
+    },
+
+    applyTheme(themeName) {
+      THEMES.forEach(t => document.body.classList.remove(t));
+      if (!THEMES.includes(themeName)) themeName = 'theme-teal';
+      document.body.classList.add(themeName);
+      this.currentThemeIndex = THEMES.indexOf(themeName);
+      try {
+        localStorage.setItem('win8_metro_theme', themeName);
+      } catch(e) {}
+    },
+
+    cycleNextTheme() {
+      this.currentThemeIndex = (this.currentThemeIndex + 1) % THEMES.length;
+      const nextTheme = THEMES[this.currentThemeIndex];
+      this.applyTheme(nextTheme);
+      if (window.AUDIO) try { window.AUDIO.play('click'); } catch(e) {}
+      if (typeof showToast === 'function') {
+        const names = {
+          'theme-teal': 'Win8 官方青绿壁纸',
+          'theme-indigo': 'Win8.1 经典深紫壁纸',
+          'theme-slate': 'Carbon 暗黑灰黑壁纸',
+          'theme-emerald': 'Xbox 森林墨绿壁纸',
+          'theme-crimson': 'Ruby 勃艮第绯红壁纸'
+        };
+        showToast(`已切换主题: ${names[nextTheme] || nextTheme}`);
       }
-      this.startTicker();
-      this.injectTelemetryData();
-    },
-
-    deactivate() {
-      this.active = false;
-      document.body.classList.remove('metro-active');
-      const grid = document.getElementById('lobby-game-grid');
-      if (grid) {
-        grid.classList.remove('metro-mode');
-      }
-      this.stopTicker();
-      // 重置所有磁贴翻转状态
-      document.querySelectorAll('.game-card.is-flipped').forEach(card => {
-        card.classList.remove('is-flipped');
-      });
     },
 
     // ========================================================================
-    // 3. 3D Pointer Tilt 触控倾斜物理反馈 (Windows Phone / Win8 核心质感)
+    // 3. 3D Perspective Tilt 触控/光标倾斜真实物理反馈 (Win8 / WP8 核心质感)
     // ========================================================================
     initTiltPhysics() {
       const isTouch = 'ontouchstart' in window;
@@ -78,19 +100,18 @@
       const cancelEvt= isTouch ? 'touchcancel': 'pointercancel';
 
       document.addEventListener(startEvt, (e) => {
-        if (!this.active) return;
         const card = e.target.closest('.game-card');
         if (!card) return;
 
-        card.classList.add('is-tilting');
+        card.classList.add('tile-pressed');
         this.applyTilt(card, e);
 
-        const onMove = (moveEvent) => {
-          this.applyTilt(card, moveEvent);
+        const onMove = (moveEvtObj) => {
+          this.applyTilt(card, moveEvtObj);
         };
 
         const onRelease = () => {
-          card.classList.remove('is-tilting');
+          card.classList.remove('tile-pressed');
           card.style.transform = '';
           document.removeEventListener(moveEvt, onMove);
           document.removeEventListener(endEvt, onRelease);
@@ -98,37 +119,59 @@
           if (!isTouch) document.removeEventListener('pointerleave', onRelease);
         };
 
-        document.addEventListener(moveEvt, onMove);
-        document.addEventListener(endEvt, onRelease);
-        document.addEventListener(cancelEvt, onRelease);
-        if (!isTouch) document.addEventListener('pointerleave', onRelease);
+        document.addEventListener(moveEvt, onMove, { passive: true });
+        document.addEventListener(endEvt, onRelease, { once: true });
+        document.addEventListener(cancelEvt, onRelease, { once: true });
+        if (!isTouch) document.addEventListener('pointerleave', onRelease, { once: true });
       }, { passive: true });
     },
 
-    applyTilt(card, event) {
+    applyTilt(card, e) {
+      if (!card) return;
       const rect = card.getBoundingClientRect();
-      const clientX = event.touches ? event.touches[0].clientX : event.clientX;
-      const clientY = event.touches ? event.touches[0].clientY : event.clientY;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
 
       if (!clientX || !clientY) return;
 
       const x = clientX - rect.left;
       const y = clientY - rect.top;
+
       const midX = rect.width / 2;
       const midY = rect.height / 2;
 
-      // 最大倾斜角 7.5 度
-      const maxAngle = 7.5;
-      const rotY = Math.max(-maxAngle, Math.min(maxAngle, ((x - midX) / midX) * maxAngle));
-      const rotX = Math.max(-maxAngle, Math.min(maxAngle, -((y - midY) / midY) * maxAngle));
+      // 归一化偏差 [-1, 1]
+      const dx = Math.max(-1, Math.min(1, (x - midX) / midX));
+      const dy = Math.max(-1, Math.min(1, (y - midY) / midY));
 
-      card.style.transform = `perspective(700px) rotateX(${rotX.toFixed(2)}deg) rotateY(${rotY.toFixed(2)}deg) scale3d(0.97, 0.97, 0.97)`;
+      const maxRotate = 7; // 最大倾斜角度 7 度
+      const rotX = -dy * maxRotate;
+      const rotY = dx * maxRotate;
+
+      card.style.transform = `perspective(600px) rotateX(${rotX.toFixed(2)}deg) rotateY(${rotY.toFixed(2)}deg) scale(0.97)`;
     },
 
     // ========================================================================
-    // 4. 视口裁剪与呼吸式随机翻转调度机 (Live Tile Ticker)
+    // 4. 横向滚轮与全景平滑平移 (Surface Pro & PC Mouse Wheel Horizontal Scroll)
+    // ========================================================================
+    initHorizontalWheel() {
+      const panorama = document.getElementById('metro-panorama');
+      if (!panorama) return;
+
+      panorama.addEventListener('wheel', (e) => {
+        // 当垂直滚动大于横向滚动且全景横向有溢出时，拦截并转为横向平移
+        if (Math.abs(e.deltaY) > Math.abs(e.deltaX) && panorama.scrollWidth > panorama.clientWidth) {
+          e.preventDefault();
+          panorama.scrollLeft += e.deltaY * 0.9;
+        }
+      }, { passive: false });
+    },
+
+    // ========================================================================
+    // 5. 动态磁贴 (Live Tiles) 周期性翻转调度系统
     // ========================================================================
     initIntersectionObserver() {
+      if (!('IntersectionObserver' in window)) return;
       this.observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
           const card = entry.target;
@@ -136,15 +179,10 @@
             this.visibleCards.add(card);
           } else {
             this.visibleCards.delete(card);
-            // 滑出视口时平滑归位
-            if (card.classList.contains('is-flipped')) {
-              card.classList.remove('is-flipped');
-            }
+            card.classList.remove('is-flipped');
           }
         });
-      }, {
-        threshold: 0.25
-      });
+      }, { threshold: 0.25 });
 
       document.querySelectorAll('.game-card').forEach(card => {
         this.observer.observe(card);
@@ -152,25 +190,21 @@
     },
 
     startTicker() {
-      this.stopTicker();
-      // 每隔 4.5 秒从可见池中随机抽取 1 个磁贴触发 3D 翻转
+      if (this.flipIntervalId) return;
       this.flipIntervalId = setInterval(() => {
-        if (!this.active || this.visibleCards.size === 0) return;
-        const cardsArray = Array.from(this.visibleCards);
-        const randomCard = cardsArray[Math.floor(Math.random() * cardsArray.length)];
-        if (!randomCard) return;
+        if (!this.active || this.isRandomPicking || this.visibleCards.size === 0) return;
 
-        randomCard.classList.toggle('is-flipped');
+        const cardsArray = Array.from(this.visibleCards).filter(c => !c.classList.contains('tile-pressed') && !c.classList.contains('tile-dimmed'));
+        if (cardsArray.length === 0) return;
 
-        // 如果是翻到背面，6 秒后自动归位正面
-        if (randomCard.classList.contains('is-flipped')) {
-          setTimeout(() => {
-            if (randomCard.classList.contains('is-flipped')) {
-              randomCard.classList.remove('is-flipped');
-            }
-          }, 6000);
-        }
-      }, 4500);
+        // 随机挑选 1 款磁贴翻转展示资讯
+        const pick = cardsArray[Math.floor(Math.random() * cardsArray.length)];
+        pick.classList.add('is-flipped');
+
+        setTimeout(() => {
+          if (pick) pick.classList.remove('is-flipped');
+        }, 4200);
+      }, 7500);
     },
 
     stopTicker() {
@@ -181,94 +215,184 @@
     },
 
     // ========================================================================
-    // 5. Surface 平板与桌面端：滚轮水平驱动 (Wheel-to-Horizontal)
+    // 6. Windows 8 经典 Charm Bar 侧滑搜索与实时筛选
     // ========================================================================
-    initHorizontalWheel() {
-      const grid = document.getElementById('lobby-game-grid');
-      if (!grid) return;
-
-      grid.addEventListener('wheel', (e) => {
-        if (!this.active) return;
-        // 仅在横屏全景模式下生效 (屏幕宽于 900px 或处于 landscape)
-        if (window.innerWidth <= 768 && window.matchMedia('(orientation: portrait)').matches) {
-          return;
-        }
-
-        if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-          grid.scrollLeft += e.deltaY;
-          e.preventDefault();
-        }
-      }, { passive: false });
+    initCharmDrawer() {
+      const input = document.getElementById('game-search-input');
+      if (input) {
+        input.addEventListener('input', (e) => {
+          this.filterTiles((e.target.value || '').trim());
+        });
+      }
     },
 
-    // ========================================================================
-    // 6. 语义缩放全景视图 (Semantic Zoom - Win8 标志性交互)
-    // ========================================================================
-    initSemanticZoom() {
-      // 监听全局捏合缩放或点击缩放按钮
-      window.toggleSemanticZoom = (forceState) => {
-        const overlay = document.getElementById('metro-semantic-zoom');
-        if (!overlay) return;
-        const willActive = typeof forceState === 'boolean' ? forceState : !overlay.classList.contains('active');
-        if (willActive) {
-          overlay.classList.add('active');
+    openCharm() {
+      const drawer = document.getElementById('win8-charm-drawer');
+      const backdrop = document.getElementById('charm-backdrop');
+      if (drawer) drawer.classList.add('open');
+      if (backdrop) backdrop.classList.add('open');
+
+      const input = document.getElementById('game-search-input');
+      if (input) {
+        setTimeout(() => { try { input.focus(); input.select(); } catch(e) {} }, 100);
+      }
+      if (window.AUDIO) try { window.AUDIO.play('click'); } catch(e) {}
+    },
+
+    closeCharm() {
+      const drawer = document.getElementById('win8-charm-drawer');
+      const backdrop = document.getElementById('charm-backdrop');
+      if (drawer) drawer.classList.remove('open');
+      if (backdrop) backdrop.classList.remove('open');
+    },
+
+    toggleCharm() {
+      const drawer = document.getElementById('win8-charm-drawer');
+      if (drawer && drawer.classList.contains('open')) {
+        this.closeCharm();
+      } else {
+        this.openCharm();
+      }
+    },
+
+    filterTiles(query, playerFilter = 'ALL', catFilter = 'ALL') {
+      const q = (query || '').toLowerCase().trim();
+      const cards = document.querySelectorAll('.game-card');
+      let matchCount = 0;
+
+      cards.forEach(card => {
+        const pVal = card.dataset.players || '';
+        const cVal = card.dataset.cat || '';
+        const kw = ((card.dataset.keywords || '') + ' ' + card.textContent).toLowerCase();
+
+        let pMatch = (playerFilter === 'ALL') || (playerFilter === 'ONLINE' ? card.dataset.online === 'true' : pVal === playerFilter);
+        let cMatch = (catFilter === 'ALL') || (cVal === catFilter);
+        let sMatch = !q || kw.includes(q);
+
+        if (pMatch && cMatch && sMatch) {
+          card.classList.remove('tile-dimmed');
+          matchCount++;
         } else {
-          overlay.classList.remove('active');
-        }
-      };
-
-      window.jumpToCategoryGroup = (groupKey) => {
-        window.toggleSemanticZoom(false);
-        const targetGroup = document.querySelector(`.metro-group[data-group="${groupKey}"]`);
-        const grid = document.getElementById('lobby-game-grid');
-        if (targetGroup && grid) {
-          if (grid.style.flexDirection === 'row' || window.innerWidth > 768) {
-            targetGroup.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
-          } else {
-            targetGroup.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }
-        }
-      };
-    },
-
-    // ========================================================================
-    // 7. 动态战绩数据下发与注入 (Live Telemetry)
-    // ========================================================================
-    injectTelemetryData() {
-      let recentGames = [];
-      try {
-        recentGames = JSON.parse(localStorage.getItem('arcade_recent_games') || '[]');
-      } catch(e) {}
-
-      document.querySelectorAll('.game-card').forEach(card => {
-        const gameKey = card.dataset.gameKey;
-        if (!gameKey) return;
-
-        const isRecent = recentGames.includes(gameKey);
-        const recentIndex = recentGames.indexOf(gameKey);
-
-        const statusEl = card.querySelector('.tile-back-status');
-        if (statusEl) {
-          if (recentIndex === 0) {
-            statusEl.textContent = '最近游玩';
-            statusEl.style.color = '#38bdf8';
-          } else if (isRecent) {
-            statusEl.textContent = '已体验';
-            statusEl.style.color = '#4ade80';
-          } else {
-            statusEl.textContent = '未开始';
-            statusEl.style.color = '#94a3b8';
-          }
-        }
-
-        const statVal = card.querySelector('.tile-stat-val-plays');
-        if (statVal) {
-          statVal.textContent = isRecent ? `${Math.floor(Math.random() * 5) + 3} 局` : '0 局';
+          card.classList.add('tile-dimmed');
         }
       });
+
+      // 同步更新组的可见性 (如果某组磁贴全被 dimmed，则稍微淡化)
+      document.querySelectorAll('.metro-group').forEach(grp => {
+        const hasVisible = grp.querySelector('.game-card:not(.tile-dimmed)');
+        grp.style.opacity = hasVisible ? '1' : '0.25';
+      });
+
+      return matchCount;
+    },
+
+    // ========================================================================
+    // 7. 天命随机闪烁动画 (Random Game Shimmer Selector)
+    // ========================================================================
+    randomPickGame() {
+      if (this.isRandomPicking) return;
+      this.isRandomPicking = true;
+
+      const cards = Array.from(document.querySelectorAll('.game-card:not(.tile-dimmed)'));
+      if (cards.length === 0) {
+        this.isRandomPicking = false;
+        return;
+      }
+
+      if (window.AUDIO) try { window.AUDIO.play('card_draw'); } catch(e) {}
+
+      let steps = 18;
+      let delay = 45;
+      let currentIndex = -1;
+
+      const step = () => {
+        if (currentIndex >= 0 && cards[currentIndex]) {
+          cards[currentIndex].classList.remove('tile-shimmer-picked');
+        }
+
+        currentIndex = Math.floor(Math.random() * cards.length);
+        const currentCard = cards[currentIndex];
+        if (currentCard) {
+          currentCard.classList.add('tile-shimmer-picked');
+          // 移动端或横屏自动将其滚入视野
+          try {
+            currentCard.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'center' });
+          } catch(e) {}
+        }
+
+        if (window.AUDIO) try { window.AUDIO.play('click'); } catch(e) {}
+
+        steps--;
+        if (steps > 0) {
+          delay += 12;
+          setTimeout(step, delay);
+        } else {
+          // 锁定目标
+          this.isRandomPicking = false;
+          if (currentCard) {
+            const key = currentCard.dataset.gameKey;
+            const title = currentCard.querySelector('.tile-title-text')?.textContent || key;
+            if (typeof showToast === 'function') {
+              showToast(`🎯 天命已定：${title}！点击直接开战`);
+            }
+            if (window.AUDIO) try { window.AUDIO.play('tron_boost'); } catch(e) {}
+            setTimeout(() => {
+              if (currentCard) currentCard.classList.remove('tile-shimmer-picked');
+            }, 3000);
+          }
+        }
+      };
+
+      step();
+    },
+
+    // ========================================================================
+    // 8. 语义缩放全景概览 (Semantic Zoom)
+    // ========================================================================
+    initSemanticZoom() {
+      // 预绑定
+    },
+
+    toggleSemanticZoom(open) {
+      const zoom = document.getElementById('metro-semantic-zoom');
+      if (!zoom) return;
+      const isOpen = (open === undefined) ? !zoom.classList.contains('open') : open;
+      zoom.classList.toggle('open', isOpen);
+      if (window.AUDIO) try { window.AUDIO.play('click'); } catch(e) {}
+    },
+
+    jumpToCategoryGroup(groupKey) {
+      this.toggleSemanticZoom(false);
+      const grp = document.querySelector(`.metro-group[data-group="${groupKey}"]`);
+      if (grp) {
+        grp.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'start' });
+      }
+    },
+
+    // ========================================================================
+    // 9. 状态机激活与休眠
+    // ========================================================================
+    activate() {
+      this.active = true;
+      document.body.classList.add('metro-active');
+      this.startTicker();
+    },
+
+    deactivate() {
+      this.active = false;
+      document.body.classList.remove('metro-active');
+      this.stopTicker();
     }
   };
 
   window.MetroEngine = MetroEngine;
+
+  // 挂载顶层全局别名函数
+  window.toggleSemanticZoom = (open) => MetroEngine.toggleSemanticZoom(open);
+  window.jumpToCategoryGroup = (grp) => MetroEngine.jumpToCategoryGroup(grp);
+  window.pickRandomGame = () => MetroEngine.randomPickGame();
+  window.cycleWin8Theme = () => MetroEngine.cycleNextTheme();
+  window.toggleCharmSearch = () => MetroEngine.toggleCharm();
+  window.closeCharmSearch = () => MetroEngine.closeCharm();
 
 })(window);
