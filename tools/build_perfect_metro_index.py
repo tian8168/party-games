@@ -759,36 +759,7 @@ def generate_index_html():
             </div>
           </div>
 
-          <!-- 21. HOCKEY (桌上空中冰球 · 1x1 Medium 灵动方块) -->
-          <div class="game-card tile-medium tile-accent-hockey" data-cat="PHYSICS" data-players="2" data-game-key="HOCKEY" data-genre="ARCADE" data-online="false" data-keywords="hockey 桌上空中冰球 冰球 气垫球 碰撞 反弹 极速 手速 物理 2人 2player 双人 zsbq 1人 二人" onclick="enterGame('HOCKEY')">
-            <div class="metro-tile-flipper">
-              <div class="metro-tile-front">
-                <div class="tile-badge-row"><span class="tile-badge-num">🏒 极速</span></div>
-                <div class="tile-icon-canvas">
-                  <svg viewBox="0 0 48 48" class="metro-icon-svg">
-                    <circle cx="16" cy="24" r="10"/>
-                    <circle cx="16" cy="24" r="5" fill="#000" opacity="0.3"/>
-                    <circle cx="36" cy="24" r="5"/>
-                    <path fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="2,2" d="M26 14v20"/>
-                  </svg>
-                </div>
-                <div class="tile-caption-row">
-                  <div class="tile-title-text">桌上冰球</div>
-                  <div class="tile-sub-text">极限滑板对冲</div>
-                </div>
-              </div>
-              <div class="metro-tile-back">
-                <div class="tile-back-title">桌上空中冰球</div>
-                <div class="tile-back-stats">
-                  <div class="tile-stat-row"><span>碰撞</span><span>零阻力气垫滑行</span></div>
-                  <div class="tile-stat-row"><span>击球</span><span>瞬间加速度反扑</span></div>
-                </div>
-                <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('HOCKEY')">开玩 ▶</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- 22. TANKTROUBLE (坦克动荡 · 2x1 Wide 经典长条 + Push 通知) -->
+          <!-- 21. TANKTROUBLE (坦克动荡 · 2x1 Wide 经典长条 + Push 通知) -->
           <div class="game-card tile-wide tile-accent-tanktrouble anim-push" data-cat="PHYSICS" data-players="2" data-game-key="TANKTROUBLE" data-genre="ARCADE" data-online="true" data-keywords="tanktrouble 坦克动荡 迷宫坦克 弹道 反弹炮 物理 经典 联机 2人 2player 双人 3人 4人 四人 tkdd 1人 二人" onclick="enterGame('TANKTROUBLE')">
             <div class="metro-tile-flipper">
               <div class="metro-tile-front">
@@ -819,7 +790,63 @@ def generate_index_html():
             </div>
           </div>
 
-          <!-- 23. LIARSDICE (皇家大话骰 · 1x1 Medium 灵动方块) -->
+          <!-- 22. HOCKEY (桌上空中冰球 · 1x1 Medium 灵动方块) -->
+          <div class="game-card tile-medium tile-accent-hockey" data-cat="PHYSICS" data-players="2" data-game-key="HOCKEY" data-genre="ARCADE" data-online="false" data-keywords="hockey 桌上空中冰球 冰球 气垫球 碰撞 反弹 极速 手速 物理 2人 2player 双人 zsbq 1人 二人" onclick="enterGame('HOCKEY')">
+            <div class="metro-tile-flipper">
+              <div class="metro-tile-front">
+                <div class="tile-badge-row"><span class="tile-badge-num">🏒 极速</span></div>
+                <div class="tile-icon-canvas">
+                  <svg viewBox="0 0 48 48" class="metro-icon-svg">
+                    <circle cx="16" cy="24" r="10"/>
+                    <circle cx="16" cy="24" r="5" fill="#000" opacity="0.3"/>
+                    <circle cx="36" cy="24" r="5"/>
+                    <path fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="2,2" d="M26 14v20"/>
+                  </svg>
+                </div>
+                <div class="tile-caption-row">
+                  <div class="tile-title-text">桌上冰球</div>
+                  <div class="tile-sub-text">极限滑板对冲</div>
+                </div>
+              </div>
+              <div class="metro-tile-back">
+                <div class="tile-back-title">桌上空中冰球</div>
+                <div class="tile-back-stats">
+                  <div class="tile-stat-row"><span>碰撞</span><span>零阻力气垫滑行</span></div>
+                  <div class="tile-stat-row"><span>击球</span><span>瞬间加速度反扑</span></div>
+                </div>
+                <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('HOCKEY')">开玩 ▶</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 23. IAIDO (一刀入魂 · 1x1 Medium 灵动方块) -->
+          <div class="game-card tile-medium tile-accent-iaido" data-cat="REFLEX" data-players="2" data-game-key="IAIDO" data-genre="PARTY" data-online="false" data-keywords="iaido 一刀入魂 拔刀居合斩 居合 拔刀 反应 手速 极限 毫秒 胜负 决斗 2人 2player 双人 ydrh 极限手速 1人 二人" onclick="enterGame('IAIDO')">
+            <div class="metro-tile-flipper">
+              <div class="metro-tile-front">
+                <div class="tile-badge-row"><span class="tile-badge-num">⚡ 毫秒</span></div>
+                <div class="tile-icon-canvas">
+                  <svg viewBox="0 0 48 48" class="metro-icon-svg">
+                    <path d="M42 6c-1 0-14 3-24 13S6 37 6 38l4 4c1 0 8-1 19-12S42 7 42 6zm-28 32l-4-4 2-2 4 4-2 2z"/>
+                    <path opacity="0.6" d="M22 14l12 12-2 2-12-12z"/>
+                  </svg>
+                </div>
+                <div class="tile-caption-row">
+                  <div class="tile-title-text">一刀入魂</div>
+                  <div class="tile-sub-text">居合拔刀闪念</div>
+                </div>
+              </div>
+              <div class="metro-tile-back">
+                <div class="tile-back-title">一刀入魂</div>
+                <div class="tile-back-stats">
+                  <div class="tile-stat-row"><span>精度</span><span>毫秒级反应裁判</span></div>
+                  <div class="tile-stat-row"><span>失误</span><span>抢跑抢按判负</span></div>
+                </div>
+                <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('IAIDO')">开玩 ▶</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 24. LIARSDICE (皇家大话骰 · 1x1 Medium 灵动方块) -->
           <div class="game-card tile-medium tile-accent-liarsdice" data-cat="MIND" data-players="2" data-game-key="LIARSDICE" data-genre="PARTY" data-online="false" data-keywords="liarsdice 皇家大话骰 大话骰 吹牛骰子 骰子 摇骰 酒桌 破冰 吹牛 心理 2人 2player 双人 dhs 1人 二人" onclick="enterGame('LIARSDICE')">
             <div class="metro-tile-flipper">
               <div class="metro-tile-front">
@@ -849,34 +876,37 @@ def generate_index_html():
             </div>
           </div>
 
-          <!-- 24. IAIDO (一刀入魂 · 1x1 Medium 灵动方块) -->
-          <div class="game-card tile-medium tile-accent-iaido" data-cat="REFLEX" data-players="2" data-game-key="IAIDO" data-genre="PARTY" data-online="false" data-keywords="iaido 一刀入魂 拔刀居合斩 居合 拔刀 反应 手速 极限 毫秒 胜负 决斗 2人 2player 双人 ydrh 极限手速 1人 二人" onclick="enterGame('IAIDO')">
+          <!-- 25. TANK (经典红蓝坦克 · 2x1 Wide 经典长条) -->
+          <div class="game-card tile-wide tile-accent-tank" data-cat="PHYSICS" data-players="2" data-game-key="TANK" data-genre="ARCADE" data-online="false" data-keywords="tank 经典红蓝坦克 坦克大战 坦克 对战 射击 双人 物理 2人 2player tkdz 1人 二人" onclick="enterGame('TANK')">
             <div class="metro-tile-flipper">
               <div class="metro-tile-front">
-                <div class="tile-badge-row"><span class="tile-badge-num">⚡ 毫秒</span></div>
+                <div class="tile-badge-row"><span class="tile-badge-num">⚔️ 2P 对战</span></div>
                 <div class="tile-icon-canvas">
                   <svg viewBox="0 0 48 48" class="metro-icon-svg">
-                    <path d="M42 6c-1 0-14 3-24 13S6 37 6 38l4 4c1 0 8-1 19-12S42 7 42 6zm-28 32l-4-4 2-2 4 4-2 2z"/>
-                    <path opacity="0.6" d="M22 14l12 12-2 2-12-12z"/>
+                    <rect x="12" y="14" width="24" height="24" rx="2"/>
+                    <rect x="22" y="6" width="4" height="12"/>
+                    <rect x="8" y="10" width="5" height="30" rx="2"/>
+                    <rect x="35" y="10" width="5" height="30" rx="2"/>
+                    <circle cx="24" cy="26" r="5" fill="#000" opacity="0.3"/>
                   </svg>
                 </div>
                 <div class="tile-caption-row">
-                  <div class="tile-title-text">一刀入魂</div>
-                  <div class="tile-sub-text">居合拔刀闪念</div>
+                  <div class="tile-title-text">红蓝坦克</div>
+                  <div class="tile-sub-text">2人同屏 · 经典对向战车</div>
                 </div>
               </div>
               <div class="metro-tile-back">
-                <div class="tile-back-title">一刀入魂</div>
+                <div class="tile-back-title">经典红蓝坦克</div>
                 <div class="tile-back-stats">
-                  <div class="tile-stat-row"><span>精度</span><span>毫秒级反应裁判</span></div>
-                  <div class="tile-stat-row"><span>失误</span><span>抢跑抢按判负</span></div>
+                  <div class="tile-stat-row"><span>机动</span><span>经典双人对向战车</span></div>
+                  <div class="tile-stat-row"><span>装甲</span><span>掩体摧毁与炮击</span></div>
                 </div>
-                <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('IAIDO')">开玩 ▶</button>
+                <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('TANK')">开玩 ▶</button>
               </div>
             </div>
           </div>
 
-          <!-- 25. SUMO (相扑之拳 1x1) -->
+          <!-- 26. SUMO (相扑之拳 · 1x1 Medium 灵动方块) -->
           <div class="game-card tile-medium tile-accent-sumo" data-cat="PHYSICS" data-players="2" data-game-key="SUMO" data-genre="ARCADE" data-online="false" data-keywords="sumo 相扑之拳 相扑 格斗 推搡 擂台 物理 碰撞 手速 2人 2player 双人 xpzq 1人 二人" onclick="enterGame('SUMO')">
             <div class="metro-tile-flipper">
               <div class="metro-tile-front">
@@ -903,37 +933,7 @@ def generate_index_html():
             </div>
           </div>
 
-          <!-- 26. TANK (经典红蓝坦克 1x1) -->
-          <div class="game-card tile-medium tile-accent-tank" data-cat="PHYSICS" data-players="2" data-game-key="TANK" data-genre="ARCADE" data-online="false" data-keywords="tank 经典红蓝坦克 坦克大战 坦克 对战 射击 双人 物理 2人 2player tkdz 1人 二人" onclick="enterGame('TANK')">
-            <div class="metro-tile-flipper">
-              <div class="metro-tile-front">
-                <div class="tile-badge-row"><span class="tile-badge-num">⚔️ 对战</span></div>
-                <div class="tile-icon-canvas">
-                  <svg viewBox="0 0 48 48" class="metro-icon-svg">
-                    <rect x="12" y="14" width="24" height="24" rx="2"/>
-                    <rect x="22" y="6" width="4" height="12"/>
-                    <rect x="8" y="10" width="5" height="30" rx="2"/>
-                    <rect x="35" y="10" width="5" height="30" rx="2"/>
-                    <circle cx="24" cy="26" r="5" fill="#000" opacity="0.3"/>
-                  </svg>
-                </div>
-                <div class="tile-caption-row">
-                  <div class="tile-title-text">红蓝坦克</div>
-                  <div class="tile-sub-text">双人对攻战车</div>
-                </div>
-              </div>
-              <div class="metro-tile-back">
-                <div class="tile-back-title">经典红蓝坦克</div>
-                <div class="tile-back-stats">
-                  <div class="tile-stat-row"><span>机动</span><span>经典双人对向战车</span></div>
-                  <div class="tile-stat-row"><span>装甲</span><span>掩体摧毁与炮击</span></div>
-                </div>
-                <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('TANK')">开玩 ▶</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- 27. STACK (3D 极光叠叠高 1x1) -->
+          <!-- 27. STACK (3D 极光叠叠高 · 1x1 Medium 灵动方块) -->
           <div class="game-card tile-medium tile-accent-stack" data-cat="REFLEX" data-players="1" data-game-key="STACK" data-genre="PARTY" data-online="false" data-keywords="stack 3D极光叠叠高 叠叠高 堆叠 节奏 音乐 削块 解压 单人 1人 1player 单人挑战 ddg 极限手速 二人" onclick="enterGame('STACK')">
             <div class="metro-tile-flipper">
               <div class="metro-tile-front">
@@ -953,12 +953,13 @@ def generate_index_html():
                 <div class="tile-back-title">3D 极光叠叠高</div>
                 <div class="tile-back-stats">
                   <div class="tile-stat-row"><span>模式</span><span>单人解压反应</span></div>
-                  <div class="tile-stat-row"><span>连击</span><span>严丝合缝天籁和弦</span></div>
+                  <div class="tile-stat-row"><span>音乐</span><span>连续完美和弦音</span></div>
                 </div>
                 <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('STACK')">开玩 ▶</button>
               </div>
             </div>
           </div>
+
 
         </div>
       </section>
@@ -1276,7 +1277,8 @@ def generate_index_html():
     }
 
     function syncSoundUI(enabled) {
-      const isMuted = (enabled !== undefined) ? !enabled : (window.AUDIO && window.AUDIO.isMuted);
+      const isMuted = (enabled !== undefined) ? !enabled : (window.AUDIO && window.AUDIO.enabled === false);
+
       const icon = isMuted ? '🔇' : '🔊';
       const disp = document.getElementById('sound-icon-display');
       if (disp) disp.textContent = icon;

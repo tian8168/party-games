@@ -148,6 +148,20 @@
       try {
         localStorage.setItem('win8_metro_theme', themeName);
       } catch(e) {}
+
+      // 实时同步移动端 / 浏览器顶部状态栏与地址栏主题色
+      const themeColors = {
+        'theme-slate': '#11151c',
+        'theme-teal': '#004652',
+        'theme-indigo': '#29123f',
+        'theme-emerald': '#0a3818',
+        'theme-gold': '#382502',
+        'theme-crimson': '#3e0c17'
+      };
+      const meta = document.querySelector('meta[name="theme-color"]');
+      if (meta && themeColors[themeName]) {
+        meta.setAttribute('content', themeColors[themeName]);
+      }
     },
 
     cycleNextTheme() {
@@ -172,6 +186,7 @@
     // 2b. Web Audio 微秒级合成原生导航音效 (Sonic Feedback)
     // ========================================================================
     playSonic(type) {
+      if (window.AUDIO && window.AUDIO.enabled === false) return;
       try {
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
         if (!this.audioCtx && AudioCtx) {
@@ -215,63 +230,51 @@
     // 3. 3D Perspective Tilt 触控/光标倾斜真实物理反馈与 Reveal Highlight 光圈
     // ========================================================================
     initTiltPhysics() {
-      const isTouch = 'ontouchstart' in window;
-      const startEvt = isTouch ? 'touchstart' : 'pointerdown';
-      const moveEvt  = isTouch ? 'touchmove'  : 'pointermove';
-      const endEvt   = isTouch ? 'touchend'   : 'pointerup';
-      const cancelEvt= isTouch ? 'touchcancel': 'pointercancel';
-
-      // Reveal Highlight: 鼠标悬停移动时投射冷白高光位置
-      if (!isTouch) {
-        document.addEventListener('pointermove', (e) => {
-          const card = e.target.closest('.game-card');
+      // Reveal Highlight: 鼠标/笔指针悬停移动时投射冷白高光位置
+      document.addEventListener('pointermove', (e) => {
+        if (e.pointerType === 'mouse' || e.pointerType === 'pen') {
+          const card = e.target.closest('.game-card, .metro-tile');
           if (card) {
             const rect = card.getBoundingClientRect();
             card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
             card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
           }
-        }, { passive: true });
-      }
+        }
+      }, { passive: true });
 
-      document.addEventListener(startEvt, (e) => {
-        const card = e.target.closest('.game-card');
+      // 统一 Pointer Events 架构 (完美适配鼠标、触摸屏及 Surface 二合一设备)
+      document.addEventListener('pointerdown', (e) => {
+        const card = e.target.closest('.game-card, .metro-tile');
         if (!card) return;
 
         card.classList.add('tile-pressed');
         this.playSonic('press');
         this.applyTilt(card, e);
 
-        const onMove = (moveEvtObj) => {
-          this.applyTilt(card, moveEvtObj);
+        const onMove = (moveEvt) => {
+          this.applyTilt(card, moveEvt);
         };
 
         const onRelease = () => {
           card.classList.remove('tile-pressed');
           card.style.transform = '';
           this.playSonic('release');
-          document.removeEventListener(moveEvt, onMove);
-          document.removeEventListener(endEvt, onRelease);
-          document.removeEventListener(cancelEvt, onRelease);
-          if (!isTouch) document.removeEventListener('pointerleave', onRelease);
+          document.removeEventListener('pointermove', onMove);
+          document.removeEventListener('pointerup', onRelease);
+          document.removeEventListener('pointercancel', onRelease);
         };
 
-        document.addEventListener(moveEvt, onMove, { passive: true });
-        document.addEventListener(endEvt, onRelease, { once: true });
-        document.addEventListener(cancelEvt, onRelease, { once: true });
-        if (!isTouch) document.removeEventListener('pointerleave', onRelease);
+        document.addEventListener('pointermove', onMove, { passive: true });
+        document.addEventListener('pointerup', onRelease, { once: true });
+        document.addEventListener('pointercancel', onRelease, { once: true });
       }, { passive: true });
     },
 
     applyTilt(card, e) {
-      if (!card) return;
+      if (!card || e.clientX === undefined || e.clientY === undefined) return;
       const rect = card.getBoundingClientRect();
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-
-      if (!clientX || !clientY) return;
-
-      const x = clientX - rect.left;
-      const y = clientY - rect.top;
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
 
       card.style.setProperty('--mouse-x', `${x}px`);
       card.style.setProperty('--mouse-y', `${y}px`);
@@ -289,6 +292,7 @@
 
       card.style.transform = `perspective(600px) rotateX(${rotX.toFixed(2)}deg) rotateY(${rotY.toFixed(2)}deg) scale(0.97)`;
     },
+
 
     // ========================================================================
     // 4. 横向滚轮与全景平滑平移 (Surface Pro & PC Mouse Wheel Horizontal Scroll)
@@ -336,8 +340,12 @@
     // 5. 动态磁贴 (Live Tiles) 周期性翻转与 Push/Slide 推拉调度系统
     // ========================================================================
     initIntersectionObserver() {
-      if (!('IntersectionObserver' in window)) return;
+      if (!('IntersectionObserver' in window)) {
+        document.querySelectorAll('.game-card').forEach(c => this.visibleCards.add(c));
+        return;
+      }
       this.observer = new IntersectionObserver((entries) => {
+
         entries.forEach(entry => {
           const card = entry.target;
           if (entry.isIntersecting) {

@@ -70,8 +70,9 @@ ALL_26_GAMES = [
     ('IAIDO', 'tile-medium', 'tile-accent-iaido', 'REFLEX', '2'),
     ('LIARSDICE', 'tile-medium', 'tile-accent-liarsdice', 'MIND', '2'),
     ('SUMO', 'tile-medium', 'tile-accent-sumo', 'PHYSICS', '2'),
-    ('TANK', 'tile-medium', 'tile-accent-tank', 'PHYSICS', '2'),
+    ('TANK', 'tile-wide', 'tile-accent-tank', 'PHYSICS', '2'),
     ('STACK', 'tile-medium', 'tile-accent-stack', 'REFLEX', '1')
+
 ]
 
 if len(ALL_26_GAMES) != 26:
