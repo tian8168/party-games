@@ -13,9 +13,8 @@ if sys.stdout.encoding != 'utf-8':
 HOST = "141.11.139.61"
 PORT = 27324
 USER = "root"
-PASSWORD = "z.u9rQ_|}WH."
+KEY_PATH = r"C:\Users\admin\.ssh\id_ed25519_tian"
 
-# Complete modern server.py with /api/v1/metrics endpoint
 NEW_SERVER_CODE = r'''import os
 import sys
 import ssl
@@ -205,7 +204,8 @@ def collect_system_metrics():
         "sshd": False,
         "xray": False,
         "hysteria": False,
-        "clash_sub": True
+        "clash_sub": True,
+        "fail2ban": False
     }
     try:
         pids = [p for p in os.listdir("/proc") if p.isdigit()]
@@ -216,8 +216,27 @@ def collect_system_metrics():
                     if "sshd" in cmd: services["sshd"] = True
                     if "xray" in cmd: services["xray"] = True
                     if "hysteria" in cmd: services["hysteria"] = True
+                    if "fail2ban" in cmd: services["fail2ban"] = True
             except Exception:
                 pass
+    except Exception:
+        pass
+
+    # 8. Security / Fail2ban Banned IPs
+    banned_ips = set()
+    try:
+        with open("/var/log/fail2ban.log", "r") as f:
+            for line in f:
+                if "Ban " in line:
+                    parts = line.split("Ban ")
+                    if len(parts) > 1:
+                        ip = parts[1].strip().split()[0]
+                        banned_ips.add(ip)
+                elif "Unban " in line:
+                    parts = line.split("Unban ")
+                    if len(parts) > 1:
+                        ip = parts[1].strip().split()[0]
+                        banned_ips.discard(ip)
     except Exception:
         pass
 
@@ -252,7 +271,12 @@ def collect_system_metrics():
         },
         "tcp": tcp_states,
         "congestion_control": tcp_cc,
-        "services": services
+        "services": services,
+        "security": {
+            "fail2ban_active": services["fail2ban"],
+            "banned_count": len(banned_ips),
+            "banned_ips": list(banned_ips)
+        }
     }
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
@@ -481,13 +505,14 @@ if __name__ == "__main__":
 '''
 
 def patch_and_restart():
-    print("Connecting to Tokyo VPS...")
+    print("Connecting to Tokyo VPS via Ed25519 key...")
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    ssh.connect(HOST, port=PORT, username=USER, password=PASSWORD, timeout=10)
+    key = paramiko.Ed25519Key.from_private_key_file(KEY_PATH)
+    ssh.connect(HOST, port=PORT, username=USER, pkey=key, timeout=10)
 
     sftp = ssh.open_sftp()
-    print("Uploading updated server.py...")
+    print("Uploading updated server.py with fail2ban security telemetry...")
     with sftp.open("/opt/clash-sub/server.py", "w") as f:
         f.write(NEW_SERVER_CODE)
     sftp.close()
@@ -503,7 +528,8 @@ def patch_and_restart():
     print("\nTesting /api/v1/metrics locally on VPS...")
     stdin, stdout, stderr = ssh.exec_command(test_cmd)
     metrics_json = stdout.read().decode('utf-8')
-    print("Metrics Output:\n", metrics_json[:500] + ("..." if len(metrics_json) > 500 else ""))
+    parsed = json.loads(metrics_json)
+    print("Security Telemetry Block:\n", json.dumps(parsed.get('security'), indent=2))
 
     ssh.close()
 

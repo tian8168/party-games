@@ -678,6 +678,11 @@
               <td>58443 / TCP</td>
               <td><span class="badge-status badge-ok" id="svc-sub">ONLINE</span></td>
             </tr>
+            <tr>
+              <td>Fail2ban 入侵防御 (sshd)</td>
+              <td>Netfilter / Jail</td>
+              <td><span class="badge-status badge-ok" id="svc-f2b">ACTIVE (1 BANNED)</span></td>
+            </tr>
           </tbody>
         </table>
 
@@ -932,12 +937,23 @@
         document.getElementById('tcp-cc-badge').textContent = `${data.congestion_control.toUpperCase()} 拥塞控制`;
       }
 
-      // 4. 服务
+      // 4. 服务与入侵防御
       if (data.services) {
         setSvcBadge('svc-sshd', data.services.sshd);
         setSvcBadge('svc-xray', data.services.xray);
         setSvcBadge('svc-hysteria', data.services.hysteria);
         setSvcBadge('svc-sub', data.services.clash_sub);
+      }
+      if (data.security) {
+        const f2b = document.getElementById('svc-f2b');
+        if (f2b) {
+          const count = data.security.banned_count || 0;
+          f2b.textContent = data.security.fail2ban_active ? `ACTIVE (${count} BANNED)` : 'INACTIVE';
+          f2b.className = `badge-status ${data.security.fail2ban_active ? 'badge-ok' : 'badge-warn'}`;
+          if (data.security.banned_ips && data.security.banned_ips.length > 0) {
+            f2b.title = `封锁源: ${data.security.banned_ips.join(', ')}`;
+          }
+        }
       }
     }
 
