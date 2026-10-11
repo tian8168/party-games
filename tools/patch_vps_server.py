@@ -15,6 +15,9 @@ PORT = 27324
 USER = "root"
 KEY_PATH = r"C:\Users\admin\.ssh\id_ed25519_tian"
 
+MASTER_TOKEN = "2ed5d9e3a9b258c8d6b33a5addfa43b9e590e6f3e4185679d8c7fc8c542f79f8"
+TELEMETRY_TOKEN = "f3a14c48a0c1f64151547915a17dd7da40aa17d7f89f03d5d6dd0e628971a851"
+
 NEW_SERVER_CODE = r'''import os
 import sys
 import ssl
@@ -149,71 +152,55 @@ def collect_system_metrics():
         if last_net_sample["time"] > 0:
             dt = now - last_net_sample["time"]
             if dt > 0:
-                rx_rate_kbps = max(0.0, (rx_bytes - last_net_sample["rx"]) / 1024.0 / dt)
-                tx_rate_kbps = max(0.0, (tx_bytes - last_net_sample["tx"]) / 1024.0 / dt)
+                rx_rate_kbps = max(0.0, (rx_bytes - last_net_sample["rx"]) * 8.0 / 1024.0 / dt)
+                tx_rate_kbps = max(0.0, (tx_bytes - last_net_sample["tx"]) * 8.0 / 1024.0 / dt)
         last_net_sample = {"time": now, "rx": rx_bytes, "tx": tx_bytes}
     except Exception:
         pass
 
-    # 4. TCP Socket States
-    tcp_states = {
-        "ESTABLISHED": 0, "SYN_SENT": 0, "SYN_RECV": 0,
-        "FIN_WAIT1": 0, "FIN_WAIT2": 0, "TIME_WAIT": 0,
-        "CLOSE": 0, "CLOSE_WAIT": 0, "LAST_ACK": 0,
-        "LISTEN": 0, "CLOSING": 0, "TOTAL": 0
-    }
-    state_map = {
-        "01": "ESTABLISHED", "02": "SYN_SENT", "03": "SYN_RECV",
-        "04": "FIN_WAIT1", "05": "FIN_WAIT2", "06": "TIME_WAIT",
-        "07": "CLOSE", "08": "CLOSE_WAIT", "09": "LAST_ACK",
-        "0A": "LISTEN", "0B": "CLOSING"
-    }
-    for proc_tcp in ["/proc/net/tcp", "/proc/net/tcp6"]:
-        try:
-            with open(proc_tcp, "r") as f:
-                f.readline()
-                for line in f:
-                    parts = line.split()
-                    if len(parts) > 3:
-                        st = parts[3].upper()
-                        name = state_map.get(st)
-                        if name:
-                            tcp_states[name] += 1
-                            tcp_states["TOTAL"] += 1
-        except Exception:
-            pass
+    # 4. TCP Connections
+    tcp_states = {"established": 0, "syn_sent": 0, "syn_recv": 0, "fin_wait1": 0, "fin_wait2": 0, "time_wait": 0, "close": 0, "close_wait": 0, "last_ack": 0, "listen": 0, "closing": 0}
+    state_map = {"01": "established", "02": "syn_sent", "03": "syn_recv", "04": "fin_wait1", "05": "fin_wait2", "06": "time_wait", "07": "close", "08": "close_wait", "09": "last_ack", "0A": "listen", "0B": "closing"}
+    try:
+        for proto_file in ["/proc/net/tcp", "/proc/net/tcp6"]:
+            if os.path.exists(proto_file):
+                with open(proto_file, "r") as f:
+                    next(f)
+                    for line in f:
+                        parts = line.strip().split()
+                        if len(parts) > 3:
+                            st = parts[3]
+                            name = state_map.get(st)
+                            if name in tcp_states:
+                                tcp_states[name] += 1
+    except Exception:
+        pass
 
-    # 5. TCP Congestion Control
-    tcp_cc = "bbr"
+    # 5. Uptime
+    uptime_sec = 0
+    try:
+        with open("/proc/uptime", "r") as f:
+            uptime_sec = int(float(f.readline().split()[0]))
+    except Exception:
+        pass
+
+    # 6. TCP Congestion Control
+    tcp_cc = "unknown"
     try:
         with open("/proc/sys/net/ipv4/tcp_congestion_control", "r") as f:
             tcp_cc = f.read().strip()
     except Exception:
         pass
 
-    # 6. Uptime
-    uptime_sec = 0
+    # 7. Core Daemon Status
+    services = {"clash_sub": True, "xray": False, "hysteria": False, "fail2ban": False}
     try:
-        with open("/proc/uptime", "r") as f:
-            uptime_sec = int(float(f.read().split()[0]))
-    except Exception:
-        pass
-
-    # 7. Services
-    services = {
-        "sshd": False,
-        "xray": False,
-        "hysteria": False,
-        "clash_sub": True,
-        "fail2ban": False
-    }
-    try:
-        pids = [p for p in os.listdir("/proc") if p.isdigit()]
-        for pid in pids:
+        for pid in os.listdir("/proc"):
+            if not pid.isdigit():
+                continue
             try:
                 with open(f"/proc/{pid}/cmdline", "r") as f:
                     cmd = f.read()
-                    if "sshd" in cmd: services["sshd"] = True
                     if "xray" in cmd: services["xray"] = True
                     if "hysteria" in cmd: services["hysteria"] = True
                     if "fail2ban" in cmd: services["fail2ban"] = True
@@ -295,10 +282,7 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
                 connstream.settimeout(15.0)
                 return connstream, from_addr
             except Exception:
-                try:
-                    newsock.close()
-                except Exception:
-                    pass
+                newsock.close()
                 raise
         else:
             newsock.settimeout(5.0)
@@ -335,16 +319,24 @@ class SubscriptionHandler(BaseHTTPRequestHandler):
         params = parse_qs(parsed.query)
         token = params.get("token", [""])[0]
 
-        # 1. Metrics API Route
+        # 1. Metrics API Route (允许专用只读遥测 Token 或 Master Token 访问)
         if parsed.path == METRICS_PATH:
             users = get_users()
-            target_user = None
+            authorized = False
             for uname, udata in users.items():
-                if udata.get("token") == token:
-                    target_user = (uname, udata)
+                if not udata.get("enabled", False):
+                    continue
+                valid_tokens = [udata.get("token")]
+                if "metrics_token" in udata and udata.get("metrics_token"):
+                    valid_tokens.append(udata.get("metrics_token"))
+                if "metrics_tokens" in udata and isinstance(udata.get("metrics_tokens"), list):
+                    valid_tokens.extend(udata.get("metrics_tokens"))
+                
+                if token and token in valid_tokens:
+                    authorized = True
                     break
 
-            if not target_user:
+            if not authorized:
                 self.send_response(403)
                 self.send_header("Content-Type", "application/json")
                 self.send_header("Access-Control-Allow-Origin", "*")
@@ -370,9 +362,35 @@ class SubscriptionHandler(BaseHTTPRequestHandler):
             self.wfile.flush()
             return
 
-        # 2. Subscription API Route
+        # 2. Subscription API Route (严格最小权限：仅允许 Master Token，严禁任何 Telemetry Token)
         elif parsed.path == TARGET_PATH:
             users = get_users()
+            
+            # 安全防线：若请求携带的是遥测专用 Token，坚决阻断并返回 403 Forbidden，绝不泄漏出站节点与密钥
+            is_telemetry_token = False
+            for uname, udata in users.items():
+                telemetry_tokens = []
+                if "metrics_token" in udata and udata.get("metrics_token"):
+                    telemetry_tokens.append(udata.get("metrics_token"))
+                if "metrics_tokens" in udata and isinstance(udata.get("metrics_tokens"), list):
+                    telemetry_tokens.extend(udata.get("metrics_tokens"))
+                
+                if token and token in telemetry_tokens:
+                    is_telemetry_token = True
+                    break
+
+            if is_telemetry_token:
+                self.send_response(403)
+                self.send_header("Content-Type", "text/plain; charset=utf-8")
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.send_header("Connection", "close")
+                body = b"Forbidden: Telemetry token cannot access subscription profiles.\n"
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+                self.wfile.flush()
+                return
+
             target_user = None
             for uname, udata in users.items():
                 if udata.get("token") == token:
@@ -505,31 +523,102 @@ if __name__ == "__main__":
 '''
 
 def patch_and_restart():
-    print("Connecting to Tokyo VPS via Ed25519 key...")
+    print(f"Connecting to Tokyo VPS ({HOST}:{PORT}) via Ed25519 key...")
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     key = paramiko.Ed25519Key.from_private_key_file(KEY_PATH)
     ssh.connect(HOST, port=PORT, username=USER, pkey=key, timeout=10)
 
     sftp = ssh.open_sftp()
-    print("Uploading updated server.py with fail2ban security telemetry...")
+    
+    # 1. Update /opt/clash-sub/users.json with metrics_token
+    print("Fetching /opt/clash-sub/users.json...")
+    with sftp.open("/opt/clash-sub/users.json", "r") as f:
+        users_raw = f.read().decode('utf-8')
+    users = json.loads(users_raw)
+    
+    if "tian" in users:
+        users["tian"]["metrics_token"] = TELEMETRY_TOKEN
+        print(f"Configured metrics_token for 'tian': {TELEMETRY_TOKEN[:12]}...")
+    
+    with sftp.open("/opt/clash-sub/users.json", "w") as f:
+        f.write(json.dumps(users, indent=2, ensure_ascii=False))
+    print("✓ users.json updated successfully.")
+
+    # 2. Upload updated server.py with separated permissions
+    print("Uploading updated server.py with least-privilege token model...")
     with sftp.open("/opt/clash-sub/server.py", "w") as f:
         f.write(NEW_SERVER_CODE)
     sftp.close()
+    print("✓ server.py uploaded successfully.")
 
+    # 3. Restart clash-sub.service
     print("Restarting clash-sub.service...")
     stdin, stdout, stderr = ssh.exec_command("systemctl restart clash-sub.service && sleep 1 && systemctl status clash-sub.service | head -n 12")
     res = stdout.read().decode('utf-8')
     print("Service Status:\n", res)
 
-    # Test the API endpoint directly via localhost curl
-    test_token = "2ed5d9e3a9b258c8d6b33a5addfa43b9e590e6f3e4185679d8c7fc8c542f79f8"
-    test_cmd = f"curl -k -s 'https://127.0.0.1:58443/api/v1/metrics?token={test_token}'"
-    print("\nTesting /api/v1/metrics locally on VPS...")
-    stdin, stdout, stderr = ssh.exec_command(test_cmd)
-    metrics_json = stdout.read().decode('utf-8')
-    parsed = json.loads(metrics_json)
-    print("Security Telemetry Block:\n", json.dumps(parsed.get('security'), indent=2))
+    # 4. Strict Protocol & RBAC Verification Matrix
+    print("\n========================================================")
+    print("🔒 RUNNING RBAC & ACCESS CONTROL VERIFICATION MATRIX")
+    print("========================================================")
+
+    # Test 1: Telemetry Token -> /api/v1/metrics (MUST PASS 200)
+    cmd1 = f"curl -k -s -w '\\nHTTP_STATUS:%{{http_code}}' 'https://127.0.0.1:58443/api/v1/metrics?token={TELEMETRY_TOKEN}'"
+    stdin, stdout, stderr = ssh.exec_command(cmd1)
+    out1 = stdout.read().decode('utf-8')
+    status1 = out1.strip().split("HTTP_STATUS:")[-1]
+    is_json1 = '"status": "online"' in out1
+    print(f"[TEST 1] Telemetry Token -> /api/v1/metrics: Status={status1}, ValidJSON={is_json1}")
+    assert status1 == "200" and is_json1, f"Test 1 Failed: {out1}"
+    print("  ✓ PASSED: Telemetry token successfully accesses metrics.")
+
+    # Test 2: Telemetry Token -> /api/v1/sub (MUST BE REJECTED 403)
+    cmd2 = f"curl -k -s -w '\\nHTTP_STATUS:%{{http_code}}' 'https://127.0.0.1:58443/api/v1/sub?token={TELEMETRY_TOKEN}'"
+    stdin, stdout, stderr = ssh.exec_command(cmd2)
+    out2 = stdout.read().decode('utf-8')
+    status2 = out2.strip().split("HTTP_STATUS:")[-1]
+    is_forbidden2 = "Forbidden" in out2
+    print(f"[TEST 2] Telemetry Token -> /api/v1/sub: Status={status2}, ContainsForbidden={is_forbidden2}")
+    assert status2 == "403" and is_forbidden2, f"Test 2 Failed: {out2}"
+    print("  ✓ PASSED: Telemetry token strictly blocked from subscription profiles (403 Forbidden)!")
+
+    # Test 3: Master Token -> /api/v1/sub (MUST PASS 200 YAML)
+    cmd3 = f"curl -k -s -w '\\nHTTP_STATUS:%{{http_code}}' 'https://127.0.0.1:58443/api/v1/sub?token={MASTER_TOKEN}'"
+    stdin, stdout, stderr = ssh.exec_command(cmd3)
+    out3 = stdout.read().decode('utf-8')
+    status3 = out3.strip().split("HTTP_STATUS:")[-1]
+    is_yaml3 = "proxies:" in out3
+    print(f"[TEST 3] Master Token -> /api/v1/sub: Status={status3}, ContainsProxies={is_yaml3}")
+    assert status3 == "200" and is_yaml3, f"Test 3 Failed: {out3}"
+    print("  ✓ PASSED: Master token continues to serve client proxies seamlessly.")
+
+    # Test 4: Master Token -> /api/v1/metrics (MUST PASS 200)
+    cmd4 = f"curl -k -s -w '\\nHTTP_STATUS:%{{http_code}}' 'https://127.0.0.1:58443/api/v1/metrics?token={MASTER_TOKEN}'"
+    stdin, stdout, stderr = ssh.exec_command(cmd4)
+    out4 = stdout.read().decode('utf-8')
+    status4 = out4.strip().split("HTTP_STATUS:")[-1]
+    print(f"[TEST 4] Master Token -> /api/v1/metrics: Status={status4}")
+    assert status4 == "200", f"Test 4 Failed: {out4}"
+    print("  ✓ PASSED: Master token maintains admin supervisory access.")
+
+    # Test 5: Invalid Token -> /api/v1/metrics & /api/v1/sub (MUST FAIL)
+    cmd5a = f"curl -k -s -w '\\nHTTP_STATUS:%{{http_code}}' 'https://127.0.0.1:58443/api/v1/metrics?token=attacker_fake_token_123'"
+    stdin, stdout, stderr = ssh.exec_command(cmd5a)
+    out5a = stdout.read().decode('utf-8')
+    status5a = out5a.strip().split("HTTP_STATUS:")[-1]
+
+    cmd5b = f"curl -k -s -w '\\nHTTP_STATUS:%{{http_code}}' 'https://127.0.0.1:58443/api/v1/sub?token=attacker_fake_token_123'"
+    stdin, stdout, stderr = ssh.exec_command(cmd5b)
+    out5b = stdout.read().decode('utf-8')
+    status5b = out5b.strip().split("HTTP_STATUS:")[-1]
+    print(f"[TEST 5] Invalid Token -> /metrics: {status5a}, /sub: {status5b}")
+    assert status5a == "403" and status5b == "404", f"Test 5 Failed"
+    print("  ✓ PASSED: Invalid tokens reliably rejected.")
+
+    print("\n========================================================")
+    print("🎉 ALL SECURITY RBAC TESTS PASSED WITH 100% COMPLIANCE!")
+    print("========================================================")
 
     ssh.close()
 

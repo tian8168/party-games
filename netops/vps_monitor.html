@@ -687,7 +687,7 @@
         </table>
 
         <div style="background: rgba(255,255,255,0.03); border-radius: 4px; padding: 10px; font-size: 0.75rem; color: #94a3b8; line-height: 1.5;">
-          💡 <strong>只读沙箱架构说明</strong>：遥测端点基于 <code>/api/v1/metrics</code> 提供安全 Token 鉴权，直接从 Linux 内核 <code>/proc</code> 虚拟文件系统获取物理指标，绝不执行写操作，与订阅服务共享同一经过 TLS 加密的 58443 网关。
+          💡 <strong>只读沙箱架构说明</strong>：遥测端点基于 <code>/api/v1/metrics</code> 提供最小特权只读 Token 鉴权（已与出站订阅私钥彻底隔离），直接从 Linux 内核 <code>/proc</code> 虚拟文件系统获取物理指标，绝不执行写操作。
         </div>
       </div>
     </div>
@@ -699,8 +699,8 @@
     // ========================================================================
     // 状态机与遥测参数
     // ========================================================================
-    const TOKEN = '2ed5d9e3a9b258c8d6b33a5addfa43b9e590e6f3e4185679d8c7fc8c542f79f8';
-    const PROBE_URL = `https://tian-proxy.duckdns.org:58443/api/v1/sub?token=${TOKEN}`;
+    const TOKEN = 'f3a14c48a0c1f64151547915a17dd7da40aa17d7f89f03d5d6dd0e628971a851';
+    const PROBE_URL = `https://tian-proxy.duckdns.org:58443/api/v1/metrics?token=${TOKEN}`;
     const METRICS_URL = `https://tian-proxy.duckdns.org:58443/api/v1/metrics?token=${TOKEN}`;
     const EXPECTED_IP = '141.11.139.61';
 

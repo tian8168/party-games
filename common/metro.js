@@ -592,7 +592,7 @@
         try {
           const controller = new AbortController();
           const tid = setTimeout(() => controller.abort(), 4000);
-          await fetch('https://tian-proxy.duckdns.org:58443/api/v1/sub?token=2ed5d9e3a9b258c8d6b33a5addfa43b9e590e6f3e4185679d8c7fc8c542f79f8&_heartbeat=1', {
+          await fetch('https://tian-proxy.duckdns.org:58443/api/v1/metrics?token=f3a14c48a0c1f64151547915a17dd7da40aa17d7f89f03d5d6dd0e628971a851&_heartbeat=1', {
             method: 'GET',
             mode: 'no-cors',
             cache: 'no-store',
