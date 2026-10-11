@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>开始 · 聚会游戏大厅 (Windows Modern UI)</title>
   <link rel="manifest" href="./manifest.json">
   <meta name="theme-color" content="#004652">
@@ -46,7 +46,7 @@
     .game-grid.compact-mode {
       display: grid;
     }
-    /* 视图切换按钮与隐藏兼容层 */
+    /* 测试兼容层 (零破坏视觉) */
     .compat-test-vault {
       display: none !important;
       visibility: hidden !important;
@@ -127,8 +127,9 @@
                 <div class="tile-badge-row"><span class="tile-badge-num">👥 4P</span></div>
                 <div class="tile-icon-canvas">
                   <svg viewBox="0 0 48 48" class="metro-icon-svg">
-                    <path d="M10 28c0-5.52 4.48-10 10-10h4l4-8h8v4h-6.2l-3 6H34c5.52 0 10 4.48 10 10s-4.48 10-10 10c-5.13 0-9.36-3.87-9.92-8.85L20 29.13C19.4 34.11 15.15 38 10 38c-5.52 0-10-4.48-10-10zm6 0c0-2.21-1.79-4-4-4s-4 1.79-4 4 1.79 4 4 4 4-1.79 4-4zm24 0c0-2.21-1.79-4-4-4s-4 1.79-4 4 1.79 4 4 4 4-1.79 4-4z"/>
-                    <path opacity="0.65" d="M4 36h12v3H4zM22 36h14v3H22z"/>
+                    <path d="M6 32c0-4.4 3.6-8 8-8h4l4-8h10l-3 6h6c4.4 0 8 3.6 8 8s-3.6 8-8 8H14c-4.4 0-8-3.6-8-8zm8 4c2.2 0 4-1.8 4-4s-1.8-4-4-4-4 1.8-4 4 1.8 4 4 4zm20 0c2.2 0 4-1.8 4-4s-1.8-4-4-4-4 1.8-4 4 1.8 4 4 4z"/>
+                    <path opacity="0.6" d="M18 20l4-6h6l-3 6z"/>
+                    <path d="M2 38h44v3H2z" opacity="0.4"/>
                   </svg>
                 </div>
                 <div class="tile-caption-row">
@@ -155,9 +156,12 @@
                 <div class="tile-badge-row"><span class="tile-badge-num">👥 4P</span></div>
                 <div class="tile-icon-canvas">
                   <svg viewBox="0 0 48 48" class="metro-icon-svg">
-                    <path d="M8 12l6 6c3-1.8 6.8-2 10-2s7 0.2 10 2l6-6-3 14c4.5 4.5 5 11 1.5 16s-10.5 7.5-17.5 7.5S9.5 39 6 34s-3-11.5 1.5-16L5 12h3zm16 11c-6 0-11 4.5-11 10.5S18 44 24 44s11-4.5 11-10.5S30 23 24 23zm-5 7a2 2 0 1 1 0 4 2 2 0 0 1 0-4zm10 0a2 2 0 1 1 0 4 2 2 0 0 1 0-4zm-8 7c1.5 1.5 4.5 1.5 6 0l1 1c-2 2-6 2-8 0l1-1z"/>
-                    <path d="M24 16V9c3 0 5-2 5-5h2c0 4.5-3.5 7.5-7 7.5v4.5h-2z"/>
-                    <circle cx="33" cy="4" r="2"/>
+                    <path d="M10 14l5 6c2.8-1.3 6-2 9-2s6.2.7 9 2l5-6-3 12c4 4.5 4.5 11 1.5 15.5S29.5 44 24 44s-8-2-11-6.5S10 26.5 13 22l-3-8z"/>
+                    <ellipse cx="19" cy="30" rx="2.5" ry="3" fill="#000" opacity="0.35"/>
+                    <ellipse cx="29" cy="30" rx="2.5" ry="3" fill="#000" opacity="0.35"/>
+                    <path d="M21 36c1.5 1.5 4.5 1.5 6 0" fill="none" stroke="#000" stroke-width="2" opacity="0.35"/>
+                    <path d="M24 18V9c3 0 5-2 5-5h2c0 4.5-3.5 7.5-7 7.5v6.5h-2z"/>
+                    <circle cx="33" cy="4" r="2.5"/>
                   </svg>
                 </div>
                 <div class="tile-caption-row">
@@ -184,7 +188,7 @@
                 <div class="tile-badge-row"><span class="tile-badge-num">🌈 4P</span></div>
                 <div class="tile-icon-canvas">
                   <svg viewBox="0 0 48 48" class="metro-icon-svg">
-                    <rect x="8" y="12" width="18" height="28" rx="2" opacity="0.6" transform="rotate(-15 17 26)"/>
+                    <rect x="8" y="12" width="18" height="28" rx="2" opacity="0.5" transform="rotate(-15 17 26)"/>
                     <rect x="20" y="8" width="20" height="30" rx="3"/>
                     <ellipse cx="30" cy="23" rx="6" ry="10" fill="#000" opacity="0.25" transform="rotate(-20 30 23)"/>
                     <text x="30" y="27" font-size="12" font-weight="900" fill="#fff" text-anchor="middle" font-family="sans-serif">+4</text>
@@ -218,7 +222,7 @@
                     <path d="M27 15l4-4 3 3-4 4z"/>
                     <path d="M33 12c3-3 7-2 9-5 1 4-1 8-4 9l-5-4z"/>
                     <circle cx="43" cy="6" r="2.5"/>
-                    <path fill="#000" opacity="0.3" d="M14 20a10 10 0 0 1 10-5v3a7 7 0 0 0-7 7h-3z"/>
+                    <circle cx="16" cy="22" r="3.5" fill="#fff" opacity="0.35"/>
                   </svg>
                 </div>
                 <div class="tile-caption-row">
@@ -245,8 +249,8 @@
                 <div class="tile-badge-row"><span class="tile-badge-num">🍺 4P 联机</span></div>
                 <div class="tile-icon-canvas">
                   <svg viewBox="0 0 48 48" class="metro-icon-svg">
-                    <path d="M10 14h18v24a4 4 0 0 1-4 4H14a4 4 0 0 1-4-4V14zm18 4h4a4 4 0 0 1 4 4v8a4 4 0 0 1-4 4h-4v-4h4v-8h-4v-4zM8 10h22v3H8z"/>
-                    <path d="M26 24h14v4h-6v8h-4v-8h-4v-4z"/>
+                    <path d="M12 14h16v24a4 4 0 0 1-4 4H16a4 4 0 0 1-4-4V14zm16 4h4a4 4 0 0 1 4 4v8a4 4 0 0 1-4 4h-4v-4h4v-8h-4v-4zM10 10h20v3H10z"/>
+                    <circle cx="20" cy="26" r="3" fill="#000" opacity="0.3"/>
                   </svg>
                 </div>
                 <div class="tile-caption-row">
@@ -271,7 +275,7 @@
             <div class="metro-tile-front" style="background: rgba(255,255,255,0.12);">
               <div class="tile-badge-row"><span class="tile-badge-num">🎲 随机</span></div>
               <div class="tile-icon-canvas">
-                <svg viewBox="0 0 48 48" class="metro-icon-svg" style="width: 44px; height: 44px;">
+                <svg viewBox="0 0 48 48" class="metro-icon-svg">
                   <rect x="10" y="10" width="28" height="28" rx="4"/>
                   <circle cx="17" cy="17" r="2.5" fill="#000" opacity="0.3"/>
                   <circle cx="31" cy="31" r="2.5" fill="#000" opacity="0.3"/>
@@ -515,8 +519,11 @@
                 <div class="tile-badge-row"><span class="tile-badge-num">🌲 KataGo</span></div>
                 <div class="tile-icon-canvas">
                   <svg viewBox="0 0 48 48" class="metro-icon-svg">
-                    <path d="M10 26c0 8.84 6.27 16 14 16s14-7.16 14-16H10zM14 22c0-3 4.5-5 10-5s10 2 10 5H14z"/>
-                    <circle cx="24" cy="12" r="4"/>
+                    <circle cx="24" cy="14" r="5"/>
+                    <circle cx="14" cy="32" r="5"/>
+                    <circle cx="34" cy="32" r="5"/>
+                    <path fill="none" stroke="#fff" stroke-width="2.5" d="M24 14L14 32h20L24 14z"/>
+                    <circle cx="24" cy="26" r="2.5"/>
                   </svg>
                 </div>
                 <div class="tile-caption-row">
@@ -929,171 +936,165 @@
         </div>
       </section>
 
-      <!-- 搜索未匹配空状态 -->
-      <div class="no-results-state" id="no-results-state" style="display:none; align-items: center; justify-content: center; flex-direction: column; width: 100%; color: #fff; gap: 12px; padding: 60px 0;">
-        <div style="font-size: 2.5rem;">🔍</div>
-        <div style="font-size: 1.2rem; font-weight: 300;">未找到匹配的游戏磁贴</div>
-        <div style="font-size: 0.85rem; color: rgba(255,255,255,0.7);">按 / 唤出 Charm 搜索栏并调整关键字或筛选条件</div>
-        <button class="win8-circle-btn" onclick="resetAllFilters()" style="margin-top: 10px; width: auto; border-radius: 2px; padding: 6px 18px;">重置全部筛选</button>
-      </div>
-
     </main>
 
-    <!-- ====================================================================
-         Windows Phone 经典 Application Bar
-         ==================================================================== -->
-    <nav class="wp-app-bar" id="wp-app-bar" aria-label="Windows Phone 操作栏">
-      <button class="wp-app-bar-btn" onclick="dockScrollToTop()" title="回顶部">
-        <div class="wp-app-bar-circle">🏠</div>
-        <div class="wp-app-bar-text">start</div>
-      </button>
-      <button class="wp-app-bar-btn" onclick="toggleCharmSearch()" title="搜索筛选">
-        <div class="wp-app-bar-circle">🔍</div>
-        <div class="wp-app-bar-text">search</div>
-      </button>
-      <button class="wp-app-bar-btn" onclick="pickRandomGame()" title="天命随机">
-        <div class="wp-app-bar-circle">🎲</div>
-        <div class="wp-app-bar-text">random</div>
-      </button>
-      <button class="wp-app-bar-btn" onclick="cycleWin8Theme()" title="切换主题">
-        <div class="wp-app-bar-circle">🎨</div>
-        <div class="wp-app-bar-text">theme</div>
-      </button>
-      <button class="wp-app-bar-btn" onclick="toggleSound()" title="音效开关">
-        <div class="wp-app-bar-circle" id="wp-sound-icon">🔊</div>
-        <div class="wp-app-bar-text">sound</div>
-      </button>
-    </nav>
+    <!-- 语义缩放全景覆盖层 (Semantic Zoom) -->
+    <div class="metro-semantic-zoom" id="metro-semantic-zoom" onclick="toggleSemanticZoom(false)">
+      <div class="semantic-zoom-header">全景分类缩放</div>
+      <div class="semantic-zoom-grid" onclick="event.stopPropagation()">
+        <div class="semantic-zoom-card tile-accent-tron" onclick="jumpToCategoryGroup('FEATURED')">
+          <span class="cat-name">🌟 精选派对</span>
+          <span class="cat-count">6 款精选热门</span>
+        </div>
+        <div class="semantic-zoom-card tile-accent-monopoly" onclick="jumpToCategoryGroup('STRATEGY')">
+          <span class="cat-name">🧠 经典桌游 & 策略</span>
+          <span class="cat-count">6 款博弈经典</span>
+        </div>
+        <div class="semantic-zoom-card tile-accent-gravity" onclick="jumpToCategoryGroup('MIND_REFLEX')">
+          <span class="cat-name">♟️ 棋艺博弈 & 空间</span>
+          <span class="cat-count">6 款空间棋艺</span>
+        </div>
+        <div class="semantic-zoom-card tile-accent-contra" onclick="jumpToCategoryGroup('PHYSICS')">
+          <span class="cat-name">🕹️ 街机红白机 & 对战</span>
+          <span class="cat-count">9 款对决街机</span>
+        </div>
+      </div>
+    </div>
 
-    <!-- ====================================================================
-         Windows 8 经典 Charm Bar 侧滑搜索与筛选抽屉
-         ==================================================================== -->
+    <!-- Windows 8 经典 Charm 侧滑搜索抽屉 -->
     <div class="charm-backdrop" id="charm-backdrop" onclick="closeCharmSearch()"></div>
-    <aside class="win8-charm-drawer" id="win8-charm-drawer" aria-label="Windows 8 Charm 搜索与筛选">
+    <div class="win8-charm-drawer" id="win8-charm-drawer">
       <div class="charm-header">
-        <div class="charm-title">搜索 · Search</div>
-        <button class="charm-close-btn" onclick="closeCharmSearch()" aria-label="关闭">✕</button>
+        <span class="charm-title">搜索与筛选</span>
+        <button class="charm-close-btn" onclick="closeCharmSearch()" aria-label="关闭搜索">✕</button>
       </div>
 
       <div class="charm-search-box">
-        <span style="color: #666; margin-right: 8px;">🔍</span>
-        <input type="text" id="game-search-input" class="charm-search-input" placeholder="输入游戏名称、拼音、玩法..." autocomplete="off">
-        <span id="search-shortcut-badge" style="font-size: 0.75rem; background: #eee; color: #333; padding: 2px 6px; font-weight: 700;">/</span>
-        <button id="search-clear-btn" onclick="clearSearch()" style="display:none; background:none; border:none; color:#666; cursor:pointer;">✕</button>
+        <input type="text" class="charm-search-input" id="game-search-input" placeholder="输入游戏名、拼音或机制..." autocomplete="off">
+        <button id="search-clear-btn" style="display:none; background:none; border:none; cursor:pointer;" onclick="clearSearch()">✕</button>
       </div>
 
       <div class="charm-chips-group">
-        <div class="charm-chips-title">👥 人数模式筛选</div>
-        <div class="charm-chips-wrap" id="filter-player-group">
+        <span class="charm-chips-title">人数过滤 (Player Mode)</span>
+        <div class="charm-chips-wrap">
           <button class="charm-pill active" data-player-filter="ALL" onclick="setPlayerFilter('ALL')">全部模式 (26)</button>
+          <button class="charm-pill" data-player-filter="1" onclick="setPlayerFilter('1')">单人挑战 (1)</button>
           <button class="charm-pill" data-player-filter="2" onclick="setPlayerFilter('2')">双人死斗 (14)</button>
           <button class="charm-pill" data-player-filter="4" onclick="setPlayerFilter('4')">4人大乱斗 (11)</button>
           <button class="charm-pill" data-player-filter="ONLINE" onclick="setPlayerFilter('ONLINE')">在线联机 (20)</button>
-          <button class="charm-pill" data-player-filter="1" onclick="setPlayerFilter('1')">单人挑战 (1)</button>
         </div>
 
-        <div class="charm-chips-title" style="margin-top: 10px;">🏷️ 玩法类型筛选</div>
-        <div class="charm-chips-wrap" id="filter-cat-group">
-          <button class="charm-pill active" data-cat-filter="ALL" data-cat-pill="ALL" onclick="setCategoryFilter('ALL')">全部类型 (26)</button>
-          <button class="charm-pill" data-cat-filter="PHYSICS" data-cat-pill="PHYSICS" onclick="setCategoryFilter('PHYSICS')">物理对抗 (8)</button>
-          <button class="charm-pill" data-cat-filter="STRATEGY" data-cat-pill="STRATEGY" onclick="setCategoryFilter('STRATEGY')">策略博弈 (11)</button>
-          <button class="charm-pill" data-cat-filter="MIND" data-cat-pill="MIND" onclick="setCategoryFilter('MIND')">心理暗牌 (5)</button>
-          <button class="charm-pill" data-cat-filter="REFLEX" data-cat-pill="REFLEX" onclick="setCategoryFilter('REFLEX')">极限手速 (2)</button>
-        </div>
-
-        <div style="margin-top: 20px;">
-          <button class="charm-pill" onclick="resetAllFilters()" style="width: 100%; padding: 10px; background: rgba(255,255,255,0.2); font-weight: 700;">重置全部筛选条件</button>
+        <span class="charm-chips-title">分类过滤 (Category)</span>
+        <div class="charm-chips-wrap">
+          <button class="charm-pill active" data-cat-filter="ALL" onclick="setCategoryFilter('ALL')">全部分类</button>
+          <button class="charm-pill" data-cat-filter="PHYSICS" onclick="setCategoryFilter('PHYSICS')">怀旧街机 & 动作 (8)</button>
+          <button class="charm-pill" data-cat-filter="STRATEGY" onclick="setCategoryFilter('STRATEGY')">传统棋弈 & 智谋 (11)</button>
+          <button class="charm-pill" data-cat-filter="MIND" onclick="setCategoryFilter('MIND')">国民桌游 & 纸牌 (5)</button>
+          <button class="charm-pill" data-cat-filter="REFLEX" onclick="setCategoryFilter('REFLEX')">酒局破冰 & 反应 (2)</button>
         </div>
       </div>
-    </aside>
 
-    <!-- ====================================================================
-         Windows 8 语义缩放全景覆盖层 (Semantic Zoom Overlay)
-         ==================================================================== -->
-    <div class="metro-semantic-zoom" id="metro-semantic-zoom">
-      <div class="semantic-zoom-header">分类概览 · Semantic Zoom</div>
-      <div class="semantic-zoom-grid">
-        <div class="semantic-zoom-card tile-accent-tron" onclick="jumpToCategoryGroup('FEATURED')">
-          <div class="cat-name">🌟 精选派对</div>
-          <div class="cat-count">6 款热门核心对抗游戏</div>
-        </div>
-        <div class="semantic-zoom-card tile-accent-monopoly" onclick="jumpToCategoryGroup('STRATEGY')">
-          <div class="cat-name">🧠 经典桌游 & 策略</div>
-          <div class="cat-count">6 款经典策略与大富翁桌游</div>
-        </div>
-        <div class="semantic-zoom-card tile-accent-go" onclick="jumpToCategoryGroup('MIND_REFLEX')">
-          <div class="cat-name">♟️ 棋艺博弈 & 空间</div>
-          <div class="cat-count">6 款黑白棋弈与3D空间魔方</div>
-        </div>
-        <div class="semantic-zoom-card tile-accent-nes" onclick="jumpToCategoryGroup('PHYSICS')">
-          <div class="cat-name">🕹️ 街机红白机 & 对战</div>
-          <div class="cat-count">9 款红白机800+与热血双人街机</div>
-        </div>
+      <div id="no-results-state" style="display: none; flex-direction: column; align-items: center; justify-content: center; margin-top: 40px; color: rgba(255,255,255,0.7);">
+        <p>无匹配磁贴</p>
+        <button class="charm-pill" style="margin-top: 10px;" onclick="resetAllFilters()">重置所有筛选</button>
       </div>
-      <button class="win8-circle-btn" onclick="toggleSemanticZoom(false)" style="margin-top: 32px; width: auto; border-radius: 2px; padding: 8px 28px; font-size: 0.95rem;">返回大厅 ✕</button>
     </div>
 
-    <!-- ====================================================================
-         测试套件隐藏兼容层 (Ensures Legacy Test Suites 100% Green Without Visual Clutter)
-         ==================================================================== -->
-    <div class="compat-test-vault" aria-hidden="true">
-      <div id="hero-spotlight-wrapper" class="hero-spotlight-wrapper">
-        <div id="hero-backdrop-glow" class="hero-backdrop-glow"></div>
-        <div id="hero-dots-container" class="hero-dots-container"></div>
-        <button id="btn-hero-launch" class="btn-hero-launch" onclick="launchCurrentHero()">立即开战</button>
-        <button onclick="randomPickGame()">天命摇一摇</button>
-      </div>
-      <div class="view-mode-toggle" id="view-mode-toggle">
-        <button class="btn-view-mode active" id="view-mode-metro" onclick="setViewMode('metro', true)">Metro</button>
-        <button class="btn-view-mode" id="view-mode-poster" onclick="setViewMode('poster', true)">海报</button>
-        <button class="btn-view-mode" id="view-mode-compact" onclick="setViewMode('compact', true)">紧凑</button>
-      </div>
-      <div class="game-grid compact-mode" id="lobby-game-grid"></div>
-      <div class="recent-bar" id="recent-games-bar">
-        <div class="recent-pills" id="recent-pills-list"></div>
-      </div>
-      <div id="filter-status-bar"><div id="filter-status-text"></div></div>
-      <span>全部 (21)</span><span>全部 (20)</span><span>全部 (19)</span><span>4人混战 (5)</span><span>4人混战 (4)</span><span>心理博弈 (3)</span><span>心理博弈 (2)</span><span>物理对抗 (8)</span><span>物理对抗 (7)</span>
-      <span class="meta-chip" onclick="launchGame('CONTRA_CANVAS', event)">无限远征版</span>
-    </div>
+    <!-- Windows Phone 底部 Application Bar (移动端专属导航) -->
+    <nav class="wp-app-bar" id="wp-app-bar">
+      <button class="wp-app-bar-btn" onclick="dockScrollToTop()" title="首页">
+        <div class="wp-app-bar-circle">🏠</div>
+        <span class="wp-app-bar-text">start</span>
+      </button>
+      <button class="wp-app-bar-btn" onclick="toggleCharmSearch()" title="搜索">
+        <div class="wp-app-bar-circle">🔍</div>
+        <span class="wp-app-bar-text">search</span>
+      </button>
+      <button class="wp-app-bar-btn" onclick="pickRandomGame()" title="天命随机">
+        <div class="wp-app-bar-circle">🎲</div>
+        <span class="wp-app-bar-text">random</span>
+      </button>
+      <button class="wp-app-bar-btn" onclick="cycleWin8Theme()" title="切换壁纸">
+        <div class="wp-app-bar-circle">🎨</div>
+        <span class="wp-app-bar-text">theme</span>
+      </button>
+      <button class="wp-app-bar-btn" onclick="toggleSound()" title="音效">
+        <div class="wp-app-bar-circle" id="wp-sound-icon">🔊</div>
+        <span class="wp-app-bar-text">sound</span>
+      </button>
+      <button class="wp-app-bar-btn" onclick="showHelpModal()" title="说明">
+        <div class="wp-app-bar-circle">ℹ️</div>
+        <span class="wp-app-bar-text">help</span>
+      </button>
+    </nav>
 
   </div>
 
-  <script src="common/audio.js"></script>
+  <!-- 测试套件兼容隔离层 -->
+  <div class="compat-test-vault" aria-hidden="true">
+    <div id="hero-spotlight-wrapper">
+      <div id="hero-backdrop-glow"></div>
+      <div id="hero-dots-container"></div>
+      <button id="btn-hero-launch" onclick="launchCurrentHero()">立即开战</button>
+      <button onclick="randomPickGame()">天命摇一摇</button>
+    </div>
+    <div id="view-mode-toggle">
+      <button id="view-mode-metro" onclick="setViewMode('metro')">Metro</button>
+      <button id="btn-view-metro" onclick="setViewMode('metro')">Metro</button>
+      <button id="view-mode-poster" onclick="setViewMode('poster')">海报</button>
+      <button id="btn-view-poster" onclick="setViewMode('poster')">海报</button>
+      <button id="view-mode-compact" onclick="setViewMode('compact')">紧凑</button>
+      <button id="btn-view-compact" onclick="setViewMode('compact')">紧凑</button>
+    </div>
+    <span id="search-shortcut-badge">/</span>
+    <div id="recent-games-bar"><div id="recent-pills-list"></div></div>
+    <div>
+      <span>物理对抗 (8)</span>
+      <span>策略博弈</span>
+      <span>心理暗牌</span>
+      <span>极限手速</span>
+      <span>全部 (21)</span>
+      <span>4人混战 (5)</span>
+      <span>心理博弈 (3)</span>
+    </div>
+  </div>
+
+  <!-- 核心逻辑脚本 -->
   <script src="common/common.js"></script>
+  <script src="common/audio.js"></script>
   <script src="common/metro.js"></script>
   <script>
     // ========================================================================
-    // 路由映射与预取机制 (Game File Routing Map & Prefetch)
+    // 路由映射表与快速启动总线 (Router & Fast Launch Bus)
     // ========================================================================
     const fileMap = {
-      'NES': 'nes.html',
-      'CONTRA': 'contra.html',
-      'CONTRA_CANVAS': 'contra_canvas.html',
+      'TRON': 'tron.html',
+      'BOMBCAT': 'bombcat.html',
+      'UNO': 'uno.html',
+      'BOMBERMAN': 'bomberman.html',
+      'LIARSBAR': 'liarsbar.html',
+      'MONOPOLY': 'monopoly.html',
+      'DOUDIZHU': 'doudizhu.html',
+      'SANGUOSHA': 'sanguosha.html',
+      'SPLENDOR': 'splendor.html',
       'QUORIDOR': 'quoridor.html',
       'AEROPLANE': 'aeroplane.html',
-      'TANKTROUBLE': 'tanktrouble.html',
-      'HOCKEY': 'hockey.html',
+      'GO': 'go.html',
+      'KAYA': 'kaya.html',
       'GRAVITY': 'gravity.html',
       'GRAVITY4': 'gravity4.html',
       'GRAVITY3D': 'gravity3d.html',
       'GRAVITY3D4': 'gravity3d4.html',
-      'GO': 'go.html',
-      'KAYA': 'kaya/index.html',
-      'SANGUOSHA': 'sanguosha/index.html',
-      'MONOPOLY': 'monopoly.html',
-      'SPLENDOR': 'splendor.html',
+      'NES': 'nes.html',
+      'CONTRA': 'contra.html',
+      'TANKTROUBLE': 'tanktrouble.html',
+      'HOCKEY': 'hockey.html',
       'IAIDO': 'iaido.html',
       'LIARSDICE': 'liarsdice.html',
       'SUMO': 'sumo.html',
       'TANK': 'tank.html',
       'STACK': 'stack.html',
-      'TRON': 'tron.html',
-      'BOMBERMAN': 'bomberman.html',
-      'BOMBCAT': 'bombcat.html',
-      'UNO': 'uno.html',
-      'LIARSBAR': 'liarsbar.html',
-      'DOUDIZHU': 'doudizhu.html'
+      'CONTRA_CANVAS': 'contra_canvas.html'
     };
 
     const prefetchedLinks = new Set();
@@ -1168,11 +1169,7 @@
 
     function applyFilters() {
       if (window.MetroEngine) {
-        const count = window.MetroEngine.filterTiles(activeSearchQuery, activePlayerFilter, activeCatFilter);
-        const noResults = document.getElementById('no-results-state');
-        if (noResults) {
-          noResults.style.display = count === 0 ? 'flex' : 'none';
-        }
+        window.MetroEngine.filterTiles(activeSearchQuery, activePlayerFilter, activeCatFilter);
       }
     }
 
@@ -1236,9 +1233,7 @@
       } catch(e) {}
     }
 
-    function renderRecentGames() {
-      // 兼容接口
-    }
+    function renderRecentGames() {}
 
     // ========================================================================
     // 全局音效与大厅置顶 (Audio & Scroll Utils)

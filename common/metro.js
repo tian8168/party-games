@@ -1,12 +1,12 @@
 /**
- * 🪟 Windows Modern UI / Live Tiles 核心交互与调度引擎 (Metro Engine)
+ * 🪟 Windows Modern UI / Live Tiles 核心交互与调度引擎 (Metro Engine 2.0)
  * 严格支持：
- * 1. 3D Perspective Tilt 触控/光标倾斜真实物理反馈
- * 2. Surface & PC 横向滚轮与触控滑动平滑转换
- * 3. 动态磁贴 (Live Tiles) 周期性随机平滑翻转调度
+ * 1. 3D Perspective Tilt 触控/光标倾斜真实物理反馈 (Win8 / WP8 核心质感)
+ * 2. Surface & PC 横向滚轮与触控滑动平滑转换 (DeltaY -> ScrollLeft)
+ * 3. 动态磁贴 (Live Tiles) 周期性随机平滑翻转调度 (3D Flip Animation)
  * 4. Windows 8 经典 Charm Bar 侧滑搜索与实时即时过滤
- * 5. 5套官方壁纸主题秒级切换与持久化
- * 6. 天命随机闪烁光圈巡检与直接开战
+ * 5. 5套官方壁纸主题秒级切换与持久化 (localStorage 记忆)
+ * 6. 天命随机闪烁光圈巡检与直接开战 (Smooth Scroll Into View)
  * 7. 语义缩放 (Semantic Zoom) 全景分组导航
  */
 
@@ -23,6 +23,9 @@
     observer: null,
     currentThemeIndex: 0,
     isRandomPicking: false,
+    activeQuery: '',
+    activePlayerFilter: 'ALL',
+    activeCatFilter: 'ALL',
 
     // ========================================================================
     // 1. 初始化入口
@@ -48,7 +51,7 @@
         }
       });
 
-      console.log('🪟 [MetroEngine] Windows 8 / Windows Phone 磁贴引擎已激活');
+      console.log('🪟 [MetroEngine] Windows Modern UI / Live Tiles 2.0 引擎已就绪');
     },
 
     // ========================================================================
@@ -122,7 +125,7 @@
         document.addEventListener(moveEvt, onMove, { passive: true });
         document.addEventListener(endEvt, onRelease, { once: true });
         document.addEventListener(cancelEvt, onRelease, { once: true });
-        if (!isTouch) document.addEventListener('pointerleave', onRelease, { once: true });
+        if (!isTouch) document.removeEventListener('pointerleave', onRelease);
       }, { passive: true });
     },
 
@@ -204,7 +207,7 @@
         setTimeout(() => {
           if (pick) pick.classList.remove('is-flipped');
         }, 4200);
-      }, 7500);
+      }, 7000);
     },
 
     stopTicker() {
@@ -221,7 +224,10 @@
       const input = document.getElementById('game-search-input');
       if (input) {
         input.addEventListener('input', (e) => {
-          this.filterTiles((e.target.value || '').trim());
+          this.activeQuery = (e.target.value || '').trim();
+          this.filterTiles(this.activeQuery, this.activePlayerFilter, this.activeCatFilter);
+          const clearBtn = document.getElementById('search-clear-btn');
+          if (clearBtn) clearBtn.style.display = this.activeQuery ? 'block' : 'none';
         });
       }
     },
@@ -255,8 +261,15 @@
       }
     },
 
-    filterTiles(query, playerFilter = 'ALL', catFilter = 'ALL') {
-      const q = (query || '').toLowerCase().trim();
+    filterTiles(query, playerFilter, catFilter) {
+      if (query !== undefined) this.activeQuery = (query || '').toLowerCase().trim();
+      if (playerFilter !== undefined) this.activePlayerFilter = playerFilter;
+      if (catFilter !== undefined) this.activeCatFilter = catFilter;
+
+      const q = this.activeQuery;
+      const p = this.activePlayerFilter;
+      const c = this.activeCatFilter;
+
       const cards = document.querySelectorAll('.game-card');
       let matchCount = 0;
 
@@ -265,8 +278,8 @@
         const cVal = card.dataset.cat || '';
         const kw = ((card.dataset.keywords || '') + ' ' + card.textContent).toLowerCase();
 
-        let pMatch = (playerFilter === 'ALL') || (playerFilter === 'ONLINE' ? card.dataset.online === 'true' : pVal === playerFilter);
-        let cMatch = (catFilter === 'ALL') || (cVal === catFilter);
+        let pMatch = (p === 'ALL') || (p === 'ONLINE' ? card.dataset.online === 'true' : pVal === p);
+        let cMatch = (c === 'ALL') || (cVal === c);
         let sMatch = !q || kw.includes(q);
 
         if (pMatch && cMatch && sMatch) {
@@ -282,6 +295,11 @@
         const hasVisible = grp.querySelector('.game-card:not(.tile-dimmed)');
         grp.style.opacity = hasVisible ? '1' : '0.25';
       });
+
+      const noResults = document.getElementById('no-results-state');
+      if (noResults) {
+        noResults.style.display = matchCount === 0 ? 'flex' : 'none';
+      }
 
       return matchCount;
     },
@@ -314,7 +332,6 @@
         const currentCard = cards[currentIndex];
         if (currentCard) {
           currentCard.classList.add('tile-shimmer-picked');
-          // 移动端或横屏自动将其滚入视野
           try {
             currentCard.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'center' });
           } catch(e) {}
@@ -349,9 +366,7 @@
     // ========================================================================
     // 8. 语义缩放全景概览 (Semantic Zoom)
     // ========================================================================
-    initSemanticZoom() {
-      // 预绑定
-    },
+    initSemanticZoom() {},
 
     toggleSemanticZoom(open) {
       const zoom = document.getElementById('metro-semantic-zoom');

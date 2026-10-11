@@ -1,11 +1,10 @@
 /**
- * 🪟 Windows Modern UI / Live Tiles 官方正统全端样式库 (Metro Stylesheet)
+ * 🪟 Windows Modern UI / Live Tiles 官方正统全端样式库 (Metro Stylesheet 2.0)
  * 严格遵循 Windows 8 / 8.1 Start Screen 与 Windows Phone 8 / 10 核心规范：
- * - 纯色块无渐变高光阴影拟物 (Pure Flat, Solid Colors)
+ * - 纯色块无高光阴影拟物 (Pure Flat, Solid Colors)
  * - 纯白极简高对比矢量剪影 (High-contrast Pure White Silhouettes)
  * - 经典 Segoe UI Light / 微软雅黑 优雅排版
- * - 横向全景砌体栅格 (Desktop/Tablet Panorama 1x1 / 2x1 / 2x2)
- * - 竖屏流式砌体栅格 (Windows Phone Portrait Flow)
+ * - 全场景屏幕比例自适应 (16:9, 16:10, 21:9 Ultrawide, 4:3/3:2 Tablet, Mobile Portrait/Landscape)
  * - 3D 触控透视倾斜物理反馈 (3D Perspective Tilt)
  */
 
@@ -13,19 +12,19 @@
    1. Windows Metro 核心设计令牌 (Design Tokens & Authentic Palette)
    ========================================================================== */
 :root {
-  /* Microsoft Metro 官方经典 Accent 纯色调色板 */
-  --win8-teal: #008299;
-  --win8-mango: #d83b01;
-  --win8-crimson: #e81123;
-  --win8-blue: #0078d7;
-  --win8-green: #107c10;
+  /* Microsoft Metro 官方经典 Accent 纯色调色板 (高纯度、高对比) */
+  --win8-teal: #00aba9;
+  --win8-mango: #fa6800;
+  --win8-crimson: #e51400;
+  --win8-blue: #1ba1e2;
+  --win8-green: #008a00;
   --win8-purple: #744da9;
-  --win8-gold: #d29200;
+  --win8-gold: #f0a30a;
   --win8-magenta: #d80073;
   --win8-rust: #ca5010;
-  --win8-moss: #498205;
+  --win8-moss: #60a917;
   --win8-sky: #00a4ef;
-  --win8-slate: #2d2d30;
+  --win8-slate: #2b5797;
   --win8-pine: #008272;
   --win8-cobalt: #0050ef;
   --win8-amber: #ff8c00;
@@ -33,18 +32,21 @@
   --win8-fuchsia: #881798;
   --win8-bordeaux: #b91d47;
   --win8-action-red: #d13438;
-  --win8-steel: #2e5b70;
+  --win8-steel: #506882;
   --win8-ice: #00bcf2;
-  --win8-navy: #2b5797;
+  --win8-navy: #1f3a60;
   --win8-dohyo: #e65100;
-  --win8-deep-indigo: #5c2d91;
+  --win8-deep-indigo: #4b0082;
 
   /* 基础壁纸主题色 (默认 Win8 经典深青 Teal) */
   --start-bg: #004652;
   --start-bg-gradient: radial-gradient(ellipse at 70% 30%, #005d6e 0%, #004652 45%, #002b33 100%);
   --start-fg: #ffffff;
   --start-fg-muted: rgba(255, 255, 255, 0.75);
-  --start-tile-gap: 10px;
+  
+  /* 动态栅格几何令牌 */
+  --tile-gap: 10px;
+  --tile-unit: 140px;
 }
 
 /* 5套 Windows 8 / 8.1 原厂经典壁纸主题 */
@@ -99,8 +101,8 @@ html, body {
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  opacity: 0.18;
-  background-image: radial-gradient(circle at 10% 20%, rgba(255,255,255,0.4) 0%, transparent 40%),
+  opacity: 0.16;
+  background-image: radial-gradient(circle at 10% 20%, rgba(255,255,255,0.35) 0%, transparent 40%),
                     radial-gradient(circle at 90% 80%, rgba(255,255,255,0.2) 0%, transparent 45%);
 }
 
@@ -113,6 +115,7 @@ html, body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 /* ==========================================================================
@@ -121,7 +124,7 @@ html, body {
 .start-header {
   width: 100%;
   box-sizing: border-box;
-  padding: 24px 48px 12px;
+  padding: 20px 48px 10px;
   display: flex;
   align-items: baseline;
   justify-content: space-between;
@@ -138,7 +141,7 @@ html, body {
 
 .start-title {
   font-family: "Segoe UI Light", "Segoe UI", "Microsoft YaHei UI", sans-serif;
-  font-size: 3.2rem;
+  font-size: clamp(2.4rem, 4.5vw, 3.4rem);
   font-weight: 300;
   letter-spacing: -1px;
   line-height: 1;
@@ -148,7 +151,7 @@ html, body {
 }
 
 .start-subtitle {
-  font-size: 1.15rem;
+  font-size: clamp(0.95rem, 1.5vw, 1.15rem);
   font-weight: 300;
   letter-spacing: 0.5px;
   color: var(--start-fg-muted);
@@ -252,7 +255,7 @@ html, body {
   display: flex;
   flex-direction: row;
   gap: 48px;
-  padding: 8px 48px 48px;
+  padding: 8px 48px 36px;
   overflow-x: auto;
   overflow-y: hidden;
   scroll-behavior: smooth;
@@ -283,7 +286,7 @@ html, body {
   font-weight: 300;
   color: rgba(255, 255, 255, 0.9);
   letter-spacing: 0.5px;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -301,13 +304,13 @@ html, body {
   opacity: 0.6;
 }
 
-/* 分组内严格 3 行磁贴栅格 (Desktop 3-Row Grid) */
+/* 分组内磁贴栅格 (默认 3 行横向全景流) */
 .metro-group-body {
   display: grid;
-  grid-template-rows: repeat(3, 130px);
+  grid-template-rows: repeat(3, var(--tile-unit));
   grid-auto-flow: column;
-  grid-auto-columns: 130px;
-  gap: 10px;
+  grid-auto-columns: var(--tile-unit);
+  gap: var(--tile-gap);
 }
 
 /* ==========================================================================
@@ -325,29 +328,29 @@ html, body {
   user-select: none;
   -webkit-user-select: none;
   touch-action: manipulation;
-  transition: outline 0.1s ease, filter 0.15s ease;
+  transition: outline 0.1s ease, filter 0.15s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   transform-style: preserve-3d;
   will-change: transform;
 }
 
 /* 磁贴严整尺寸系统 */
 .tile-medium {
-  width: 130px;
-  height: 130px;
+  width: var(--tile-unit);
+  height: var(--tile-unit);
   grid-column: span 1;
   grid-row: span 1;
 }
 
 .tile-wide {
-  width: 270px;
-  height: 130px;
+  width: calc(var(--tile-unit) * 2 + var(--tile-gap));
+  height: var(--tile-unit);
   grid-column: span 2;
   grid-row: span 1;
 }
 
 .tile-large {
-  width: 270px;
-  height: 270px;
+  width: calc(var(--tile-unit) * 2 + var(--tile-gap));
+  height: calc(var(--tile-unit) * 2 + var(--tile-gap));
   grid-column: span 2;
   grid-row: span 2;
 }
@@ -389,7 +392,7 @@ html, body {
   position: absolute;
   inset: 0;
   box-sizing: border-box;
-  padding: 10px 12px;
+  padding: 8px 10px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -403,11 +406,11 @@ html, body {
   position: absolute;
   inset: 0;
   box-sizing: border-box;
-  padding: 12px 14px;
+  padding: 10px 12px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(0, 0, 0, 0.62);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   transform: rotateX(180deg);
@@ -420,14 +423,15 @@ html, body {
   justify-content: flex-end;
   align-items: flex-start;
   width: 100%;
+  flex-shrink: 0;
 }
 
 .tile-badge-num {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 600;
   color: #ffffff;
-  background: rgba(0, 0, 0, 0.25);
-  padding: 2px 7px;
+  background: rgba(0, 0, 0, 0.28);
+  padding: 2px 6px;
   letter-spacing: 0.3px;
 }
 
@@ -438,24 +442,25 @@ html, body {
   align-items: center;
   justify-content: center;
   width: 100%;
+  min-height: 0;
 }
 
 .metro-icon-svg {
-  width: 46px;
-  height: 46px;
+  width: clamp(38px, calc(var(--tile-unit) * 0.32), 64px);
+  height: clamp(38px, calc(var(--tile-unit) * 0.32), 64px);
   fill: #ffffff;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .tile-wide .metro-icon-svg {
-  width: 52px;
-  height: 52px;
+  width: clamp(42px, calc(var(--tile-unit) * 0.36), 72px);
+  height: clamp(42px, calc(var(--tile-unit) * 0.36), 72px);
 }
 
 .tile-large .metro-icon-svg {
-  width: 78px;
-  height: 78px;
+  width: clamp(68px, calc(var(--tile-unit) * 0.52), 110px);
+  height: clamp(68px, calc(var(--tile-unit) * 0.52), 110px);
 }
 
 /* 左下角经典排版 (Bottom-Left Typography) */
@@ -463,14 +468,16 @@ html, body {
   display: flex;
   flex-direction: column;
   width: 100%;
+  flex-shrink: 0;
+  min-height: 0;
 }
 
 .tile-title-text {
   font-family: "Segoe UI", "Microsoft YaHei UI", sans-serif;
-  font-size: 0.96rem;
+  font-size: clamp(0.86rem, 1.8vw, 0.98rem);
   font-weight: 600;
   color: #ffffff;
-  line-height: 1.2;
+  line-height: 1.15;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -478,18 +485,19 @@ html, body {
 }
 
 .tile-sub-text {
-  font-size: 0.72rem;
+  font-size: clamp(0.66rem, 1.3vw, 0.72rem);
   font-weight: 400;
-  color: rgba(255, 255, 255, 0.75);
+  color: rgba(255, 255, 255, 0.82);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   margin-top: 2px;
+  line-height: 1.1;
 }
 
 /* 背面样式 */
 .tile-back-title {
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   font-weight: 700;
   color: #ffffff;
 }
@@ -497,9 +505,9 @@ html, body {
 .tile-back-stats {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.85);
+  gap: 3px;
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.88);
 }
 
 .tile-stat-row {
@@ -514,9 +522,9 @@ html, body {
   background: #ffffff;
   color: #000000;
   border: none;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 700;
-  padding: 5px 14px;
+  padding: 4px 12px;
   cursor: pointer;
   border-radius: 0;
   outline: none;
@@ -561,7 +569,7 @@ html, body {
 
 /* 搜索过滤弱化态 */
 .game-card.tile-dimmed {
-  opacity: 0.18 !important;
+  opacity: 0.16 !important;
   transform: scale(0.96) !important;
   pointer-events: none;
 }
@@ -772,7 +780,7 @@ html, body {
   align-items: center;
   justify-content: space-around;
   box-sizing: border-box;
-  padding: 4px 12px;
+  padding: 4px 8px;
 }
 
 .wp-app-bar-btn {
@@ -812,33 +820,170 @@ html, body {
 }
 
 /* ==========================================================================
-   10. 兼容性与视口断点响应式 (Surface Landscape, WP Portrait, WP Landscape)
+   10. 各种屏幕比例与视口断点响应式体系 (All Screen Aspect Ratios)
    ========================================================================== */
 
-/* A. 平板与桌面宽屏 (Surface Pro / Windows 8.1 宽屏全景) */
+/* A. 桌面与 Surface 宽屏全景流 (Surface Pro / Windows 8.1 宽屏全景) */
 @media (min-width: 901px) {
+  :root {
+    --tile-unit: clamp(125px, calc((100vh - 200px) / 3 - 12px), 215px);
+    --tile-gap: 10px;
+  }
+
   body {
     overflow: hidden !important;
   }
+
   .start-screen-app {
     height: 100vh;
   }
+
+  .start-header {
+    padding: 20px 48px 10px;
+  }
+
   .metro-panorama {
     display: flex !important;
     flex-direction: row !important;
     overflow-x: auto !important;
     overflow-y: hidden !important;
+    gap: 48px;
+    padding: 8px 48px 36px;
   }
+
   .metro-group-body {
     display: grid !important;
-    grid-template-rows: repeat(3, 130px) !important;
+    grid-template-rows: repeat(3, var(--tile-unit)) !important;
     grid-auto-flow: column !important;
-    grid-auto-columns: 130px !important;
-    gap: 10px !important;
+    grid-auto-columns: var(--tile-unit) !important;
+    gap: var(--tile-gap) !important;
+  }
+
+  .tile-medium {
+    width: var(--tile-unit) !important;
+    height: var(--tile-unit) !important;
+    grid-column: span 1 !important;
+    grid-row: span 1 !important;
+  }
+
+  .tile-wide {
+    width: calc(var(--tile-unit) * 2 + var(--tile-gap)) !important;
+    height: var(--tile-unit) !important;
+    grid-column: span 2 !important;
+    grid-row: span 1 !important;
+  }
+
+  .tile-large {
+    width: calc(var(--tile-unit) * 2 + var(--tile-gap)) !important;
+    height: calc(var(--tile-unit) * 2 + var(--tile-gap)) !important;
+    grid-column: span 2 !important;
+    grid-row: span 2 !important;
   }
 }
 
-/* B. 手机竖屏 (Windows Phone 8 / 10 经典两列流式砌体) */
+/* 大屏高分辨率 (1080p, 1440p, 4K 高度 >= 900px) */
+@media (min-width: 1200px) and (min-height: 900px) {
+  :root {
+    --tile-unit: clamp(140px, calc((100vh - 220px) / 3 - 12px), 195px);
+    --tile-gap: 12px;
+  }
+
+  .start-header {
+    padding: 28px 56px 14px;
+  }
+
+  .metro-panorama {
+    gap: 56px;
+    padding: 12px 56px 48px;
+  }
+}
+
+/* B. 紧凑高度视口与移动端横屏 (Windows Phone Landscape 2行横滑全景) */
+@media (max-width: 900px) and (orientation: landscape) {
+  :root {
+    --tile-unit: clamp(80px, calc((100vh - 95px) / 2 - 8px), 110px);
+    --tile-gap: 8px;
+  }
+
+  body {
+    overflow: hidden !important;
+  }
+
+  .start-screen-app {
+    height: 100vh;
+  }
+
+  .start-header {
+    padding: 6px 20px 2px !important;
+  }
+
+  .start-title {
+    font-size: 1.6rem !important;
+  }
+
+  .start-subtitle {
+    display: none !important;
+  }
+
+  .user-name {
+    display: none !important;
+  }
+
+  .metro-panorama {
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    gap: 24px !important;
+    padding: 4px 20px 20px !important;
+  }
+
+  .metro-group-header {
+    font-size: 1.05rem !important;
+    margin-bottom: 6px !important;
+  }
+
+  .metro-group-body {
+    display: grid !important;
+    grid-template-rows: repeat(2, var(--tile-unit)) !important;
+    grid-auto-flow: column !important;
+    grid-auto-columns: var(--tile-unit) !important;
+    gap: var(--tile-gap) !important;
+  }
+
+  .tile-medium {
+    width: var(--tile-unit) !important;
+    height: var(--tile-unit) !important;
+    grid-column: span 1 !important;
+    grid-row: span 1 !important;
+  }
+
+  .tile-wide {
+    width: calc(var(--tile-unit) * 2 + var(--tile-gap)) !important;
+    height: var(--tile-unit) !important;
+    grid-column: span 2 !important;
+    grid-row: span 1 !important;
+  }
+
+  .tile-large {
+    width: calc(var(--tile-unit) * 2 + var(--tile-gap)) !important;
+    height: calc(var(--tile-unit) * 2 + var(--tile-gap)) !important;
+    grid-column: span 2 !important;
+    grid-row: span 2 !important;
+  }
+
+  .metro-icon-svg {
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+  .tile-wide .metro-icon-svg {
+    width: 42px !important;
+    height: 42px !important;
+  }
+}
+
+/* C. 手机与平板竖屏 (Windows Phone 8 / 10 经典两列流式砌体) */
 @media (max-width: 768px) and (orientation: portrait) {
   html, body {
     overflow-x: hidden !important;
@@ -850,11 +995,11 @@ html, body {
   .start-screen-app {
     height: auto !important;
     min-height: 100vh;
-    padding-bottom: 74px;
+    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
   }
 
   .start-header {
-    padding: 18px 16px 8px;
+    padding: 16px 14px 6px;
   }
 
   .start-title {
@@ -862,11 +1007,16 @@ html, body {
   }
 
   .start-subtitle {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
   }
 
   .user-name {
     display: none;
+  }
+
+  /* 消除手机顶部微按钮冲突，由底栏 WP AppBar 接管 */
+  .start-header-controls {
+    display: none !important;
   }
 
   .metro-panorama {
@@ -874,8 +1024,8 @@ html, body {
     flex-direction: column !important;
     overflow-x: hidden !important;
     overflow-y: visible !important;
-    gap: 28px !important;
-    padding: 8px 14px 20px !important;
+    gap: 24px !important;
+    padding: 8px 12px 20px !important;
   }
 
   .metro-group {
@@ -887,7 +1037,7 @@ html, body {
     grid-template-columns: repeat(2, 1fr) !important;
     grid-template-rows: auto !important;
     grid-auto-flow: dense !important;
-    gap: 10px !important;
+    gap: 8px !important;
     width: 100% !important;
   }
 
@@ -901,8 +1051,7 @@ html, body {
 
   .tile-wide {
     width: 100% !important;
-    height: auto !important;
-    aspect-ratio: 2 / 1 !important;
+    height: clamp(88px, 24vw, 120px) !important;
     grid-column: span 2 !important;
     grid-row: span 1 !important;
   }
@@ -915,83 +1064,22 @@ html, body {
     grid-row: span 2 !important;
   }
 
+  .metro-icon-svg {
+    width: 38px !important;
+    height: 38px !important;
+  }
+
+  .tile-wide .metro-icon-svg {
+    width: 44px !important;
+    height: 44px !important;
+  }
+
   .wp-app-bar {
     display: flex !important;
   }
 
   .semantic-zoom-grid {
     grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-/* C. 移动端横屏 (Windows Phone Landscape 2行横滑全景) */
-@media (max-width: 900px) and (orientation: landscape) {
-  body {
-    overflow: hidden !important;
-  }
-
-  .start-screen-app {
-    height: 100vh;
-  }
-
-  .start-header {
-    padding: 10px 24px 4px;
-  }
-
-  .start-title {
-    font-size: 1.8rem;
-  }
-
-  .start-subtitle {
-    font-size: 0.8rem;
-  }
-
-  .metro-panorama {
-    display: flex !important;
-    flex-direction: row !important;
-    overflow-x: auto !important;
-    overflow-y: hidden !important;
-    gap: 28px !important;
-    padding: 4px 24px 24px !important;
-  }
-
-  .metro-group-body {
-    display: grid !important;
-    grid-template-rows: repeat(2, 105px) !important;
-    grid-auto-flow: column !important;
-    grid-auto-columns: 105px !important;
-    gap: 8px !important;
-  }
-
-  .tile-medium {
-    width: 105px;
-    height: 105px;
-    grid-column: span 1;
-    grid-row: span 1;
-  }
-
-  .tile-wide {
-    width: 218px;
-    height: 105px;
-    grid-column: span 2;
-    grid-row: span 1;
-  }
-
-  .tile-large {
-    width: 218px;
-    height: 218px;
-    grid-column: span 2;
-    grid-row: span 2;
-  }
-
-  .metro-icon-svg {
-    width: 38px;
-    height: 38px;
-  }
-
-  .tile-wide .metro-icon-svg {
-    width: 44px;
-    height: 44px;
   }
 }
 
@@ -1002,7 +1090,6 @@ html, body {
 .metro-mode   { display: block; }
 .game-grid.compact-mode { display: block; }
 
-/* 隐藏原有不需要的海报大图/旧导航元素，绝不产生布局挤压 */
 .old-legacy-hidden {
   display: none !important;
 }
