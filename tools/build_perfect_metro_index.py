@@ -64,8 +64,31 @@ def generate_index_html():
   </style>
 </head>
 <body class="metro-active theme-teal">
-  <!-- Windows 8 经典底纹流动水印 -->
-  <div class="win8-flourish-bg"></div>
+  <!-- Windows 8 经典视差流动折纸与几何波纹矢量全景壁纸 -->
+  <div class="win8-flourish-bg" id="win8-flourish-bg">
+    <svg class="win8-parallax-svg" viewBox="0 0 3600 1080" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="wp-poly-1" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#ffffff" stop-opacity="0.14"/>
+          <stop offset="100%" stop-color="#ffffff" stop-opacity="0.01"/>
+        </linearGradient>
+        <linearGradient id="wp-poly-2" x1="100%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#ffffff" stop-opacity="0.09"/>
+          <stop offset="100%" stop-color="#ffffff" stop-opacity="0.02"/>
+        </linearGradient>
+        <linearGradient id="wp-poly-3" x1="0%" y1="50%" x2="100%" y2="50%">
+          <stop offset="0%" stop-color="#ffffff" stop-opacity="0.07"/>
+          <stop offset="100%" stop-color="#ffffff" stop-opacity="0.01"/>
+        </linearGradient>
+      </defs>
+      <path d="M0,180 L800,0 L1600,320 L2400,80 L3200,280 L3600,120 L3600,0 L0,0 Z" fill="url(#wp-poly-1)"/>
+      <path d="M0,450 L650,280 L1450,540 L2100,260 L2950,580 L3600,340 L3600,1080 L2800,1080 L1900,820 L1100,1080 L0,890 Z" fill="url(#wp-poly-2)"/>
+      <path d="M200,1080 L900,620 L1800,920 L2600,520 L3400,880 L3600,750 L3600,1080 Z" fill="url(#wp-poly-3)"/>
+      <polygon points="400,120 720,240 620,440 280,320" fill="url(#wp-poly-1)" opacity="0.6"/>
+      <polygon points="1700,180 2050,90 2200,310 1820,380" fill="url(#wp-poly-2)" opacity="0.5"/>
+      <polygon points="2750,220 3100,140 3260,360 2900,420" fill="url(#wp-poly-1)" opacity="0.5"/>
+    </svg>
+  </div>
 
   <!-- Windows 8 / Windows Phone 开始屏幕视口 -->
   <div class="start-screen-app" id="start-screen-app">
@@ -115,7 +138,7 @@ def generate_index_html():
     <main class="metro-panorama game-grid" id="metro-panorama">
 
       <!-- ====================================================================
-           分组 1: 🌟 精选派对 · FEATURED & PARTY
+           分组 1: 🌟 精选派对 · FEATURED & PARTY (Windows 8 正统 Bento 网格)
            ==================================================================== -->
       <section class="metro-group" data-group="FEATURED">
         <div class="metro-group-header" onclick="jumpToCategoryGroup('FEATURED')">
@@ -124,8 +147,8 @@ def generate_index_html():
         </div>
         <div class="metro-group-body">
           
-          <!-- 1. TRON (极光光轮摩托) -->
-          <div class="game-card tile-wide tile-accent-tron" data-cat="PHYSICS" data-players="4" data-game-key="TRON" data-genre="ARCADE" data-online="false" data-keywords="tron 极光光轮摩托 光轮摩托 摩托 道具大乱斗 飞弹 幽灵 emp 赛博 物理 封路 4人 4player 四人 glmt 极速 单人 人机 1人 二人" onclick="enterGame('TRON')">
+          <!-- 1. TRON (极光光轮摩托 · 2x2 Large 王牌磁贴 + Push 通知) -->
+          <div class="game-card tile-large tile-accent-tron anim-push" data-cat="PHYSICS" data-players="4" data-game-key="TRON" data-genre="ARCADE" data-online="false" data-keywords="tron 极光光轮摩托 光轮摩托 摩托 道具大乱斗 飞弹 幽灵 emp 赛博 物理 封路 4人 4player 四人 glmt 极速 单人 人机 1人 二人" onclick="enterGame('TRON')">
             <div class="metro-tile-flipper">
               <div class="metro-tile-front">
                 <div class="tile-badge-row"><span class="tile-badge-num">👥 4P</span></div>
@@ -153,8 +176,39 @@ def generate_index_html():
             </div>
           </div>
 
-          <!-- 2. BOMBCAT (疯狂拆弹猫) -->
-          <div class="game-card tile-wide tile-accent-bombcat" data-cat="MIND" data-players="4" data-game-key="BOMBCAT" data-genre="PARTY" data-online="false" data-keywords="bombcat 疯狂拆弹猫 拆弹猫 猫 心理 心理暗牌 暗牌 炸弹 拆弹 洗牌 预见 索要 甩锅 4人 4player 四人 cdm 聚会 1人 二人" onclick="enterGame('BOMBCAT')">
+          <!-- 2. BOMBERMAN (极光炸弹人 · 2x1 Wide 下承长条 + Push 通知) -->
+          <div class="game-card tile-wide tile-accent-bomberman anim-push" data-cat="PHYSICS" data-players="4" data-game-key="BOMBERMAN" data-genre="ARCADE" data-online="false" data-keywords="bomberman 极光炸弹人 极光炸弹人大乱斗 炸弹人大乱斗 炸弹人 炸弹 neon 道具 踢弹 连环爆 末日突袭 物理 4人 4player 四人 合体 爆破 zdm 1人 二人" onclick="enterGame('BOMBERMAN')">
+            <div class="metro-tile-flipper">
+              <div class="metro-tile-front">
+                <div class="tile-badge-row"><span class="tile-badge-num">💣 4P</span></div>
+                <div class="tile-icon-canvas">
+                  <svg viewBox="0 0 48 48" class="metro-icon-svg">
+                    <circle cx="21" cy="27" r="14"/>
+                    <path d="M27 15l4-4 3 3-4 4z"/>
+                    <path d="M33 12c3-3 7-2 9-5 1 4-1 8-4 9l-5-4z"/>
+                    <circle cx="43" cy="6" r="2.5"/>
+                    <circle cx="16" cy="22" r="3.5" fill="#fff" opacity="0.35"/>
+                  </svg>
+                </div>
+                <div class="tile-caption-row">
+                  <div class="tile-title-text">极光炸弹人</div>
+                  <div class="tile-sub-text">1-4人同屏 · 毒圈大逃杀</div>
+                </div>
+              </div>
+              <div class="metro-tile-back">
+                <div class="tile-back-title">极光炸弹人</div>
+                <div class="tile-back-stats">
+                  <div class="tile-stat-row"><span>对局人数</span><span>1-4人同屏</span></div>
+                  <div class="tile-stat-row"><span>道具体系</span><span>6大道具体系</span></div>
+                  <div class="tile-stat-row"><span>绝境机制</span><span>螺旋毒圈截杀</span></div>
+                </div>
+                <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('BOMBERMAN')">开玩 ▶</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. BOMBCAT (疯狂拆弹猫 · 1x1 Medium 灵动方块) -->
+          <div class="game-card tile-medium tile-accent-bombcat" data-cat="MIND" data-players="4" data-game-key="BOMBCAT" data-genre="PARTY" data-online="false" data-keywords="bombcat 疯狂拆弹猫 拆弹猫 猫 心理 心理暗牌 暗牌 炸弹 拆弹 洗牌 预见 索要 甩锅 4人 4player 四人 cdm 聚会 1人 二人" onclick="enterGame('BOMBCAT')">
             <div class="metro-tile-flipper">
               <div class="metro-tile-front">
                 <div class="tile-badge-row"><span class="tile-badge-num">👥 4P</span></div>
@@ -185,7 +239,7 @@ def generate_index_html():
             </div>
           </div>
 
-          <!-- 3. UNO (彩虹乌诺牌) -->
+          <!-- 4. UNO (彩虹乌诺牌 · 2x1 Wide 经典长条) -->
           <div class="game-card tile-wide tile-accent-uno" data-cat="MIND" data-players="4" data-game-key="UNO" data-genre="BOARD" data-online="false" data-keywords="uno 彩虹乌诺牌 乌诺牌 优诺 纸牌 卡牌 颜色 数字 +4 反转 跳过 4人 4player 四人 wnp 聚会 桌游 1人 二人" onclick="enterGame('UNO')">
             <div class="metro-tile-flipper">
               <div class="metro-tile-front">
@@ -215,38 +269,7 @@ def generate_index_html():
             </div>
           </div>
 
-          <!-- 4. BOMBERMAN (极光炸弹人) -->
-          <div class="game-card tile-wide tile-accent-bomberman" data-cat="PHYSICS" data-players="4" data-game-key="BOMBERMAN" data-genre="ARCADE" data-online="false" data-keywords="bomberman 极光炸弹人 极光炸弹人大乱斗 炸弹人大乱斗 炸弹人 炸弹 neon 道具 踢弹 连环爆 末日突袭 物理 4人 4player 四人 合体 爆破 zdm 1人 二人" onclick="enterGame('BOMBERMAN')">
-            <div class="metro-tile-flipper">
-              <div class="metro-tile-front">
-                <div class="tile-badge-row"><span class="tile-badge-num">💣 4P</span></div>
-                <div class="tile-icon-canvas">
-                  <svg viewBox="0 0 48 48" class="metro-icon-svg">
-                    <circle cx="21" cy="27" r="14"/>
-                    <path d="M27 15l4-4 3 3-4 4z"/>
-                    <path d="M33 12c3-3 7-2 9-5 1 4-1 8-4 9l-5-4z"/>
-                    <circle cx="43" cy="6" r="2.5"/>
-                    <circle cx="16" cy="22" r="3.5" fill="#fff" opacity="0.35"/>
-                  </svg>
-                </div>
-                <div class="tile-caption-row">
-                  <div class="tile-title-text">极光炸弹人</div>
-                  <div class="tile-sub-text">1-4人同屏 · 毒圈大逃杀</div>
-                </div>
-              </div>
-              <div class="metro-tile-back">
-                <div class="tile-back-title">极光炸弹人</div>
-                <div class="tile-back-stats">
-                  <div class="tile-stat-row"><span>对局人数</span><span>1-4人同屏</span></div>
-                  <div class="tile-stat-row"><span>道具体系</span><span>6大道具体系</span></div>
-                  <div class="tile-stat-row"><span>绝境机制</span><span>螺旋毒圈截杀</span></div>
-                </div>
-                <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('BOMBERMAN')">开玩 ▶</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- 5. LIARSBAR (骗子酒馆) -->
+          <!-- 5. LIARSBAR (骗子酒馆 · 2x1 Wide 经典长条) -->
           <div class="game-card tile-wide tile-accent-liarsbar" data-cat="MIND" data-players="4" data-game-key="LIARSBAR" data-genre="PARTY" data-online="true" data-keywords="liarsbar 骗子酒馆 骗子 酒吧 俄罗斯轮盘 吹牛 纸牌 扑克 联机 4人 4player 四人 pzjg 1人 二人" onclick="enterGame('LIARSBAR')">
             <div class="metro-tile-flipper">
               <div class="metro-tile-front">
@@ -274,8 +297,8 @@ def generate_index_html():
             </div>
           </div>
 
-          <!-- 6. 实用工具磁贴: 天命随机开战 -->
-          <div class="metro-tile tile-wide tile-accent-utility" onclick="pickRandomGame()" title="天命摇一摇 · 随机开战">
+          <!-- 6. 实用工具磁贴: 天命随机开战 (1x1 Medium 错落方块) -->
+          <div class="metro-tile tile-medium tile-accent-utility" onclick="pickRandomGame()" title="天命摇一摇 · 随机开战">
             <div class="metro-tile-front" style="background: rgba(255,255,255,0.12);">
               <div class="tile-badge-row"><span class="tile-badge-num">🎲 随机</span></div>
               <div class="tile-icon-canvas">
@@ -337,7 +360,60 @@ def generate_index_html():
             </div>
           </div>
 
-          <!-- 8. DOUDIZHU (经典斗地主) -->
+          <!-- 8. AEROPLANE (四人飞行棋 · 2x1 Wide 下承长条) -->
+          <div class="game-card tile-wide tile-accent-aeroplane" data-cat="STRATEGY" data-players="4" data-game-key="AEROPLANE" data-genre="BOARD" data-online="true" data-keywords="aeroplane 四人飞行棋 飞行棋 飞机 掷骰子 撞机 跳跃 连环 联机 4人 4player 四人 fxq 1人 二人" onclick="enterGame('AEROPLANE')">
+            <div class="metro-tile-flipper">
+              <div class="metro-tile-front">
+                <div class="tile-badge-row"><span class="tile-badge-num">✈️ 4P 联机</span></div>
+                <div class="tile-icon-canvas">
+                  <svg viewBox="0 0 48 48" class="metro-icon-svg">
+                    <path d="M22 4h4v14l16 9v5l-16-5v10l5 4v3l-7-2-7 2v-3l5-4V27L6 32v-5l16-9V4z"/>
+                  </svg>
+                </div>
+                <div class="tile-caption-row">
+                  <div class="tile-title-text">四人飞行棋</div>
+                  <div class="tile-sub-text">1-4人 · 连跳撞机</div>
+                </div>
+              </div>
+              <div class="metro-tile-back">
+                <div class="tile-back-title">四人飞行棋</div>
+                <div class="tile-back-stats">
+                  <div class="tile-stat-row"><span>对局人数</span><span>1-4人 / 联机</span></div>
+                  <div class="tile-stat-row"><span>起飞规则</span><span>掷5/6起飞/连投</span></div>
+                  <div class="tile-stat-row"><span>航道机制</span><span>颜色直飞/折返冲刺</span></div>
+                </div>
+                <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('AEROPLANE')">开玩 ▶</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 9. SPLENDOR (璀璨宝石 · 1x1 Medium 灵动方块) -->
+          <div class="game-card tile-medium tile-accent-splendor" data-cat="STRATEGY" data-players="4" data-game-key="SPLENDOR" data-genre="BOARD" data-online="false" data-keywords="splendor 璀璨宝石 宝石 筹码 贵族 商人 引擎构建 4人 4player 四人 ccbs 桌游 策略 1人 二人" onclick="enterGame('SPLENDOR')">
+            <div class="metro-tile-flipper">
+              <div class="metro-tile-front">
+                <div class="tile-badge-row"><span class="tile-badge-num">💎 4P</span></div>
+                <div class="tile-icon-canvas">
+                  <svg viewBox="0 0 48 48" class="metro-icon-svg">
+                    <path d="M14 8h20l10 12L24 42 4 20 14 8zm1 3l-6.5 8h7.5l4-8h-5zm7.5 0l-3.5 8h10l-3.5-8h-3zm5.5 0l4 8h7.5l-6.5-8H28zM9.5 21L24 37.5 38.5 21H9.5z"/>
+                  </svg>
+                </div>
+                <div class="tile-caption-row">
+                  <div class="tile-title-text">璀璨宝石</div>
+                  <div class="tile-sub-text">宝石引擎构建</div>
+                </div>
+              </div>
+              <div class="metro-tile-back">
+                <div class="tile-back-title">璀璨宝石</div>
+                <div class="tile-back-stats">
+                  <div class="tile-stat-row"><span>人数</span><span>2-4人</span></div>
+                  <div class="tile-stat-row"><span>贵族</span><span>领主赞助</span></div>
+                </div>
+                <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('SPLENDOR')">开玩 ▶</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 10. DOUDIZHU (经典斗地主 · 2x1 Wide 经典长条) -->
           <div class="game-card tile-wide tile-accent-doudizhu" data-cat="MIND" data-players="4" data-game-key="DOUDIZHU" data-genre="BOARD" data-online="true" data-keywords="doudizhu 经典斗地主 斗地主 地主 农民 扑克 纸牌 叫地主 炸弹 顺子 联机 3人 3player 三人 ddz 4人 1人 二人" onclick="enterGame('DOUDIZHU')">
             <div class="metro-tile-flipper">
               <div class="metro-tile-front">
@@ -367,8 +443,8 @@ def generate_index_html():
             </div>
           </div>
 
-          <!-- 9. SANGUOSHA (三国杀) -->
-          <div class="game-card tile-wide tile-accent-sanguosha" data-cat="STRATEGY" data-players="4" data-game-key="SANGUOSHA" data-genre="BOARD" data-online="false" data-keywords="sanguosha sgs 三国杀 无名杀 杀 闪 桃 酒 决斗 万箭齐发 南蛮入侵 诸葛亮 曹操 刘备 孙权 关羽 军争 国战 身份局 1v1 单人 4人 8人 桌游 卡牌 策略 博弈 AI 人机 1人 二人" onclick="enterGame('SANGUOSHA')">
+          <!-- 11. SANGUOSHA (三国杀 · 2x1 Wide 长条 + Push 通知) -->
+          <div class="game-card tile-wide tile-accent-sanguosha anim-push" data-cat="STRATEGY" data-players="4" data-game-key="SANGUOSHA" data-genre="BOARD" data-online="false" data-keywords="sanguosha sgs 三国杀 无名杀 杀 闪 桃 酒 决斗 万箭齐发 南蛮入侵 诸葛亮 曹操 刘备 孙权 关羽 军争 国战 身份局 1v1 单人 4人 8人 桌游 卡牌 策略 博弈 AI 人机 1人 二人" onclick="enterGame('SANGUOSHA')">
             <div class="metro-tile-flipper">
               <div class="metro-tile-front">
                 <div class="tile-badge-row"><span class="tile-badge-num">🗡️ 8P 军争</span></div>
@@ -394,33 +470,7 @@ def generate_index_html():
             </div>
           </div>
 
-          <!-- 10. SPLENDOR (璀璨宝石 1x1) -->
-          <div class="game-card tile-medium tile-accent-splendor" data-cat="STRATEGY" data-players="4" data-game-key="SPLENDOR" data-genre="BOARD" data-online="false" data-keywords="splendor 璀璨宝石 宝石 筹码 贵族 商人 引擎构建 4人 4player 四人 ccbs 桌游 策略 1人 二人" onclick="enterGame('SPLENDOR')">
-            <div class="metro-tile-flipper">
-              <div class="metro-tile-front">
-                <div class="tile-badge-row"><span class="tile-badge-num">💎 4P</span></div>
-                <div class="tile-icon-canvas">
-                  <svg viewBox="0 0 48 48" class="metro-icon-svg">
-                    <path d="M14 8h20l10 12L24 42 4 20 14 8zm1 3l-6.5 8h7.5l4-8h-5zm7.5 0l-3.5 8h10l-3.5-8h-3zm5.5 0l4 8h7.5l-6.5-8H28zM9.5 21L24 37.5 38.5 21H9.5z"/>
-                  </svg>
-                </div>
-                <div class="tile-caption-row">
-                  <div class="tile-title-text">璀璨宝石</div>
-                  <div class="tile-sub-text">宝石引擎构建</div>
-                </div>
-              </div>
-              <div class="metro-tile-back">
-                <div class="tile-back-title">璀璨宝石</div>
-                <div class="tile-back-stats">
-                  <div class="tile-stat-row"><span>人数</span><span>2-4人</span></div>
-                  <div class="tile-stat-row"><span>贵族</span><span>领主赞助</span></div>
-                </div>
-                <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('SPLENDOR')">开玩 ▶</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- 11. QUORIDOR (步步为营 1x1) -->
+          <!-- 12. QUORIDOR (步步为营 · 1x1 Medium 灵动方块) -->
           <div class="game-card tile-medium tile-accent-quoridor" data-cat="STRATEGY" data-players="4" data-game-key="QUORIDOR" data-genre="CHESS" data-online="true" data-keywords="quoridor 步步为营 挡板 迷宫 围棋 走棋 堵路 策略 门萨 联机 4人 4player 四人 bbwy 1人 二人" onclick="enterGame('QUORIDOR')">
             <div class="metro-tile-flipper">
               <div class="metro-tile-front">
@@ -443,33 +493,6 @@ def generate_index_html():
                   <div class="tile-stat-row"><span>阻击</span><span>木墙死锁裁决</span></div>
                 </div>
                 <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('QUORIDOR')">开玩 ▶</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- 12. AEROPLANE (四人飞行棋) -->
-          <div class="game-card tile-wide tile-accent-aeroplane" data-cat="STRATEGY" data-players="4" data-game-key="AEROPLANE" data-genre="BOARD" data-online="true" data-keywords="aeroplane 四人飞行棋 飞行棋 飞机 掷骰子 撞机 跳跃 连环 联机 4人 4player 四人 fxq 1人 二人" onclick="enterGame('AEROPLANE')">
-            <div class="metro-tile-flipper">
-              <div class="metro-tile-front">
-                <div class="tile-badge-row"><span class="tile-badge-num">✈️ 4P 联机</span></div>
-                <div class="tile-icon-canvas">
-                  <svg viewBox="0 0 48 48" class="metro-icon-svg">
-                    <path d="M22 4h4v14l16 9v5l-16-5v10l5 4v3l-7-2-7 2v-3l5-4V27L6 32v-5l16-9V4z"/>
-                  </svg>
-                </div>
-                <div class="tile-caption-row">
-                  <div class="tile-title-text">四人飞行棋</div>
-                  <div class="tile-sub-text">1-4人 · 连跳撞机</div>
-                </div>
-              </div>
-              <div class="metro-tile-back">
-                <div class="tile-back-title">四人飞行棋</div>
-                <div class="tile-back-stats">
-                  <div class="tile-stat-row"><span>对局人数</span><span>1-4人 / 联机</span></div>
-                  <div class="tile-stat-row"><span>起飞规则</span><span>掷5/6起飞/连投</span></div>
-                  <div class="tile-stat-row"><span>航道机制</span><span>颜色直飞/折返冲刺</span></div>
-                </div>
-                <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('AEROPLANE')">开玩 ▶</button>
               </div>
             </div>
           </div>
@@ -676,8 +699,8 @@ def generate_index_html():
         </div>
         <div class="metro-group-body">
 
-          <!-- 19. NES (FC 怀旧红白机 2x2 Large) -->
-          <div class="game-card tile-large tile-accent-nes" data-cat="PHYSICS" data-players="2" data-game-key="NES" data-genre="ARCADE" data-online="true" data-keywords="nes FC 怀旧红白机 红白机厅 红白机 任天堂 800合一 800+ 800+款 马里奥 坦克 魂斗罗 双截龙 冒险岛 雪人兄弟 联机 2人 2player 双人 hbj 怀旧 1人 二人" onclick="enterGame('NES')">
+          <!-- 19. NES (FC 怀旧红白机 2x2 Large + Push 通知) -->
+          <div class="game-card tile-large tile-accent-nes anim-push" data-cat="PHYSICS" data-players="2" data-game-key="NES" data-genre="ARCADE" data-online="true" data-keywords="nes FC 怀旧红白机 红白机厅 红白机 任天堂 800合一 800+ 800+款 马里奥 坦克 魂斗罗 双截龙 冒险岛 雪人兄弟 联机 2人 2player 双人 hbj 怀旧 1人 二人" onclick="enterGame('NES')">
             <div class="metro-tile-flipper">
               <div class="metro-tile-front">
                 <div class="tile-badge-row"><span class="tile-badge-num">🕹️ 800+ 款</span></div>
@@ -708,8 +731,8 @@ def generate_index_html():
             </div>
           </div>
 
-          <!-- 20. CONTRA (魂斗罗) -->
-          <div class="game-card tile-wide tile-accent-contra" data-cat="PHYSICS" data-players="2" data-game-key="CONTRA" data-genre="ARCADE" data-online="true" data-keywords="contra 魂斗罗 比尔 兰斯 30条命 散弹枪 S枪 射击 经典 怀旧 联机 2人 2player 双人 hdl 动作 1人 二人" onclick="enterGame('CONTRA')">
+          <!-- 20. CONTRA (魂斗罗 · 2x1 Wide 下承长条 + Push 通知) -->
+          <div class="game-card tile-wide tile-accent-contra anim-push" data-cat="PHYSICS" data-players="2" data-game-key="CONTRA" data-genre="ARCADE" data-online="true" data-keywords="contra 魂斗罗 比尔 兰斯 30条命 散弹枪 S枪 射击 经典 怀旧 联机 2人 2player 双人 hdl 动作 1人 二人" onclick="enterGame('CONTRA')">
             <div class="metro-tile-flipper">
               <div class="metro-tile-front">
                 <div class="tile-badge-row"><span class="tile-badge-num">💥 30命S弹</span></div>
@@ -736,8 +759,37 @@ def generate_index_html():
             </div>
           </div>
 
-          <!-- 21. TANKTROUBLE (坦克动荡) -->
-          <div class="game-card tile-wide tile-accent-tanktrouble" data-cat="PHYSICS" data-players="2" data-game-key="TANKTROUBLE" data-genre="ARCADE" data-online="true" data-keywords="tanktrouble 坦克动荡 迷宫坦克 弹道 反弹炮 物理 经典 联机 2人 2player 双人 3人 4人 四人 tkdd 1人 二人" onclick="enterGame('TANKTROUBLE')">
+          <!-- 21. HOCKEY (桌上空中冰球 · 1x1 Medium 灵动方块) -->
+          <div class="game-card tile-medium tile-accent-hockey" data-cat="PHYSICS" data-players="2" data-game-key="HOCKEY" data-genre="ARCADE" data-online="false" data-keywords="hockey 桌上空中冰球 冰球 气垫球 碰撞 反弹 极速 手速 物理 2人 2player 双人 zsbq 1人 二人" onclick="enterGame('HOCKEY')">
+            <div class="metro-tile-flipper">
+              <div class="metro-tile-front">
+                <div class="tile-badge-row"><span class="tile-badge-num">🏒 极速</span></div>
+                <div class="tile-icon-canvas">
+                  <svg viewBox="0 0 48 48" class="metro-icon-svg">
+                    <circle cx="16" cy="24" r="10"/>
+                    <circle cx="16" cy="24" r="5" fill="#000" opacity="0.3"/>
+                    <circle cx="36" cy="24" r="5"/>
+                    <path fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="2,2" d="M26 14v20"/>
+                  </svg>
+                </div>
+                <div class="tile-caption-row">
+                  <div class="tile-title-text">桌上冰球</div>
+                  <div class="tile-sub-text">极限滑板对冲</div>
+                </div>
+              </div>
+              <div class="metro-tile-back">
+                <div class="tile-back-title">桌上空中冰球</div>
+                <div class="tile-back-stats">
+                  <div class="tile-stat-row"><span>碰撞</span><span>零阻力气垫滑行</span></div>
+                  <div class="tile-stat-row"><span>击球</span><span>瞬间加速度反扑</span></div>
+                </div>
+                <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('HOCKEY')">开玩 ▶</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 22. TANKTROUBLE (坦克动荡 · 2x1 Wide 经典长条 + Push 通知) -->
+          <div class="game-card tile-wide tile-accent-tanktrouble anim-push" data-cat="PHYSICS" data-players="2" data-game-key="TANKTROUBLE" data-genre="ARCADE" data-online="true" data-keywords="tanktrouble 坦克动荡 迷宫坦克 弹道 反弹炮 物理 经典 联机 2人 2player 双人 3人 4人 四人 tkdd 1人 二人" onclick="enterGame('TANKTROUBLE')">
             <div class="metro-tile-flipper">
               <div class="metro-tile-front">
                 <div class="tile-badge-row"><span class="tile-badge-num">🛡️ 弹道反弹</span></div>
@@ -767,63 +819,7 @@ def generate_index_html():
             </div>
           </div>
 
-          <!-- 22. HOCKEY (桌上空中冰球 1x1) -->
-          <div class="game-card tile-medium tile-accent-hockey" data-cat="PHYSICS" data-players="2" data-game-key="HOCKEY" data-genre="ARCADE" data-online="false" data-keywords="hockey 桌上空中冰球 冰球 气垫球 碰撞 反弹 极速 手速 物理 2人 2player 双人 zsbq 1人 二人" onclick="enterGame('HOCKEY')">
-            <div class="metro-tile-flipper">
-              <div class="metro-tile-front">
-                <div class="tile-badge-row"><span class="tile-badge-num">🏒 极速</span></div>
-                <div class="tile-icon-canvas">
-                  <svg viewBox="0 0 48 48" class="metro-icon-svg">
-                    <circle cx="16" cy="24" r="10"/>
-                    <circle cx="16" cy="24" r="5" fill="#000" opacity="0.3"/>
-                    <circle cx="36" cy="24" r="5"/>
-                    <path fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="2,2" d="M26 14v20"/>
-                  </svg>
-                </div>
-                <div class="tile-caption-row">
-                  <div class="tile-title-text">桌上冰球</div>
-                  <div class="tile-sub-text">极限滑板对冲</div>
-                </div>
-              </div>
-              <div class="metro-tile-back">
-                <div class="tile-back-title">桌上空中冰球</div>
-                <div class="tile-back-stats">
-                  <div class="tile-stat-row"><span>碰撞</span><span>零阻力气垫滑行</span></div>
-                  <div class="tile-stat-row"><span>击球</span><span>瞬间加速度反扑</span></div>
-                </div>
-                <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('HOCKEY')">开玩 ▶</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- 23. IAIDO (一刀入魂 1x1) -->
-          <div class="game-card tile-medium tile-accent-iaido" data-cat="REFLEX" data-players="2" data-game-key="IAIDO" data-genre="PARTY" data-online="false" data-keywords="iaido 一刀入魂 拔刀居合斩 居合 拔刀 反应 手速 极限 毫秒 胜负 决斗 2人 2player 双人 ydrh 极限手速 1人 二人" onclick="enterGame('IAIDO')">
-            <div class="metro-tile-flipper">
-              <div class="metro-tile-front">
-                <div class="tile-badge-row"><span class="tile-badge-num">⚡ 毫秒</span></div>
-                <div class="tile-icon-canvas">
-                  <svg viewBox="0 0 48 48" class="metro-icon-svg">
-                    <path d="M42 6c-1 0-14 3-24 13S6 37 6 38l4 4c1 0 8-1 19-12S42 7 42 6zm-28 32l-4-4 2-2 4 4-2 2z"/>
-                    <path opacity="0.6" d="M22 14l12 12-2 2-12-12z"/>
-                  </svg>
-                </div>
-                <div class="tile-caption-row">
-                  <div class="tile-title-text">一刀入魂</div>
-                  <div class="tile-sub-text">居合拔刀闪念</div>
-                </div>
-              </div>
-              <div class="metro-tile-back">
-                <div class="tile-back-title">一刀入魂</div>
-                <div class="tile-back-stats">
-                  <div class="tile-stat-row"><span>精度</span><span>毫秒级反应裁判</span></div>
-                  <div class="tile-stat-row"><span>失误</span><span>抢跑抢按判负</span></div>
-                </div>
-                <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('IAIDO')">开玩 ▶</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- 24. LIARSDICE (皇家大话骰 1x1) -->
+          <!-- 23. LIARSDICE (皇家大话骰 · 1x1 Medium 灵动方块) -->
           <div class="game-card tile-medium tile-accent-liarsdice" data-cat="MIND" data-players="2" data-game-key="LIARSDICE" data-genre="PARTY" data-online="false" data-keywords="liarsdice 皇家大话骰 大话骰 吹牛骰子 骰子 摇骰 酒桌 破冰 吹牛 心理 2人 2player 双人 dhs 1人 二人" onclick="enterGame('LIARSDICE')">
             <div class="metro-tile-flipper">
               <div class="metro-tile-front">
@@ -849,6 +845,33 @@ def generate_index_html():
                   <div class="tile-stat-row"><span>博弈</span><span>概率计算心理试探</span></div>
                 </div>
                 <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('LIARSDICE')">开玩 ▶</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 24. IAIDO (一刀入魂 · 1x1 Medium 灵动方块) -->
+          <div class="game-card tile-medium tile-accent-iaido" data-cat="REFLEX" data-players="2" data-game-key="IAIDO" data-genre="PARTY" data-online="false" data-keywords="iaido 一刀入魂 拔刀居合斩 居合 拔刀 反应 手速 极限 毫秒 胜负 决斗 2人 2player 双人 ydrh 极限手速 1人 二人" onclick="enterGame('IAIDO')">
+            <div class="metro-tile-flipper">
+              <div class="metro-tile-front">
+                <div class="tile-badge-row"><span class="tile-badge-num">⚡ 毫秒</span></div>
+                <div class="tile-icon-canvas">
+                  <svg viewBox="0 0 48 48" class="metro-icon-svg">
+                    <path d="M42 6c-1 0-14 3-24 13S6 37 6 38l4 4c1 0 8-1 19-12S42 7 42 6zm-28 32l-4-4 2-2 4 4-2 2z"/>
+                    <path opacity="0.6" d="M22 14l12 12-2 2-12-12z"/>
+                  </svg>
+                </div>
+                <div class="tile-caption-row">
+                  <div class="tile-title-text">一刀入魂</div>
+                  <div class="tile-sub-text">居合拔刀闪念</div>
+                </div>
+              </div>
+              <div class="metro-tile-back">
+                <div class="tile-back-title">一刀入魂</div>
+                <div class="tile-back-stats">
+                  <div class="tile-stat-row"><span>精度</span><span>毫秒级反应裁判</span></div>
+                  <div class="tile-stat-row"><span>失误</span><span>抢跑抢按判负</span></div>
+                </div>
+                <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('IAIDO')">开玩 ▶</button>
               </div>
             </div>
           </div>

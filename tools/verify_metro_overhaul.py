@@ -46,8 +46,8 @@ else:
 # --- 3. 26 Games Matrix Verification ---
 print("\n--- [3] 26 Games Full Matrix & SVGs Verification ---")
 ALL_26_GAMES = [
-    ('TRON', 'tile-wide', 'tile-accent-tron', 'PHYSICS', '4'),
-    ('BOMBCAT', 'tile-wide', 'tile-accent-bombcat', 'MIND', '4'),
+    ('TRON', 'tile-large', 'tile-accent-tron', 'PHYSICS', '4'),
+    ('BOMBCAT', 'tile-medium', 'tile-accent-bombcat', 'MIND', '4'),
     ('UNO', 'tile-wide', 'tile-accent-uno', 'MIND', '4'),
     ('BOMBERMAN', 'tile-wide', 'tile-accent-bomberman', 'PHYSICS', '4'),
     ('LIARSBAR', 'tile-wide', 'tile-accent-liarsbar', 'MIND', '4'),

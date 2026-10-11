@@ -75,6 +75,11 @@ body.theme-crimson {
   --start-bg-gradient: radial-gradient(ellipse at 70% 30%, #581221 0%, #3e0c17 45%, #24070d 100%);
 }
 
+body.theme-gold {
+  --start-bg: #382502;
+  --start-bg-gradient: radial-gradient(ellipse at 70% 30%, #523704 0%, #382502 45%, #1c1200 100%);
+}
+
 /* ==========================================================================
    2. 全局环境与 Windows 8 开始屏幕视口规范
    ========================================================================== */
@@ -95,15 +100,25 @@ html, body {
   touch-action: manipulation;
 }
 
-/* 开始屏幕底纹微纹理 (Windows 8 标志性流动光纹) */
+/* 开始屏幕底纹矢量微纹理 (Windows 8 标志性流动折纸与全景视差波纹) */
 .win8-flourish-bg {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 250vw;
+  height: 100vh;
   pointer-events: none;
   z-index: 0;
-  opacity: 0.16;
-  background-image: radial-gradient(circle at 10% 20%, rgba(255,255,255,0.35) 0%, transparent 40%),
-                    radial-gradient(circle at 90% 80%, rgba(255,255,255,0.2) 0%, transparent 45%);
+  opacity: 0.22;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  transition: transform 0.08s cubic-bezier(0.1, 0.9, 0.2, 1);
+}
+
+.win8-parallax-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 /* 顶层主视口容器 */
@@ -361,11 +376,39 @@ html, body {
   filter: brightness(1.08);
 }
 
+/* Microsoft Reveal Highlight (冷白微高光与微边框光圈) */
+.game-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+  border: 1px solid transparent;
+  opacity: 0;
+  transition: opacity 0.2s ease, border-color 0.2s ease;
+  background: radial-gradient(
+    circle 180px at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(255, 255, 255, 0.16) 0%,
+    rgba(255, 255, 255, 0.04) 50%,
+    transparent 80%
+  );
+}
+
+.game-card:hover::after {
+  opacity: 1;
+  border-color: rgba(255, 255, 255, 0.45);
+}
+
 .game-card:active, .game-card.tile-pressed {
   outline: 2px solid #ffffff !important;
   outline-offset: -2px;
   filter: brightness(0.92);
   transform: perspective(600px) scale(0.96) !important;
+}
+
+.game-card.tile-pressed::after {
+  opacity: 0.5;
+  border-color: rgba(255, 255, 255, 0.85);
 }
 
 .game-card.launching {
@@ -386,6 +429,38 @@ html, body {
 
 .game-card.is-flipped .metro-tile-flipper {
   transform: rotateX(180deg);
+}
+
+/* Windows Phone / Win8 经典 Slide / Push 动态磁贴推拉体系 */
+.game-card.anim-push {
+  overflow: hidden;
+}
+
+.game-card.anim-push .metro-tile-flipper {
+  transform: none !important;
+  transform-style: flat;
+}
+
+.game-card.anim-push .metro-tile-front {
+  transform: translateY(0);
+  transition: transform 0.65s cubic-bezier(0.1, 0.9, 0.2, 1);
+  backface-visibility: visible !important;
+  -webkit-backface-visibility: visible !important;
+}
+
+.game-card.anim-push .metro-tile-back {
+  transform: translateY(100%);
+  transition: transform 0.65s cubic-bezier(0.1, 0.9, 0.2, 1);
+  backface-visibility: visible !important;
+  -webkit-backface-visibility: visible !important;
+}
+
+.game-card.anim-push.is-pushed .metro-tile-front {
+  transform: translateY(-100%);
+}
+
+.game-card.anim-push.is-pushed .metro-tile-back {
+  transform: translateY(0);
 }
 
 /* 正面: 极简纯白矢量剪影 + 右上角角标 + 左下角标题 */
@@ -1020,7 +1095,7 @@ html, body {
 }
 
 /* C. 手机与平板竖屏 (Windows Phone 8 / 10 经典两列流式砌体) */
-@media (max-width: 900px) and (orientation: portrait) {
+@media (max-width: 768px) and (orientation: portrait), (max-width: 900px) and (orientation: portrait) {
   html, body {
     overflow-x: hidden !important;
     overflow-y: auto !important;

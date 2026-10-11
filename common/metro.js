@@ -13,7 +13,7 @@
 (function(window) {
   'use strict';
 
-  const THEMES = ['theme-teal', 'theme-indigo', 'theme-slate', 'theme-emerald', 'theme-crimson'];
+  const THEMES = ['theme-slate', 'theme-teal', 'theme-indigo', 'theme-emerald', 'theme-gold', 'theme-crimson'];
 
   const MetroEngine = {
     initialized: false,
@@ -26,6 +26,7 @@
     activeQuery: '',
     activePlayerFilter: 'ALL',
     activeCatFilter: 'ALL',
+    audioCtx: null,
 
     // ========================================================================
     // 1. 初始化入口
@@ -39,6 +40,7 @@
       this.initTiltPhysics();
       this.initIntersectionObserver();
       this.initHorizontalWheel();
+      this.initParallax();
       this.initSemanticZoom();
       this.initCharmDrawer();
       this.startTicker();
@@ -152,21 +154,65 @@
       this.currentThemeIndex = (this.currentThemeIndex + 1) % THEMES.length;
       const nextTheme = THEMES[this.currentThemeIndex];
       this.applyTheme(nextTheme);
-      if (window.AUDIO) try { window.AUDIO.play('click'); } catch(e) {}
+      this.playSonic('release');
       if (typeof showToast === 'function') {
         const names = {
-          'theme-teal': 'Win8 官方青绿壁纸',
-          'theme-indigo': 'Win8.1 经典深紫壁纸',
-          'theme-slate': 'Carbon 暗黑灰黑壁纸',
-          'theme-emerald': 'Xbox 森林墨绿壁纸',
-          'theme-crimson': 'Ruby 勃艮第绯红壁纸'
+          'theme-slate': '极夜黑 (Midnight Black)',
+          'theme-teal': '诺基亚青 (Nokia Cyan)',
+          'theme-indigo': '皇家紫 (Royal Purple)',
+          'theme-emerald': '深翠绿 (Deep Emerald)',
+          'theme-gold': '暗金 (Imperial Gold)',
+          'theme-crimson': '勃艮第红 (Ruby Crimson)'
         };
         showToast(`已切换主题: ${names[nextTheme] || nextTheme}`);
       }
     },
 
     // ========================================================================
-    // 3. 3D Perspective Tilt 触控/光标倾斜真实物理反馈 (Win8 / WP8 核心质感)
+    // 2b. Web Audio 微秒级合成原生导航音效 (Sonic Feedback)
+    // ========================================================================
+    playSonic(type) {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!this.audioCtx && AudioCtx) {
+          this.audioCtx = (window.AUDIO && window.AUDIO.ctx) ? window.AUDIO.ctx : new AudioCtx();
+        }
+        const ctx = this.audioCtx;
+        if (!ctx) return;
+        if (ctx.state === 'suspended') ctx.resume();
+        const t = ctx.currentTime;
+        if (type === 'press') {
+          // 微软经典轻质导航按压声 (Down)
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(500, t);
+          osc.frequency.exponentialRampToValueAtTime(170, t + 0.032);
+          gain.gain.setValueAtTime(0.08, t);
+          gain.gain.linearRampToValueAtTime(0.001, t + 0.032);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(t);
+          osc.stop(t + 0.032);
+        } else if (type === 'release') {
+          // 微软经典轻质回弹声 (Up)
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(280, t);
+          osc.frequency.exponentialRampToValueAtTime(640, t + 0.024);
+          gain.gain.setValueAtTime(0.05, t);
+          gain.gain.linearRampToValueAtTime(0.001, t + 0.024);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(t);
+          osc.stop(t + 0.024);
+        }
+      } catch (e) {}
+    },
+
+    // ========================================================================
+    // 3. 3D Perspective Tilt 触控/光标倾斜真实物理反馈与 Reveal Highlight 光圈
     // ========================================================================
     initTiltPhysics() {
       const isTouch = 'ontouchstart' in window;
@@ -175,11 +221,24 @@
       const endEvt   = isTouch ? 'touchend'   : 'pointerup';
       const cancelEvt= isTouch ? 'touchcancel': 'pointercancel';
 
+      // Reveal Highlight: 鼠标悬停移动时投射冷白高光位置
+      if (!isTouch) {
+        document.addEventListener('pointermove', (e) => {
+          const card = e.target.closest('.game-card');
+          if (card) {
+            const rect = card.getBoundingClientRect();
+            card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+            card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+          }
+        }, { passive: true });
+      }
+
       document.addEventListener(startEvt, (e) => {
         const card = e.target.closest('.game-card');
         if (!card) return;
 
         card.classList.add('tile-pressed');
+        this.playSonic('press');
         this.applyTilt(card, e);
 
         const onMove = (moveEvtObj) => {
@@ -189,6 +248,7 @@
         const onRelease = () => {
           card.classList.remove('tile-pressed');
           card.style.transform = '';
+          this.playSonic('release');
           document.removeEventListener(moveEvt, onMove);
           document.removeEventListener(endEvt, onRelease);
           document.removeEventListener(cancelEvt, onRelease);
@@ -212,6 +272,9 @@
 
       const x = clientX - rect.left;
       const y = clientY - rect.top;
+
+      card.style.setProperty('--mouse-x', `${x}px`);
+      card.style.setProperty('--mouse-y', `${y}px`);
 
       const midX = rect.width / 2;
       const midY = rect.height / 2;
@@ -244,7 +307,33 @@
     },
 
     // ========================================================================
-    // 5. 动态磁贴 (Live Tiles) 周期性翻转调度系统
+    // 4b. Windows 8 经典视差流动纹理平移引擎 (Parallax Panoramic Wallpaper)
+    // ========================================================================
+    initParallax() {
+      const panorama = document.getElementById('metro-panorama');
+      const bg = document.getElementById('win8-flourish-bg');
+      if (!panorama || !bg) return;
+
+      let ticking = false;
+      const updateParallax = () => {
+        const scrollLeft = panorama.scrollLeft;
+        // 0.28x 视差速率缓缓平移，营造深邃立体纵深空间感
+        bg.style.transform = `translate3d(${-scrollLeft * 0.28}px, 0, 0)`;
+        ticking = false;
+      };
+
+      panorama.addEventListener('scroll', () => {
+        if (!ticking) {
+          requestAnimationFrame(updateParallax);
+          ticking = true;
+        }
+      }, { passive: true });
+
+      updateParallax();
+    },
+
+    // ========================================================================
+    // 5. 动态磁贴 (Live Tiles) 周期性翻转与 Push/Slide 推拉调度系统
     // ========================================================================
     initIntersectionObserver() {
       if (!('IntersectionObserver' in window)) return;
@@ -256,6 +345,7 @@
           } else {
             this.visibleCards.delete(card);
             card.classList.remove('is-flipped');
+            card.classList.remove('is-pushed');
           }
         });
       }, { threshold: 0.25 });
@@ -273,14 +363,22 @@
         const cardsArray = Array.from(this.visibleCards).filter(c => !c.classList.contains('tile-pressed') && !c.classList.contains('tile-dimmed'));
         if (cardsArray.length === 0) return;
 
-        // 随机挑选 1 款磁贴翻转展示资讯
+        // 随机挑选 1 款磁贴展示资讯 (3D Flip 或 Slide/Push 推拉)
         const pick = cardsArray[Math.floor(Math.random() * cardsArray.length)];
-        pick.classList.add('is-flipped');
+        const isPush = pick.classList.contains('anim-push');
 
-        setTimeout(() => {
-          if (pick) pick.classList.remove('is-flipped');
-        }, 4200);
-      }, 7000);
+        if (isPush) {
+          pick.classList.add('is-pushed');
+          setTimeout(() => {
+            if (pick) pick.classList.remove('is-pushed');
+          }, 4200);
+        } else {
+          pick.classList.add('is-flipped');
+          setTimeout(() => {
+            if (pick) pick.classList.remove('is-flipped');
+          }, 4200);
+        }
+      }, 6200);
     },
 
     stopTicker() {
