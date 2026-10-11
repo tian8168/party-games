@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>东京 VPS 实时遥测与内核基础设施中枢 · DevOps Command Center</title>
   <link rel="stylesheet" href="../common/common.css">
-  <link rel="stylesheet" href="../common/metro.css">
   <style>
     :root {
       --vps-blue: #0078d7;
@@ -19,14 +18,24 @@
       --vps-purple: #8b5cf6;
     }
 
+    html {
+      overflow-x: hidden;
+      overflow-y: auto !important;
+      height: auto !important;
+      min-height: 100%;
+    }
+
     body {
       background-color: #0b1120;
       background-image: radial-gradient(ellipse at 80% 20%, #1e293b 0%, #0b1120 70%);
       color: #f8fafc;
       min-height: 100vh;
+      height: auto !important;
       display: flex;
       flex-direction: column;
       overflow-x: hidden;
+      overflow-y: auto !important;
+      -webkit-overflow-scrolling: touch;
     }
 
     .vps-dashboard {
