@@ -215,8 +215,8 @@ def generate_index_html():
             </div>
           </div>
 
-          <!-- 4. BOMBERMAN (极光炸弹人大乱斗) -->
-          <div class="game-card tile-wide tile-accent-bomberman" data-cat="PHYSICS" data-players="4" data-game-key="BOMBERMAN" data-genre="ARCADE" data-online="false" data-keywords="bomberman 极光炸弹人 炸弹人 炸弹 neon 道具 踢弹 连环爆 末日突袭 物理 4人 4player 四人 合体 爆破 zdm 1人 二人" onclick="enterGame('BOMBERMAN')">
+          <!-- 4. BOMBERMAN (极光炸弹人) -->
+          <div class="game-card tile-wide tile-accent-bomberman" data-cat="PHYSICS" data-players="4" data-game-key="BOMBERMAN" data-genre="ARCADE" data-online="false" data-keywords="bomberman 极光炸弹人 极光炸弹人大乱斗 炸弹人大乱斗 炸弹人 炸弹 neon 道具 踢弹 连环爆 末日突袭 物理 4人 4player 四人 合体 爆破 zdm 1人 二人" onclick="enterGame('BOMBERMAN')">
             <div class="metro-tile-flipper">
               <div class="metro-tile-front">
                 <div class="tile-badge-row"><span class="tile-badge-num">💣 4P</span></div>
@@ -230,12 +230,12 @@ def generate_index_html():
                   </svg>
                 </div>
                 <div class="tile-caption-row">
-                  <div class="tile-title-text">极光炸弹人大乱斗</div>
+                  <div class="tile-title-text">极光炸弹人</div>
                   <div class="tile-sub-text">1-4人同屏 · 毒圈大逃杀</div>
                 </div>
               </div>
               <div class="metro-tile-back">
-                <div class="tile-back-title">极光炸弹人大乱斗</div>
+                <div class="tile-back-title">极光炸弹人</div>
                 <div class="tile-back-stats">
                   <div class="tile-stat-row"><span>对局人数</span><span>1-4人同屏</span></div>
                   <div class="tile-stat-row"><span>道具体系</span><span>6大道具体系</span></div>
@@ -309,7 +309,7 @@ def generate_index_html():
         <div class="metro-group-body">
 
           <!-- 7. MONOPOLY (经典大富翁 2x2 Large) -->
-          <div class="game-card tile-large tile-accent-monopoly" data-cat="STRATEGY" data-players="4" data-game-key="MONOPOLY" data-genre="BOARD" data-online="true" data-keywords="monopoly 大富翁 强手棋 地产 地皮 盖房 掷骰子 破产 股票 资产 联机 4人 4player 四人 dfw 8人 1人 二人" onclick="enterGame('MONOPOLY')">
+          <div class="game-card tile-large tile-accent-monopoly" data-cat="STRATEGY" data-players="4" data-game-key="MONOPOLY" data-genre="BOARD" data-online="true" data-keywords="monopoly 大富翁 经典大富翁 强手棋 地产 地皮 盖房 掷骰子 破产 股票 资产 联机 4人 4player 四人 dfw 8人 1人 二人" onclick="enterGame('MONOPOLY')">
             <div class="metro-tile-flipper">
               <div class="metro-tile-front">
                 <div class="tile-badge-row"><span class="tile-badge-num">🎩 8P 联机</span></div>
@@ -321,7 +321,7 @@ def generate_index_html():
                   </svg>
                 </div>
                 <div class="tile-caption-row">
-                  <div class="tile-title-text" style="font-size: 1.15rem;">经典大富翁</div>
+                  <div class="tile-title-text">大富翁</div>
                   <div class="tile-sub-text">2-8人 · 联机买地盖房</div>
                 </div>
               </div>
@@ -459,7 +459,7 @@ def generate_index_html():
                 </div>
                 <div class="tile-caption-row">
                   <div class="tile-title-text">四人飞行棋</div>
-                  <div class="tile-sub-text">1-4人 · 掷六起飞连跳撞机</div>
+                  <div class="tile-sub-text">1-4人 · 连跳撞机</div>
                 </div>
               </div>
               <div class="metro-tile-back">
@@ -677,10 +677,10 @@ def generate_index_html():
         <div class="metro-group-body">
 
           <!-- 19. NES (FC 怀旧红白机 2x2 Large) -->
-          <div class="game-card tile-large tile-accent-nes" data-cat="PHYSICS" data-players="2" data-game-key="NES" data-genre="ARCADE" data-online="true" data-keywords="nes FC 怀旧红白机 红白机 任天堂 800合一 800+ 马里奥 坦克 魂斗罗 双截龙 冒险岛 雪人兄弟 联机 2人 2player 双人 hbj 怀旧 1人 二人" onclick="enterGame('NES')">
+          <div class="game-card tile-large tile-accent-nes" data-cat="PHYSICS" data-players="2" data-game-key="NES" data-genre="ARCADE" data-online="true" data-keywords="nes FC 怀旧红白机 红白机厅 红白机 任天堂 800合一 800+ 800+款 马里奥 坦克 魂斗罗 双截龙 冒险岛 雪人兄弟 联机 2人 2player 双人 hbj 怀旧 1人 二人" onclick="enterGame('NES')">
             <div class="metro-tile-flipper">
               <div class="metro-tile-front">
-                <div class="tile-badge-row"><span class="tile-badge-num">🕹️ 800+ 经典</span></div>
+                <div class="tile-badge-row"><span class="tile-badge-num">🕹️ 800+ 款</span></div>
                 <div class="tile-icon-canvas">
                   <svg viewBox="0 0 48 48" class="metro-icon-svg">
                     <rect x="4" y="14" width="40" height="20" rx="3"/>
@@ -692,12 +692,12 @@ def generate_index_html():
                   </svg>
                 </div>
                 <div class="tile-caption-row">
-                  <div class="tile-title-text" style="font-size: 1.15rem;">FC 怀旧红白机厅</div>
+                  <div class="tile-title-text">红白机厅</div>
                   <div class="tile-sub-text">双人同屏/联机 · 870+原版ROM</div>
                 </div>
               </div>
               <div class="metro-tile-back">
-                <div class="tile-back-title">FC 怀旧红白机厅</div>
+                <div class="tile-back-title">红白机厅</div>
                 <div class="tile-back-stats">
                   <div class="tile-stat-row"><span>ROM库</span><span>870+款经典原生游戏</span></div>
                   <div class="tile-stat-row"><span>联机</span><span>P2P帧同步对战</span></div>

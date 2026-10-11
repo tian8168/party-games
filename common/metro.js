@@ -35,6 +35,7 @@
       this.initialized = true;
 
       this.initTheme();
+      this.initAdaptiveLayout();
       this.initTiltPhysics();
       this.initIntersectionObserver();
       this.initHorizontalWheel();
@@ -52,6 +53,70 @@
       });
 
       console.log('🪟 [MetroEngine] Windows Modern UI / Live Tiles 2.0 引擎已就绪');
+    },
+
+    // ========================================================================
+    // 1b. 自适应视口与动态磁贴尺寸计算 (Adaptive Viewport & Full Fill Layout)
+    // ========================================================================
+    initAdaptiveLayout() {
+      this.updateTileLayout();
+      let resizeTimer = null;
+      window.addEventListener('resize', () => {
+        if (resizeTimer) cancelAnimationFrame(resizeTimer);
+        resizeTimer = requestAnimationFrame(() => {
+          this.updateTileLayout();
+        });
+      }, { passive: true });
+
+      if (window.screen && window.screen.orientation) {
+        window.screen.orientation.addEventListener('change', () => {
+          setTimeout(() => this.updateTileLayout(), 60);
+        });
+      }
+    },
+
+    updateTileLayout() {
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const isPortrait = vw <= 768 && vh > vw;
+
+      if (isPortrait) {
+        document.documentElement.style.removeProperty('--tile-unit');
+        document.documentElement.style.removeProperty('--tile-gap');
+        return;
+      }
+
+      const panorama = document.getElementById('metro-panorama');
+      const header = document.getElementById('metro-header-banner');
+      if (!panorama || !header) return;
+
+      const isCompactLandscape = vw <= 900 && vw > vh;
+
+      if (isCompactLandscape) {
+        const headerHeight = header.offsetHeight || 44;
+        const sampleGrp = document.querySelector('.metro-group-header');
+        const grpHeight = sampleGrp ? sampleGrp.offsetHeight : 28;
+        const gap = 8;
+        const targetBottom = 24;
+        const targetTop = 6;
+        const available = vh - headerHeight - targetTop - grpHeight - targetBottom;
+        const unit = Math.max(75, Math.floor((available - gap) / 2));
+        document.documentElement.style.setProperty('--tile-unit', `${unit}px`);
+        document.documentElement.style.setProperty('--tile-gap', `${gap}px`);
+      } else {
+        const headerHeight = header.offsetHeight || 72;
+        const sampleGrp = document.querySelector('.metro-group-header');
+        const grpHeight = sampleGrp ? sampleGrp.offsetHeight : 38;
+        const gap = vh >= 1000 ? 12 : 10;
+        // 磁贴距离屏幕底边约 50px~54px，纵向利用率饱满达 80%~85%
+        const targetBottom = 52;
+        const targetTop = 8;
+        const available = vh - headerHeight - targetTop - grpHeight - targetBottom;
+        // 3行磁贴有 2 个 gap: (available - 2 * gap) / 3
+        const unit = Math.max(120, Math.floor((available - 2 * gap) / 3));
+        document.documentElement.style.setProperty('--tile-unit', `${unit}px`);
+        document.documentElement.style.setProperty('--tile-gap', `${gap}px`);
+      }
     },
 
     // ========================================================================

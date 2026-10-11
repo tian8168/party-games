@@ -46,7 +46,7 @@
   
   /* 动态栅格几何令牌 */
   --tile-gap: 10px;
-  --tile-unit: 140px;
+  --tile-unit: clamp(120px, calc((100vh - 180px) / 3), 900px);
 }
 
 /* 5套 Windows 8 / 8.1 原厂经典壁纸主题 */
@@ -311,6 +311,7 @@ html, body {
   grid-auto-flow: column;
   grid-auto-columns: var(--tile-unit);
   gap: var(--tile-gap);
+  height: calc(var(--tile-unit) * 3 + var(--tile-gap) * 2);
 }
 
 /* ==========================================================================
@@ -446,21 +447,21 @@ html, body {
 }
 
 .metro-icon-svg {
-  width: clamp(38px, calc(var(--tile-unit) * 0.32), 64px);
-  height: clamp(38px, calc(var(--tile-unit) * 0.32), 64px);
+  width: clamp(38px, calc(var(--tile-unit) * 0.36), 110px);
+  height: clamp(38px, calc(var(--tile-unit) * 0.36), 110px);
   fill: #ffffff;
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .tile-wide .metro-icon-svg {
-  width: clamp(42px, calc(var(--tile-unit) * 0.36), 72px);
-  height: clamp(42px, calc(var(--tile-unit) * 0.36), 72px);
+  width: clamp(44px, calc(var(--tile-unit) * 0.40), 130px);
+  height: clamp(44px, calc(var(--tile-unit) * 0.40), 130px);
 }
 
 .tile-large .metro-icon-svg {
-  width: clamp(68px, calc(var(--tile-unit) * 0.52), 110px);
-  height: clamp(68px, calc(var(--tile-unit) * 0.52), 110px);
+  width: clamp(72px, calc(var(--tile-unit) * 0.55), 200px);
+  height: clamp(72px, calc(var(--tile-unit) * 0.55), 200px);
 }
 
 /* 左下角经典排版 (Bottom-Left Typography) */
@@ -470,29 +471,42 @@ html, body {
   width: 100%;
   flex-shrink: 0;
   min-height: 0;
+  overflow: hidden;
 }
 
 .tile-title-text {
   font-family: "Segoe UI", "Microsoft YaHei UI", sans-serif;
-  font-size: clamp(0.86rem, 1.8vw, 0.98rem);
+  font-size: clamp(0.88rem, calc(var(--tile-unit) * 0.082), 1.25rem);
   font-weight: 600;
   color: #ffffff;
-  line-height: 1.15;
+  line-height: 1.2;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
 }
 
+.tile-wide .tile-title-text {
+  font-size: clamp(0.88rem, calc(var(--tile-unit) * 0.082), 1.22rem);
+}
+
+.tile-large .tile-title-text {
+  font-size: clamp(1rem, calc(var(--tile-unit) * 0.095), 1.45rem);
+}
+
 .tile-sub-text {
-  font-size: clamp(0.66rem, 1.3vw, 0.72rem);
+  font-size: clamp(0.68rem, calc(var(--tile-unit) * 0.055), 0.88rem);
   font-weight: 400;
   color: rgba(255, 255, 255, 0.82);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   margin-top: 2px;
-  line-height: 1.1;
+  line-height: 1.15;
+}
+
+.tile-large .tile-sub-text {
+  font-size: clamp(0.72rem, calc(var(--tile-unit) * 0.06), 0.95rem);
 }
 
 /* 背面样式 */
@@ -826,8 +840,8 @@ html, body {
 /* A. 桌面与 Surface 宽屏全景流 (Surface Pro / Windows 8.1 宽屏全景) */
 @media (min-width: 901px) {
   :root {
-    --tile-unit: clamp(125px, calc((100vh - 200px) / 3 - 12px), 215px);
-    --tile-gap: 10px;
+    --tile-gap: clamp(10px, 1.1vh, 14px);
+    --tile-unit: clamp(120px, calc((100vh - 178px) / 3), 900px);
   }
 
   body {
@@ -839,7 +853,7 @@ html, body {
   }
 
   .start-header {
-    padding: 20px 48px 10px;
+    padding: clamp(16px, 2.2vh, 24px) clamp(24px, 3.2vw, 48px) clamp(6px, 1vh, 12px);
   }
 
   .metro-panorama {
@@ -847,8 +861,19 @@ html, body {
     flex-direction: row !important;
     overflow-x: auto !important;
     overflow-y: hidden !important;
-    gap: 48px;
-    padding: 8px 48px 36px;
+    gap: clamp(32px, 3.5vw, 48px);
+    padding: 8px clamp(24px, 3.2vw, 48px) 52px !important;
+  }
+
+  .metro-group {
+    display: flex !important;
+    flex-direction: column !important;
+    flex-shrink: 0 !important;
+    justify-content: flex-start !important;
+  }
+
+  .metro-group-header {
+    margin-bottom: clamp(8px, 1.2vh, 12px) !important;
   }
 
   .metro-group-body {
@@ -857,6 +882,7 @@ html, body {
     grid-auto-flow: column !important;
     grid-auto-columns: var(--tile-unit) !important;
     gap: var(--tile-gap) !important;
+    height: calc(var(--tile-unit) * 3 + var(--tile-gap) * 2) !important;
   }
 
   .tile-medium {
@@ -881,28 +907,28 @@ html, body {
   }
 }
 
-/* 大屏高分辨率 (1080p, 1440p, 4K 高度 >= 900px) */
+/* 大屏高分辨率 (1080p, 1440p, 4K 高度 >= 900px，包含浏览器 80% 缩放) */
 @media (min-width: 1200px) and (min-height: 900px) {
   :root {
-    --tile-unit: clamp(140px, calc((100vh - 220px) / 3 - 12px), 195px);
-    --tile-gap: 12px;
+    --tile-gap: clamp(12px, 1.2vh, 16px);
+    --tile-unit: clamp(140px, calc((100vh - 188px) / 3), 900px);
   }
 
   .start-header {
-    padding: 28px 56px 14px;
+    padding: clamp(20px, 2.6vh, 32px) clamp(36px, 3.6vw, 56px) clamp(8px, 1.2vh, 14px);
   }
 
   .metro-panorama {
-    gap: 56px;
-    padding: 12px 56px 48px;
+    gap: clamp(40px, 4vw, 56px);
+    padding: 10px clamp(36px, 3.6vw, 56px) 52px !important;
   }
 }
 
 /* B. 紧凑高度视口与移动端横屏 (Windows Phone Landscape 2行横滑全景) */
 @media (max-width: 900px) and (orientation: landscape) {
   :root {
-    --tile-unit: clamp(80px, calc((100vh - 95px) / 2 - 8px), 110px);
     --tile-gap: 8px;
+    --tile-unit: clamp(80px, calc((100vh - 96px) / 2 - 8px), 240px);
   }
 
   body {
