@@ -68,6 +68,12 @@
         });
       }, { passive: true });
 
+      // 页面完全加载与 Web 字体渲染完毕后精确重新计算
+      window.addEventListener('load', () => this.updateTileLayout(), { passive: true });
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(() => this.updateTileLayout());
+      }
+
       if (window.screen && window.screen.orientation) {
         window.screen.orientation.addEventListener('change', () => {
           setTimeout(() => this.updateTileLayout(), 60);
@@ -78,7 +84,7 @@
     updateTileLayout() {
       const vw = window.innerWidth;
       const vh = window.innerHeight;
-      const isPortrait = vw <= 768 && vh > vw;
+      const isPortrait = vw <= 900 && vh >= vw;
 
       if (isPortrait) {
         document.documentElement.style.removeProperty('--tile-unit');
@@ -96,10 +102,11 @@
         const headerHeight = header.offsetHeight || 44;
         const sampleGrp = document.querySelector('.metro-group-header');
         const grpHeight = sampleGrp ? sampleGrp.offsetHeight : 28;
+        const grpMargin = sampleGrp ? (parseFloat(window.getComputedStyle(sampleGrp).marginBottom) || 6) : 6;
         const gap = 8;
-        const targetBottom = 24;
-        const targetTop = 6;
-        const available = vh - headerHeight - targetTop - grpHeight - targetBottom;
+        const targetBottom = 20;
+        const targetTop = 4;
+        const available = vh - headerHeight - targetTop - grpHeight - grpMargin - targetBottom;
         const unit = Math.max(75, Math.floor((available - gap) / 2));
         document.documentElement.style.setProperty('--tile-unit', `${unit}px`);
         document.documentElement.style.setProperty('--tile-gap', `${gap}px`);
@@ -107,11 +114,12 @@
         const headerHeight = header.offsetHeight || 72;
         const sampleGrp = document.querySelector('.metro-group-header');
         const grpHeight = sampleGrp ? sampleGrp.offsetHeight : 38;
+        const grpMargin = sampleGrp ? (parseFloat(window.getComputedStyle(sampleGrp).marginBottom) || 12) : 12;
         const gap = vh >= 1000 ? 12 : 10;
         // 磁贴距离屏幕底边约 50px~54px，纵向利用率饱满达 80%~85%
         const targetBottom = 52;
         const targetTop = 8;
-        const available = vh - headerHeight - targetTop - grpHeight - targetBottom;
+        const available = vh - headerHeight - targetTop - grpHeight - grpMargin - targetBottom;
         // 3行磁贴有 2 个 gap: (available - 2 * gap) / 3
         const unit = Math.max(120, Math.floor((available - 2 * gap) / 3));
         document.documentElement.style.setProperty('--tile-unit', `${unit}px`);

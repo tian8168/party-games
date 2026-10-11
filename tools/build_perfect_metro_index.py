@@ -621,7 +621,7 @@ def generate_index_html():
                   </svg>
                 </div>
                 <div class="tile-caption-row">
-                  <div class="tile-title-text">3D 立体五子棋</div>
+                  <div class="tile-title-text">3D五子棋</div>
                   <div class="tile-sub-text">5×5×5 空间对弈</div>
                 </div>
               </div>
@@ -637,7 +637,7 @@ def generate_index_html():
           </div>
 
           <!-- 18. GRAVITY3D4 (3D 立体四子棋 1x1) -->
-          <div class="game-card tile-medium tile-accent-gravity3d4" data-cat="STRATEGY" data-players="2" data-game-key="GRAVITY3D4" data-genre="CHESS" data-online="false" data-keywords="gravity3d4 3D四子棋 立体四子棋 4x4x4 魔方 空间 连珠 2人 2player 双人 3dsq 1人 二人" onclick="enterGame('GRAVITY3D4')">
+          <div class="game-card tile-medium tile-accent-gravity3d4" data-cat="STRATEGY" data-players="2" data-game-key="GRAVITY3D4" data-genre="CHESS" data-online="false" data-keywords="gravity3d4 3D四子棋 3D立体四子棋 立体四子棋 4x4x4 魔方 空间 连珠 2人 2player 双人 3dsq 1人 二人" onclick="enterGame('GRAVITY3D4')">
             <div class="metro-tile-flipper">
               <div class="metro-tile-front">
                 <div class="tile-badge-row"><span class="tile-badge-num">💜 魔方</span></div>
@@ -648,7 +648,7 @@ def generate_index_html():
                   </svg>
                 </div>
                 <div class="tile-caption-row">
-                  <div class="tile-title-text">3D 立体四子棋</div>
+                  <div class="tile-title-text">3D四子棋</div>
                   <div class="tile-sub-text">4×4×4 魔方连珠</div>
                 </div>
               </div>
@@ -838,7 +838,7 @@ def generate_index_html():
                   </svg>
                 </div>
                 <div class="tile-caption-row">
-                  <div class="tile-title-text">皇家大话骰</div>
+                  <div class="tile-title-text">大话骰</div>
                   <div class="tile-sub-text">酒桌吹牛摇盅</div>
                 </div>
               </div>
