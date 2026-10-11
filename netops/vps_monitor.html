@@ -418,6 +418,110 @@
       opacity: 1;
       transform: translateY(0);
     }
+    /* ========================================================================
+       科学代理与出站流量网络中枢样式 (Proxy Audit Styles)
+       ======================================================================== */
+    .audit-section {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .audit-grid-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 960px) {
+      .audit-grid-2col {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .dest-rank-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .dest-rank-item {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      padding: 6px 10px;
+      background: rgba(0, 0, 0, 0.28);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 3px;
+    }
+
+    .dest-rank-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+      font-family: "Consolas", monospace;
+    }
+
+    .dest-domain-text {
+      color: #38bdf8;
+      font-weight: 600;
+      word-break: break-all;
+    }
+
+    .dest-hits-badge {
+      background: rgba(56, 189, 248, 0.15);
+      color: #7dd3fc;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 1px 6px;
+      border-radius: 2px;
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+
+    .log-stream-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.76rem;
+      font-family: "Consolas", monospace;
+    }
+
+    .log-stream-table th {
+      padding: 8px 10px;
+      text-align: left;
+      color: #94a3b8;
+      background: rgba(0, 0, 0, 0.45);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 0.72rem;
+      letter-spacing: 0.5px;
+    }
+
+    .log-stream-table td {
+      padding: 6px 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      color: #cbd5e1;
+      white-space: nowrap;
+    }
+
+    .log-stream-table tr:hover {
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .badge-proto {
+      padding: 1px 6px;
+      border-radius: 2px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    .badge-proto-hy2 { background: rgba(6, 182, 212, 0.2); color: #22d3ee; border: 1px solid rgba(6, 182, 212, 0.4); }
+    .badge-proto-vless { background: rgba(99, 102, 241, 0.2); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.4); }
+    .badge-proto-f2b { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
+    .badge-proto-iptables { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }
+
+    .badge-action-ok { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); padding: 1px 6px; border-radius: 2px; font-weight: 600; font-size: 0.7rem; }
+    .badge-action-warn { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); padding: 1px 6px; border-radius: 2px; font-weight: 600; font-size: 0.7rem; }
+    .badge-action-danger { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); padding: 1px 6px; border-radius: 2px; font-weight: 600; font-size: 0.7rem; }
   </style>
 </head>
 <body>
@@ -674,6 +778,120 @@
         </div>
       </div>
     </section>
+
+    <!-- =================================================================== -->
+    <!-- 科学代理与出站流量网络审计中枢 (Proxy Ingress/Egress Audit Center) -->
+    <!-- =================================================================== -->
+    <div class="audit-section">
+      <!-- 1. 活跃科学出站账号与客户端终端设备 -->
+      <div class="kernel-card">
+        <div class="kernel-card-head">
+          <span class="kernel-card-title">👤 科学出站活跃账号与客户端设备 (Active Client & Endpoint Audit)</span>
+          <span class="badge-status badge-ok" id="proxy-clients-summary-badge">双协议就绪 · 客户端审计中</span>
+        </div>
+        <p style="font-size: 0.8rem; color: #94a3b8; margin: 0;">
+          基于 Hysteria 2 TrafficStats 原生引擎与 Xray VLESS-Reality 访问流，实时审计当前在线代理账号、接入公网 IP 与终端网络特征（解决“哪个用户在访问”）：
+        </p>
+
+        <div style="overflow-x: auto;">
+          <table class="log-stream-table" id="proxy-clients-table">
+            <thead>
+              <tr>
+                <th>用户账号</th>
+                <th>客户端公网 IP</th>
+                <th>终端网络类型</th>
+                <th>出站协议</th>
+                <th>在线设备数</th>
+                <th>累计出站 / 入站流量</th>
+                <th>最近请求目标</th>
+                <th>当前状态</th>
+              </tr>
+            </thead>
+            <tbody id="proxy-active-clients-tbody">
+              <tr>
+                <td colspan="8" style="text-align: center; color: #64748b; padding: 16px;">正在拉取客户端审计流...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 2. 出站流量目标流向排行 & 活跃 Socket 隧道流 (双列排布) -->
+      <div class="audit-grid-2col">
+        <!-- 左列：热门出站目标域名排行榜 -->
+        <div class="kernel-card">
+          <div class="kernel-card-head">
+            <span class="kernel-card-title">🌍 代理出站流量目标流向排行 (Top Outbound Destinations)</span>
+            <span class="badge-status badge-info" id="proxy-top-domains-badge">Top 12 域名</span>
+          </div>
+          <p style="font-size: 0.8rem; color: #94a3b8; margin: 0;">
+            实时统计代理用户流量发往的境外目标主机与命中频次（解决“代理流量都走了哪里”）：
+          </p>
+          <div class="dest-rank-list" id="proxy-top-destinations-list">
+            <div style="text-align: center; color: #64748b; padding: 20px;">正在统计出站流向目标...</div>
+          </div>
+        </div>
+
+        <!-- 右列：实时活跃 Socket 隧道流监视 -->
+        <div class="kernel-card">
+          <div class="kernel-card-head">
+            <span class="kernel-card-title">⚡ 活跃代理隧道流监视 (Live Outbound Streams)</span>
+            <span class="badge-status badge-ok" id="proxy-total-streams-badge">0 活跃流</span>
+          </div>
+          <p style="font-size: 0.8rem; color: #94a3b8; margin: 0;">
+            当前内核协议栈维持的真实 TCP / QUIC 出站代理通道明细（来自 /dump/streams）：
+          </p>
+          <div style="overflow-x: auto; max-height: 380px; overflow-y: auto;">
+            <table class="log-stream-table">
+              <thead>
+                <tr>
+                  <th>协议</th>
+                  <th>目标地址 (Host:Port)</th>
+                  <th>状态</th>
+                  <th>TX / RX 字节</th>
+                  <th>最后活动时间</th>
+                </tr>
+              </thead>
+              <tbody id="proxy-active-streams-tbody">
+                <tr>
+                  <td colspan="5" style="text-align: center; color: #64748b; padding: 16px;">正在监测活跃代理流...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. 实时代理与内核安全审计流水表 (Full Width) -->
+      <div class="kernel-card">
+        <div class="kernel-card-head">
+          <span class="kernel-card-title">📜 实时代理与系统安全审计日志流 (Unified Audit Log Stream)</span>
+          <span class="badge-status badge-ok" id="proxy-live-logs-badge">实时滚动 · 最新 25 条</span>
+        </div>
+        <p style="font-size: 0.8rem; color: #94a3b8; margin: 0;">
+          聚合 Hysteria 2、Xray VLESS 接入、Fail2ban 攻击封锁与 Netfilter iptables DROP 内核规则的统一事件流水：
+        </p>
+
+        <div style="overflow-x: auto; max-height: 320px; overflow-y: auto; border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 4px;">
+          <table class="log-stream-table">
+            <thead>
+              <tr>
+                <th style="width: 100px;">事件时间</th>
+                <th style="width: 130px;">协议 / 防护模块</th>
+                <th style="width: 150px;">账号 / 来源 IP</th>
+                <th>访问目标 / 攻击拦截目标</th>
+                <th style="width: 120px;">处置动作</th>
+              </tr>
+            </thead>
+            <tbody id="proxy-live-logs-tbody">
+              <tr>
+                <td colspan="5" style="text-align: center; color: #64748b; padding: 16px;">正在拉取审计日志流水...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
 
     <!-- 基础设施凭据与端口矩阵 -->
     <div class="infra-grid">
@@ -956,10 +1174,14 @@
       if (data.cpu) {
         const cores = data.cpu.cores || 2;
         const usage = data.cpu.usage_pct || 0.0;
-        document.getElementById('cpu-cores-badge').textContent = `${cores} vCPUs`;
-        document.getElementById('cpu-usage-text').textContent = `${usage.toFixed(1)}%`;
-        document.getElementById('cpu-usage-bar').style.width = `${Math.min(100, Math.max(3, usage))}%`;
-        document.getElementById('k-loadavg').textContent = `${data.cpu.load_1m} / ${data.cpu.load_5m} / ${data.cpu.load_15m}`;
+        const badge = document.getElementById('cpu-cores-badge');
+        if (badge) badge.textContent = `${cores} vCPUs`;
+        const uText = document.getElementById('cpu-usage-text');
+        if (uText) uText.textContent = `${usage.toFixed(1)}%`;
+        const uBar = document.getElementById('cpu-usage-bar');
+        if (uBar) uBar.style.width = `${Math.min(100, Math.max(3, usage))}%`;
+        const lAvg = document.getElementById('k-loadavg');
+        if (lAvg) lAvg.textContent = `${data.cpu.load_1m} / ${data.cpu.load_5m} / ${data.cpu.load_15m}`;
       }
 
       // Uptime
@@ -967,7 +1189,8 @@
         const d = Math.floor(data.uptime_seconds / 86400);
         const h = Math.floor((data.uptime_seconds % 86400) / 3600);
         const m = Math.floor((data.uptime_seconds % 3600) / 60);
-        document.getElementById('k-uptime').textContent = `${d}天 ${h}小时 ${m}分`;
+        const upEl = document.getElementById('k-uptime');
+        if (upEl) upEl.textContent = `${d}天 ${h}小时 ${m}分`;
       }
 
       // 2. 内存
@@ -975,14 +1198,21 @@
         const used = data.memory.used_mb || 0;
         const total = data.memory.total_mb || 2480;
         const pct = data.memory.used_pct || 0;
-        document.getElementById('mem-usage-text').textContent = `${used} MB / ${total} MB (${pct}%)`;
-        document.getElementById('mem-usage-bar').style.width = `${pct}%`;
-        document.getElementById('k-mem-avail').textContent = `${data.memory.available_mb} MB`;
+        const mText = document.getElementById('mem-usage-text');
+        if (mText) mText.textContent = `${used} MB / ${total} MB (${pct}%)`;
+        const mBar = document.getElementById('mem-usage-bar');
+        if (mBar) mBar.style.width = `${pct}%`;
+        const mAvail = document.getElementById('k-mem-avail');
+        if (mAvail) mAvail.textContent = `${data.memory.available_mb} MB`;
 
         const swapUsed = data.memory.swap_used_mb || 0;
         const swapTotal = data.memory.swap_total_mb || 256;
         const swapPct = data.memory.swap_pct || 0;
-        document.getElementById('swap-usage-text').textContent = `${swapUsed} MB / ${swapTotal} MB (${swapPct}%)`;
+        const sText = document.getElementById('swap-usage-text');
+        if (sText) sText.textContent = `${swapUsed} MB / ${swapTotal} MB (${swapPct}%)`;
+      }
+
+      // 存储 Disk
       if (data.disk) {
         const dText = document.getElementById('disk-usage-text');
         const dBar = document.getElementById('disk-usage-bar');
@@ -996,30 +1226,40 @@
       if (data.network) {
         const rxK = data.network.rx_rate_kbps || 0;
         const txK = data.network.tx_rate_kbps || 0;
-        document.getElementById('k-net-rate').textContent = `RX: ${rxK.toFixed(1)} KB/s | TX: ${txK.toFixed(1)} KB/s`;
+        const rateEl = document.getElementById('k-net-rate');
+        if (rateEl) rateEl.textContent = `RX: ${rxK.toFixed(1)} KB/s | TX: ${txK.toFixed(1)} KB/s`;
 
         const rxG = (data.network.rx_bytes / (1024 * 1024 * 1024)).toFixed(1);
         const txG = (data.network.tx_bytes / (1024 * 1024 * 1024)).toFixed(1);
-        document.getElementById('k-net-total').textContent = `RX: ${rxG} GB | TX: ${txG} GB`;
+        const totEl = document.getElementById('k-net-total');
+        if (totEl) totEl.textContent = `RX: ${rxG} GB | TX: ${txG} GB`;
       }
 
       if (data.tcp) {
-        document.getElementById('tcp-est').textContent = data.tcp.ESTABLISHED || 0;
-        document.getElementById('tcp-listen').textContent = data.tcp.LISTEN || 0;
-        document.getElementById('tcp-tw').textContent = data.tcp.TIME_WAIT || 0;
+        const estVal = data.tcp.established ?? data.tcp.ESTABLISHED ?? 0;
+        const lisVal = data.tcp.listen ?? data.tcp.LISTEN ?? 0;
+        const twVal = data.tcp.time_wait ?? data.tcp.TIME_WAIT ?? 0;
+        const eEl = document.getElementById('tcp-est');
+        if (eEl) eEl.textContent = estVal;
+        const lEl = document.getElementById('tcp-listen');
+        if (lEl) lEl.textContent = lisVal;
+        const tEl = document.getElementById('tcp-tw');
+        if (tEl) tEl.textContent = twVal;
       }
 
       if (data.congestion_control) {
-        document.getElementById('tcp-cc-badge').textContent = `${data.congestion_control.toUpperCase()} 拥塞控制`;
+        const ccEl = document.getElementById('tcp-cc-badge');
+        if (ccEl) ccEl.textContent = `${data.congestion_control.toUpperCase()} 拥塞控制`;
       }
 
-      // 4. 服务与入侵防御
+      // 4. 服务状态与安全防御
       if (data.services) {
-        setSvcBadge('svc-sshd', data.services.sshd);
+        setSvcBadge('svc-sshd', data.services.sshd ?? true);
         setSvcBadge('svc-xray', data.services.xray);
         setSvcBadge('svc-hysteria', data.services.hysteria);
         setSvcBadge('svc-sub', data.services.clash_sub);
       }
+
       if (data.security) {
         const f2b = document.getElementById('svc-f2b');
         if (f2b) {
@@ -1052,6 +1292,130 @@
             btnFrench.textContent = hasFrench ? '✓ 77.239.124.0/24 已在内核拦截' : '🔥 立即丢弃 77.239.124.0/24';
             btnFrench.style.opacity = hasFrench ? '0.7' : '1.0';
           }
+        }
+      }
+
+      // 5. 渲染科学代理与出站审计中枢
+      if (data.proxy_audit) {
+        renderProxyAudit(data.proxy_audit);
+      }
+    }
+
+    // ========================================================================
+    // 渲染代理用户、流向审计与实时日志流水 (Proxy Audit Engine)
+    // ========================================================================
+    function renderProxyAudit(audit) {
+      if (!audit) return;
+
+      // 1. 活跃客户端表格
+      const clientTbody = document.getElementById('proxy-active-clients-tbody');
+      const clientBadge = document.getElementById('proxy-clients-summary-badge');
+      if (clientTbody) {
+        const clients = audit.active_clients || [];
+        if (clients.length === 0) {
+          clientTbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #64748b; padding: 12px;">无在线客户端记录</td></tr>';
+        } else {
+          clientTbody.innerHTML = clients.map(c => {
+            const isMobile = c.client_ip && c.client_ip.startsWith('111.');
+            const netType = isMobile ? '📱 蜂窝移动网络 (Phone)' : '💻 住宅宽带 (PC)';
+            return `
+              <tr>
+                <td><strong style="color: #38bdf8;">${c.user}</strong></td>
+                <td><code style="color: #34d399; font-weight: bold;">${c.client_ip}</code></td>
+                <td><span style="color: #cbd5e1; font-size: 0.74rem;">${netType}</span></td>
+                <td><span class="badge-proto badge-proto-hy2">${c.proto || 'Hysteria 2 / VLESS'}</span></td>
+                <td><strong style="color: #f8fafc;">${c.devices || 1} 台设备</strong></td>
+                <td style="color: #94a3b8;">TX: <span style="color:#7dd3fc;">${c.tx_mb} MB</span> | RX: <span style="color:#a7f3d0;">${c.rx_mb} MB</span></td>
+                <td><code style="color: #e2e8f0; font-size: 0.72rem;">${c.last_target || '--'}</code></td>
+                <td><span class="badge-action-ok">● ${c.status || 'ACTIVE ONLINE'}</span></td>
+              </tr>
+            `;
+          }).join('');
+        }
+        if (clientBadge && clients.length > 0) {
+          const totalDevs = clients.reduce((acc, c) => acc + (c.devices || 1), 0);
+          clientBadge.textContent = `双协议就绪 · ${totalDevs} 终端设备在线`;
+        }
+      }
+
+      // 2. 热门出站域名排行榜 (Top Destinations)
+      const destList = document.getElementById('proxy-top-destinations-list');
+      if (destList) {
+        const topDests = audit.top_destinations || [];
+        if (topDests.length === 0) {
+          destList.innerHTML = '<div style="text-align: center; color: #64748b; padding: 16px;">暂无目标域名统计数据</div>';
+        } else {
+          const maxHits = Math.max(...topDests.map(d => d.hits), 1);
+          destList.innerHTML = topDests.map((d, idx) => {
+            const pct = Math.max(6, Math.min(100, Math.round((d.hits / maxHits) * 100)));
+            const rankColor = idx === 0 ? '#f59e0b' : (idx === 1 ? '#94a3b8' : (idx === 2 ? '#b45309' : '#64748b'));
+            return `
+              <div class="dest-rank-item">
+                <div class="dest-rank-header">
+                  <span>
+                    <strong style="color: ${rankColor}; margin-right: 6px;">#${idx + 1}</strong>
+                    <span class="dest-domain-text">${d.domain}</span>
+                  </span>
+                  <span class="dest-hits-badge">${d.hits} 命中</span>
+                </div>
+                <div class="progress-track" style="height: 4px; background: rgba(255,255,255,0.06);">
+                  <div class="progress-fill fill-blue" style="width: ${pct}%;"></div>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      }
+
+      // 3. 活跃代理隧道流 (Recent Streams)
+      const streamTbody = document.getElementById('proxy-active-streams-tbody');
+      const streamBadge = document.getElementById('proxy-total-streams-badge');
+      if (streamTbody) {
+        const streams = audit.recent_streams || [];
+        if (streamBadge) streamBadge.textContent = `${streams.length} 活跃流`;
+        if (streams.length === 0) {
+          streamTbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #64748b; padding: 12px;">当前无活跃出站流</td></tr>';
+        } else {
+          streamTbody.innerHTML = streams.map(s => `
+            <tr>
+              <td><span class="badge-proto badge-proto-hy2">HY2</span></td>
+              <td><code style="color: #e2e8f0;">${s.target}</code></td>
+              <td><span class="badge-action-ok" style="font-size: 0.65rem;">${s.state}</span></td>
+              <td style="color: #94a3b8;">${(s.tx_bytes/1024).toFixed(1)}K / ${(s.rx_bytes/1024).toFixed(1)}K</td>
+              <td style="color: #64748b; font-size: 0.7rem;">${s.last_active || '--'}</td>
+            </tr>
+          `).join('');
+        }
+      }
+
+      // 4. 实时统一审计日志流水 (Unified Live Log Stream)
+      const logTbody = document.getElementById('proxy-live-logs-tbody');
+      if (logTbody) {
+        const logs = audit.recent_logs || [];
+        if (logs.length === 0) {
+          logTbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #64748b; padding: 12px;">暂无实时流水日志</td></tr>';
+        } else {
+          logTbody.innerHTML = logs.map(l => {
+            let pBadge = '<span class="badge-proto badge-proto-hy2">Hysteria 2</span>';
+            if (l.proto.includes('VLESS')) pBadge = '<span class="badge-proto badge-proto-vless">VLESS-Reality</span>';
+            else if (l.proto.includes('Fail2ban')) pBadge = '<span class="badge-proto badge-proto-f2b">Fail2ban</span>';
+            else if (l.proto.includes('iptables')) pBadge = '<span class="badge-proto badge-proto-iptables">Netfilter</span>';
+
+            let actBadge = '<span class="badge-action-ok">FORWARDED</span>';
+            if (l.status === 'RESET') actBadge = '<span class="badge-action-warn">RESET_PEER</span>';
+            else if (l.status === 'BANNED') actBadge = '<span class="badge-action-danger">BANNED</span>';
+            else if (l.status === 'DROP') actBadge = '<span class="badge-action-danger">DROP</span>';
+
+            return `
+              <tr>
+                <td style="color: #94a3b8; font-family: monospace;">${l.time}</td>
+                <td>${pBadge}</td>
+                <td><strong style="color: #38bdf8;">${l.user}</strong> <span style="color: #64748b; font-size: 0.7rem;">(${l.client_ip})</span></td>
+                <td><code style="color: #f1f5f9;">${l.target}</code></td>
+                <td>${actBadge}</td>
+              </tr>
+            `;
+          }).join('');
         }
       }
     }
