@@ -426,6 +426,7 @@
     <a href="../index.html" class="nav-back">🔙 返回大厅</a>
     <h2 class="game-title">🗼 东京 VPS 实时遥测与内核基础设施中枢 (Tokyo NetOps Hub)</h2>
     <div class="header-actions">
+      <button class="btn-icon" id="btn-admin-gate" onclick="toggleAdminGate()" style="border-color: rgba(245, 158, 11, 0.5); color: #fbbf24;" title="管理员运维控制门禁">🔒 只读访客 (点击解锁)</button>
       <button class="btn-icon" id="btn-manual-probe" onclick="triggerProbe(true)" title="立即刷新遥测">⚡ 刷新采样</button>
       <button class="btn-icon" onclick="copySSHCommand()" title="复制 SSH 命令">💻 ssh tokyo</button>
     </div>
@@ -543,10 +544,24 @@
           </div>
         </div>
 
+        <div class="progress-bar-wrap" style="margin-top: 8px;">
+          <div class="progress-bar-head">
+            <span>SSD 存储根分区 (NVMe /)</span>
+            <span id="disk-usage-text">-- GB / -- GB (--%)</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill fill-purple" id="disk-usage-bar" style="width: 10%;"></div>
+          </div>
+        </div>
+
         <table class="meta-table">
           <tr>
             <td>可用内存 (MemAvailable)</td>
             <td id="k-mem-avail">2163.5 MB</td>
+          </tr>
+          <tr>
+            <td>存储可用空间 (Free Disk)</td>
+            <td id="k-disk-free">-- GB</td>
           </tr>
         </table>
       </div>
@@ -604,6 +619,59 @@
 
       <div class="canvas-wrapper">
         <canvas id="rtt-canvas"></canvas>
+      </div>
+    </section>
+
+    <!-- 方案 B 专属：Linux 内核与服务主动控制面 (Plan B Ops Center) -->
+    <section class="infra-card" id="admin-control-panel" style="margin-bottom: 20px; border: 1px solid rgba(14, 165, 233, 0.4); background: rgba(15, 23, 42, 0.85); border-radius: 6px; padding: 16px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px;">
+        <h3 style="margin: 0; display: flex; align-items: center; gap: 8px; font-size: 1.05rem; color: #38bdf8;">
+          🛡️ 节点网络防护与控制中枢 (Control Plane Operations)
+          <span class="badge-status badge-warn" id="admin-badge-mode">VIEW-ONLY</span>
+        </h3>
+        <span style="font-size: 0.75rem; color: #94a3b8;">IPC 通道：/run/vps-controller.sock (Unix Domain Socket)</span>
+      </div>
+
+      <!-- 快速防御动作行 -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-bottom: 16px;">
+        <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 4px; padding: 12px;">
+          <div style="font-weight: 700; color: #f87171; font-size: 0.85rem; margin-bottom: 6px;">🚫 恶意扫描集群一键阻断 (Netfilter DROP)</div>
+          <p style="font-size: 0.75rem; color: #cbd5e1; margin: 0 0 10px 0; line-height: 1.4;">
+            目标网段：<code>77.239.124.0/24</code> (法国 RocketCloud 撞库池，累计 13,000+ 次探测)。下发内核 INPUT 链 DROP 规则。
+          </p>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn-icon" id="btn-ban-french" onclick="executeAdminAction('ban_cidr', {cidr: '77.239.124.0/24'})" style="background: #dc2626; color: #fff; font-weight: 700; border: none; padding: 6px 12px;">🔥 立即丢弃 77.239.124.0/24</button>
+            <button class="btn-icon" onclick="executeAdminAction('unban_cidr', {cidr: '77.239.124.0/24'})" style="padding: 6px 10px;">解除封禁</button>
+          </div>
+        </div>
+
+        <div style="background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 4px; padding: 12px;">
+          <div style="font-weight: 700; color: #60a5fa; font-size: 0.85rem; margin-bottom: 6px;">🎯 自定义 CIDR / IP 快速封锁</div>
+          <p style="font-size: 0.75rem; color: #cbd5e1; margin: 0 0 8px 0;">输入待阻断的 IPv4 地址或前缀 (例如 192.0.2.1/32 或 198.51.100.0/24)：</p>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="custom-ban-ip" placeholder="输入 IP 或 /24 网段" style="flex: 1; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 4px 8px; border-radius: 3px; font-family: monospace; font-size: 0.8rem;">
+            <button class="btn-icon" onclick="handleCustomBan()" style="background: #2563eb; color: #fff; border: none; padding: 6px 12px;">执行封锁</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 核心服务控制网格 -->
+      <div style="margin-bottom: 16px;">
+        <div style="font-size: 0.8rem; font-weight: 700; color: #94a3b8; margin-bottom: 8px;">⚡ 守护进程热重载与生命周期控制 (Systemd Controls)</div>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          <button class="btn-icon" onclick="executeAdminAction('restart_service', {service: 'xray'})">🔄 重启 Xray-Reality</button>
+          <button class="btn-icon" onclick="executeAdminAction('restart_service', {service: 'hysteria'})">🔄 重启 Hysteria 2</button>
+          <button class="btn-icon" onclick="executeAdminAction('restart_service', {service: 'fail2ban'})">🔄 重载 Fail2ban 防护</button>
+          <button class="btn-icon" onclick="executeAdminAction('restart_service', {service: 'clash-sub'})">🔄 重启 58443 网关</button>
+        </div>
+      </div>
+
+      <!-- 当前 Netfilter 激活规则表 -->
+      <div>
+        <div style="font-size: 0.8rem; font-weight: 700; color: #94a3b8; margin-bottom: 6px;">📋 当前 Linux 内核硬件级 DROP 规则池</div>
+        <div id="active-banned-cidrs-wrap" style="font-size: 0.78rem; font-family: monospace; color: #e2e8f0; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); padding: 8px; border-radius: 4px; max-height: 120px; overflow-y: auto;">
+          正在同步内核表...
+        </div>
       </div>
     </section>
 
@@ -700,8 +768,10 @@
     // 状态机与遥测参数
     // ========================================================================
     const TOKEN = 'f3a14c48a0c1f64151547915a17dd7da40aa17d7f89f03d5d6dd0e628971a851';
-    const PROBE_URL = `https://tian-proxy.duckdns.org:58443/api/v1/metrics?token=${TOKEN}`;
-    const METRICS_URL = `https://tian-proxy.duckdns.org:58443/api/v1/metrics?token=${TOKEN}`;
+    const BASE_URL = window.location.origin.includes('58443') ? window.location.origin : 'https://tian-proxy.duckdns.org:58443';
+    const PROBE_URL = `${BASE_URL}/api/v1/metrics?token=${TOKEN}`;
+    const METRICS_URL = `${BASE_URL}/api/v1/metrics?token=${TOKEN}`;
+    const ADMIN_ACTION_URL = `${BASE_URL}/api/v1/admin/action`;
     const EXPECTED_IP = '141.11.139.61';
 
     let rttHistory = [];
@@ -913,7 +983,13 @@
         const swapTotal = data.memory.swap_total_mb || 256;
         const swapPct = data.memory.swap_pct || 0;
         document.getElementById('swap-usage-text').textContent = `${swapUsed} MB / ${swapTotal} MB (${swapPct}%)`;
-        document.getElementById('swap-usage-bar').style.width = `${swapPct}%`;
+      if (data.disk) {
+        const dText = document.getElementById('disk-usage-text');
+        const dBar = document.getElementById('disk-usage-bar');
+        const dFree = document.getElementById('k-disk-free');
+        if (dText) dText.textContent = `${data.disk.used_gb} GB / ${data.disk.total_gb} GB (${data.disk.used_pct}%)`;
+        if (dBar) dBar.style.width = `${Math.min(100, Math.max(3, data.disk.used_pct))}%`;
+        if (dFree) dFree.textContent = `${data.disk.free_gb} GB 可用`;
       }
 
       // 3. 网络与 TCP
@@ -952,6 +1028,29 @@
           f2b.className = `badge-status ${data.security.fail2ban_active ? 'badge-ok' : 'badge-warn'}`;
           if (data.security.banned_ips && data.security.banned_ips.length > 0) {
             f2b.title = `封锁源: ${data.security.banned_ips.join(', ')}`;
+          }
+        }
+
+        // 渲染 Netfilter DROP 规则列表
+        const wrap = document.getElementById('active-banned-cidrs-wrap');
+        const btnFrench = document.getElementById('btn-ban-french');
+        if (wrap) {
+          const cidrs = data.security.banned_cidrs || [];
+          if (cidrs.length === 0) {
+            wrap.innerHTML = '<span style="color: #94a3b8;">当前无自定义内核丢弃规则。</span>';
+          } else {
+            wrap.innerHTML = cidrs.map(c => `
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                <span>🛑 <strong style="color: #f87171;">${c.source}</strong> (已拦截 ${c.pkts} 报文 / ${(c.bytes/1024).toFixed(1)} KB)</span>
+                <button class="copy-btn" onclick="executeAdminAction('unban_cidr', {cidr: '${c.source}'})" style="padding: 2px 8px; font-size: 0.72rem; background: rgba(239,68,68,0.2); border-color: #ef4444; color: #fca5a5;">解除阻断</button>
+              </div>
+            `).join('');
+          }
+          if (btnFrench) {
+            const hasFrench = cidrs.some(c => c.source === '77.239.124.0/24');
+            btnFrench.disabled = hasFrench;
+            btnFrench.textContent = hasFrench ? '✓ 77.239.124.0/24 已在内核拦截' : '🔥 立即丢弃 77.239.124.0/24';
+            btnFrench.style.opacity = hasFrench ? '0.7' : '1.0';
           }
         }
       }
@@ -1093,8 +1192,116 @@
       setTimeout(() => t.classList.remove('show'), 2200);
     }
 
+    // ========================================================================
+    // 方案 B 核心：管理门禁与控制平面动作下发 (Plan B Control Engine)
+    // ========================================================================
+    function getAdminToken() {
+      return sessionStorage.getItem('vps_admin_master_token') || '';
+    }
+
+    function toggleAdminGate() {
+      const cur = getAdminToken();
+      if (cur) {
+        if (confirm('当前已处于管理员特权态。是否退出管理员身份？')) {
+          sessionStorage.removeItem('vps_admin_master_token');
+          updateAdminGateUI();
+          showToast('已退出管理员模式');
+        }
+        return;
+      }
+      const input = prompt('请输入管理员 Master Token 以解锁写入特权：');
+      if (!input || !input.trim()) return;
+      const testToken = input.trim();
+      
+      showToast('正在向内核验证管理凭据...');
+      fetch(ADMIN_ACTION_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: testToken, action: 'get_active_bans' })
+      }).then(r => r.json()).then(res => {
+        if (res.ok) {
+          sessionStorage.setItem('vps_admin_master_token', testToken);
+          updateAdminGateUI();
+          showToast('🟢 管理员特权已解锁！');
+          triggerProbe(true);
+        } else {
+          alert('鉴权失败：Token 无效或权限不足 (' + (res.error || '403 Forbidden') + ')');
+        }
+      }).catch(e => {
+        alert('鉴权通信异常: ' + e);
+      });
+    }
+
+    function updateAdminGateUI() {
+      const token = getAdminToken();
+      const btn = document.getElementById('btn-admin-gate');
+      const badge = document.getElementById('admin-badge-mode');
+      if (token) {
+        if (btn) {
+          btn.textContent = '🟢 管理员特权 (已解锁)';
+          btn.style.borderColor = '#10b981';
+          btn.style.color = '#34d399';
+        }
+        if (badge) {
+          badge.textContent = 'ADMIN PRIVILEGED';
+          badge.className = 'badge-status badge-ok';
+        }
+      } else {
+        if (btn) {
+          btn.textContent = '🔒 只读访客 (点击解锁)';
+          btn.style.borderColor = 'rgba(245, 158, 11, 0.5)';
+          btn.style.color = '#fbbf24';
+        }
+        if (badge) {
+          badge.textContent = 'VIEW-ONLY';
+          badge.className = 'badge-status badge-warn';
+        }
+      }
+    }
+
+    async function executeAdminAction(action, params = {}) {
+      const token = getAdminToken();
+      if (!token) {
+        alert('此操作需要管理员权限，请先点击右上角【🔒 只读访客】输入 Master Token 解锁！');
+        toggleAdminGate();
+        return;
+      }
+      const payload = Object.assign({ token, action }, params);
+      showToast(`正在向内核下发指令: ${action}...`);
+      try {
+        const resp = await fetch(ADMIN_ACTION_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await resp.json();
+        if (data.ok) {
+          showToast(`✓ 执行成功: ${data.message || 'OK'}`);
+          setTimeout(() => triggerProbe(true), 800);
+        } else {
+          alert(`执行失败: ${data.error}`);
+        }
+      } catch(e) {
+        alert(`网络请求异常: ${e}`);
+      }
+    }
+
+    function handleCustomBan() {
+      const input = document.getElementById('custom-ban-ip');
+      const ip = input ? input.value.trim() : '';
+      if (!ip) {
+        alert('请输入待封禁的 IP 或网段（如 192.0.2.1/32）！');
+        return;
+      }
+      if (confirm(`确定要在 Linux 内核下发 DROP 规则丢弃 ${ip} 的全部进站报文吗？`)) {
+        executeAdminAction('ban_cidr', { cidr: ip });
+        if (input) input.value = '';
+      }
+    }
+
     // 启动挂载
     window.addEventListener('DOMContentLoaded', () => {
+      updateAdminGateUI();
       resizeCanvas();
       verifyDNS();
       triggerProbe(true);

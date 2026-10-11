@@ -1,0 +1,938 @@
+#!/usr/bin/env python3
+import sys
+import paramiko
+import time
+import json
+import socket
+
+if sys.stdout.encoding != 'utf-8':
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
+
+HOST = "141.11.139.61"
+PORT = 27324
+USER = "root"
+KEY_PATH = r"C:\Users\admin\.ssh\id_ed25519_tian"
+
+MASTER_TOKEN = "2ed5d9e3a9b258c8d6b33a5addfa43b9e590e6f3e4185679d8c7fc8c542f79f8"
+TELEMETRY_TOKEN = "f3a14c48a0c1f64151547915a17dd7da40aa17d7f89f03d5d6dd0e628971a851"
+
+CONTROLLER_CODE = r'''#!/usr/bin/env python3
+import os
+import sys
+import json
+import socket
+import ipaddress
+import subprocess
+import grp
+
+SOCKET_PATH = "/run/vps-controller.sock"
+ALLOWED_SERVICES = {"xray", "hysteria", "fail2ban", "clash-sub"}
+
+def execute_action(req):
+    action = req.get("action")
+
+    if action == "ban_cidr":
+        cidr = req.get("cidr", "").strip()
+        try:
+            net = ipaddress.ip_network(cidr, strict=False)
+            cidr_str = str(net)
+        except Exception as e:
+            return {"ok": False, "error": f"Invalid CIDR or IP format: {e}"}
+
+        # Check for duplicate
+        chk = subprocess.run(["iptables", "-C", "INPUT", "-s", cidr_str, "-j", "DROP"], capture_output=True)
+        if chk.returncode == 0:
+            return {"ok": True, "message": f"CIDR {cidr_str} is already in iptables INPUT DROP rule."}
+
+        res = subprocess.run(["iptables", "-I", "INPUT", "1", "-s", cidr_str, "-j", "DROP"], capture_output=True, text=True)
+        if res.returncode == 0:
+            return {"ok": True, "message": f"Successfully blocked {cidr_str} in iptables INPUT chain."}
+        else:
+            return {"ok": False, "error": res.stderr}
+
+    elif action == "unban_cidr":
+        cidr = req.get("cidr", "").strip()
+        try:
+            net = ipaddress.ip_network(cidr, strict=False)
+            cidr_str = str(net)
+        except Exception as e:
+            return {"ok": False, "error": f"Invalid CIDR: {e}"}
+
+        res = subprocess.run(["iptables", "-D", "INPUT", "-s", cidr_str, "-j", "DROP"], capture_output=True, text=True)
+        if res.returncode == 0:
+            return {"ok": True, "message": f"Successfully unbanned {cidr_str} from iptables."}
+        else:
+            return {"ok": False, "error": f"Rule removal failed: {res.stderr}"}
+
+    elif action == "restart_service":
+        svc = req.get("service", "").strip()
+        if svc not in ALLOWED_SERVICES:
+            return {"ok": False, "error": f"Service '{svc}' not in allowed whitelist: {list(ALLOWED_SERVICES)}"}
+
+        svc_map = {
+            "xray": "xray.service",
+            "hysteria": "hysteria-server.service",
+            "fail2ban": "fail2ban.service",
+            "clash-sub": "clash-sub.service"
+        }
+        target = svc_map.get(svc, f"{svc}.service")
+        res = subprocess.run(["systemctl", "restart", target], capture_output=True, text=True)
+        if res.returncode == 0:
+            return {"ok": True, "message": f"Service '{target}' restarted successfully."}
+        else:
+            return {"ok": False, "error": res.stderr}
+
+    elif action == "get_active_bans":
+        banned = []
+        try:
+            out = subprocess.check_output(["iptables", "-L", "INPUT", "-n", "-v", "--line-numbers"], text=True)
+            for line in out.splitlines():
+                if "DROP" in line:
+                    parts = line.split()
+                    if len(parts) >= 9:
+                        src = parts[8]
+                        if src != "0.0.0.0/0":
+                            banned.append({"source": src, "pkts": parts[1], "bytes": parts[2]})
+        except Exception:
+            pass
+        return {"ok": True, "banned_cidrs": banned}
+
+    return {"ok": False, "error": f"Unknown action: '{action}'"}
+
+def main():
+    if os.path.exists(SOCKET_PATH):
+        try:
+            os.remove(SOCKET_PATH)
+        except Exception:
+            pass
+
+    server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    server.bind(SOCKET_PATH)
+
+    try:
+        gid = grp.getgrnam("clash-sub").gr_gid
+        os.chown(SOCKET_PATH, 0, gid)
+        os.chmod(SOCKET_PATH, 0o660)
+    except Exception:
+        os.chmod(SOCKET_PATH, 0o666)
+
+    server.listen(16)
+    sys.stderr.write(f"VPS Admin Controller daemon listening on {SOCKET_PATH}\n")
+    sys.stderr.flush()
+
+    while True:
+        conn, _ = server.accept()
+        try:
+            data = conn.recv(65536)
+            if not data:
+                conn.close()
+                continue
+            req = json.loads(data.decode("utf-8"))
+            resp = execute_action(req)
+            conn.sendall(json.dumps(resp).encode("utf-8"))
+        except Exception as e:
+            err_resp = {"ok": False, "error": str(e)}
+            try:
+                conn.sendall(json.dumps(err_resp).encode("utf-8"))
+            except Exception:
+                pass
+        finally:
+            conn.close()
+
+if __name__ == "__main__":
+    main()
+'''
+
+CONTROLLER_SERVICE_UNIT = r'''[Unit]
+Description=VPS Root Admin Control Plane Daemon (Unix Socket IPC)
+After=network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+ExecStart=/usr/bin/python3 /opt/clash-sub/controller.py
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target
+'''
+
+SERVER_CODE = r'''import os
+import sys
+import ssl
+import time
+import json
+import socket
+import mimetypes
+import threading
+from urllib.parse import urlparse, parse_qs, unquote
+from http.server import HTTPServer, BaseHTTPRequestHandler
+from socketserver import ThreadingMixIn
+
+LISTEN_HOST = "0.0.0.0"
+LISTEN_PORT = 58443
+AUTH_HOST = "127.0.0.1"
+AUTH_PORT = 58444
+
+TEMPLATE_PATH = "/opt/clash-sub/template.yaml"
+USERS_PATH = "/opt/clash-sub/users.json"
+CERT_FILE = "/opt/clash-sub/certs/server.crt"
+KEY_FILE = "/opt/clash-sub/certs/server.key"
+WEB_ROOT = "/opt/clash-sub/web"
+IPC_SOCKET = "/run/vps-controller.sock"
+
+TARGET_PATH = "/api/v1/sub"
+METRICS_PATH = "/api/v1/metrics"
+ADMIN_ACTION_PATH = "/api/v1/admin/action"
+
+RATE_LIMIT_WINDOW = 60
+MAX_REQUESTS_PER_WINDOW = 120
+MAX_TRACKED_IPS = 1000
+ip_request_records = {}
+
+last_net_sample = {"time": 0, "rx": 0, "tx": 0}
+last_cpu_sample = {"time": 0, "total": 0, "idle": 0}
+
+mimetypes.init()
+mimetypes.add_type("application/javascript", ".js")
+mimetypes.add_type("application/javascript", ".mjs")
+mimetypes.add_type("application/wasm", ".wasm")
+mimetypes.add_type("text/css", ".css")
+mimetypes.add_type("text/html; charset=utf-8", ".html")
+mimetypes.add_type("application/json", ".json")
+mimetypes.add_type("image/svg+xml", ".svg")
+
+def get_users():
+    if not os.path.exists(USERS_PATH):
+        return {}
+    try:
+        with open(USERS_PATH, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+def send_ipc_command(payload):
+    if not os.path.exists(IPC_SOCKET):
+        return {"ok": False, "error": "Control daemon socket unavailable"}
+    try:
+        s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        s.settimeout(4.0)
+        s.connect(IPC_SOCKET)
+        s.sendall(json.dumps(payload).encode("utf-8"))
+        raw = s.recv(65536)
+        s.close()
+        return json.loads(raw.decode("utf-8"))
+    except Exception as e:
+        return {"ok": False, "error": f"IPC error: {e}"}
+
+def is_rate_limited(client_ip):
+    now = time.time()
+    if len(ip_request_records) > MAX_TRACKED_IPS:
+        dead_ips = [ip for ip, recs in ip_request_records.items() if not recs or (now - recs[-1] > RATE_LIMIT_WINDOW)]
+        for ip in dead_ips:
+            del ip_request_records[ip]
+
+    records = ip_request_records.get(client_ip, [])
+    valid_records = [t for t in records if now - t < RATE_LIMIT_WINDOW]
+    
+    if len(valid_records) >= MAX_REQUESTS_PER_WINDOW:
+        ip_request_records[client_ip] = valid_records
+        return True
+    
+    valid_records.append(now)
+    ip_request_records[client_ip] = valid_records
+    return False
+
+def collect_system_metrics():
+    global last_net_sample, last_cpu_sample
+    now = time.time()
+    
+    # 1. CPU & Load
+    load1, load5, load15 = 0.0, 0.0, 0.0
+    try:
+        with open("/proc/loadavg", "r") as f:
+            parts = f.read().split()
+            load1, load5, load15 = float(parts[0]), float(parts[1]), float(parts[2])
+    except Exception:
+        pass
+
+    cpu_usage_pct = 0.0
+    try:
+        with open("/proc/stat", "r") as f:
+            line = f.readline()
+            if line.startswith("cpu "):
+                fields = [int(x) for x in line.split()[1:]]
+                idle = fields[3] + (fields[4] if len(fields) > 4 else 0)
+                total = sum(fields)
+                if last_cpu_sample["time"] > 0:
+                    dt = total - last_cpu_sample["total"]
+                    di = idle - last_cpu_sample["idle"]
+                    if dt > 0:
+                        cpu_usage_pct = max(0.0, min(100.0, (1.0 - di / dt) * 100.0))
+                last_cpu_sample = {"time": now, "total": total, "idle": idle}
+    except Exception:
+        pass
+
+    # 2. Memory
+    mem_total, mem_free, mem_avail = 0, 0, 0
+    swap_total, swap_free = 0, 0
+    try:
+        with open("/proc/meminfo", "r") as f:
+            for line in f:
+                parts = line.split(":")
+                key = parts[0].strip()
+                val = int(parts[1].strip().split()[0])
+                if key == "MemTotal": mem_total = val
+                elif key == "MemFree": mem_free = val
+                elif key == "MemAvailable": mem_avail = val
+                elif key == "SwapTotal": swap_total = val
+                elif key == "SwapFree": swap_free = val
+    except Exception:
+        pass
+
+    mem_used = max(0, mem_total - mem_avail)
+    mem_pct = (mem_used / mem_total * 100.0) if mem_total > 0 else 0.0
+    swap_used = max(0, swap_total - swap_free)
+    swap_pct = (swap_used / swap_total * 100.0) if swap_total > 0 else 0.0
+
+    # 3. Network
+    rx_bytes, tx_bytes = 0, 0
+    rx_packets, tx_packets = 0, 0
+    rx_drops, tx_drops = 0, 0
+    rx_rate_kbps, tx_rate_kbps = 0.0, 0.0
+    primary_if = "eth0"
+    try:
+        with open("/proc/net/dev", "r") as f:
+            for line in f:
+                if ":" in line:
+                    iface, stats = line.split(":")
+                    iface = iface.strip()
+                    if iface in ["eth0", "ens3", "enp1s0"]:
+                        primary_if = iface
+                        cols = [int(x) for x in stats.split()]
+                        rx_bytes = cols[0]
+                        rx_packets = cols[1]
+                        rx_drops = cols[3]
+                        tx_bytes = cols[8]
+                        tx_packets = cols[9]
+                        tx_drops = cols[11]
+                        break
+        if last_net_sample["time"] > 0:
+            dt = now - last_net_sample["time"]
+            if dt > 0:
+                rx_rate_kbps = max(0.0, (rx_bytes - last_net_sample["rx"]) * 8.0 / 1024.0 / dt)
+                tx_rate_kbps = max(0.0, (tx_bytes - last_net_sample["tx"]) * 8.0 / 1024.0 / dt)
+        last_net_sample = {"time": now, "rx": rx_bytes, "tx": tx_bytes}
+    except Exception:
+        pass
+
+    # 4. TCP Connections
+    tcp_states = {"established": 0, "syn_sent": 0, "syn_recv": 0, "fin_wait1": 0, "fin_wait2": 0, "time_wait": 0, "close": 0, "close_wait": 0, "last_ack": 0, "listen": 0, "closing": 0}
+    state_map = {"01": "established", "02": "syn_sent", "03": "syn_recv", "04": "fin_wait1", "05": "fin_wait2", "06": "time_wait", "07": "close", "08": "close_wait", "09": "last_ack", "0A": "listen", "0B": "closing"}
+    try:
+        for proto_file in ["/proc/net/tcp", "/proc/net/tcp6"]:
+            if os.path.exists(proto_file):
+                with open(proto_file, "r") as f:
+                    next(f)
+                    for line in f:
+                        parts = line.strip().split()
+                        if len(parts) > 3:
+                            st = parts[3]
+                            name = state_map.get(st)
+                            if name in tcp_states:
+                                tcp_states[name] += 1
+    except Exception:
+        pass
+
+    # 5. Uptime & Disk
+    uptime_sec = 0
+    try:
+        with open("/proc/uptime", "r") as f:
+            uptime_sec = int(float(f.readline().split()[0]))
+    except Exception:
+        pass
+
+    disk_info = {"total_gb": 0, "used_gb": 0, "free_gb": 0, "used_pct": 0}
+    try:
+        vfs = os.statvfs("/")
+        total_b = vfs.f_blocks * vfs.f_frsize
+        free_b = vfs.f_bfree * vfs.f_frsize
+        used_b = total_b - free_b
+        disk_info = {
+            "total_gb": round(total_b / (1024**3), 1),
+            "used_gb": round(used_b / (1024**3), 1),
+            "free_gb": round(free_b / (1024**3), 1),
+            "used_pct": round((used_b / total_b) * 100, 1) if total_b > 0 else 0
+        }
+    except Exception:
+        pass
+
+    # 6. TCP Congestion Control
+    tcp_cc = "unknown"
+    try:
+        with open("/proc/sys/net/ipv4/tcp_congestion_control", "r") as f:
+            tcp_cc = f.read().strip()
+    except Exception:
+        pass
+
+    # 7. Core Daemon Status
+    services = {"clash_sub": True, "xray": False, "hysteria": False, "fail2ban": False}
+    try:
+        for pid in os.listdir("/proc"):
+            if not pid.isdigit():
+                continue
+            try:
+                with open(f"/proc/{pid}/cmdline", "r") as f:
+                    cmd = f.read()
+                    if "xray" in cmd: services["xray"] = True
+                    if "hysteria" in cmd: services["hysteria"] = True
+                    if "fail2ban" in cmd: services["fail2ban"] = True
+            except Exception:
+                pass
+    except Exception:
+        pass
+
+    # 8. Security / Fail2ban Banned IPs
+    banned_ips = set()
+    try:
+        with open("/var/log/fail2ban.log", "r") as f:
+            for line in f:
+                if "Ban " in line:
+                    parts = line.split("Ban ")
+                    if len(parts) > 1:
+                        ip = parts[1].strip().split()[0]
+                        banned_ips.add(ip)
+                elif "Unban " in line:
+                    parts = line.split("Unban ")
+                    if len(parts) > 1:
+                        ip = parts[1].strip().split()[0]
+                        banned_ips.discard(ip)
+    except Exception:
+        pass
+
+    # 9. Active Netfilter Dropped CIDRs
+    banned_cidrs = []
+    ipc_resp = send_ipc_command({"action": "get_active_bans"})
+    if ipc_resp.get("ok"):
+        banned_cidrs = ipc_resp.get("banned_cidrs", [])
+
+    return {
+        "status": "online",
+        "timestamp": int(now),
+        "uptime_seconds": uptime_sec,
+        "cpu": {
+            "cores": os.cpu_count() or 1,
+            "load_1m": round(load1, 2),
+            "load_5m": round(load5, 2),
+            "load_15m": round(load15, 2),
+            "usage_pct": round(cpu_usage_pct, 1)
+        },
+        "memory": {
+            "total_mb": round(mem_total / 1024, 1),
+            "used_mb": round(mem_used / 1024, 1),
+            "available_mb": round(mem_avail / 1024, 1),
+            "used_pct": round(mem_pct, 1),
+            "swap_total_mb": round(swap_total / 1024, 1),
+            "swap_used_mb": round(swap_used / 1024, 1),
+            "swap_pct": round(swap_pct, 1)
+        },
+        "disk": disk_info,
+        "network": {
+            "interface": primary_if,
+            "rx_bytes": rx_bytes,
+            "tx_bytes": tx_bytes,
+            "rx_rate_kbps": round(rx_rate_kbps, 1),
+            "tx_rate_kbps": round(tx_rate_kbps, 1),
+            "rx_drops": rx_drops,
+            "tx_drops": tx_drops
+        },
+        "tcp": tcp_states,
+        "congestion_control": tcp_cc,
+        "services": services,
+        "security": {
+            "fail2ban_active": services["fail2ban"],
+            "banned_count": len(banned_ips),
+            "banned_ips": list(banned_ips),
+            "banned_cidrs": banned_cidrs
+        }
+    }
+
+class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
+    daemon_threads = True
+
+    def __init__(self, server_address, RequestHandlerClass, ssl_context=None):
+        self.ssl_context = ssl_context
+        super().__init__(server_address, RequestHandlerClass)
+
+    def get_request(self):
+        newsock, from_addr = self.socket.accept()
+        if self.ssl_context:
+            newsock.settimeout(5.0)
+            try:
+                connstream = self.ssl_context.wrap_socket(newsock, server_side=True, do_handshake_on_connect=True)
+                connstream.settimeout(15.0)
+                return connstream, from_addr
+            except Exception:
+                newsock.close()
+                raise
+        else:
+            newsock.settimeout(5.0)
+            return newsock, from_addr
+
+class SubscriptionHandler(BaseHTTPRequestHandler):
+    protocol_version = "HTTP/1.1"
+
+    def do_OPTIONS(self):
+        self.send_response(204)
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "*")
+        self.send_header("Connection", "close")
+        self.end_headers()
+
+    def do_POST(self):
+        client_ip = self.client_address[0]
+        if is_rate_limited(client_ip):
+            self.send_response(429)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.send_header("Connection", "close")
+            self.end_headers()
+            self.wfile.write(b'{"ok":false,"error":"Too Many Requests"}\n')
+            return
+
+        parsed = urlparse(self.path)
+        if parsed.path == ADMIN_ACTION_PATH:
+            try:
+                length = int(self.headers.get("Content-Length", 0))
+                raw_body = self.rfile.read(length)
+                req_json = json.loads(raw_body.decode("utf-8"))
+            except Exception as e:
+                self.send_response(400)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.send_header("Connection", "close")
+                self.end_headers()
+                self.wfile.write(json.dumps({"ok": False, "error": f"Invalid JSON payload: {e}"}).encode("utf-8"))
+                return
+
+            req_token = req_json.get("token", "")
+            users = get_users()
+            is_admin = False
+            for uname, udata in users.items():
+                if udata.get("enabled", False) and udata.get("role") == "admin" and udata.get("token") == req_token:
+                    is_admin = True
+                    break
+
+            if not is_admin:
+                self.send_response(403)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.send_header("Connection", "close")
+                self.end_headers()
+                self.wfile.write(b'{"ok":false,"error":"Forbidden: Requires Admin Master Token"}\n')
+                return
+
+            ipc_resp = send_ipc_command(req_json)
+            body = json.dumps(ipc_resp).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Connection", "close")
+            self.end_headers()
+            self.wfile.write(body)
+            self.wfile.flush()
+            return
+        else:
+            self.send_response(404)
+            self.send_header("Content-Type", "text/plain")
+            self.send_header("Connection", "close")
+            self.end_headers()
+            self.wfile.write(b"Not Found\n")
+
+    def do_GET(self):
+        client_ip = self.client_address[0]
+        
+        if is_rate_limited(client_ip):
+            self.send_response(429)
+            self.send_header("Content-Type", "text/plain; charset=utf-8")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.send_header("Connection", "close")
+            self.send_header("Retry-After", "60")
+            body = b"Too Many Requests\n"
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            self.wfile.flush()
+            return
+
+        parsed = urlparse(self.path)
+        params = parse_qs(parsed.query)
+        token = params.get("token", [""])[0]
+
+        # 1. Metrics API Route
+        if parsed.path == METRICS_PATH:
+            users = get_users()
+            authorized = False
+            for uname, udata in users.items():
+                if not udata.get("enabled", False):
+                    continue
+                valid_tokens = [udata.get("token")]
+                if "metrics_token" in udata and udata.get("metrics_token"):
+                    valid_tokens.append(udata.get("metrics_token"))
+                if "metrics_tokens" in udata and isinstance(udata.get("metrics_tokens"), list):
+                    valid_tokens.extend(udata.get("metrics_tokens"))
+                
+                if token and token in valid_tokens:
+                    authorized = True
+                    break
+
+            if not authorized:
+                self.send_response(403)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.send_header("Connection", "close")
+                body = b'{"error":"Forbidden: Invalid Telemetry Token"}\n'
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+                self.wfile.flush()
+                return
+
+            metrics_data = collect_system_metrics()
+            body = json.dumps(metrics_data).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.send_header("Access-Control-Allow-Headers", "*")
+            self.send_header("Cache-Control", "no-store, no-cache, must-revalidate")
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Connection", "close")
+            self.end_headers()
+            self.wfile.write(body)
+            self.wfile.flush()
+            return
+
+        # 2. Subscription API Route
+        elif parsed.path == TARGET_PATH:
+            users = get_users()
+            
+            # Defense: Reject Telemetry Tokens
+            is_telemetry_token = False
+            for uname, udata in users.items():
+                telemetry_tokens = []
+                if "metrics_token" in udata and udata.get("metrics_token"):
+                    telemetry_tokens.append(udata.get("metrics_token"))
+                if "metrics_tokens" in udata and isinstance(udata.get("metrics_tokens"), list):
+                    telemetry_tokens.extend(udata.get("metrics_tokens"))
+                
+                if token and token in telemetry_tokens:
+                    is_telemetry_token = True
+                    break
+
+            if is_telemetry_token:
+                self.send_response(403)
+                self.send_header("Content-Type", "text/plain; charset=utf-8")
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.send_header("Connection", "close")
+                body = b"Forbidden: Telemetry token cannot access subscription profiles.\n"
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+                self.wfile.flush()
+                return
+
+            target_user = None
+            for uname, udata in users.items():
+                if udata.get("token") == token:
+                    target_user = (uname, udata)
+                    break
+
+            if not target_user:
+                self.send_response(404)
+                self.send_header("Content-Type", "text/plain; charset=utf-8")
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.send_header("Connection", "close")
+                body = b"Subscription Not Found\n"
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+                self.wfile.flush()
+                return
+
+            uname, udata = target_user
+            if not udata.get("enabled", False):
+                self.send_response(403)
+                self.send_header("Content-Type", "text/plain; charset=utf-8")
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.send_header("Connection", "close")
+                body = f"Account [{uname}] is currently disabled\n".encode("utf-8")
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+                self.wfile.flush()
+                return
+
+            if not os.path.exists(TEMPLATE_PATH):
+                self.send_response(500)
+                body = b"Internal Server Error: Template Missing\n"
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+                self.wfile.flush()
+                return
+
+            with open(TEMPLATE_PATH, "r", encoding="utf-8") as f:
+                template_content = f.read()
+
+            content = template_content.replace("{{VLESS_UUID}}", udata.get("vless_uuid", ""))
+            content = content.replace("{{HY2_PASSWORD}}", udata.get("hy2_password", ""))
+            content = content.replace("{{HY2_UP}}", udata.get("up", "30 Mbps"))
+            content = content.replace("{{HY2_DOWN}}", udata.get("down", "100 Mbps"))
+            body = content.encode("utf-8")
+
+            self.send_response(200)
+            self.send_header("Content-Type", "text/yaml; charset=utf-8")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.send_header("Subscription-Userinfo", "upload=0; download=0; total=1073741824000; expire=2099999999")
+            self.send_header("Profile-Update-Interval", "24")
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Connection", "close")
+            self.end_headers()
+            self.wfile.write(body)
+            self.wfile.flush()
+            return
+
+        # 3. Static Web Hosting Route (Path traversal protected)
+        clean_path = unquote(parsed.path)
+        if clean_path in ["", "/"]:
+            clean_path = "/index.html"
+
+        rel_path = clean_path.lstrip("/")
+        abs_target = os.path.abspath(os.path.join(WEB_ROOT, rel_path))
+
+        # Security check: must reside inside WEB_ROOT
+        if not abs_target.startswith(WEB_ROOT):
+            self.send_response(403)
+            self.send_header("Content-Type", "text/plain")
+            self.send_header("Connection", "close")
+            self.end_headers()
+            self.wfile.write(b"Access Denied\n")
+            return
+
+        if os.path.isdir(abs_target):
+            index_file = os.path.join(abs_target, "index.html")
+            if os.path.exists(index_file):
+                abs_target = index_file
+            else:
+                self.send_response(404)
+                self.send_header("Content-Type", "text/plain")
+                self.send_header("Connection", "close")
+                self.end_headers()
+                self.wfile.write(b"Not Found\n")
+                return
+
+        if not os.path.isfile(abs_target):
+            self.send_response(404)
+            self.send_header("Content-Type", "text/plain")
+            self.send_header("Connection", "close")
+            self.end_headers()
+            self.wfile.write(b"File Not Found\n")
+            return
+
+        ctype, _ = mimetypes.guess_type(abs_target)
+        if not ctype:
+            ctype = "application/octet-stream"
+
+        try:
+            sz = os.path.getsize(abs_target)
+            self.send_response(200)
+            self.send_header("Content-Type", ctype)
+            self.send_header("Content-Length", str(sz))
+            self.send_header("Access-Control-Allow-Origin", "*")
+            if abs_target.endswith(".html"):
+                self.send_header("Cache-Control", "no-cache, must-revalidate")
+            else:
+                self.send_header("Cache-Control", "public, max-age=86400")
+            self.send_header("Connection", "close")
+            self.end_headers()
+
+            with open(abs_target, "rb") as f:
+                while True:
+                    chunk = f.read(65536)
+                    if not chunk:
+                        break
+                    self.wfile.write(chunk)
+            self.wfile.flush()
+        except Exception as e:
+            sys.stderr.write(f"Static serve error: {e}\n")
+
+    def log_message(self, format, *args):
+        sys.stderr.write(f"[{self.log_date_time_string()}] {self.client_address[0]} {format%args}\n")
+
+class HysteriaAuthHandler(BaseHTTPRequestHandler):
+    def do_POST(self):
+        try:
+            length = int(self.headers.get("Content-Length", 0))
+            raw_body = self.rfile.read(length)
+            data = json.loads(raw_body)
+            auth_str = data.get("auth", "")
+            
+            users = get_users()
+            authenticated = False
+            user_id = ""
+
+            for uname, udata in users.items():
+                if not udata.get("enabled", False):
+                    continue
+                pwd = udata.get("hy2_password", "")
+                if auth_str == pwd or auth_str == f"{uname}:{pwd}":
+                    authenticated = True
+                    user_id = uname
+                    break
+
+            if authenticated:
+                resp = {"ok": True, "id": user_id}
+            else:
+                resp = {"ok": False}
+
+            resp_data = json.dumps(resp).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(resp_data)))
+            self.end_headers()
+            self.wfile.write(resp_data)
+            self.wfile.flush()
+        except Exception as e:
+            import traceback
+            sys.stderr.write(f"AUTH ERROR: {e}\n{traceback.format_exc()}\n")
+            sys.stderr.flush()
+            self.send_response(500)
+            self.end_headers()
+
+    def log_message(self, format, *args):
+        pass
+
+def run_auth_server():
+    auth_server = ThreadedHTTPServer((AUTH_HOST, AUTH_PORT), HysteriaAuthHandler)
+    auth_server.serve_forever()
+
+if __name__ == "__main__":
+    t = threading.Thread(target=run_auth_server, daemon=True)
+    t.start()
+
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    context.load_cert_chain(certfile=CERT_FILE, keyfile=KEY_FILE)
+    sub_server = ThreadedHTTPServer((LISTEN_HOST, LISTEN_PORT), SubscriptionHandler, context)
+    sub_server.serve_forever()
+'''
+
+def deploy():
+    print(f"Connecting to Tokyo VPS ({HOST}:{PORT}) via Ed25519 key...")
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    key = paramiko.Ed25519Key.from_private_key_file(KEY_PATH)
+    ssh.connect(HOST, port=PORT, username=USER, pkey=key, timeout=10)
+    sftp = ssh.open_sftp()
+
+    # 1. Upload controller.py
+    print("Uploading /opt/clash-sub/controller.py (Root Control Plane Daemon)...")
+    with sftp.open("/opt/clash-sub/controller.py", "w") as f:
+        f.write(CONTROLLER_CODE)
+    
+    # 2. Upload vps-controller.service
+    print("Uploading /etc/systemd/system/vps-controller.service...")
+    with sftp.open("/etc/systemd/system/vps-controller.service", "w") as f:
+        f.write(CONTROLLER_SERVICE_UNIT)
+
+    # 3. Upload server.py
+    print("Uploading /opt/clash-sub/server.py (Static Hosting + API Gateway)...")
+    with sftp.open("/opt/clash-sub/server.py", "w") as f:
+        f.write(SERVER_CODE)
+    sftp.close()
+
+    # 4. Activate vps-controller.service
+    print("Activating vps-controller.service...")
+    cmd_ctrl = "systemctl daemon-reload && systemctl enable --now vps-controller.service && sleep 1 && systemctl status vps-controller.service | head -n 10"
+    stdin, stdout, stderr = ssh.exec_command(cmd_ctrl)
+    print(stdout.read().decode('utf-8'))
+
+    # 5. Restart clash-sub.service
+    print("Restarting clash-sub.service...")
+    cmd_sub = "systemctl restart clash-sub.service && sleep 1 && systemctl status clash-sub.service | head -n 10"
+    stdin, stdout, stderr = ssh.exec_command(cmd_sub)
+    print(stdout.read().decode('utf-8'))
+
+    # 6. Verification tests
+    print("\n========================================================")
+    print("🔒 RUNNING PLAN B END-TO-END VERIFICATION MATRIX")
+    print("========================================================")
+
+    # Test 1: Static / (index.html)
+    cmd1 = "curl -k -s -w '\\nHTTP_STATUS:%{http_code}' 'https://127.0.0.1:58443/'"
+    stdin, stdout, stderr = ssh.exec_command(cmd1)
+    out1 = stdout.read().decode('utf-8')
+    status1 = out1.strip().split("HTTP_STATUS:")[-1]
+    has_html1 = "<title>" in out1 or "html" in out1.lower()
+    print(f"[TEST 1] GET / (Root Web Console): Status={status1}, HasHTML={has_html1}")
+    assert status1 == "200" and has_html1, f"Test 1 Failed: {out1[:200]}"
+    print("  ✓ PASSED: Root Web Console index.html serves with 200 OK.")
+
+    # Test 2: Static /netops/vps_monitor.html
+    cmd2 = "curl -k -s -w '\\nHTTP_STATUS:%{http_code}' 'https://127.0.0.1:58443/netops/vps_monitor.html'"
+    stdin, stdout, stderr = ssh.exec_command(cmd2)
+    out2 = stdout.read().decode('utf-8')
+    status2 = out2.strip().split("HTTP_STATUS:")[-1]
+    has_vps2 = "VPS" in out2 or "html" in out2.lower()
+    print(f"[TEST 2] GET /netops/vps_monitor.html: Status={status2}, HasContent={has_vps2}")
+    assert status2 == "200" and has_vps2, f"Test 2 Failed: {out2[:200]}"
+    print("  ✓ PASSED: VPS Monitor Dashboard serves with 200 OK.")
+
+    # Test 3: Metrics API includes disk and security
+    cmd3 = f"curl -k -s 'https://127.0.0.1:58443/api/v1/metrics?token={TELEMETRY_TOKEN}'"
+    stdin, stdout, stderr = ssh.exec_command(cmd3)
+    out3 = stdout.read().decode('utf-8')
+    parsed3 = json.loads(out3)
+    has_disk = "disk" in parsed3 and parsed3["disk"]["total_gb"] > 0
+    print(f"[TEST 3] GET /api/v1/metrics: HasDisk={has_disk}, DiskTotal={parsed3.get('disk',{}).get('total_gb')}GB")
+    assert has_disk, "Test 3 Failed: disk metrics missing"
+    print("  ✓ PASSED: Metrics API now includes physical disk stats.")
+
+    # Test 4: Admin Action: Unauthorized rejected 403
+    cmd4 = f"curl -k -s -w '\\nHTTP_STATUS:%{{http_code}}' -X POST 'https://127.0.0.1:58443/api/v1/admin/action' -d '{{\"token\":\"fake\",\"action\":\"ban_cidr\",\"cidr\":\"1.2.3.4/32\"}}'"
+    stdin, stdout, stderr = ssh.exec_command(cmd4)
+    out4 = stdout.read().decode('utf-8')
+    status4 = out4.strip().split("HTTP_STATUS:")[-1]
+    print(f"[TEST 4] POST /api/v1/admin/action (Fake Token): Status={status4}")
+    assert status4 == "403", f"Test 4 Failed: status is {status4}"
+    print("  ✓ PASSED: Unauthorized admin commands strictly blocked with 403 Forbidden.")
+
+    # Test 5: Admin Action: Master Token drops 77.239.124.0/24 in iptables!
+    cmd5 = f"curl -k -s -w '\\nHTTP_STATUS:%{{http_code}}' -X POST 'https://127.0.0.1:58443/api/v1/admin/action' -d '{{\"token\":\"{MASTER_TOKEN}\",\"action\":\"ban_cidr\",\"cidr\":\"77.239.124.0/24\"}}'"
+    stdin, stdout, stderr = ssh.exec_command(cmd5)
+    out5 = stdout.read().decode('utf-8')
+    status5 = out5.strip().split("HTTP_STATUS:")[-1]
+    print(f"[TEST 5] POST /api/v1/admin/action (Ban 77.239.124.0/24): Status={status5}, Resp={out5.split('HTTP_STATUS:')[0].strip()}")
+    assert status5 == "200", f"Test 5 Failed: status is {status5}"
+    print("  ✓ PASSED: Master Token successfully commanded iptables to drop 77.239.124.0/24!")
+
+    # Test 6: Verify iptables contains the rule
+    stdin, stdout, stderr = ssh.exec_command("iptables -L INPUT -n -v | grep '77.239.124.0/24'")
+    ipt_out = stdout.read().decode('utf-8')
+    print(f"[TEST 6] Netfilter Check: Rule={ipt_out.strip()}")
+    assert "77.239.124.0/24" in ipt_out and "DROP" in ipt_out, "Test 6 Failed: iptables rule missing"
+    print("  ✓ PASSED: Netfilter INPUT chain actively dropping entire 77.239.124.0/24 subnet!")
+
+    print("\n========================================================")
+    print("🎉 PLAN B BACKEND & IPC SECURITY FULLY VERIFIED!")
+    print("========================================================")
+    ssh.close()
+
+if __name__ == '__main__':
+    deploy()
