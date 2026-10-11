@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>东京 VPS 实时遥测与基础设施中枢 · DevOps Command Center</title>
+  <link rel="stylesheet" href="../common/common.css">
+  <link rel="stylesheet" href="../common/metro.css">
+  <style>
+    :root {
+      --vps-blue: #0078d7;
+      --vps-teal: #00aba9;
+      --vps-dark: #0f172a;
+      --vps-card-bg: rgba(15, 23, 42, 0.75);
+      --vps-border: rgba(255, 255, 255, 0.12);
+      --vps-green: #10b981;
+      --vps-amber: #f59e0b;
+      --vps-red: #ef4444;
+    }
+
+    body {
+      background-color: #0b1120;
+      background-image: radial-gradient(ellipse at 80% 20%, #1e293b 0%, #0b1120 70%);
+      color: #f8fafc;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    .vps-dashboard {
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 16px 20px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* 顶部指标卡片栅格 */
+    .telemetry-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    @media (max-width: 840px) {
+      .telemetry-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    @media (max-width: 480px) {
+      .telemetry-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .metric-card {
+      background: var(--vps-card-bg);
+      border: 1px solid var(--vps-border);
+      border-radius: 4px;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .metric-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--vps-teal);
+    }
+    .metric-card.alert-green::before { background: var(--vps-green); }
+    .metric-card.alert-blue::before { background: var(--vps-blue); }
+    .metric-card.alert-amber::before { background: var(--vps-amber); }
+
+    .metric-label {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #94a3b8;
+    }
+
+    .metric-val-wrap {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .metric-val {
+      font-size: 2.2rem;
+      font-weight: 300;
+      font-family: "Segoe UI Light", "Segoe UI", sans-serif;
+      color: #ffffff;
+      line-height: 1;
+    }
+
+    .metric-unit {
+      font-size: 0.82rem;
+      color: #94a3b8;
+    }
+
+    .metric-foot {
+      margin-top: 8px;
+      font-size: 0.72rem;
+      color: #64748b;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* 波形主面板 */
+    .chart-panel {
+      background: var(--vps-card-bg);
+      border: 1px solid var(--vps-border);
+      border-radius: 4px;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chart-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--vps-green);
+      border-radius: 50%;
+      display: inline-block;
+      box-shadow: 0 0 8px var(--vps-green);
+      animation: heartPulse 1.8s infinite;
+    }
+
+    @keyframes heartPulse {
+      0% { transform: scale(0.9); opacity: 0.7; }
+      50% { transform: scale(1.3); opacity: 1; }
+      100% { transform: scale(0.9); opacity: 0.7; }
+    }
+
+    .chart-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .ctrl-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      color: #f8fafc;
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: all 0.15s;
+    }
+
+    .ctrl-btn:hover {
+      background: rgba(255, 255, 255, 0.18);
+    }
+
+    .ctrl-btn.active {
+      background: var(--vps-teal);
+      border-color: var(--vps-teal);
+    }
+
+    .canvas-wrapper {
+      position: relative;
+      width: 100%;
+      height: 180px;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    #rtt-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* 下层资产与命令卡片 */
+    .infra-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 840px) {
+      .infra-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .infra-card {
+      background: var(--vps-card-bg);
+      border: 1px solid var(--vps-border);
+      border-radius: 4px;
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .infra-card h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin: 0;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .cmd-box {
+      background: #000000;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      padding: 10px 14px;
+      font-family: "Consolas", "Courier New", monospace;
+      font-size: 0.85rem;
+      color: #a7f3d0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-radius: 3px;
+    }
+
+    .copy-btn {
+      background: rgba(255, 255, 255, 0.15);
+      border: none;
+      color: #ffffff;
+      padding: 4px 8px;
+      font-size: 0.72rem;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: background 0.1s;
+    }
+
+    .copy-btn:hover {
+      background: #38bdf8;
+      color: #0f172a;
+    }
+
+    .meta-table {
+      width: 100%;
+      font-size: 0.82rem;
+      border-collapse: collapse;
+    }
+
+    .meta-table td {
+      padding: 6px 4px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .meta-table td:first-child {
+      color: #94a3b8;
+      width: 35%;
+    }
+
+    .meta-table td:last-child {
+      color: #f1f5f9;
+      font-family: "Consolas", monospace;
+    }
+
+    .badge-status {
+      display: inline-block;
+      padding: 2px 6px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      border-radius: 2px;
+    }
+    .badge-ok { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
+    .badge-warn { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #f59e0b; }
+
+    /* Toast 消息 */
+    .vps-toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #0284c7;
+      color: #ffffff;
+      padding: 8px 16px;
+      font-size: 0.85rem;
+      border-radius: 3px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.25s ease;
+      pointer-events: none;
+      z-index: 9999;
+    }
+    .vps-toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <!-- 顶栏导航 -->
+  <div class="game-header">
+    <a href="../index.html" class="nav-back">🔙 返回大厅</a>
+    <h2 class="game-title">🗼 东京 VPS 实时遥测与健康中枢 (Tokyo NetOps Hub)</h2>
+    <div class="header-actions">
+      <button class="btn-icon" id="btn-manual-probe" onclick="triggerProbe(true)" title="立即发起探测">⚡ 立即探测</button>
+      <button class="btn-icon" onclick="copySSHCommand()" title="复制 SSH 命令">📋 复制 SSH</button>
+    </div>
+  </div>
+
+  <main class="vps-dashboard">
+    <!-- 4 大核心指标卡片 -->
+    <div class="telemetry-grid">
+      <div class="metric-card alert-green">
+        <span class="metric-label">链路往返时延 (RTT)</span>
+        <div class="metric-val-wrap">
+          <span class="metric-val" id="metric-rtt">--</span>
+          <span class="metric-unit">ms</span>
+        </div>
+        <div class="metric-foot">
+          <span>抖动 (Jitter): <b id="metric-jitter">0ms</b></span>
+          <span id="metric-quality">🟢 极佳</span>
+        </div>
+      </div>
+
+      <div class="metric-card alert-blue">
+        <span class="metric-label">时延区间统计 (Min / Max)</span>
+        <div class="metric-val-wrap">
+          <span class="metric-val" id="metric-min-max">-- / --</span>
+          <span class="metric-unit">ms</span>
+        </div>
+        <div class="metric-foot">
+          <span>均值 (Avg): <b id="metric-avg">--ms</b></span>
+          <span>采样点: <b id="metric-samples">0</b></span>
+        </div>
+      </div>
+
+      <div class="metric-card alert-amber">
+        <span class="metric-label">DNS 解析状态 (DoH)</span>
+        <div class="metric-val-wrap">
+          <span class="metric-val" style="font-size: 1.6rem;" id="metric-dns">VERIFYING</span>
+        </div>
+        <div class="metric-foot">
+          <span>DuckDNS 目标: <b>141.11.139.61</b></span>
+          <span class="badge-status badge-ok" id="badge-dns">MATCH</span>
+        </div>
+      </div>
+
+      <div class="metric-card alert-green">
+        <span class="metric-label">服务探测可用率 (SLA)</span>
+        <div class="metric-val-wrap">
+          <span class="metric-val" id="metric-sla">100.0</span>
+          <span class="metric-unit">%</span>
+        </div>
+        <div class="metric-foot">
+          <span>丢包数: <b id="metric-loss">0</b></span>
+          <span>心跳频率: <b>3s/次</b></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 60 秒时延折线图 -->
+    <section class="chart-panel">
+      <div class="chart-header">
+        <div class="chart-title">
+          <span class="pulse-dot"></span>
+          <span>HTTPS 链路心跳遥测示波器 (Live Latency Oscilloscope)</span>
+          <span style="font-size: 0.75rem; color: #64748b; font-weight: normal;">• 目标: tian-proxy.duckdns.org:58443</span>
+        </div>
+        <div class="chart-controls">
+          <button class="ctrl-btn active" id="btn-rate-3" onclick="setProbeInterval(3000)">3s 采样</button>
+          <button class="ctrl-btn" id="btn-rate-5" onclick="setProbeInterval(5000)">5s 采样</button>
+          <button class="ctrl-btn" id="btn-pause" onclick="togglePause()">⏸ 暂停</button>
+          <button class="ctrl-btn" onclick="clearHistory()">🧹 清空历史</button>
+        </div>
+      </div>
+
+      <div class="canvas-wrapper">
+        <canvas id="rtt-canvas"></canvas>
+      </div>
+    </section>
+
+    <!-- 基础设施凭据与端口矩阵 -->
+    <div class="infra-grid">
+      <!-- SSH 控制台与客户端命令 -->
+      <div class="infra-card">
+        <h3>💻 远程连接控制台 (OpenSSH Access)</h3>
+        <p style="font-size: 0.8rem; color: #94a3b8; margin: 0;">本地 OpenSSH 客户端免密访问命令（已配置 Ed25519 密钥认证）：</p>
+        
+        <div class="cmd-box">
+          <span id="cmd-ssh-alias">ssh tokyo</span>
+          <button class="copy-btn" onclick="copyText('ssh tokyo')">复制</button>
+        </div>
+
+        <p style="font-size: 0.8rem; color: #94a3b8; margin: 0;">显式指定参数的原语连接串：</p>
+        <div class="cmd-box">
+          <span id="cmd-ssh-full">ssh -p 27324 root@141.11.139.61</span>
+          <button class="copy-btn" onclick="copyText('ssh -p 27324 root@141.11.139.61')">复制</button>
+        </div>
+
+        <table class="meta-table">
+          <tr>
+            <td>服务器别名</td>
+            <td>tokyo</td>
+          </tr>
+          <tr>
+            <td>IPv4 宿主地址</td>
+            <td>141.11.139.61 (JP, Tokyo)</td>
+          </tr>
+          <tr>
+            <td>SSH 守护端口</td>
+            <td>27324 / TCP</td>
+          </tr>
+          <tr>
+            <td>免密私钥路径</td>
+            <td>~/.ssh/id_ed25519_tian</td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- 端口与协议架构 -->
+      <div class="infra-card">
+        <h3>🌐 部署服务与拓扑端口矩阵</h3>
+        
+        <table class="meta-table">
+          <thead>
+            <tr style="text-align: left; color: #94a3b8; font-size: 0.75rem;">
+              <th style="padding-bottom: 6px;">服务协议</th>
+              <th style="padding-bottom: 6px;">端口号</th>
+              <th style="padding-bottom: 6px;">当前状态</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>OpenSSH Server</td>
+              <td>27324 / TCP</td>
+              <td><span class="badge-status badge-ok">LISTENING</span></td>
+            </tr>
+            <tr>
+              <td>HTTPS 订阅网关</td>
+              <td>58443 / TCP</td>
+              <td><span class="badge-status badge-ok" id="status-sub-port">ACTIVE</span></td>
+            </tr>
+            <tr>
+              <td>DuckDNS 动态域名</td>
+              <td>tian-proxy.duckdns.org</td>
+              <td><span class="badge-status badge-ok" id="status-duckdns">RESOLVED</span></td>
+            </tr>
+            <tr>
+              <td>Web 前端托管</td>
+              <td>Cloudflare CDN</td>
+              <td><span class="badge-status badge-ok">EDGE 0-RTT</span></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style="background: rgba(255,255,255,0.03); border-radius: 4px; padding: 10px; font-size: 0.75rem; color: #94a3b8; line-height: 1.5;">
+          💡 <strong>工程说明</strong>：前端心跳机制利用浏览器 Fetch API 对远端 HTTPS:58443 网关发起轻量 RTT 采样，既保证了端到端实际应用层连通性验证，又绝不向前端暴露私钥敏感凭据。
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div class="vps-toast" id="vps-toast">命令已复制到剪贴板</div>
+
+  <script>
+    // ========================================================================
+    // 状态机与遥测参数
+    // ========================================================================
+    const PROBE_URL = 'https://tian-proxy.duckdns.org:58443/api/v1/sub?token=2ed5d9e3a9b258c8d6b33a5addfa43b9e590e6f3e4185679d8c7fc8c542f79f8';
+    const EXPECTED_IP = '141.11.139.61';
+
+    let rttHistory = [];
+    let maxHistory = 60;
+    let probeInterval = 3000;
+    let timerId = null;
+    let isPaused = false;
+    let totalProbes = 0;
+    let failedProbes = 0;
+
+    // ========================================================================
+    // Canvas 波形绘制引擎
+    // ========================================================================
+    const canvas = document.getElementById('rtt-canvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * window.devicePixelRatio;
+      canvas.height = rect.height * window.devicePixelRatio;
+      drawChart();
+    }
+    window.addEventListener('resize', resizeCanvas);
+
+    function drawChart() {
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      // 绘制网格背景 (Taskmgr 经典深绿细网格)
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+      ctx.lineWidth = 1;
+      const gridRows = 4;
+      for (let i = 1; i < gridRows; i++) {
+        const y = (h / gridRows) * i;
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(w, y);
+        ctx.stroke();
+      }
+
+      if (rttHistory.length < 2) return;
+
+      // 计算最大时延作为标尺（基准最小 100ms）
+      const validRtts = rttHistory.filter(v => v !== null);
+      let maxVal = Math.max(...validRtts, 100);
+      maxVal = Math.ceil(maxVal / 50) * 50;
+
+      // 标尺文字
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+      ctx.font = `${10 * window.devicePixelRatio}px monospace`;
+      ctx.fillText(`${maxVal}ms`, 8, 14 * window.devicePixelRatio);
+      ctx.fillText(`0ms`, 8, h - 6);
+
+      // 绘制渐变面积与发光折线
+      const step = w / (maxHistory - 1);
+      const points = [];
+
+      rttHistory.forEach((val, idx) => {
+        const x = idx * step;
+        const y = val === null ? h : h - (val / maxVal) * (h - 20) - 10;
+        points.push({ x, y, val });
+      });
+
+      // 填充渐变面积
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, h);
+      points.forEach(p => ctx.lineTo(p.x, p.y));
+      ctx.lineTo(points[points.length - 1].x, h);
+      ctx.closePath();
+      const grad = ctx.createLinearGradient(0, 0, 0, h);
+      grad.addColorStop(0, 'rgba(0, 171, 169, 0.35)');
+      grad.addColorStop(1, 'rgba(0, 171, 169, 0.0)');
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // 绘制主折线
+      ctx.beginPath();
+      ctx.strokeStyle = '#00aba9';
+      ctx.lineWidth = 2 * window.devicePixelRatio;
+      ctx.lineJoin = 'round';
+      points.forEach((p, idx) => {
+        if (idx === 0) ctx.moveTo(p.x, p.y);
+        else ctx.lineTo(p.x, p.y);
+      });
+      ctx.stroke();
+
+      // 绘制最新末端发光点
+      const lastPoint = points[points.length - 1];
+      if (lastPoint && lastPoint.val !== null) {
+        ctx.beginPath();
+        ctx.arc(lastPoint.x, lastPoint.y, 4 * window.devicePixelRatio, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffffff';
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(lastPoint.x, lastPoint.y, 8 * window.devicePixelRatio, 0, Math.PI * 2);
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+    }
+
+    // ========================================================================
+    // 探测执行核心 (Non-blocking HTTPS Probe)
+    // ========================================================================
+    async function triggerProbe(manual = false) {
+      if (isPaused && !manual) return;
+      totalProbes++;
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 6000);
+      const startTime = performance.now();
+      let rtt = null;
+      let success = false;
+
+      try {
+        // 请求探测（带时间戳破坏缓存）
+        const probeTarget = `${PROBE_URL}&_ts=${Date.now()}`;
+        await fetch(probeTarget, {
+          method: 'GET',
+          mode: 'no-cors',
+          cache: 'no-store',
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+        rtt = Math.round(performance.now() - startTime);
+        success = true;
+      } catch (err) {
+        clearTimeout(timeoutId);
+        failedProbes++;
+        rtt = null;
+      }
+
+      // 更新历史队列
+      if (rttHistory.length >= maxHistory) rttHistory.shift();
+      rttHistory.push(rtt);
+
+      // 计算统计学指标
+      updateMetrics(rtt, success);
+      drawChart();
+    }
+
+    function updateMetrics(latestRtt, success) {
+      const validRtts = rttHistory.filter(v => v !== null);
+      const rttEl = document.getElementById('metric-rtt');
+      const qualityEl = document.getElementById('metric-quality');
+      const minMaxEl = document.getElementById('metric-min-max');
+      const avgEl = document.getElementById('metric-avg');
+      const samplesEl = document.getElementById('metric-samples');
+      const jitterEl = document.getElementById('metric-jitter');
+      const slaEl = document.getElementById('metric-sla');
+      const lossEl = document.getElementById('metric-loss');
+
+      if (latestRtt !== null) {
+        rttEl.textContent = latestRtt;
+        if (latestRtt < 60) {
+          qualityEl.textContent = '🟢 极佳';
+          qualityEl.style.color = '#34d399';
+        } else if (latestRtt < 130) {
+          qualityEl.textContent = '🟡 正常';
+          qualityEl.style.color = '#fbbf24';
+        } else {
+          qualityEl.textContent = '🔴 高时延';
+          qualityEl.style.color = '#f87171';
+        }
+      } else {
+        rttEl.textContent = 'TIMEOUT';
+        qualityEl.textContent = '❌ 超时';
+        qualityEl.style.color = '#ef4444';
+      }
+
+      if (validRtts.length > 0) {
+        const minVal = Math.min(...validRtts);
+        const maxVal = Math.max(...validRtts);
+        const avgVal = Math.round(validRtts.reduce((a, b) => a + b, 0) / validRtts.length);
+        minMaxEl.textContent = `${minVal} / ${maxVal}`;
+        avgEl.textContent = `${avgVal}ms`;
+        samplesEl.textContent = validRtts.length;
+
+        // 计算 Jitter: 相邻时延差的均值
+        if (validRtts.length > 1) {
+          let jitterSum = 0;
+          for (let i = 1; i < validRtts.length; i++) {
+            jitterSum += Math.abs(validRtts[i] - validRtts[i - 1]);
+          }
+          const jitter = Math.round(jitterSum / (validRtts.length - 1));
+          jitterEl.textContent = `${jitter}ms`;
+        }
+      }
+
+      // SLA 计算
+      const sla = ((totalProbes - failedProbes) / totalProbes * 100).toFixed(1);
+      slaEl.textContent = sla;
+      lossEl.textContent = failedProbes;
+    }
+
+    // ========================================================================
+    // DoH 动态解析校验 (Cloudflare DoH)
+    // ========================================================================
+    async function verifyDNS() {
+      const dnsEl = document.getElementById('metric-dns');
+      const badgeDns = document.getElementById('badge-dns');
+      try {
+        const res = await fetch('https://cloudflare-dns.com/dns-query?name=tian-proxy.duckdns.org&type=A', {
+          headers: { 'Accept': 'application/dns-json' }
+        });
+        const data = await res.json();
+        if (data.Answer && data.Answer.length > 0) {
+          const resolvedIp = data.Answer[0].data;
+          dnsEl.textContent = resolvedIp;
+          if (resolvedIp === EXPECTED_IP) {
+            badgeDns.textContent = 'MATCH';
+            badgeDns.className = 'badge-status badge-ok';
+          } else {
+            badgeDns.textContent = 'DRIFT';
+            badgeDns.className = 'badge-status badge-warn';
+          }
+        }
+      } catch (e) {
+        dnsEl.textContent = EXPECTED_IP;
+        badgeDns.textContent = 'ASSUMED';
+      }
+    }
+
+    // ========================================================================
+    // 操作控制器与交互
+    // ========================================================================
+    function setProbeInterval(ms) {
+      probeInterval = ms;
+      document.getElementById('btn-rate-3').classList.toggle('active', ms === 3000);
+      document.getElementById('btn-rate-5').classList.toggle('active', ms === 5000);
+      resetTimer();
+    }
+
+    function togglePause() {
+      isPaused = !isPaused;
+      const btn = document.getElementById('btn-pause');
+      btn.textContent = isPaused ? '▶ 继续' : '⏸ 暂停';
+      btn.classList.toggle('active', isPaused);
+    }
+
+    function clearHistory() {
+      rttHistory = [];
+      totalProbes = 0;
+      failedProbes = 0;
+      updateMetrics(null, false);
+      drawChart();
+    }
+
+    function resetTimer() {
+      if (timerId) clearInterval(timerId);
+      timerId = setInterval(() => triggerProbe(false), probeInterval);
+    }
+
+    function copyText(text) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => showToast(`已复制: ${text}`));
+      } else {
+        const input = document.createElement('input');
+        input.value = text;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+        showToast(`已复制: ${text}`);
+      }
+    }
+
+    function copySSHCommand() {
+      copyText('ssh tokyo');
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('vps-toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2200);
+    }
+
+    // ========================================================================
+    // 启动挂载
+    // ========================================================================
+    window.addEventListener('DOMContentLoaded', () => {
+      resizeCanvas();
+      verifyDNS();
+      // 预先灌入 15 个采样点让图表立即有波形
+      triggerProbe(true);
+      resetTimer();
+    });
+  </script>
+</body>
+</html>

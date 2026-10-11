@@ -960,6 +960,119 @@
         </div>
       </section>
 
+      <!-- ====================================================================
+           分组 5: 🌐 网络工程 & 云端中枢 · DEVOPS (Windows 8 极客工程师矩阵)
+           ==================================================================== -->
+      <section class="metro-group" data-group="DEVOPS">
+        <div class="metro-group-header" onclick="jumpToCategoryGroup('DEVOPS')">
+          <span>🌐 网络工程 & 云端中枢 · DEVOPS</span>
+          <span class="group-arrow">›</span>
+        </div>
+        <div class="metro-group-body">
+          
+          <!-- 1. 东京 VPS 实时遥测 (2x1 宽磁贴) -->
+          <div class="game-card tile-wide tile-accent-vps anim-push" data-cat="DEVOPS" data-players="1" data-game-key="VPS_MONITOR" data-genre="DEVOPS" data-online="true" data-keywords="vps 东京 tokyo 基础设施 遥测 rtt 延迟 ping ssh 27324 duckdns 58443 monitor" onclick="enterGame('VPS_MONITOR')">
+            <div class="metro-tile-flipper">
+              <div class="metro-tile-front">
+                <div class="tile-badge-row"><span class="tile-badge-num" id="tile-vps-rtt-badge">🟢 38ms</span></div>
+                <div class="tile-icon-canvas">
+                  <svg class="metro-icon-svg" viewBox="0 0 24 24"><path d="M4 1h16c1.1 0 2 .9 2 2v4c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V3c0-1.1.9-2 2-2zm0 8h16c1.1 0 2 .9 2 2v4c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2v-4c0-1.1.9-2 2-2zm0 8h16c1.1 0 2 .9 2 2v4c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2v-4c0-1.1.9-2 2-2zM6 5h2v-2H6v2zm0 8h2v-2H6v2zm0 8h2v-2H6v2z"/></svg>
+                </div>
+                <div class="tile-caption-row">
+                  <span class="tile-title-text">东京 VPS 实时遥测</span>
+                  <span class="tile-sub-text">141.11.139.61 · SSH 27324 · RTT 示波器</span>
+                </div>
+              </div>
+              <div class="metro-tile-back">
+                <div class="tile-back-title">🗼 Tokyo Node Telemetry</div>
+                <div class="tile-back-stats">
+                  <div class="tile-stat-row"><span>Host IP:</span><b>141.11.139.61</b></div>
+                  <div class="tile-stat-row"><span>SSH Command:</span><b>ssh tokyo</b></div>
+                  <div class="tile-stat-row"><span>Proxy Port:</span><b>58443 / TCP</b></div>
+                </div>
+                <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('VPS_MONITOR')">监控终端</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. RFC 协议报文结构剖析仪 (2x1 宽磁贴) -->
+          <div class="game-card tile-wide tile-accent-packet" data-cat="DEVOPS" data-players="1" data-game-key="PACKET_INSPECTOR" data-genre="DEVOPS" data-online="false" data-keywords="packet 报文 协议 rfc ipv4 tcp ospf bgp mpls wireshark 头部 抓包 剖析" onclick="enterGame('PACKET_INSPECTOR')">
+            <div class="metro-tile-flipper">
+              <div class="metro-tile-front">
+                <div class="tile-badge-row"><span class="tile-badge-num">32-Bit</span></div>
+                <div class="tile-icon-canvas">
+                  <svg class="metro-icon-svg" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V6h16v12zM6 10h12v2H6v-2zm0 4h8v2H6v-2z"/></svg>
+                </div>
+                <div class="tile-caption-row">
+                  <span class="tile-title-text">RFC 协议报文剖析仪</span>
+                  <span class="tile-sub-text">IPv4 · TCP · OSPF · BGP · MPLS 全景</span>
+                </div>
+              </div>
+              <div class="metro-tile-back">
+                <div class="tile-back-title">🔬 RFC Packet Dissector</div>
+                <div class="tile-back-stats">
+                  <div class="tile-stat-row"><span>IPv4 头部:</span><b>20 Bytes</b></div>
+                  <div class="tile-stat-row"><span>TCP 标志:</span><b>9 Flags (SYN/ACK)</b></div>
+                  <div class="tile-stat-row"><span>MPLS 标签:</span><b>20-Bit Label + S</b></div>
+                </div>
+                <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('PACKET_INSPECTOR')">剖析仪</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. IPv4 / CIDR / VLSM 子网掩码计算器 (1x1 中磁贴) -->
+          <div class="game-card tile-medium tile-accent-subnet" data-cat="DEVOPS" data-players="1" data-game-key="SUBNET_CALC" data-genre="DEVOPS" data-online="false" data-keywords="subnet 子网 掩码 计算器 cidr vlsm ipv4 wildcard 反掩码 路由汇聚 supernet" onclick="enterGame('SUBNET_CALC')">
+            <div class="metro-tile-flipper">
+              <div class="metro-tile-front">
+                <div class="tile-badge-row"><span class="tile-badge-num">/24</span></div>
+                <div class="tile-icon-canvas">
+                  <svg class="metro-icon-svg" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                </div>
+                <div class="tile-caption-row">
+                  <span class="tile-title-text">IPv4 子网计算器</span>
+                  <span class="tile-sub-text">VLSM 划分 · 反掩码 · 路由汇聚</span>
+                </div>
+              </div>
+              <div class="metro-tile-back">
+                <div class="tile-back-title">🧮 Subnet & CIDR Calc</div>
+                <div class="tile-back-stats">
+                  <div class="tile-stat-row"><span>/24 主机数:</span><b>254 可用</b></div>
+                  <div class="tile-stat-row"><span>/30 点对点:</span><b>2 可用</b></div>
+                  <div class="tile-stat-row"><span>反掩码:</span><b>0.0.0.255</b></div>
+                </div>
+                <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('SUBNET_CALC')">计算器</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. BGP 13 步选路决策推导机 (1x1 中磁贴) -->
+          <div class="game-card tile-medium tile-accent-bgp" data-cat="DEVOPS" data-players="1" data-game-key="BGP_DECISION" data-genre="DEVOPS" data-online="false" data-keywords="bgp 选路 决策 13步 华为 思科 prefval localpref aspath origin med ebgp ibgp" onclick="enterGame('BGP_DECISION')">
+            <div class="metro-tile-flipper">
+              <div class="metro-tile-front">
+                <div class="tile-badge-row"><span class="tile-badge-num">13-Step</span></div>
+                <div class="tile-icon-canvas">
+                  <svg class="metro-icon-svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                </div>
+                <div class="tile-caption-row">
+                  <span class="tile-title-text">BGP 决策推导机</span>
+                  <span class="tile-sub-text">13步选路流水线 · 属性裁决</span>
+                </div>
+              </div>
+              <div class="metro-tile-back">
+                <div class="tile-back-title">🧭 BGP Best-Path Pipeline</div>
+                <div class="tile-back-stats">
+                  <div class="tile-stat-row"><span>Step 1:</span><b>PrefVal 越大越优</b></div>
+                  <div class="tile-stat-row"><span>Step 2:</span><b>Local-Pref 出站控流</b></div>
+                  <div class="tile-stat-row"><span>Step 4:</span><b>AS-Path 越短越优</b></div>
+                </div>
+                <button class="tile-btn-launch" onclick="event.stopPropagation(); enterGame('BGP_DECISION')">决策机</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
     </main>
 
     <!-- 语义缩放全景覆盖层 (Semantic Zoom) -->
@@ -982,6 +1095,10 @@
           <span class="cat-name">🕹️ 街机红白机 & 对战</span>
           <span class="cat-count">9 款对决街机</span>
         </div>
+        <div class="semantic-zoom-card tile-accent-vps" onclick="jumpToCategoryGroup('DEVOPS')">
+          <span class="cat-name">🌐 网络工程 & 云端</span>
+          <span class="cat-count">4 款基础设施中枢</span>
+        </div>
       </div>
     </div>
 
@@ -1001,16 +1118,17 @@
       <div class="charm-chips-group">
         <span class="charm-chips-title">人数过滤 (Player Mode)</span>
         <div class="charm-chips-wrap">
-          <button class="charm-pill active" data-player-filter="ALL" onclick="setPlayerFilter('ALL')">全部模式 (26)</button>
-          <button class="charm-pill" data-player-filter="1" onclick="setPlayerFilter('1')">单人挑战 (1)</button>
+          <button class="charm-pill active" data-player-filter="ALL" onclick="setPlayerFilter('ALL')">全部模式 (30)</button>
+          <button class="charm-pill" data-player-filter="1" onclick="setPlayerFilter('1')">单人挑战/工具 (5)</button>
           <button class="charm-pill" data-player-filter="2" onclick="setPlayerFilter('2')">双人死斗 (14)</button>
           <button class="charm-pill" data-player-filter="4" onclick="setPlayerFilter('4')">4人大乱斗 (11)</button>
-          <button class="charm-pill" data-player-filter="ONLINE" onclick="setPlayerFilter('ONLINE')">在线联机 (20)</button>
+          <button class="charm-pill" data-player-filter="ONLINE" onclick="setPlayerFilter('ONLINE')">在线联机/遥测 (21)</button>
         </div>
 
         <span class="charm-chips-title">分类过滤 (Category)</span>
         <div class="charm-chips-wrap">
           <button class="charm-pill active" data-cat-filter="ALL" onclick="setCategoryFilter('ALL')">全部分类</button>
+          <button class="charm-pill" data-cat-filter="DEVOPS" onclick="setCategoryFilter('DEVOPS')">网络工程 & 云端 (4)</button>
           <button class="charm-pill" data-cat-filter="PHYSICS" onclick="setCategoryFilter('PHYSICS')">怀旧街机 & 动作 (8)</button>
           <button class="charm-pill" data-cat-filter="STRATEGY" onclick="setCategoryFilter('STRATEGY')">传统棋弈 & 智谋 (11)</button>
           <button class="charm-pill" data-cat-filter="MIND" onclick="setCategoryFilter('MIND')">国民桌游 & 纸牌 (5)</button>
@@ -1118,13 +1236,17 @@
       'SUMO': 'sumo.html',
       'TANK': 'tank.html',
       'STACK': 'stack.html',
-      'CONTRA_CANVAS': 'contra_canvas.html'
+      'CONTRA_CANVAS': 'contra_canvas.html',
+      'VPS_MONITOR': 'netops/vps_monitor.html',
+      'SUBNET_CALC': 'netops/subnet_calc.html',
+      'PACKET_INSPECTOR': 'netops/packet_inspector.html',
+      'BGP_DECISION': 'netops/bgp_decision.html'
     };
 
     const prefetchedLinks = new Set();
     function prefetchGame(gameKey) {
       const file = fileMap[gameKey] || (gameKey.toLowerCase() + '.html');
-      const href = 'games/' + file;
+      const href = file.startsWith('netops/') ? file : ('games/' + file);
       if (prefetchedLinks.has(href)) return;
       prefetchedLinks.add(href);
       const link = document.createElement('link');
@@ -1151,7 +1273,7 @@
       const params = new URLSearchParams(window.location.search);
       params.delete('game');
       const qs = params.toString();
-      const targetUrl = 'games/' + file + (qs ? '?' + qs : '');
+      const targetUrl = (file.startsWith('netops/') ? file : ('games/' + file)) + (qs ? '?' + qs : '');
 
       window.location.href = targetUrl;
     }

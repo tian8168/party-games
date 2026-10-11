@@ -6,7 +6,7 @@
  * 3. 动态信令 (WebSocket/MQTT)：直连放行
  */
 
-const CACHE_NAME = 'party-arcade-v4.4';
+const CACHE_NAME = 'party-arcade-v5.0';
 
 
 const APP_SHELL = [
@@ -27,6 +27,10 @@ const APP_SHELL = [
   './mqtt.min.js',
   './three.min.js',
   './OrbitControls.js',
+  './netops/vps_monitor.html',
+  './netops/subnet_calc.html',
+  './netops/packet_inspector.html',
+  './netops/bgp_decision.html',
   './games/go.html',
   './games/kaya.html',
   './games/kaya/index.html',

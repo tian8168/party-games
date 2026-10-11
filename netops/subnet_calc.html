@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>IPv4 / VLSM / CIDR 专业子网计算与超网汇聚中枢 · DevOps NetOps</title>
+  <link rel="stylesheet" href="../common/common.css">
+  <link rel="stylesheet" href="../common/metro.css">
+  <style>
+    :root {
+      --sub-green: #008a00;
+      --sub-teal: #00aba9;
+      --sub-card: rgba(15, 23, 42, 0.75);
+      --sub-border: rgba(255, 255, 255, 0.12);
+      --net-bits: #10b981;
+      --host-bits: #38bdf8;
+    }
+
+    body {
+      background-color: #0d1e13;
+      background-image: radial-gradient(ellipse at 80% 20%, #153e20 0%, #0d1e13 70%);
+      color: #f8fafc;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    .calc-dashboard {
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 16px 20px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* 选项卡导航 */
+    .tab-nav {
+      display: flex;
+      gap: 8px;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.12);
+      padding-bottom: 8px;
+    }
+
+    .tab-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #94a3b8;
+      padding: 8px 18px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: all 0.15s;
+    }
+
+    .tab-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+    }
+
+    .tab-btn.active {
+      background: var(--sub-green);
+      border-color: var(--sub-green);
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    .calc-section {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* 单子网分析器样式 */
+    .input-panel {
+      background: var(--sub-card);
+      border: 1px solid var(--sub-border);
+      padding: 20px 24px;
+      border-radius: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .input-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .ip-input {
+      background: #000000;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #a7f3d0;
+      font-family: "Consolas", monospace;
+      font-size: 1.15rem;
+      padding: 8px 14px;
+      border-radius: 3px;
+      width: 220px;
+      outline: none;
+    }
+    .ip-input:focus {
+      border-color: #34d399;
+      box-shadow: 0 0 8px rgba(52, 211, 153, 0.4);
+    }
+
+    .cidr-select {
+      background: #000000;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+      font-family: "Consolas", monospace;
+      font-size: 1.05rem;
+      padding: 8px 12px;
+      border-radius: 3px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .action-btn {
+      background: var(--sub-green);
+      border: none;
+      color: #ffffff;
+      padding: 8px 20px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: filter 0.15s;
+    }
+    .action-btn:hover {
+      filter: brightness(1.15);
+    }
+
+    /* 32位二进制图解条 */
+    .bits-visualizer {
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 12px 16px;
+      border-radius: 3px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .bits-title {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .bits-stream {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-family: "Consolas", monospace;
+      font-size: 0.95rem;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .octet-chunk {
+      display: flex;
+      gap: 2px;
+    }
+
+    .bit-node {
+      width: 14px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      border-radius: 1px;
+    }
+    .bit-net { background: rgba(16, 185, 129, 0.3); color: #34d399; border-bottom: 2px solid #10b981; }
+    .bit-host { background: rgba(56, 189, 248, 0.25); color: #7dd3fc; border-bottom: 2px solid #38bdf8; }
+    .octet-dot { color: #64748b; font-weight: bold; margin: 0 2px; }
+
+    /* 输出网格卡片 */
+    .output-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    @media (max-width: 768px) {
+      .output-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .out-card {
+      background: var(--sub-card);
+      border: 1px solid var(--sub-border);
+      padding: 14px 18px;
+      border-radius: 3px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .out-label {
+      font-size: 0.76rem;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .out-val {
+      font-size: 1.35rem;
+      font-family: "Consolas", monospace;
+      color: #ffffff;
+    }
+
+    .out-extra {
+      font-size: 0.75rem;
+      color: #64748b;
+      font-family: "Consolas", monospace;
+    }
+
+    /* VLSM 划分表与汇聚表 */
+    .table-container {
+      background: var(--sub-card);
+      border: 1px solid var(--sub-border);
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+
+    .vlsm-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      text-align: left;
+    }
+
+    .vlsm-table th {
+      background: rgba(0, 0, 0, 0.4);
+      color: #94a3b8;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--sub-border);
+    }
+
+    .vlsm-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      font-family: "Consolas", monospace;
+    }
+
+    .vlsm-table tr:hover td {
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    textarea.code-area {
+      width: 100%;
+      background: #000000;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #a7f3d0;
+      font-family: "Consolas", monospace;
+      font-size: 0.9rem;
+      padding: 10px;
+      border-radius: 3px;
+      box-sizing: border-box;
+      outline: none;
+      resize: vertical;
+    }
+  </style>
+</head>
+<body>
+  <!-- 顶栏导航 -->
+  <div class="game-header">
+    <a href="../index.html" class="nav-back">🔙 返回大厅</a>
+    <h2 class="game-title">🧮 IPv4 / VLSM / CIDR 专业子网掩码与超网中枢</h2>
+    <div class="header-actions">
+      <button class="btn-icon" onclick="loadSampleData('office')" title="载入办公网样例">🏢 示例1:办公网</button>
+      <button class="btn-icon" onclick="loadSampleData('vlsm')" title="载入VLSM样例">📊 示例2:VLSM</button>
+    </div>
+  </div>
+
+  <main class="calc-dashboard">
+    <!-- 功能选项卡 -->
+    <nav class="tab-nav">
+      <button class="tab-btn active" id="tab-btn-single" onclick="switchTab('single')">🔍 单网段精细剖析</button>
+      <button class="tab-btn" id="tab-btn-vlsm" onclick="switchTab('vlsm')">📐 VLSM 可变长子网划分</button>
+      <button class="tab-btn" id="tab-btn-supernet" onclick="switchTab('supernet')">⚡ CIDR 路由超网汇聚</button>
+      <button class="tab-btn" id="tab-btn-matrix" onclick="switchTab('matrix')">📋 掩码速查字典 (/8~/32)</button>
+    </nav>
+
+    <!-- 1. 单网段精细剖析 -->
+    <div class="calc-section" id="sec-single">
+      <div class="input-panel">
+        <div class="input-row">
+          <label style="font-size: 0.9rem; color: #94a3b8;">IPv4 地址 (支持带/掩码):</label>
+          <input type="text" id="input-ip" class="ip-input" value="192.168.1.100" placeholder="如 192.168.1.100" oninput="onIpChange()">
+          <span style="color: #64748b; font-size: 1.2rem;">/</span>
+          <select id="select-cidr" class="cidr-select" onchange="calculateSingle()"></select>
+          <button class="action-btn" onclick="calculateSingle()">立即推导</button>
+        </div>
+
+        <!-- 32位二进制位结构流 -->
+        <div class="bits-visualizer">
+          <div class="bits-title">
+            <span>32-Bit 掩码边界结构图 (<b style="color: #34d399;">绿色: 网络位</b> | <b style="color: #38bdf8;">蓝色: 主机位</b>)</span>
+            <span id="bits-count-summary">网络: 24 Bits | 主机: 8 Bits</span>
+          </div>
+          <div class="bits-stream" id="bits-stream-container"></div>
+        </div>
+      </div>
+
+      <!-- 核心推导结果 8 大卡片 -->
+      <div class="output-grid">
+        <div class="out-card">
+          <span class="out-label">网络地址 (Network Address / ID)</span>
+          <span class="out-val" id="out-net-id" style="color: #34d399;">192.168.1.0</span>
+          <span class="out-extra" id="out-net-bin">11000000.10101000.00000001.00000000</span>
+        </div>
+
+        <div class="out-card">
+          <span class="out-label">广播地址 (Broadcast Address)</span>
+          <span class="out-val" id="out-bcast" style="color: #f87171;">192.168.1.255</span>
+          <span class="out-extra" id="out-bcast-bin">11000000.10101000.00000001.11111111</span>
+        </div>
+
+        <div class="out-card">
+          <span class="out-label">可用主机范围 (Usable Host Range)</span>
+          <span class="out-val" id="out-range" style="font-size: 1.15rem; color: #38bdf8;">192.168.1.1 ~ 192.168.1.254</span>
+          <span class="out-extra" id="out-range-desc">首主机 ~ 末主机 (除去 NetID 与 Bcast)</span>
+        </div>
+
+        <div class="out-card">
+          <span class="out-label">主机容量 (Host Capacity)</span>
+          <span class="out-val" id="out-hosts">254 <span style="font-size: 0.85rem; color: #94a3b8;">可用</span></span>
+          <span class="out-extra" id="out-total-ips">总地址数: 256 (2^8)</span>
+        </div>
+
+        <div class="out-card">
+          <span class="out-label">子网掩码 (Subnet Mask)</span>
+          <span class="out-val" id="out-mask">255.255.255.0</span>
+          <span class="out-extra" id="out-mask-hex">十六进制: 0xFFFFFF00</span>
+        </div>
+
+        <div class="out-card">
+          <span class="out-label">反掩码 (Wildcard Mask · ACL / OSPF)</span>
+          <span class="out-val" id="out-wildcard" style="color: #fbbf24;">0.0.0.255</span>
+          <span class="out-extra">用于华为/思科 ACL 规则匹配与 OSPF network 宣告</span>
+        </div>
+
+        <div class="out-card">
+          <span class="out-label">地址类别与属性 (IP Class & Scope)</span>
+          <span class="out-val" id="out-class" style="font-size: 1.1rem;">Class C · RFC 1918 私网</span>
+          <span class="out-extra" id="out-route-scope">局域网不可公网直接路由</span>
+        </div>
+
+        <div class="out-card">
+          <span class="out-label">点对点链路兼容性 (RFC 3021 /31)</span>
+          <span class="out-val" id="out-p2p" style="font-size: 1.1rem;">不适用 (常规多路访问网段)</span>
+          <span class="out-extra">/30 (4 IP / 2主机) 或 /31 (2 IP 纯点对点)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. VLSM 可变长子网划分 -->
+    <div class="calc-section" id="sec-vlsm" style="display: none;">
+      <div class="input-panel">
+        <div class="input-row">
+          <label style="font-size: 0.9rem; color: #94a3b8;">根主网前缀 (Major Network):</label>
+          <input type="text" id="vlsm-root-ip" class="ip-input" value="192.168.10.0/24">
+        </div>
+        <div>
+          <label style="font-size: 0.85rem; color: #94a3b8;">各部门/子网所需主机数需求 (支持逗号、换行或空格分隔):</label>
+          <textarea id="vlsm-demands" class="code-area" rows="3">研发中心: 120, 销售与市场: 55, 财务财务: 28, 互联链路A: 2, 互联链路B: 2</textarea>
+        </div>
+        <button class="action-btn" onclick="executeVLSM()">⚡ 运行最优无损 VLSM 规划算法</button>
+      </div>
+
+      <div class="table-container">
+        <table class="vlsm-table">
+          <thead>
+            <tr>
+              <th>需求子网</th>
+              <th>需主机数</th>
+              <th>分配前缀</th>
+              <th>子网掩码</th>
+              <th>网络地址</th>
+              <th>可用 IP 范围</th>
+              <th>广播地址</th>
+              <th>容纳率</th>
+            </tr>
+          </thead>
+          <tbody id="vlsm-result-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 3. CIDR 路由超网汇聚 -->
+    <div class="calc-section" id="sec-supernet" style="display: none;">
+      <div class="input-panel">
+        <label style="font-size: 0.85rem; color: #94a3b8;">输入待汇聚的明细路由列表 (每行一条 CIDR 前缀):</label>
+        <textarea id="supernet-routes" class="code-area" rows="5">192.168.0.0/24
+192.168.1.0/24
+192.168.2.0/24
+192.168.3.0/24</textarea>
+        <button class="action-btn" onclick="executeSupernet()">⚡ 提取最长公共前缀 (CIDR Summarize)</button>
+      </div>
+
+      <div class="out-card" style="background: var(--sub-card);">
+        <span class="out-label">最优汇聚超网路由 (Optimal Summary Route)</span>
+        <span class="out-val" id="supernet-result" style="color: #34d399; font-size: 1.8rem;">192.168.0.0/22</span>
+        <div id="supernet-detail" style="margin-top: 8px; font-size: 0.85rem; color: #94a3b8; line-height: 1.6;"></div>
+      </div>
+    </div>
+
+    <!-- 4. 掩码速查字典 -->
+    <div class="calc-section" id="sec-matrix" style="display: none;">
+      <div class="table-container">
+        <table class="vlsm-table">
+          <thead>
+            <tr>
+              <th>前缀</th>
+              <th>点分十进制掩码</th>
+              <th>反掩码 (Wildcard)</th>
+              <th>总 IP 数</th>
+              <th>可用主机数</th>
+              <th>工程典型应用场景</th>
+            </tr>
+          </thead>
+          <tbody id="matrix-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // ========================================================================
+    // 32 位无符号二进制整数位运算数学引擎 (Pure Bitwise Math)
+    // ========================================================================
+    function ipToInt(ip) {
+      return ip.split('.').reduce((acc, oct) => ((acc << 8) + parseInt(oct, 10)) >>> 0, 0);
+    }
+
+    function intToIp(intVal) {
+      return [
+        (intVal >>> 24) & 255,
+        (intVal >>> 16) & 255,
+        (intVal >>> 8) & 255,
+        intVal & 255
+      ].join('.');
+    }
+
+    function cidrToMaskInt(cidr) {
+      if (cidr === 0) return 0;
+      return ((0xFFFFFFFF << (32 - cidr)) >>> 0);
+    }
+
+    function intToBinOctets(intVal) {
+      return [
+        ((intVal >>> 24) & 255).toString(2).padStart(8, '0'),
+        ((intVal >>> 16) & 255).toString(2).padStart(8, '0'),
+        ((intVal >>> 8) & 255).toString(2).padStart(8, '0'),
+        (intVal & 255).toString(2).padStart(8, '0')
+      ].join('.');
+    }
+
+    // ========================================================================
+    // 初始化 CIDR 下拉框与速查表
+    // ========================================================================
+    const cidrSelect = document.getElementById('select-cidr');
+    for (let c = 32; c >= 1; c--) {
+      const opt = document.createElement('option');
+      opt.value = c;
+      const maskStr = intToIp(cidrToMaskInt(c));
+      opt.textContent = `/${c} (${maskStr})`;
+      if (c === 24) opt.selected = true;
+      cidrSelect.appendChild(opt);
+    }
+
+    function populateMatrixTable() {
+      const tbody = document.getElementById('matrix-table-body');
+      tbody.innerHTML = '';
+      for (let c = 8; c <= 32; c++) {
+        const maskInt = cidrToMaskInt(c);
+        const maskStr = intToIp(maskInt);
+        const wildStr = intToIp((~maskInt) >>> 0);
+        const totalIps = Math.pow(2, 32 - c);
+        const usableHosts = c === 32 ? 1 : (c === 31 ? 2 : Math.max(0, totalIps - 2));
+
+        let note = '常规部门/业务网段';
+        if (c === 8) note = '超大型主干骨干 (Class A 默认)';
+        else if (c === 16) note = '大型企业内网 / 数据中心 (Class B 默认)';
+        else if (c === 24) note = '标准 C 类局域网 / 单 VLAN';
+        else if (c === 30) note = '点对点物理互联 (4 IP, 2 可用)';
+        else if (c === 31) note = 'RFC 3021 极简点对点互联 (无浪费)';
+        else if (c === 32) note = '单机 Host 路由 / Loopback 逻辑口';
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><b style="color: #38bdf8;">/${c}</b></td>
+          <td>${maskStr}</td>
+          <td style="color: #fbbf24;">${wildStr}</td>
+          <td>${totalIps.toLocaleString()}</td>
+          <td style="color: #34d399; font-weight: bold;">${usableHosts.toLocaleString()}</td>
+          <td style="color: #94a3b8;">${note}</td>
+        `;
+        tbody.appendChild(tr);
+      }
+    }
+
+    // ========================================================================
+    // 单网段核心推导器
+    // ========================================================================
+    function onIpChange() {
+      const val = document.getElementById('input-ip').value.trim();
+      if (val.includes('/')) {
+        const parts = val.split('/');
+        const ip = parts[0].trim();
+        const cidr = parseInt(parts[1].trim(), 10);
+        if (cidr >= 0 && cidr <= 32) {
+          cidrSelect.value = cidr;
+          document.getElementById('input-ip').value = ip;
+        }
+      }
+      calculateSingle();
+    }
+
+    function calculateSingle() {
+      const ipRaw = document.getElementById('input-ip').value.trim();
+      const cidr = parseInt(cidrSelect.value, 10);
+
+      // IP 合法性检查
+      const octs = ipRaw.split('.');
+      if (octs.length !== 4 || octs.some(o => isNaN(o) || o === '' || parseInt(o, 10) < 0 || parseInt(o, 10) > 255)) {
+        return;
+      }
+
+      const ipInt = ipToInt(ipRaw);
+      const maskInt = cidrToMaskInt(cidr);
+      const wildcardInt = (~maskInt) >>> 0;
+      const netInt = (ipInt & maskInt) >>> 0;
+      const bcastInt = (netInt | wildcardInt) >>> 0;
+
+      const totalIps = Math.pow(2, 32 - cidr);
+      let usableHosts = 0;
+      let firstHostInt = netInt;
+      let lastHostInt = bcastInt;
+
+      if (cidr === 32) {
+        usableHosts = 1;
+        firstHostInt = netInt;
+        lastHostInt = netInt;
+      } else if (cidr === 31) {
+        usableHosts = 2; // RFC 3021
+        firstHostInt = netInt;
+        lastHostInt = bcastInt;
+      } else {
+        usableHosts = Math.max(0, totalIps - 2);
+        firstHostInt = (netInt + 1) >>> 0;
+        lastHostInt = (bcastInt - 1) >>> 0;
+      }
+
+      // 渲染 DOM
+      document.getElementById('out-net-id').textContent = `${intToIp(netInt)} /${cidr}`;
+      document.getElementById('out-net-bin').textContent = intToBinOctets(netInt);
+
+      document.getElementById('out-bcast').textContent = intToIp(bcastInt);
+      document.getElementById('out-bcast-bin').textContent = intToBinOctets(bcastInt);
+
+      if (cidr === 32) {
+        document.getElementById('out-range').textContent = `${intToIp(netInt)} (单主机)`;
+      } else if (cidr === 31) {
+        document.getElementById('out-range').textContent = `${intToIp(netInt)} ~ ${intToIp(bcastInt)} (RFC 3021 点对点)`;
+      } else {
+        document.getElementById('out-range').textContent = `${intToIp(firstHostInt)} ~ ${intToIp(lastHostInt)}`;
+      }
+
+      document.getElementById('out-hosts').innerHTML = `${usableHosts.toLocaleString()} <span style="font-size: 0.85rem; color: #94a3b8;">可用</span>`;
+      document.getElementById('out-total-ips').textContent = `总地址数: ${totalIps.toLocaleString()} (2^${32 - cidr})`;
+
+      document.getElementById('out-mask').textContent = intToIp(maskInt);
+      document.getElementById('out-mask-hex').textContent = `十六进制: 0x${maskInt.toString(16).toUpperCase().padStart(8, '0')}`;
+
+      document.getElementById('out-wildcard').textContent = intToIp(wildcardInt);
+
+      // 分类与私网识别
+      const firstOct = parseInt(octs[0], 10);
+      const secondOct = parseInt(octs[1], 10);
+      let cls = 'Class A';
+      if (firstOct >= 128 && firstOct <= 191) cls = 'Class B';
+      else if (firstOct >= 192 && firstOct <= 223) cls = 'Class C';
+      else if (firstOct >= 224 && firstOct <= 239) cls = 'Class D (组播 Multicast)';
+      else if (firstOct >= 240) cls = 'Class E (科研保留)';
+
+      let isPrivate = false;
+      if (firstOct === 10) isPrivate = true;
+      else if (firstOct === 172 && (secondOct >= 16 && secondOct <= 31)) isPrivate = true;
+      else if (firstOct === 192 && secondOct === 168) isPrivate = true;
+      else if (firstOct === 127) cls += ' · 环回 Loopback';
+
+      document.getElementById('out-class').textContent = `${cls} · ${isPrivate ? 'RFC 1918 私有地址' : '全球公网单播'}`;
+      document.getElementById('out-route-scope').textContent = isPrivate ? '局域网不可公网直接路由 (需 NAT)' : '可公网直接路由 (Public Internet)';
+
+      // 渲染 32 位二进制比特条
+      renderBitsStream(ipInt, cidr);
+    }
+
+    function renderBitsStream(ipInt, cidr) {
+      const container = document.getElementById('bits-stream-container');
+      container.innerHTML = '';
+      document.getElementById('bits-count-summary').textContent = `网络: ${cidr} Bits | 主机: ${32 - cidr} Bits`;
+
+      const ipBinStr = ((ipInt >>> 0).toString(2).padStart(32, '0'));
+
+      for (let oct = 0; oct < 4; oct++) {
+        const octChunk = document.createElement('div');
+        octChunk.className = 'octet-chunk';
+
+        for (let b = 0; b < 8; b++) {
+          const bitIndex = oct * 8 + b;
+          const bitVal = ipBinStr[bitIndex];
+          const node = document.createElement('div');
+          const isNet = bitIndex < cidr;
+          node.className = `bit-node ${isNet ? 'bit-net' : 'bit-host'}`;
+          node.textContent = bitVal;
+          node.title = `Bit ${bitIndex + 1}: ${isNet ? '网络位 (Network)' : '主机位 (Host)'}`;
+          octChunk.appendChild(node);
+        }
+
+        container.appendChild(octChunk);
+        if (oct < 3) {
+          const dot = document.createElement('span');
+          dot.className = 'octet-dot';
+          dot.textContent = '·';
+          container.appendChild(dot);
+        }
+      }
+    }
+
+    // ========================================================================
+    // VLSM 贪心切分算法 (Best-Fit Decreasing Allocation)
+    // ========================================================================
+    function executeVLSM() {
+      const rootStr = document.getElementById('vlsm-root-ip').value.trim();
+      const parts = rootStr.split('/');
+      if (parts.length !== 2) {
+        alert('根主网格式应为 IP/掩码，例如 192.168.10.0/24');
+        return;
+      }
+      const rootIp = parts[0].trim();
+      const rootCidr = parseInt(parts[1].trim(), 10);
+      let currentIpInt = ipToInt(rootIp);
+
+      const demandsText = document.getElementById('vlsm-demands').value;
+      const rawTokens = demandsText.split(/[\n,]+/).map(s => s.trim()).filter(Boolean);
+
+      const parsedDemands = [];
+      rawTokens.forEach((tok, idx) => {
+        let name = `子网 #${idx + 1}`;
+        let count = 0;
+        if (tok.includes(':')) {
+          const segs = tok.split(':');
+          name = segs[0].trim();
+          count = parseInt(segs[1].trim(), 10);
+        } else {
+          count = parseInt(tok, 10);
+        }
+        if (!isNaN(count) && count > 0) {
+          parsedDemands.push({ name, count });
+        }
+      });
+
+      // 降序排序
+      parsedDemands.sort((a, b) => b.count - a.count);
+
+      const tbody = document.getElementById('vlsm-result-body');
+      tbody.innerHTML = '';
+
+      parsedDemands.forEach(item => {
+        // 计算满足所需主机数的最小主机位数: 2^h - 2 >= count
+        let h = 1;
+        while (Math.pow(2, h) - 2 < item.count) {
+          h++;
+        }
+        if (item.count === 1) h = 2; // 最少 /30
+        const subCidr = 32 - h;
+        const totalIps = Math.pow(2, h);
+        const subMaskInt = cidrToMaskInt(subCidr);
+        const wildcardInt = (~subMaskInt) >>> 0;
+
+        // 对齐到子网块边界
+        if ((currentIpInt % totalIps) !== 0) {
+          currentIpInt = ((Math.floor(currentIpInt / totalIps) + 1) * totalIps) >>> 0;
+        }
+
+        const netInt = currentIpInt;
+        const bcastInt = (netInt + totalIps - 1) >>> 0;
+        const firstHost = (netInt + 1) >>> 0;
+        const lastHost = (bcastInt - 1) >>> 0;
+
+        const tr = document.createElement('tr');
+        const ratio = ((item.count / (totalIps - 2)) * 100).toFixed(1);
+
+        tr.innerHTML = `
+          <td><strong>${item.name}</strong></td>
+          <td style="color: #38bdf8;">${item.count} 台</td>
+          <td><b style="color: #34d399;">/${subCidr}</b></td>
+          <td>${intToIp(subMaskInt)}</td>
+          <td>${intToIp(netInt)}</td>
+          <td>${intToIp(firstHost)} ~ ${intToIp(lastHost)}</td>
+          <td>${intToIp(bcastInt)}</td>
+          <td><span style="color: ${ratio > 70 ? '#34d399' : '#fbbf24'};">${ratio}%</span></td>
+        `;
+        tbody.appendChild(tr);
+
+        // 前移指针
+        currentIpInt = (bcastInt + 1) >>> 0;
+      });
+    }
+
+    // ========================================================================
+    // CIDR 路由超网汇聚算法 (Longest Common Prefix)
+    // ========================================================================
+    function executeSupernet() {
+      const text = document.getElementById('supernet-routes').value;
+      const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+      if (lines.length < 2) {
+        alert('请至少输入 2 条待汇聚的路由');
+        return;
+      }
+
+      const ips = [];
+      lines.forEach(line => {
+        const segs = line.split('/')[0].trim();
+        ips.push(ipToInt(segs));
+      });
+
+      // 提取所有 IP 二进制的最长公共前缀
+      const binList = ips.map(i => (i >>> 0).toString(2).padStart(32, '0'));
+      let commonPrefixLen = 0;
+      for (let bit = 0; bit < 32; bit++) {
+        const char = binList[0][bit];
+        if (binList.every(b => b[bit] === char)) {
+          commonPrefixLen++;
+        } else {
+          break;
+        }
+      }
+
+      const sumMaskInt = cidrToMaskInt(commonPrefixLen);
+      const sumNetInt = (ips[0] & sumMaskInt) >>> 0;
+      const sumCidr = commonPrefixLen;
+
+      const resultStr = `${intToIp(sumNetInt)}/${sumCidr}`;
+      document.getElementById('supernet-result').textContent = resultStr;
+
+      const coveredTotal = Math.pow(2, 32 - sumCidr);
+      document.getElementById('supernet-detail').innerHTML = `
+        <p>• 提取公共前缀位长: <b>${sumCidr} 位</b> (子网掩码: <b>${intToIp(sumMaskInt)}</b>)</p>
+        <p>• 聚合网络边界: <b>${intToIp(sumNetInt)} ~ ${intToIp((sumNetInt | ((~sumMaskInt)>>>0))>>>0)}</b></p>
+        <p>• 容纳地址空间: <b>${coveredTotal.toLocaleString()}</b> 个 IPv4 地址</p>
+        <p>• 聚合效率: 成功将 <b>${lines.length} 条</b> 明细路由聚合为 <b>1 条</b> 汇聚前缀，极大精简 FIB 路由表容量！</p>
+      `;
+    }
+
+    // ========================================================================
+    // 选项卡切换与示例数据
+    // ========================================================================
+    function switchTab(name) {
+      ['single', 'vlsm', 'supernet', 'matrix'].forEach(k => {
+        const sec = document.getElementById(`sec-${k}`);
+        const btn = document.getElementById(`tab-btn-${k}`);
+        if (sec) sec.style.display = k === name ? 'flex' : 'none';
+        if (btn) btn.classList.toggle('active', k === name);
+      });
+      if (name === 'matrix') populateMatrixTable();
+    }
+
+    function loadSampleData(type) {
+      if (type === 'office') {
+        switchTab('single');
+        document.getElementById('input-ip').value = '10.240.16.88';
+        cidrSelect.value = 21;
+        calculateSingle();
+      } else if (type === 'vlsm') {
+        switchTab('vlsm');
+        executeVLSM();
+      }
+    }
+
+    // 启动初始化
+    window.addEventListener('DOMContentLoaded', () => {
+      calculateSingle();
+      populateMatrixTable();
+    });
+  </script>
+</body>
+</html>

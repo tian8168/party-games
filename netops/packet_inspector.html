@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>RFC 协议报文结构全景剖析仪 · Datacom Packet Inspector</title>
+  <link rel="stylesheet" href="../common/common.css">
+  <link rel="stylesheet" href="../common/metro.css">
+  <style>
+    :root {
+      --pkt-purple: #744da9;
+      --pkt-card: rgba(15, 23, 42, 0.82);
+      --pkt-border: rgba(255, 255, 255, 0.14);
+      --bit-active: #a855f7;
+    }
+
+    body {
+      background-color: #1a0f2b;
+      background-image: radial-gradient(ellipse at 80% 20%, #2f174e 0%, #1a0f2b 70%);
+      color: #f8fafc;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    .inspector-layout {
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 16px 20px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* 顶部协议选择器 */
+    .proto-nav {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.12);
+      padding-bottom: 8px;
+    }
+
+    .proto-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: #cbd5e1;
+      padding: 8px 16px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      border-radius: 2px;
+      white-space: nowrap;
+      transition: all 0.15s;
+    }
+
+    .proto-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+    }
+
+    .proto-btn.active {
+      background: var(--pkt-purple);
+      border-color: #c084fc;
+      color: #ffffff;
+      font-weight: 700;
+      box-shadow: 0 0 12px rgba(168, 85, 247, 0.4);
+    }
+
+    /* 左右分栏面板 */
+    .panes-grid {
+      display: grid;
+      grid-template-columns: 1.55fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 960px) {
+      .panes-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* 报文矩阵主面板 */
+    .matrix-panel {
+      background: var(--pkt-card);
+      border: 1px solid var(--pkt-border);
+      border-radius: 4px;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .matrix-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+
+    .matrix-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* 32位标尺刻度栏 */
+    .ruler-32 {
+      display: grid;
+      grid-template-columns: repeat(32, 1fr);
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-bottom: none;
+      font-family: "Consolas", monospace;
+      font-size: 0.65rem;
+      color: #94a3b8;
+      text-align: center;
+      padding: 4px 0;
+    }
+
+    .ruler-mark {
+      border-right: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .ruler-mark:nth-child(8), .ruler-mark:nth-child(16), .ruler-mark:nth-child(24), .ruler-mark:nth-child(32) {
+      border-right: 1px solid rgba(255, 255, 255, 0.25);
+      color: #38bdf8;
+      font-weight: bold;
+    }
+
+    /* 报文数据行与字段方格 */
+    .packet-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .packet-row {
+      display: grid;
+      grid-template-columns: repeat(32, 1fr);
+      gap: 1px;
+      min-height: 48px;
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .field-cell {
+      background: #1e1b4b;
+      border: 1px solid rgba(168, 85, 247, 0.25);
+      padding: 4px 6px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+      user-select: none;
+    }
+
+    .field-cell:hover {
+      background: #312e81;
+      border-color: #c084fc;
+      transform: translateY(-1px);
+      z-index: 5;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    }
+
+    .field-cell.selected {
+      background: #581c87 !important;
+      border-color: #f472b6 !important;
+      outline: 2px solid #ffffff;
+      outline-offset: -2px;
+      z-index: 10;
+    }
+
+    .field-name {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #ffffff;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+
+    .field-bits-badge {
+      font-size: 0.62rem;
+      font-family: "Consolas", monospace;
+      color: #cbd5e1;
+      opacity: 0.85;
+      margin-top: 2px;
+    }
+
+    /* 右侧协议精讲详情面板 */
+    .detail-panel {
+      background: var(--pkt-card);
+      border: 1px solid var(--pkt-border);
+      border-radius: 4px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .detail-head {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 10px;
+    }
+
+    .detail-proto-tag {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #c084fc;
+      font-weight: bold;
+    }
+
+    .detail-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin: 4px 0 2px;
+    }
+
+    .detail-meta-row {
+      display: flex;
+      gap: 12px;
+      font-size: 0.78rem;
+      color: #94a3b8;
+      font-family: "Consolas", monospace;
+    }
+
+    .spec-block {
+      background: rgba(0, 0, 0, 0.35);
+      border-left: 3px solid var(--pkt-purple);
+      padding: 10px 14px;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      color: #e2e8f0;
+      border-radius: 0 3px 3px 0;
+    }
+
+    .wireshark-box {
+      background: #020617;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 3px;
+      padding: 12px;
+      font-family: "Consolas", monospace;
+      font-size: 0.8rem;
+      color: #a7f3d0;
+      overflow-x: auto;
+      line-height: 1.5;
+    }
+
+    .wireshark-title {
+      font-size: 0.72rem;
+      color: #64748b;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .enum-table {
+      width: 100%;
+      font-size: 0.78rem;
+      border-collapse: collapse;
+      margin-top: 4px;
+    }
+
+    .enum-table td {
+      padding: 4px 6px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .enum-table td:first-child {
+      color: #38bdf8;
+      font-family: "Consolas", monospace;
+      width: 30%;
+    }
+    .enum-table td:last-child {
+      color: #cbd5e1;
+    }
+  </style>
+</head>
+<body>
+  <!-- 顶栏导航 -->
+  <div class="game-header">
+    <a href="../index.html" class="nav-back">🔙 返回大厅</a>
+    <h2 class="game-title">🔬 RFC 协议报文结构全景剖析仪 (Packet Inspector)</h2>
+    <div class="header-actions">
+      <button class="btn-icon" onclick="selectProtocol('ipv4')">🌐 IPv4</button>
+      <button class="btn-icon" onclick="selectProtocol('tcp')">⚡ TCP</button>
+      <button class="btn-icon" onclick="selectProtocol('ospf')">🌳 OSPF</button>
+      <button class="btn-icon" onclick="selectProtocol('bgp')">🧭 BGP</button>
+      <button class="btn-icon" onclick="selectProtocol('mpls')">🏷️ MPLS</button>
+    </div>
+  </div>
+
+  <main class="inspector-layout">
+    <!-- 协议选择卡片条 -->
+    <nav class="proto-nav">
+      <button class="proto-btn active" id="btn-proto-ipv4" onclick="selectProtocol('ipv4')">🌐 IPv4 Header (RFC 791)</button>
+      <button class="proto-btn" id="btn-proto-tcp" onclick="selectProtocol('tcp')">⚡ TCP Segment (RFC 793)</button>
+      <button class="proto-btn" id="btn-proto-ospf" onclick="selectProtocol('ospf')">🌳 OSPFv2 Packet & LSA (RFC 2328)</button>
+      <button class="proto-btn" id="btn-proto-bgp" onclick="selectProtocol('bgp')">🧭 BGP-4 Message & Path Attributes (RFC 4271)</button>
+      <button class="proto-btn" id="btn-proto-mpls" onclick="selectProtocol('mpls')">🏷️ MPLS 32-Bit Shim Label (RFC 3032)</button>
+    </nav>
+
+    <div class="panes-grid">
+      <!-- 报文矩阵 -->
+      <section class="matrix-panel">
+        <div class="matrix-header">
+          <div class="matrix-title">
+            <span id="matrix-proto-title">IPv4 协议报头标准矩阵 (20~60 字节)</span>
+          </div>
+          <span style="font-size: 0.78rem; color: #94a3b8;">每行标准 32 位 (4 字节) 对齐</span>
+        </div>
+
+        <!-- 32位标尺 -->
+        <div class="ruler-32" id="ruler-bar"></div>
+
+        <!-- 动态报文单元格栅格 -->
+        <div class="packet-grid" id="packet-grid-body"></div>
+      </section>
+
+      <!-- 字段详细释义 -->
+      <aside class="detail-panel">
+        <div class="detail-head">
+          <span class="detail-proto-tag" id="detail-rfc-tag">RFC 791 STANDARD</span>
+          <h3 class="detail-title" id="detail-field-name">Version (版本)</h3>
+          <div class="detail-meta-row">
+            <span>比特偏移: <b id="detail-offset" style="color: #38bdf8;">Bit 0 ~ 3</b></span>
+            <span>位宽: <b id="detail-length" style="color: #34d399;">4 Bits</b></span>
+          </div>
+        </div>
+
+        <div class="spec-block" id="detail-desc">
+          指定 IP 数据报所使用的协议版本。对于当前主流的 IPv4 网络，该字段固定二进制取值为 0100 (十进制 4)。路由设备查表接收到报文后首选核对该字段，若版本不匹配则直接丢弃。
+        </div>
+
+        <div>
+          <div class="wireshark-title">抓包视点 (Wireshark Dissector Emulation)</div>
+          <pre class="wireshark-box" id="detail-wireshark">Internet Protocol Version 4, Src: 192.168.1.100, Dst: 141.11.139.61
+0100 .... = Version: 4
+.... 0101 = Header Length: 20 bytes (5)</pre>
+        </div>
+
+        <div>
+          <div class="wireshark-title" id="detail-enum-title">典型枚举值与工程语义</div>
+          <table class="enum-table" id="detail-enum-table"></table>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    // ========================================================================
+    // 32 位标尺初始化
+    // ========================================================================
+    const rulerBar = document.getElementById('ruler-bar');
+    for (let i = 0; i < 32; i++) {
+      const mark = document.createElement('div');
+      mark.className = 'ruler-mark';
+      mark.textContent = i;
+      rulerBar.appendChild(mark);
+    }
+
+    // ========================================================================
+    // 五大核心协议结构字典 (RFC Protocol Schemas)
+    // ========================================================================
+    const PROTOCOLS = {
+      ipv4: {
+        title: 'IPv4 协议报头标准矩阵 (RFC 791 / 20~60 字节)',
+        rfc: 'RFC 791 / STD 5',
+        rows: [
+          [
+            { name: 'Version (版本)', span: 4, offset: 'Bit 0~3', desc: '指定 IP 数据报版本，IPv4 固定取值 4 (二进制 0100)。路由器接收到非对应版本报文直接静默丢弃。', ws: '0100 .... = Version: 4', enums: [['0100 (4)', 'IPv4 数据报'], ['0110 (6)', 'IPv6 数据报']] },
+            { name: 'IHL (首部长度)', span: 4, offset: 'Bit 4~7', desc: 'Internet Header Length，以 4 字节（32 位字长）为单位。最小取值为 5（即 5×4 = 20 字节无选项），最大取值 15（即 60 字节）。', ws: '.... 0101 = Header Length: 20 bytes (5)', enums: [['5 (0101)', '20 字节 (无 Options 选项)'], ['6~15', '带 Options 变长扩展首部']] },
+            { name: 'DSCP / ECN (服务类型 ToS)', span: 8, offset: 'Bit 8~15', desc: '区分服务代码点 (DSCP 6 位，用于 QoS 调度分类如 EF/AF/CS) 与显式拥塞通告 (ECN 2 位，用于网络中间节点主动标记拥塞)。', ws: 'Differentiated Services Field: 0x00 (DSCP: CS0, ECN: Not-ECT)', enums: [['101110 (46)', 'EF (Expedited Forwarding 极速转发)'], ['000000 (0)', 'BE (Best Effort 尽力而为)']] },
+            { name: 'Total Length (总长度)', span: 16, offset: 'Bit 16~31', desc: '首部与数据负载的总长度，单位为字节。最大可达 65,535 字节。受限于以太网 MTU（通常 1500 字节），超出时触发分片 (Fragmentation)。', ws: 'Total Length: 1500 (Bytes)', enums: [['<= 1500', '标准 Ethernet MTU 内无需分片'], ['> 1500', '超出 MTU，由出口路由器分片']] }
+          ],
+          [
+            { name: 'Identification (标识)', span: 16, offset: 'Bit 32~47', desc: '发送方为主机生成的唯一数据报标识，同一个 IP 数据报被切片为多个分片后，所有分片共享相同的 Identification 字段，用于目的端重组。', ws: 'Identification: 0x4a2e (18990)', enums: [['16-Bit', '由源主机 IP 协议栈自增产生']] },
+            { name: 'Flags (标志位)', span: 3, offset: 'Bit 48~50', desc: '分片控制标志：第 1 位保留为 0；第 2 位 DF (Don\'t Fragment)，若置 1 则禁止分片，遇 MTU 不足丢弃并回发 ICMP 3/4；第 3 位 MF (More Fragments)，置 1 表示后续仍有分片，0 表示末尾分片。', ws: 'Flags: 0x4000, Don\'t fragment\n.1.. .... = Don\'t fragment: Set\n..0. .... = More fragments: Not set', enums: [['DF = 1', '禁止分片 (常用于 PMTU 发现)'], ['MF = 1', '后续还有更多分片 (More Fragments)']] },
+            { name: 'Fragment Offset (片偏移)', span: 13, offset: 'Bit 51~63', desc: '本分片有效载荷在原始未切片数据报中的相对位置偏移量，以 8 字节为单位。目的端利用该偏移量精确拼装重组原报文。', ws: 'Fragment Offset: 0', enums: [['Offset * 8', '字节偏移量 (如 offset=185 -> 1480 字节)']] }
+          ],
+          [
+            { name: 'TTL (生存时间)', span: 8, offset: 'Bit 64~71', desc: '防止数据报在路由环路中无限循环。报文每经过一台三层路由器转发，TTL 减 1；当 TTL 递减至 0 时报文被丢弃，并向源端发送 ICMP Time Exceeded (Type 11 Code 0) 差错报文。Tracert 工具核心原语！', ws: 'Time to Live: 64', enums: [['64', 'Linux / Android 默认'], ['128', 'Windows 操作系统默认'], ['255', '思科/华为网络设备及 OSPF/BGP 邻居']] },
+            { name: 'Protocol (上层协议号)', span: 8, offset: 'Bit 72~79', desc: '指示载荷数据交给传输层或网络层哪个协议模块解析处理。RFC 规定 ICMP=1, IGMP=2, TCP=6, UDP=17, OSPF=89, GRE=47。', ws: 'Protocol: TCP (6)', enums: [['1', 'ICMP (Internet Control Message)'], ['6', 'TCP (Transmission Control)'], ['17', 'UDP (User Datagram)'], ['89', 'OSPF (Open Shortest Path First)']] },
+            { name: 'Header Checksum (首部校验和)', span: 16, offset: 'Bit 80~95', desc: '仅对 IP 首部 20 字节计算 16 位反码求和的反码校验。由于路由器每跳递减 TTL，该首部校验和在每一跳转发时都必须重新计算更新！', ws: 'Header Checksum: 0x93b2 [validation: correct]', enums: [['16-Bit', '只校验头部，不校验有效载荷数据']] }
+          ],
+          [
+            { name: 'Source IP Address (源 IPv4 地址)', span: 32, offset: 'Bit 96~127', desc: '报文发送方的 32 位全局单播或私有 IPv4 地址。由源主机网卡配置确定，路由器转发时不修改该字段（除非经过 SNAT/PAT 源地址转换）。', ws: 'Source Address: 192.168.1.100', enums: [['32-Bit', '点分十进制表示法 (如 192.168.1.100)']] }
+          ],
+          [
+            { name: 'Destination IP Address (目的 IPv4 地址)', span: 32, offset: 'Bit 128~159', desc: '报文最终接收端的 32 位 IPv4 地址。路由器利用该目的地址执行最长前缀匹配 (LPM) 查询 FIB 转发表决定出接口与下一跳。', ws: 'Destination Address: 141.11.139.61', enums: [['32-Bit', '路由转发查表 LPM 判决核心依据']] }
+          ]
+        ]
+      },
+
+      tcp: {
+        title: 'TCP 传输层报文段标准格式 (RFC 793 / 20~60 字节)',
+        rfc: 'RFC 793 / STD 7',
+        rows: [
+          [
+            { name: 'Source Port (源端口)', span: 16, offset: 'Bit 0~15', desc: '发送方进程的 16 位传输层端口号。客户端通常使用临时端口 (Ephemeral Port, 49152~65535)。', ws: 'Source Port: 53124', enums: [['1~1023', '知名熟知端口 (Well-Known)'], ['49152~65535', '动态临时端口']] },
+            { name: 'Destination Port (目的端口)', span: 16, offset: 'Bit 16~31', desc: '接收方目标服务进程端口号。如 HTTP=80, HTTPS=443, SSH=22/27324, DNS=53, BGP=179。', ws: 'Destination Port: 27324 (OpenSSH)', enums: [['22 / 27324', 'SSH 远程管理安全端口'], ['80 / 443 / 58443', 'Web / TLS 加密代理端口'], ['179', 'BGP 对等体建立端口']] }
+          ],
+          [
+            { name: 'Sequence Number (序列号 SEQ)', span: 32, offset: 'Bit 32~63', desc: '本报文段所发送数据的首字节序号。握手时携带双方初始序号 ISN (Initial Sequence Number)。保证传输的严格有序性与去重。', ws: 'Sequence Number: 3182910482 (relative seq: 1)', enums: [['32-Bit', '模 2^32 环形自增循环空间']] }
+          ],
+          [
+            { name: 'Acknowledgment Number (确认号 ACK)', span: 32, offset: 'Bit 64~95', desc: '期望收到对方下一个报文段的首字节序号。累计确认机制：确认号为 N 表示序号 N-1 之前的所有数据均已成功按序接收。', ws: 'Acknowledgment Number: 192847192 (relative ack: 1)', enums: [['仅当 ACK 标志为 1', '累积确认捎带应答 (Piggybacking)']] }
+          ],
+          [
+            { name: 'Offset', span: 4, offset: 'Bit 96~99', desc: 'Data Offset，TCP 首部长度（以 4 字节为单位）。最小为 5 (20 字节)，指示数据载荷从何处开始。', ws: '0101 .... = Header Length: 20 bytes (5)', enums: [['5', '标准 20 字节无选项'], ['> 5', '带 Options (MSS/SACK/TS)']] },
+            { name: 'Reserved', span: 3, offset: 'Bit 100~102', desc: '保留字段，必须置 0。', ws: '.... 000. = Reserved: 0', enums: [['000', '必须置零']] },
+            { name: 'Flags (9大控制标志位)', span: 9, offset: 'Bit 103~111', desc: '包括 NS, CWR, ECE, URG, ACK (确认有效), PSH (尽快推送), RST (强制复位连接), SYN (同步建立连接), FIN (终止挥手释放连接)。', ws: 'Flags: 0x018 (PSH, ACK)\n.... ..0. .... = Urgent: Not set\n.... ...1 .... = Acknowledgment: Set\n.... .... 1... = Push: Set\n.... .... .0.. = Reset: Not set\n.... .... ..0. = Syn: Not set\n.... .... ...0 = Fin: Not set', enums: [['SYN=1, ACK=0', '三次握手第 1 步 (Client Connect)'], ['SYN=1, ACK=1', '三次握手第 2 步 (Server Reply)'], ['ACK=1', '数据传输与握手确认'], ['FIN=1, ACK=1', '四次挥手断开连接'], ['RST=1', '连接异常重置复位']] },
+            { name: 'Window Size (通告窗口)', span: 16, offset: 'Bit 112~127', desc: '接收方当前可接收的缓冲区空闲字节数，驱动滑动窗口流量控制机制 (Flow Control)，防止接收端溢出。配合 Window Scale 选项可扩展至千兆吞吐。', ws: 'Window Size: 64240 (calculated window: 64240)', enums: [['0', '零窗口 (Zero Window Probing)'], ['65535', '16位最大通告值 (结合 scale 乘数)']] }
+          ],
+          [
+            { name: 'Checksum (校验和)', span: 16, offset: 'Bit 128~143', desc: '强制覆盖 TCP 伪首部 (源IP, 目的IP, 协议号, TCP长度) 以及 TCP 首部和数据的 16 位反码求和反码校验。端到端数据完整性最后防线。', ws: 'Checksum: 0x8a1b [verified]', enums: [['包含伪首部', '跨层校验 IP 源目地址及数据']] },
+            { name: 'Urgent Pointer (紧急指针)', span: 16, offset: 'Bit 144~159', desc: '仅当 URG 标志位置 1 时有效，指出紧急数据相对于序列号的偏移量（如 Telnet 中断指令 Ctrl+C）。现代应用罕用。', ws: 'Urgent Pointer: 0', enums: [['0', '未启用 URG']] }
+          ]
+        ]
+      },
+
+      ospf: {
+        title: 'OSPFv2 协议通用报头与 LSA 体系 (RFC 2328 / 24 字节首部)',
+        rfc: 'RFC 2328 / STD 54',
+        rows: [
+          [
+            { name: 'Version (版本号)', span: 8, offset: 'Byte 0', desc: 'OSPF 协议版本。OSPFv2 用于 IPv4，固定取值为 2；OSPFv3 用于 IPv6，取值为 3。', ws: 'OSPF Header: Version 2', enums: [['2', 'OSPFv2 (IPv4 单播路由)'], ['3', 'OSPFv3 (IPv6/AF 路由)']] },
+            { name: 'Type (报文类型)', span: 8, offset: 'Byte 1', desc: 'OSPF 5 种核心报文：1=Hello (发现维持邻居), 2=DD (数据库摘要协商), 3=LSR (链路状态请求), 4=LSU (链路状态更新携带LSA), 5=LSAck (确认)。', ws: 'Message Type: Hello Packet (1)', enums: [['1', 'Hello (邻居发现/DR选举)'], ['2', 'DD (Database Description)'], ['3', 'LSR (Link State Request)'], ['4', 'LSU (Link State Update 广播LSA)'], ['5', 'LSAck (Link State Acknowledgment)']] },
+            { name: 'Packet Length (报文长度)', span: 16, offset: 'Byte 2~3', desc: '包含 24 字节 OSPF 首部在内的整段 OSPF 报文总长度（字节）。', ws: 'Packet Length: 48 bytes', enums: [['>= 24', '最小 24 字节']] }
+          ],
+          [
+            { name: 'Router ID (路由器标识)', span: 32, offset: 'Byte 4~7', desc: '32 位点分十进制格式，全网唯一标识一台 OSPF 路由器。选举规则：手动配置 > Loopback 接口最大 IP > 物理接口最大 IP。', ws: 'Source OSPF Router-ID: 1.1.1.1', enums: [['32-Bit', '全 AS 拓扑图 (LSDB) 节点唯一标识']] }
+          ],
+          [
+            { name: 'Area ID (区域标识)', span: 32, offset: 'Byte 8~11', desc: '该报文所属的 OSPF 区域。0.0.0.0 (Area 0) 规定为骨干区域 (Backbone Area)。非骨干区域必须与骨干区域直接逻辑相连，防环核心机制！', ws: 'Area Endpoint: 0.0.0.0 (Backbone)', enums: [['0.0.0.0', 'Area 0 (骨干区域，不可分割)'], ['其他数字', '普通非骨干 / Stub / NSSA 区域']] }
+          ],
+          [
+            { name: 'Checksum (校验和)', span: 16, offset: 'Byte 12~13', desc: '对除 64 位认证字段之外的整段 OSPF 报文计算的标准校验和。', ws: 'Packet Checksum: 0x3d12', enums: [['16-Bit', '报文完整性检验']] },
+            { name: 'AuType (认证类型)', span: 16, offset: 'Byte 14~15', desc: '0=不认证 (Null), 1=简单明文口令 (Simple Password), 2=加密哈希认证 (MD5 / HMAC-SHA256)。', ws: 'Auth Type: Cryptographic (2)', enums: [['0', '空认证 (Null)'], ['1', 'Simple (明文口令 8 字节)'], ['2', 'MD5 / SHA 加密认证']] }
+          ],
+          [
+            { name: 'Authentication Data (认证数据/密钥)', span: 32, offset: 'Byte 16~23 (64 Bits)', desc: '8 字节长认证载荷。AuType=1 时为明文密码；AuType=2 时携带 Key-ID、认证数据长度与加密序列号 (Anti-replay 防重放)。', ws: 'Auth Crypt Data: Key id 1, Data length 16, Crypto seq: 0x0000002e', enums: [['64-Bit', '安全认证密文防伪造']] }
+          ]
+        ]
+      },
+
+      bgp: {
+        title: 'BGP-4 报文与路径属性体系 (RFC 4271 / 19 字节报头)',
+        rfc: 'RFC 4271 / STD 67',
+        rows: [
+          [
+            { name: 'Marker (同步标记字段)', span: 32, offset: 'Byte 0~15 (128 Bits 全部置 1)', desc: '16 字节 (128 位) 全 1 字段。用于 BGP 对等体之间的消息同步与兼容性检测，或用于旧式 BGP 认证。', ws: 'Marker: 16 bytes (ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff)', enums: [['128-Bit 全 1', '固定 0xFFFFFFFFFF...']] }
+          ],
+          [
+            { name: 'Length (报文长度)', span: 16, offset: 'Byte 16~17', desc: 'BGP 报文总长度（包含 19 字节首部）。最小为 19 (Keepalive 报文)，最大标准为 4096 字节 (扩展可支持 65535)。', ws: 'Length: 19 bytes (Keepalive)', enums: [['19', 'Keepalive 心跳报文'], ['19~4096', 'OPEN / UPDATE / NOTIFICATION']] },
+            { name: 'Type (BGP 报文类型)', span: 8, offset: 'Byte 18', desc: '1=OPEN (协商HoldTime与BGP版本), 2=UPDATE (核心路由发布撤销与属性宣告), 3=NOTIFICATION (差错告警断开), 4=KEEPALIVE (维持保活), 5=ROUTE-REFRESH (软复位路由重刷)。', ws: 'Type: UPDATE Message (2)', enums: [['1', 'OPEN (建立 BGP 会话)'], ['2', 'UPDATE (通告/撤销路由)'], ['3', 'NOTIFICATION (差错断开连接)'], ['4', 'KEEPALIVE (1/3 HoldTime 周期心跳)'], ['5', 'ROUTE-REFRESH (软复位刷新)']] },
+            { name: 'Reserved', span: 8, offset: 'Byte 19 (对齐位)', desc: '报文首部结束，进入载荷区（Update/Open Payload）。', ws: 'Payload Start', enums: [['Payload', '路径属性与 NLRI 前缀区']] }
+          ],
+          [
+            { name: 'Withdrawn Routes (撤销路由长度与前缀)', span: 32, offset: 'UPDATE 载荷区', desc: '通知对等体哪些网络前缀已不可达并撤销。包含 2 字节撤销路由长度字段及一系列 (Prefix Length, Prefix) 元组。', ws: 'Withdrawn Routes Length: 0 bytes', enums: [['长度 + 前缀', '撤销失效路由避免黑洞']] }
+          ],
+          [
+            { name: 'Total Path Attribute Length (属性总长)', span: 16, offset: 'UPDATE 载荷区', desc: '指示紧随其后的所有 BGP 路径属性 (Path Attributes) 的字节总长度。', ws: 'Total Path Attribute Length: 64 bytes', enums: [['16-Bit', '属性列表总字节数']] },
+            { name: 'Path Attributes (ORIGIN, AS_PATH, NEXT_HOP...)', span: 16, offset: '核心属性链', desc: 'BGP 决策树的核心依据！包括公认必遵 (ORIGIN, AS_PATH, NEXT_HOP)、公认自决 (LOCAL_PREF, ATOMIC_AGGREGATE)、可选过渡 (COMMUNITY)、可选非过渡 (MED)。', ws: 'Path Attribute - AS_PATH: 65001 64512\nPath Attribute - NEXT_HOP: 141.11.139.61\nPath Attribute - MULTI_EXIT_DISC: 100', enums: [['ORIGIN', 'IGP > EGP > Incomplete'], ['AS_PATH', '防环 (EBGP拒绝含自己AS) & 选路短者优'], ['NEXT_HOP', '下一跳三层可达性'], ['LOCAL_PREF', 'AS 内部出站选路最高者优']] }
+          ]
+        ]
+      },
+
+      mpls: {
+        title: 'MPLS 32-Bit 标签栈垫片首部 (RFC 3032 Shim Header)',
+        rfc: 'RFC 3032 / RFC 5462',
+        rows: [
+          [
+            { name: 'Label (20-Bit 标签值)', span: 20, offset: 'Bit 0~19 (20 Bits)', desc: '20 位标签值，范围 0 ~ 1,048,575。路由器标签转发依据！保留标签：0=IPv4 Explicit NULL (显式空标签 QoS 保留), 3=Implicit NULL (隐式空标签，触发 PHP 倒数第二跳弹出机制！)。', ws: 'MPLS Label: 1024, Exp: 0, S: 1, TTL: 64\n0000 0000 0100 0000 0000 = Label: 1024', enums: [['0', 'IPv4 Explicit NULL (显式空)'], ['3', 'Implicit NULL (PHP 次末跳弹出)'], ['16~1048575', '动态 LDP / RSVP-TE 分配标签']] },
+            { name: 'Traffic Class (EXP/TC)', span: 3, offset: 'Bit 20~22 (3 Bits)', desc: '3 位流量类别（旧称 Experimental Bits EXP），映射 IP 首部的 DSCP/IP Precedence，提供 MPLS 骨干网 DiffServ QoS 队列优先级与丢弃等级。', ws: '.... .... .... .... .... 000. = Traffic Class: Best Effort (0)', enums: [['000 (0)', 'CS0 (Best Effort)'], ['101 (5)', 'CS5 / EF (高优先级语音业务)']] },
+            { name: 'S (栈底标志位)', span: 1, offset: 'Bit 23 (1 Bit)', desc: 'Bottom of Stack 标志。置 1 表示本标签是标签栈中最后一层标签（其后紧跟 IPv4/IPv6 原始报文）；置 0 表示后续仍有内层标签（如 MPLS L3VPN、MPLS TE 多层标签嵌套）。', ws: '.... .... .... .... .... ...1 = Bottom of Stack: 1', enums: [['1', '栈底 (直接终结解封装载荷)'], ['0', '非栈底 (后仍有内层 VPN 标签)']] },
+            { name: 'TTL (生存时间)', span: 8, offset: 'Bit 24~31 (8 Bits)', desc: '8 位生存时间，防环机制。MPLS 转发时每经过一台 LSR 减 1；支持 Uniform 模式（IP TTL 与 MPLS TTL 双向同步映射）与 Pipe 模式（隐藏 MPLS 核心骨干跳数）。', ws: 'TTL: 64 (Uniform or Pipe Mode)', enums: [['Uniform 模式', 'Tracert 可见骨干网络拓扑跳数'], ['Pipe 模式', '隐藏 MPLS 骨干内网节点']] }
+          ]
+        ]
+      }
+    };
+
+    // ========================================================================
+    // 渲染报文矩阵与交互逻辑
+    // ========================================================================
+    let currentProtoKey = 'ipv4';
+
+    function selectProtocol(key) {
+      currentProtoKey = key;
+      const proto = PROTOCOLS[key];
+      if (!proto) return;
+
+      // 切换导航态
+      document.querySelectorAll('.proto-btn').forEach(b => b.classList.remove('active'));
+      const activeBtn = document.getElementById(`btn-proto-${key}`);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      document.getElementById('matrix-proto-title').textContent = proto.title;
+
+      // 渲染单元格矩阵
+      const grid = document.getElementById('packet-grid-body');
+      grid.innerHTML = '';
+
+      proto.rows.forEach((rowFields, rowIdx) => {
+        const rowEl = document.createElement('div');
+        rowEl.className = 'packet-row';
+
+        rowFields.forEach((field, fIdx) => {
+          const cell = document.createElement('div');
+          cell.className = 'field-cell';
+          cell.style.gridColumn = `span ${field.span}`;
+          cell.dataset.row = rowIdx;
+          cell.dataset.idx = fIdx;
+
+          cell.innerHTML = `
+            <span class="field-name">${field.name}</span>
+            <span class="field-bits-badge">${field.span} Bits (${field.offset})</span>
+          `;
+
+          cell.onclick = () => showFieldDetail(field, cell);
+          rowEl.appendChild(cell);
+        });
+
+        grid.appendChild(rowEl);
+      });
+
+      // 默认高亮首个字段
+      if (proto.rows[0] && proto.rows[0][0]) {
+        const firstCell = grid.querySelector('.field-cell');
+        showFieldDetail(proto.rows[0][0], firstCell);
+      }
+    }
+
+    function showFieldDetail(field, cell) {
+      document.querySelectorAll('.field-cell').forEach(c => c.classList.remove('selected'));
+      if (cell) cell.classList.add('selected');
+
+      const proto = PROTOCOLS[currentProtoKey];
+      document.getElementById('detail-rfc-tag').textContent = proto.rfc;
+      document.getElementById('detail-field-name').textContent = field.name;
+      document.getElementById('detail-offset').textContent = field.offset;
+      document.getElementById('detail-length').textContent = `${field.span} Bits (${Math.ceil(field.span / 8)} 字节)`;
+      document.getElementById('detail-desc').textContent = field.desc;
+      document.getElementById('detail-wireshark').textContent = field.ws || 'No sample data.';
+
+      const enumTable = document.getElementById('detail-enum-table');
+      enumTable.innerHTML = '';
+      if (field.enums && field.enums.length > 0) {
+        document.getElementById('detail-enum-title').style.display = 'block';
+        field.enums.forEach(([val, desc]) => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${val}</td><td>${desc}</td>`;
+          enumTable.appendChild(tr);
+        });
+      } else {
+        document.getElementById('detail-enum-title').style.display = 'none';
+      }
+    }
+
+    // 启动挂载
+    window.addEventListener('DOMContentLoaded', () => {
+      selectProtocol('ipv4');
+    });
+  </script>
+</body>
+</html>

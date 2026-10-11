@@ -659,6 +659,10 @@ html, body {
 .tile-accent-sumo        { background-color: var(--win8-dohyo) !important; }
 .tile-accent-tank        { background-color: var(--win8-green) !important; }
 .tile-accent-stack       { background-color: var(--win8-deep-indigo) !important; }
+.tile-accent-vps         { background-color: #0078d7 !important; }
+.tile-accent-subnet      { background-color: var(--win8-green) !important; }
+.tile-accent-packet      { background-color: var(--win8-purple) !important; }
+.tile-accent-bgp         { background-color: var(--win8-mango) !important; }
 .tile-accent-utility     { background-color: rgba(255, 255, 255, 0.12) !important; border: 1px solid rgba(255,255,255,0.25) !important; }
 
 /* 搜索过滤弱化态 */

@@ -159,15 +159,18 @@ if 'window.MetroEngine = MetroEngine' not in js_metro:
 else:
     print("  [PASS] MetroEngine exported to window.")
 
-# Check all 26 target files on disk
+# Check all target files on disk
 file_map_matches = re.findall(r"'([A-Z0-9_]+)':\s*'([^']+)'", html)
 print(f"  Found {len(file_map_matches)} routes in fileMap.")
 for k, v in file_map_matches:
-    target_path = os.path.join(ROOT, 'games', v)
+    if v.startswith('netops/'):
+        target_path = os.path.join(ROOT, v)
+    else:
+        target_path = os.path.join(ROOT, 'games', v)
     if not os.path.exists(target_path):
         errors.append(f"Route target does not exist on disk: {target_path} (Key: {k})")
 
-print(f"  [PASS] All game target files exist on disk and resolve with 0 broken links.")
+print(f"  [PASS] All game & tool target files exist on disk and resolve with 0 broken links.")
 
 # --- 7. Service Worker Shell Check ---
 print("\n--- [7] Service Worker App Shell Precache Assets ---")

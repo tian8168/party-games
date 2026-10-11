@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>BGP 13 步选路决策推导演示机 · BGP Best-Path Decision Engine</title>
+  <link rel="stylesheet" href="../common/common.css">
+  <link rel="stylesheet" href="../common/metro.css">
+  <style>
+    :root {
+      --bgp-mango: #fa6800;
+      --bgp-card: rgba(15, 23, 42, 0.85);
+      --bgp-border: rgba(255, 255, 255, 0.12);
+      --route-a: #38bdf8;
+      --route-b: #ec4899;
+      --winner-gold: #f59e0b;
+    }
+
+    body {
+      background-color: #1f1207;
+      background-image: radial-gradient(ellipse at 80% 20%, #3d2008 0%, #1f1207 70%);
+      color: #f8fafc;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    .bgp-dashboard {
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 16px 20px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* 场景预设卡片栏 */
+    .scenario-nav {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+    }
+
+    .scenario-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: #cbd5e1;
+      padding: 6px 14px;
+      font-size: 0.82rem;
+      cursor: pointer;
+      border-radius: 2px;
+      white-space: nowrap;
+      transition: all 0.15s;
+    }
+
+    .scenario-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+    }
+
+    .scenario-btn.active {
+      background: var(--bgp-mango);
+      border-color: #fb923c;
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    /* 核心推导格局：左侧双路由参数面板，右侧选路决策树流水线 */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 960px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* 双路由对比卡片 */
+    .arena-panel {
+      background: var(--bgp-card);
+      border: 1px solid var(--bgp-border);
+      border-radius: 4px;
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .arena-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .arena-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .routes-pair {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .route-col {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 4px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .route-col.col-a { border-top: 3px solid var(--route-a); }
+    .route-col.col-b { border-top: 3px solid var(--route-b); }
+
+    .route-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .route-title.text-a { color: var(--route-a); }
+    .route-title.text-b { color: var(--route-b); }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .form-label {
+      font-size: 0.72rem;
+      color: #94a3b8;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .form-input, .form-select {
+      background: #090d16;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      color: #ffffff;
+      font-family: "Consolas", monospace;
+      font-size: 0.85rem;
+      padding: 5px 8px;
+      border-radius: 2px;
+      outline: none;
+    }
+
+    .form-input:focus, .form-select:focus {
+      border-color: #fb923c;
+    }
+
+    /* 决策树流水线面板 */
+    .pipeline-panel {
+      background: var(--bgp-card);
+      border: 1px solid var(--bgp-border);
+      border-radius: 4px;
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .verdict-box {
+      background: rgba(0, 0, 0, 0.5);
+      border: 2px solid #f59e0b;
+      border-radius: 4px;
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .verdict-title {
+      font-size: 0.78rem;
+      color: #f59e0b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 700;
+    }
+
+    .verdict-text {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .verdict-detail {
+      font-size: 0.82rem;
+      color: #cbd5e1;
+      line-height: 1.5;
+    }
+
+    /* 逐步推导流 (Step Pipeline Nodes) */
+    .pipeline-flow {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 520px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .step-node {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 3px;
+      padding: 8px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.2s;
+    }
+
+    .step-node.tie {
+      opacity: 0.6;
+      border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .step-node.winner {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid #f59e0b;
+      box-shadow: 0 0 12px rgba(245, 158, 11, 0.3);
+      opacity: 1;
+      transform: scale(1.02);
+    }
+
+    .step-node.short-circuited {
+      opacity: 0.25;
+      background: transparent;
+      border-style: dashed;
+    }
+
+    .step-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .step-name {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    .step-rule {
+      font-size: 0.68rem;
+      color: #94a3b8;
+    }
+
+    .step-result-tag {
+      font-size: 0.72rem;
+      font-family: "Consolas", monospace;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 2px;
+    }
+
+    .tag-tie { background: rgba(255, 255, 255, 0.08); color: #94a3b8; }
+    .tag-win-a { background: rgba(56, 189, 248, 0.25); color: var(--route-a); border: 1px solid var(--route-a); }
+    .tag-win-b { background: rgba(236, 72, 153, 0.25); color: var(--route-b); border: 1px solid var(--route-b); }
+    .tag-skip { color: #475569; }
+  </style>
+</head>
+<body>
+  <!-- 顶栏导航 -->
+  <div class="game-header">
+    <a href="../index.html" class="nav-back">🔙 返回大厅</a>
+    <h2 class="game-title">🧭 BGP 13 步选路决策推导演示机 (BGP Decision Engine)</h2>
+    <div class="header-actions">
+      <button class="btn-icon" onclick="loadScenario('localpref')">🏢 场景1: Local-Pref</button>
+      <button class="btn-icon" onclick="loadScenario('aspath')">🛣️ 场景2: AS-Path</button>
+      <button class="btn-icon" onclick="loadScenario('med')">🎛️ 场景3: MED 控流</button>
+      <button class="btn-icon" onclick="loadScenario('ebgp')">🌐 场景4: EBGP>IBGP</button>
+    </div>
+  </div>
+
+  <main class="bgp-dashboard">
+    <!-- 经典场景快捷切换 -->
+    <nav class="scenario-nav">
+      <button class="scenario-btn active" id="btn-scen-custom" onclick="selectScenario('custom')">🛠️ 自定义双路对抗</button>
+      <button class="scenario-btn" id="btn-scen-prefval" onclick="loadScenario('prefval')">1. Preferred-Value 首选值胜出 (华为私有)</button>
+      <button class="scenario-btn" id="btn-scen-localpref" onclick="loadScenario('localpref')">2. Local-Preference 出站选路</button>
+      <button class="scenario-btn" id="btn-scen-origin-type" onclick="loadScenario('origintype')">3. 本地生成 (Network vs Import)</button>
+      <button class="scenario-btn" id="btn-scen-aspath" onclick="loadScenario('aspath')">4. AS-Path 路径长度竞争</button>
+      <button class="scenario-btn" id="btn-scen-origin" onclick="loadScenario('origin')">5. Origin 属性 (IGP > Incomplete)</button>
+      <button class="scenario-btn" id="btn-scen-med" onclick="loadScenario('med')">6. MED 多出口入站流量控制</button>
+      <button class="scenario-btn" id="btn-scen-ebgp" onclick="loadScenario('ebgp')">7. 对等体类型 (EBGP 优于 IBGP)</button>
+    </nav>
+
+    <div class="main-grid">
+      <!-- 左右双路由参数调校面板 -->
+      <section class="arena-panel">
+        <div class="arena-header">
+          <div class="arena-title">
+            <span>⚔️ 候选路由参数竞技场 (Candidate Routes)</span>
+          </div>
+          <span style="font-size: 0.75rem; color: #94a3b8;">目标网络: 10.100.0.0/16</span>
+        </div>
+
+        <div class="routes-pair">
+          <!-- 路由 A -->
+          <div class="route-col col-a">
+            <div class="route-title text-a">
+              <span>🔵 路由 Route A</span>
+              <span id="badge-route-a" style="font-size: 0.75rem;">候选中</span>
+            </div>
+
+            <div class="form-group">
+              <span class="form-label">Next-Hop 可达性 <span>[先决条件]</span></span>
+              <select id="a-nexthop" class="form-select" onchange="runEvaluation()">
+                <option value="reachable" selected>可达 (Reachable in IGP)</option>
+                <option value="unreachable">不可达 (Unreachable)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <span class="form-label">PrefVal 首选值 <span>[华为私有/越大越优]</span></span>
+              <input type="number" id="a-prefval" class="form-input" value="0" oninput="runEvaluation()">
+            </div>
+
+            <div class="form-group">
+              <span class="form-label">Local-Pref 本地优先级 <span>[越大越优]</span></span>
+              <input type="number" id="a-localpref" class="form-input" value="100" oninput="runEvaluation()">
+            </div>
+
+            <div class="form-group">
+              <span class="form-label">生成起源 <span>[本地>学习]</span></span>
+              <select id="a-origintype" class="form-select" onchange="runEvaluation()">
+                <option value="learned" selected>从对等体学习</option>
+                <option value="network">本地 Network 宣告</option>
+                <option value="aggregate">本地聚合 Aggregate</option>
+                <option value="import">本地引入 Import</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <span class="form-label">AS-Path 路径 <span>[越短越优]</span></span>
+              <input type="text" id="a-aspath" class="form-input" value="65001 65002" oninput="runEvaluation()">
+            </div>
+
+            <div class="form-group">
+              <span class="form-label">Origin 属性 <span>[IGP>EGP>?]</span></span>
+              <select id="a-origin" class="form-select" onchange="runEvaluation()">
+                <option value="IGP" selected>i (IGP)</option>
+                <option value="EGP">e (EGP)</option>
+                <option value="INCOMPLETE">? (Incomplete)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <span class="form-label">MED 开销 <span>[越小越优]</span></span>
+              <input type="number" id="a-med" class="form-input" value="0" oninput="runEvaluation()">
+            </div>
+
+            <div class="form-group">
+              <span class="form-label">对等体类型 <span>[EBGP>IBGP]</span></span>
+              <select id="a-peertype" class="form-select" onchange="runEvaluation()">
+                <option value="EBGP" selected>EBGP 外部邻居</option>
+                <option value="IBGP">IBGP 内部邻居</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <span class="form-label">下一跳 IGP Metric <span>[越小越优]</span></span>
+              <input type="number" id="a-igpmetric" class="form-input" value="10" oninput="runEvaluation()">
+            </div>
+
+            <div class="form-group">
+              <span class="form-label">Router-ID <span>[越小越优]</span></span>
+              <input type="text" id="a-routerid" class="form-input" value="1.1.1.1" oninput="runEvaluation()">
+            </div>
+
+            <div class="form-group">
+              <span class="form-label">Peer IP <span>[越小越优]</span></span>
+              <input type="text" id="a-peerip" class="form-input" value="10.1.1.1" oninput="runEvaluation()">
+            </div>
+          </div>
+
+          <!-- 路由 B -->
+          <div class="route-col col-b">
+            <div class="route-title text-b">
+              <span>🔴 路由 Route B</span>
+              <span id="badge-route-b" style="font-size: 0.75rem;">候选中</span>
+            </div>
+
+            <div class="form-group">
+              <span class="form-label">Next-Hop 可达性 <span>[先决条件]</span></span>
+              <select id="b-nexthop" class="form-select" onchange="runEvaluation()">
+                <option value="reachable" selected>可达 (Reachable in IGP)</option>
+                <option value="unreachable">不可达 (Unreachable)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <span class="form-label">PrefVal 首选值 <span>[华为私有/越大越优]</span></span>
+              <input type="number" id="b-prefval" class="form-input" value="0" oninput="runEvaluation()">
+            </div>
+
+            <div class="form-group">
+              <span class="form-label">Local-Pref 本地优先级 <span>[越大越优]</span></span>
+              <input type="number" id="b-localpref" class="form-input" value="100" oninput="runEvaluation()">
+            </div>
+
+            <div class="form-group">
+              <span class="form-label">生成起源 <span>[本地>学习]</span></span>
+              <select id="b-origintype" class="form-select" onchange="runEvaluation()">
+                <option value="learned" selected>从对等体学习</option>
+                <option value="network">本地 Network 宣告</option>
+                <option value="aggregate">本地聚合 Aggregate</option>
+                <option value="import">本地引入 Import</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <span class="form-label">AS-Path 路径 <span>[越短越优]</span></span>
+              <input type="text" id="b-aspath" class="form-input" value="65003" oninput="runEvaluation()">
+            </div>
+
+            <div class="form-group">
+              <span class="form-label">Origin 属性 <span>[IGP>EGP>?]</span></span>
+              <select id="b-origin" class="form-select" onchange="runEvaluation()">
+                <option value="IGP" selected>i (IGP)</option>
+                <option value="EGP">e (EGP)</option>
+                <option value="INCOMPLETE">? (Incomplete)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <span class="form-label">MED 开销 <span>[越小越优]</span></span>
+              <input type="number" id="b-med" class="form-input" value="0" oninput="runEvaluation()">
+            </div>
+
+            <div class="form-group">
+              <span class="form-label">对等体类型 <span>[EBGP>IBGP]</span></span>
+              <select id="b-peertype" class="form-select" onchange="runEvaluation()">
+                <option value="EBGP" selected>EBGP 外部邻居</option>
+                <option value="IBGP">IBGP 内部邻居</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <span class="form-label">下一跳 IGP Metric <span>[越小越优]</span></span>
+              <input type="number" id="b-igpmetric" class="form-input" value="10" oninput="runEvaluation()">
+            </div>
+
+            <div class="form-group">
+              <span class="form-label">Router-ID <span>[越小越优]</span></span>
+              <input type="text" id="b-routerid" class="form-input" value="2.2.2.2" oninput="runEvaluation()">
+            </div>
+
+            <div class="form-group">
+              <span class="form-label">Peer IP <span>[越小越优]</span></span>
+              <input type="text" id="b-peerip" class="form-input" value="10.2.2.2" oninput="runEvaluation()">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 决策树流水线推导展示 -->
+      <section class="pipeline-panel">
+        <div class="verdict-box">
+          <span class="verdict-title">BGP 选路决断裁决 (BGP Arbitration Verdict)</span>
+          <span class="verdict-text" id="verdict-winner">🏆 Route B 胜出</span>
+          <p class="verdict-detail" id="verdict-reason">
+            在 Step 4 (AS-Path 路径长度) 判定中，Route B (AS-Path 长度 1) 比 Route A (AS-Path 长度 2) 更短，直接决出最优路由，阻断后续比对。
+          </p>
+        </div>
+
+        <div style="font-size: 0.85rem; font-weight: 600; color: #94a3b8; margin-top: 4px;">
+          逐步推导流水线状态机 (RFC 4271 & Datacom Pipeline):
+        </div>
+
+        <div class="pipeline-flow" id="pipeline-nodes-container"></div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    // ========================================================================
+    // 华为与 RFC 标准 13 步选路规则定义
+    // ========================================================================
+    const DECISION_STEPS = [
+      { id: 'nexthop', name: 'Pre: Next-Hop 可达性', rule: '下一跳必须在本地 IGP/直连中可达，否则直接判为非最优' },
+      { id: 'prefval', name: 'Step 1: Preferred-Value 首选值', rule: '华为私有属性，仅本地有效，数值越大越优' },
+      { id: 'localpref', name: 'Step 2: Local-Preference 本地优先级', rule: '用于 AS 内部出站选路，数值越大越优 (默认 100)' },
+      { id: 'origintype', name: 'Step 3: 路由生成方式', rule: '本地聚合 > 本地 Network > 本地 Import > 外部学习' },
+      { id: 'aspath', name: 'Step 4: AS-Path 路径长度', rule: 'AS-Path 包含的 AS 数量越短越优 (防环与跨域核心)' },
+      { id: 'origin', name: 'Step 5: Origin 属性类型', rule: 'IGP (i) 优于 EGP (e) 优于 Incomplete (?)' },
+      { id: 'med', name: 'Step 6: MED 多出口度量值', rule: '用于影响对端 AS 的入站流量，数值越小越优' },
+      { id: 'peertype', name: 'Step 7: 对等体类型', rule: 'EBGP 路由优先于 IBGP 路由' },
+      { id: 'igpmetric', name: 'Step 8: 下一跳 IGP Metric', rule: '到下一跳地址的内部 IGP 链路开销越小越优' },
+      { id: 'routerid', name: 'Step 9: Router-ID 路由器标识', rule: '最小的 Router-ID (或 Originator-ID) 越优' },
+      { id: 'peerip', name: 'Step 10: 对等体 IP 地址', rule: '最小的 Peer IP 地址越优' }
+    ];
+
+    // ========================================================================
+    // 选路推导核心算法 (Best-Path Arbitration Algorithm)
+    // ========================================================================
+    function runEvaluation() {
+      // 收集 Route A 与 Route B
+      const A = {
+        nexthop: document.getElementById('a-nexthop').value,
+        prefval: parseInt(document.getElementById('a-prefval').value, 10) || 0,
+        localpref: parseInt(document.getElementById('a-localpref').value, 10) || 0,
+        origintype: document.getElementById('a-origintype').value,
+        aspath: document.getElementById('a-aspath').value.trim().split(/\s+/).filter(Boolean),
+        origin: document.getElementById('a-origin').value,
+        med: parseInt(document.getElementById('a-med').value, 10) || 0,
+        peertype: document.getElementById('a-peertype').value,
+        igpmetric: parseInt(document.getElementById('a-igpmetric').value, 10) || 0,
+        routerid: document.getElementById('a-routerid').value.trim(),
+        peerip: document.getElementById('a-peerip').value.trim()
+      };
+
+      const B = {
+        nexthop: document.getElementById('b-nexthop').value,
+        prefval: parseInt(document.getElementById('b-prefval').value, 10) || 0,
+        localpref: parseInt(document.getElementById('b-localpref').value, 10) || 0,
+        origintype: document.getElementById('b-origintype').value,
+        aspath: document.getElementById('b-aspath').value.trim().split(/\s+/).filter(Boolean),
+        origin: document.getElementById('b-origin').value,
+        med: parseInt(document.getElementById('b-med').value, 10) || 0,
+        peertype: document.getElementById('b-peertype').value,
+        igpmetric: parseInt(document.getElementById('b-igpmetric').value, 10) || 0,
+        routerid: document.getElementById('b-routerid').value.trim(),
+        peerip: document.getElementById('b-peerip').value.trim()
+      };
+
+      const stepResults = [];
+      let decisiveWinner = null;
+      let decisiveStep = null;
+      let reasonDetail = '';
+
+      // 逐步裁决
+      for (let i = 0; i < DECISION_STEPS.length; i++) {
+        const step = DECISION_STEPS[i];
+
+        if (decisiveWinner) {
+          stepResults.push({ step, status: 'skip', msg: '已截断 (Short-Circuited)' });
+          continue;
+        }
+
+        let res = compareStep(step.id, A, B);
+        if (res.winner === 'A' || res.winner === 'B') {
+          decisiveWinner = res.winner;
+          decisiveStep = step;
+          reasonDetail = res.reason;
+          stepResults.push({ step, status: res.winner === 'A' ? 'win-a' : 'win-b', msg: res.detail });
+        } else {
+          stepResults.push({ step, status: 'tie', msg: res.detail || '双方平局 · 穿透' });
+        }
+      }
+
+      // 更新 DOM
+      renderVerdict(decisiveWinner, decisiveStep, reasonDetail);
+      renderPipeline(stepResults);
+    }
+
+    function compareStep(id, A, B) {
+      if (id === 'nexthop') {
+        if (A.nexthop === 'reachable' && B.nexthop !== 'reachable') return { winner: 'A', reason: 'Route A 下一跳可达，Route B 下一跳不可达被直接淘汰。', detail: 'Route A 唯一可达' };
+        if (B.nexthop === 'reachable' && A.nexthop !== 'reachable') return { winner: 'B', reason: 'Route B 下一跳可达，Route A 下一跳不可达被直接淘汰。', detail: 'Route B 唯一可达' };
+        if (A.nexthop !== 'reachable' && B.nexthop !== 'reachable') return { winner: 'NONE', reason: '两条路由的下一跳均不可达，全部无效。', detail: '均不可达' };
+        return { winner: 'TIE', detail: '均在 IGP 中可达 (Tie)' };
+      }
+
+      if (id === 'prefval') {
+        if (A.prefval > B.prefval) return { winner: 'A', reason: `Route A 的 Preferred-Value (${A.prefval}) 大于 Route B (${B.prefval})。`, detail: `${A.prefval} vs ${B.prefval} (A优)` };
+        if (B.prefval > A.prefval) return { winner: 'B', reason: `Route B 的 Preferred-Value (${B.prefval}) 大于 Route A (${A.prefval})。`, detail: `${A.prefval} vs ${B.prefval} (B优)` };
+        return { winner: 'TIE', detail: `首选值相同: ${A.prefval}` };
+      }
+
+      if (id === 'localpref') {
+        if (A.localpref > B.localpref) return { winner: 'A', reason: `Route A 的 Local-Preference (${A.localpref}) 大于 Route B (${B.localpref})。`, detail: `${A.localpref} vs ${B.localpref} (A优)` };
+        if (B.localpref > A.localpref) return { winner: 'B', reason: `Route B 的 Local-Preference (${B.localpref}) 大于 Route A (${A.localpref})。`, detail: `${A.localpref} vs ${B.localpref} (B优)` };
+        return { winner: 'TIE', detail: `本地优先级相同: ${A.localpref}` };
+      }
+
+      if (id === 'origintype') {
+        const order = { 'aggregate': 4, 'network': 3, 'import': 2, 'learned': 1 };
+        const scoreA = order[A.origintype] || 1;
+        const scoreB = order[B.origintype] || 1;
+        if (scoreA > scoreB) return { winner: 'A', reason: `Route A 生成优先级 higher (${A.origintype} > ${B.origintype})。`, detail: `${A.origintype} > ${B.origintype}` };
+        if (scoreB > scoreA) return { winner: 'B', reason: `Route B 生成优先级 higher (${B.origintype} > ${A.origintype})。`, detail: `${B.origintype} > ${A.origintype}` };
+        return { winner: 'TIE', detail: `生成方式同为: ${A.origintype}` };
+      }
+
+      if (id === 'aspath') {
+        const lenA = A.aspath.length;
+        const lenB = B.aspath.length;
+        if (lenA < lenB) return { winner: 'A', reason: `Route A 的 AS-Path 长度 (${lenA}) 短于 Route B (${lenB})。`, detail: `${lenA} hops < ${lenB} hops` };
+        if (lenB < lenA) return { winner: 'B', reason: `Route B 的 AS-Path 长度 (${lenB}) 短于 Route A (${lenA})。`, detail: `${lenB} hops < ${lenA} hops` };
+        return { winner: 'TIE', detail: `AS-Path 跳数相同: ${lenA}` };
+      }
+
+      if (id === 'origin') {
+        const order = { 'IGP': 3, 'EGP': 2, 'INCOMPLETE': 1 };
+        const sA = order[A.origin];
+        const sB = order[B.origin];
+        if (sA > sB) return { winner: 'A', reason: `Route A 的 Origin 属性 (${A.origin}) 优于 Route B (${B.origin})。`, detail: `${A.origin} > ${B.origin}` };
+        if (sB > sA) return { winner: 'B', reason: `Route B 的 Origin 属性 (${B.origin}) 优于 Route A (${A.origin})。`, detail: `${B.origin} > ${A.origin}` };
+        return { winner: 'TIE', detail: `同为 Origin: ${A.origin}` };
+      }
+
+      if (id === 'med') {
+        if (A.med < B.med) return { winner: 'A', reason: `Route A 的 MED 度量值 (${A.med}) 小于 Route B (${B.med})。`, detail: `${A.med} < ${B.med} (越小越优)` };
+        if (B.med < A.med) return { winner: 'B', reason: `Route B 的 MED 度量值 (${B.med}) 小于 Route A (${A.med})。`, detail: `${B.med} < ${A.med} (越小越优)` };
+        return { winner: 'TIE', detail: `MED 相同: ${A.med}` };
+      }
+
+      if (id === 'peertype') {
+        if (A.peertype === 'EBGP' && B.peertype === 'IBGP') return { winner: 'A', reason: 'Route A 来自 EBGP 邻居，优于 Route B 的 IBGP 邻居。', detail: 'EBGP > IBGP' };
+        if (B.peertype === 'EBGP' && A.peertype === 'IBGP') return { winner: 'B', reason: 'Route B 来自 EBGP 邻居，优于 Route A 的 IBGP 邻居。', detail: 'EBGP > IBGP' };
+        return { winner: 'TIE', detail: `同为 ${A.peertype}` };
+      }
+
+      if (id === 'igpmetric') {
+        if (A.igpmetric < B.igpmetric) return { winner: 'A', reason: `到达 Route A 下一跳的 IGP 开销 (${A.igpmetric}) 小于 Route B (${B.igpmetric})。`, detail: `${A.igpmetric} < ${B.igpmetric}` };
+        if (B.igpmetric < A.igpmetric) return { winner: 'B', reason: `到达 Route B 下一跳的 IGP 开销 (${B.igpmetric}) 小于 Route A (${A.igpmetric})。`, detail: `${B.igpmetric} < ${A.igpmetric}` };
+        return { winner: 'TIE', detail: `IGP Metric 相同: ${A.igpmetric}` };
+      }
+
+      if (id === 'routerid') {
+        if (A.routerid < B.routerid) return { winner: 'A', reason: `Route A 的 Router-ID (${A.routerid}) 小于 Route B (${B.routerid})。`, detail: `${A.routerid} < ${B.routerid}` };
+        if (B.routerid < A.routerid) return { winner: 'B', reason: `Route B 的 Router-ID (${B.routerid}) 小于 Route A (${A.routerid})。`, detail: `${B.routerid} < ${A.routerid}` };
+        return { winner: 'TIE', detail: `Router-ID 相同` };
+      }
+
+      if (id === 'peerip') {
+        if (A.peerip < B.peerip) return { winner: 'A', reason: `Route A 的 Peer IP (${A.peerip}) 小于 Route B (${B.peerip})。`, detail: `${A.peerip} < ${B.peerip}` };
+        if (B.peerip < A.peerip) return { winner: 'B', reason: `Route B 的 Peer IP (${B.peerip}) 小于 Route A (${A.peerip})。`, detail: `${B.peerip} < ${A.peerip}` };
+        return { winner: 'TIE', detail: `完全相同 (ECMP)` };
+      }
+
+      return { winner: 'TIE', detail: 'Tie' };
+    }
+
+    function renderVerdict(winner, step, reason) {
+      const vWin = document.getElementById('verdict-winner');
+      const vReason = document.getElementById('verdict-reason');
+      const badgeA = document.getElementById('badge-route-a');
+      const badgeB = document.getElementById('badge-route-b');
+
+      if (winner === 'A') {
+        vWin.textContent = '🏆 Route A 胜出成为最优路由 (Best Route)';
+        vWin.style.color = 'var(--route-a)';
+        badgeA.textContent = '★ BEST WINNER';
+        badgeA.style.color = '#38bdf8';
+        badgeB.textContent = '✗ DISCARDED';
+        badgeB.style.color = '#64748b';
+      } else if (winner === 'B') {
+        vWin.textContent = '🏆 Route B 胜出成为最优路由 (Best Route)';
+        vWin.style.color = 'var(--route-b)';
+        badgeA.textContent = '✗ DISCARDED';
+        badgeA.style.color = '#64748b';
+        badgeB.textContent = '★ BEST WINNER';
+        badgeB.style.color = '#ec4899';
+      } else {
+        vWin.textContent = '⚖️ 等价负载分担 (ECMP Balance) 或均无效';
+        vWin.style.color = '#fbbf24';
+        badgeA.textContent = 'ECMP ACTIVE';
+        badgeB.textContent = 'ECMP ACTIVE';
+      }
+
+      vReason.textContent = reason;
+    }
+
+    function renderPipeline(results) {
+      const container = document.getElementById('pipeline-nodes-container');
+      container.innerHTML = '';
+
+      results.forEach(item => {
+        const node = document.createElement('div');
+        node.className = `step-node ${item.status === 'win-a' || item.status === 'win-b' ? 'winner' : (item.status === 'skip' ? 'short-circuited' : 'tie')}`;
+
+        let tagClass = 'tag-tie';
+        let tagText = item.msg;
+        if (item.status === 'win-a') {
+          tagClass = 'tag-win-a';
+          tagText = `✓ Route A 胜出 · ${item.msg}`;
+        } else if (item.status === 'win-b') {
+          tagClass = 'tag-win-b';
+          tagText = `✓ Route B 胜出 · ${item.msg}`;
+        } else if (item.status === 'skip') {
+          tagClass = 'tag-skip';
+          tagText = item.msg;
+        }
+
+        node.innerHTML = `
+          <div class="step-info">
+            <span class="step-name">${item.step.name}</span>
+            <span class="step-rule">${item.step.rule}</span>
+          </div>
+          <span class="step-result-tag ${tagClass}">${tagText}</span>
+        `;
+        container.appendChild(node);
+      });
+    }
+
+    // ========================================================================
+    // 场景预设加载器
+    // ========================================================================
+    function loadScenario(type) {
+      selectScenario(type);
+      if (type === 'prefval') {
+        document.getElementById('a-prefval').value = '100';
+        document.getElementById('b-prefval').value = '0';
+        document.getElementById('a-aspath').value = '65001 65002';
+        document.getElementById('b-aspath').value = '65003';
+      } else if (type === 'localpref') {
+        document.getElementById('a-prefval').value = '0';
+        document.getElementById('b-prefval').value = '0';
+        document.getElementById('a-localpref').value = '200';
+        document.getElementById('b-localpref').value = '100';
+        document.getElementById('a-aspath').value = '65001 65002';
+        document.getElementById('b-aspath').value = '65003';
+      } else if (type === 'origintype') {
+        document.getElementById('a-prefval').value = '0';
+        document.getElementById('b-prefval').value = '0';
+        document.getElementById('a-localpref').value = '100';
+        document.getElementById('b-localpref').value = '100';
+        document.getElementById('a-origintype').value = 'network';
+        document.getElementById('b-origintype').value = 'import';
+      } else if (type === 'aspath') {
+        document.getElementById('a-prefval').value = '0';
+        document.getElementById('b-prefval').value = '0';
+        document.getElementById('a-localpref').value = '100';
+        document.getElementById('b-localpref').value = '100';
+        document.getElementById('a-aspath').value = '65001 65002 65003';
+        document.getElementById('b-aspath').value = '65004';
+      } else if (type === 'origin') {
+        document.getElementById('a-aspath').value = '65001';
+        document.getElementById('b-aspath').value = '65001';
+        document.getElementById('a-origin').value = 'IGP';
+        document.getElementById('b-origin').value = 'INCOMPLETE';
+      } else if (type === 'med') {
+        document.getElementById('a-origin').value = 'IGP';
+        document.getElementById('b-origin').value = 'IGP';
+        document.getElementById('a-med').value = '50';
+        document.getElementById('b-med').value = '100';
+      } else if (type === 'ebgp') {
+        document.getElementById('a-med').value = '0';
+        document.getElementById('b-med').value = '0';
+        document.getElementById('a-peertype').value = 'EBGP';
+        document.getElementById('b-peertype').value = 'IBGP';
+      }
+      runEvaluation();
+    }
+
+    function selectScenario(scen) {
+      document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
+      const btn = document.getElementById(`btn-scen-${scen}`);
+      if (btn) btn.classList.add('active');
+    }
+
+    // 启动挂载
+    window.addEventListener('DOMContentLoaded', () => {
+      runEvaluation();
+    });
+  </script>
+</body>
+</html>
